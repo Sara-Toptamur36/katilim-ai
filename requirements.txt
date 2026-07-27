@@ -1,0 +1,30 @@
+# KatilimAI - Python bagimliliklari
+# Sartname Md. 5.10 / 8: tumu acik kaynak, ucretli/kapali kaynak servis YOK.
+# Lisanslar: FastAPI/Pydantic/SQLAlchemy/Alembic (MIT), uvicorn (BSD),
+#            psycopg (LGPL - dinamik baglanti, kullanimda kisit yaratmaz),
+#            python-jose (MIT), sse-starlette (BSD)
+
+# --- API katmani ---
+fastapi>=0.115
+uvicorn[standard]>=0.32
+pydantic>=2.9
+python-multipart>=0.0.12
+
+# --- Kimlik dogrulama (Sprint 4'te aktiflesecek) ---
+python-jose[cryptography]>=3.3
+passlib[bcrypt]>=1.7
+
+# --- Veritabani ---
+sqlalchemy>=2.0
+alembic>=1.13
+psycopg[binary]>=3.2
+
+# --- Streaming (Sprint 3: Havin'in chatbot arayuzu icin) ---
+sse-starlette>=2.1
+
+# --- Yerel LLM'e istek (Ollama) ---
+requests>=2.32
+
+# --- Test ---
+pytest>=8.3
+httpx>=0.27

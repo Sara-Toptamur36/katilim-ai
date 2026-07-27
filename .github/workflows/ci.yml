@@ -1,0 +1,43 @@
+name: CI
+
+# Manuel smoke testlerin zamanla atlanmasina karsi otomatik guvenlik agi.
+# Sprint 1-2'de extraction kodu yazildikca, "Altin Veri Seti dogrulamasi"
+# adimi gercek karsilastirma yapacak sekilde genisletilecek.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Python kurulumu
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Bagimliliklari kur
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: API import edilebiliyor mu
+        run: python -c "import api.main; print('api.main import edildi')"
+
+      - name: Testleri calistir
+        run: pytest tests/ -v
+
+      - name: Sizmis sir taramasi
+        run: |
+          echo "Repoda .env veya anahtar dosyasi var mi kontrol ediliyor..."
+          if git ls-files | grep -E '(^|/)\.env$|\.pem$|\.key$'; then
+            echo "HATA: Repoda sir dosyasi bulundu!"
+            exit 1
+          fi
+          echo "Temiz."

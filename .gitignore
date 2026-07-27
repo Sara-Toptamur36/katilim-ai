@@ -1,0 +1,43 @@
+# --- Sirlar: ASLA repoya girmez ---
+.env
+.env.*
+*.pem
+*.key
+secrets/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Loglar ---
+logs/
+*.log
+
+# --- Node / React (dashboard) ---
+node_modules/
+dist/
+.vite/
+npm-debug.log*
+
+# --- Isletim sistemi / editor ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+
+# --- Buyuk model dosyalari (Ollama/HuggingFace kendi onbelleginde tutar) ---
+*.gguf
+*.safetensors
+models/
+
+# --- Gecici veri ---
+*.tmp
+.cache/

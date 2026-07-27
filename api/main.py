@@ -26,6 +26,12 @@ from api.schemas import (
     KarsilastirIstek,
     KarsilastirYanit,
 )
+from comparison.compare_engine import (
+    BilinmeyenKriter,
+    aciklama_uret,
+    karsilastir_bellekte,
+    karsilastir_sorgusu,
+)
 
 app = FastAPI(
     title="KatilimAI API",
@@ -115,11 +121,14 @@ def kampanya_detay(kampanya_id: int, kullanici: dict = Depends(token_dogrula)):
 
 @app.post("/karsilastir", response_model=KarsilastirYanit, tags=["Karsilastirma"])
 def karsilastir(istek: KarsilastirIstek, kullanici: dict = Depends(token_dogrula)):
-    """Kampanya karsilastirmasi (Sprint 1: mock).
+    """Kampanya karsilastirmasi - comparison/compare_engine.py ile.
 
-    Sprint 2'de comparison/compare_engine.py devreye girecek:
-      - Sabit, guvenli SQL sablonlari (serbest metinden SQL URETILMEZ)
-      - NULLS LAST: eksik veri en sona gider, filtrelenip gizlenmez
+    - Kriter SABIT bir sozlukten secilir; serbest metinden SQL URETILMEZ
+    - Eksik veri gizlenmez: NULLS LAST + eksik_alanlar isareti
+    - Uretilen SQL, Juri Audit Paneli icin yanitla birlikte doner
+
+    Sprint 1'de siralama bellekte yapilir; uretilen SQL sablonu, Sprint 2'de
+    PostgreSQL'e gecildiginde AYNEN kullanilacaktir (cikti sekli degismez).
     """
     baslangic = time.time()
     log.info(
@@ -135,19 +144,27 @@ def karsilastir(istek: KarsilastirIstek, kullanici: dict = Depends(token_dogrula
             status_code=404, detail="Karsilastirma icin en az 2 gecerli kampanya gerekli"
         )
 
-    # Sprint 1 mock siralamasi: None degerler EN SONA (NULLS LAST mantigi)
-    def sirala_anahtari(k: CampaignRecord):
-        deger = k.kar_payi_orani_percent
-        return (deger is None, deger if deger is not None else 0)
+    try:
+        sonuc = karsilastir_bellekte(secilenler, kriter=istek.kriter)
+        # Sprint 2'de bu sorgu gercekten calistirilacak; simdiden uretip
+        # audit panelinde gosteriyoruz (seffaflik)
+        sql, _ = karsilastir_sorgusu(istek.kriter)
+    except BilinmeyenKriter as e:
+        log.warning("Gecersiz kriter istendi: %s", istek.kriter)
+        raise HTTPException(status_code=422, detail=str(e))
 
-    sirali = sorted(secilenler, key=sirala_anahtari)
     latency = int((time.time() - baslangic) * 1000)
 
     return KarsilastirYanit(
         kriter=istek.kriter,
-        sonuclar=[k.model_dump(mode="json") for k in sirali],
-        calistirilan_sql=None,  # Sprint 2'de gercek SQL buraya gelecek
-        audit=_bos_audit(cagrilan_arac="mock_sql", latency_ms=latency),
+        sonuclar=sonuc["sonuclar"],
+        calistirilan_sql=sql,
+        audit=_bos_audit(
+            cagrilan_arac="sql",
+            latency_ms=latency,
+            sql_sorgusu=sql,
+            sebep=aciklama_uret(sonuc),
+        ),
     )
 
 

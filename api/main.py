@@ -23,8 +23,16 @@ from api.schemas import (
     CampaignRecord,
     ChatIstek,
     ChatYanit,
+    HesapIstek,
+    HesapYanit,
     KarsilastirIstek,
     KarsilastirYanit,
+    OdemeSatiriYanit,
+)
+from calculator.calculator import (
+    HesapGirdiHatasi,
+    aylik_taksit_hesapla,
+    odeme_plani_uret,
 )
 from comparison.compare_engine import (
     BilinmeyenKriter,
@@ -164,6 +172,67 @@ def karsilastir(istek: KarsilastirIstek, kullanici: dict = Depends(token_dogrula
             latency_ms=latency,
             sql_sorgusu=sql,
             sebep=aciklama_uret(sonuc),
+        ),
+    )
+
+
+@app.post("/hesapla", response_model=HesapYanit, tags=["Hesaplama"])
+def hesapla(istek: HesapIstek, kullanici: dict = Depends(token_dogrula)):
+    """Taksit/kar payi hesabi - Calculator Tool.
+
+    TASARIM ILKESI (rapor Bolum 8): Hesap LLM'e BIRAKILMAZ. Bu uc nokta
+    saf Python fonksiyonlarini cagirir; LLM yalnizca sonucu cumleye doker.
+
+    Sprint 3'te Ajan Orkestratoru, "hesaplama" niyeti tespit ettiginde
+    dogrudan bu mantigi cagiracak.
+    """
+    baslangic = time.time()
+    log.info(
+        "hesap sorgusu | kullanici=%s | anapara=%s | oran=%s | vade=%s",
+        kullanici.get("kullanici"),
+        istek.anapara,
+        istek.aylik_oran_percent,
+        istek.vade_ay,
+    )
+
+    # Yuzde -> ondalik (1.89 -> 0.0189)
+    aylik_oran = istek.aylik_oran_percent / 100
+
+    try:
+        sonuc = aylik_taksit_hesapla(istek.anapara, aylik_oran, istek.vade_ay)
+    except HesapGirdiHatasi as e:
+        log.warning("Gecersiz hesap girdisi: %s", e)
+        raise HTTPException(status_code=422, detail=str(e))
+
+    plan: list[OdemeSatiriYanit] = []
+    if istek.odeme_plani_istiyor:
+        plan = [
+            OdemeSatiriYanit(
+                ay=s.ay,
+                taksit=s.taksit,
+                kar_payi_kismi=s.kar_payi_kismi,
+                anapara_kismi=s.anapara_kismi,
+                kalan_bakiye=s.kalan_bakiye,
+            )
+            for s in odeme_plani_uret(istek.anapara, aylik_oran, istek.vade_ay)
+        ]
+
+    latency = int((time.time() - baslangic) * 1000)
+
+    return HesapYanit(
+        anapara=sonuc.anapara,
+        aylik_oran_percent=istek.aylik_oran_percent,
+        vade_ay=sonuc.vade_ay,
+        aylik_taksit=sonuc.aylik_taksit,
+        toplam_odeme=sonuc.toplam_odeme,
+        toplam_kar_payi=sonuc.toplam_kar_payi,
+        ozet=sonuc.ozet_metni(),
+        odeme_plani=plan,
+        audit=_bos_audit(
+            cagrilan_arac="calculator",
+            latency_ms=latency,
+            response_confidence=1.0,  # deterministik hesap - belirsizlik yok
+            sebep="Saf Python hesabi, LLM kullanilmadi",
         ),
     )
 

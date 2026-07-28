@@ -126,6 +126,47 @@ class ChatIstek(BaseModel):
     soru: str = Field(..., min_length=1, max_length=500)
 
 
+class HesapIstek(BaseModel):
+    """Taksit hesabi istegi.
+
+    ORAN BIRIMI: aylik_oran_percent AYLIK orandir (ornek: 1.89 = ayda %1,89).
+    CampaignRecord'daki kar_payi_orani_percent alani ile ayni birimdedir.
+    """
+
+    anapara: float = Field(..., gt=0, le=100_000_000, description="TL cinsinden")
+    aylik_oran_percent: float = Field(
+        ..., ge=0, le=20, description="Aylik kar payi orani, ornek: 1.89"
+    )
+    vade_ay: int = Field(..., gt=0, le=480)
+    odeme_plani_istiyor: bool = Field(
+        False, description="True ise ay ay odeme plani da doner"
+    )
+
+
+class OdemeSatiriYanit(BaseModel):
+    ay: int
+    taksit: float
+    kar_payi_kismi: float
+    anapara_kismi: float
+    kalan_bakiye: float
+
+
+class HesapYanit(BaseModel):
+    anapara: float
+    aylik_oran_percent: float
+    vade_ay: int
+    aylik_taksit: float
+    toplam_odeme: float
+    toplam_kar_payi: float
+    ozet: str
+    yontem: str = Field(
+        "deterministik_python",
+        description="Hesap LLM'e birakilmaz - saf Python fonksiyonu",
+    )
+    odeme_plani: list[OdemeSatiriYanit] = Field(default_factory=list)
+    audit: "AuditBilgisi | None" = None
+
+
 # ---------------------------------------------------------------------------
 # Yanit semalari
 # ---------------------------------------------------------------------------

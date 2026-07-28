@@ -83,5 +83,30 @@
       "parafpara hediyesi",
       "worldpuan hediyesi"
     ]
+  },
+  "kesirli_kar_paylasimi": {
+    "standart_terim": "Kesirli Kâr Paylaşım Oranı",
+    "gelenek_karsilik": "— (katılım bankacılığına özgü, doğrudan geleneksel karşılığı yok)",
+    "sema_alani": [],
+    "sema_notu": "Ham deger (musteri_payi/banka_payi) standart yuzdeye otomatik cevrilmez - anlami baglama gore degisir, yorumlama Sprint 2'de NER/LLM asamasina birakilir.",
+    "varyantlar": [
+      "98/2 kar paylasim orani",
+      "kar paylasim orani",
+      "musteri banka kar paylasimi"
+    ],
+    "ornek_kaynak": "Vakif Katilim (On Degerlendirme Raporu Bolum 3)"
+  },
+  "sifir_oran_ifadesi": {
+    "standart_terim": "Niteliksel Sıfır Oran İfadesi",
+    "gelenek_karsilik": "Faizsiz Kredi",
+    "sema_alani": ["kar_payi_orani_percent"],
+    "sema_notu": "Bulundugunda kar_payi_orani_percent = 0.0 olarak yorumlanir (Md. 5.2 - niteliksel ifade katmani); NULL/bulunamadi ile karistirilmaz.",
+    "varyantlar": [
+      "kar payi yok",
+      "beklemek yok",
+      "faizsiz",
+      "faizsiz finansman"
+    ],
+    "ornek_kaynak": "Albaraka Turk (On Degerlendirme Raporu Bolum 3)"
   }
 }

@@ -28,3 +28,13 @@ requests>=2.32
 # --- Test ---
 pytest>=8.3
 httpx>=0.27
+
+# --- NLP / Bilgi Cikarimi / RAG (NLP ekibi) ---
+# Not: pydantic ve requests yukarida zaten tanimli, tekrar eklenmedi.
+transformers>=4.44
+torch>=2.4
+sentence-transformers>=3.1
+qdrant-client>=1.11
+langchain-text-splitters>=0.3
+gliner>=0.2.13
+tiktoken>=0.7

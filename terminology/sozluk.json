@@ -1,0 +1,87 @@
+{
+  "kar_payi_orani": {
+    "standart_terim": "Kâr Payı Oranı",
+    "gelenek_karsilik": "Faiz Oranı",
+    "sema_alani": ["kar_payi_orani_percent", "kar_payi_orani_decimal"],
+    "varyantlar": [
+      "kâr payı oranı",
+      "kar payi orani",
+      "kar orani",
+      "kazanc orani",
+      "avantajli oran",
+      "ozel oranli finansman",
+      "indirimli oran",
+      "kar payi orani ile"
+    ]
+  },
+  "finansman_maliyeti": {
+    "standart_terim": "Finansman Maliyeti",
+    "gelenek_karsilik": "Kredi Maliyeti (Faiz + Masraflar Toplamı)",
+    "sema_alani": ["kar_payi_orani_percent", "tahsis_ucreti", "masraf_durumu"],
+    "varyantlar": [
+      "finansman maliyeti",
+      "toplam maliyet",
+      "yillik maliyet orani",
+      "efektif maliyet orani"
+    ]
+  },
+  "katilim_fonu": {
+    "standart_terim": "Katılım Fonu",
+    "gelenek_karsilik": "Vadeli Mevduat",
+    "sema_alani": ["kampanya_turu"],
+    "varyantlar": [
+      "katilim fonu",
+      "kar payi hesabi",
+      "katilim hesabi",
+      "fona katilim"
+    ]
+  },
+  "masrafsiz_finansman": {
+    "standart_terim": "Masrafsız Finansman",
+    "gelenek_karsilik": "Masrafsız Kredi",
+    "sema_alani": ["masraf_durumu"],
+    "varyantlar": [
+      "masrafsiz finansman",
+      "dosya masrafi yok",
+      "ekspertiz ucretsiz",
+      "masraf alinmiyor",
+      "ucretsiz finansman firsati"
+    ]
+  },
+  "avantajli_finansman": {
+    "standart_terim": "Avantajlı Finansman",
+    "gelenek_karsilik": "İndirimli Kredi",
+    "sema_alani": ["kampanya_avantaji"],
+    "varyantlar": [
+      "avantajli finansman",
+      "avantajli oranli finansman firsati",
+      "ozel finansman firsati",
+      "kampanyali finansman"
+    ]
+  },
+  "vade_suresi": {
+    "standart_terim": "Vade Süresi",
+    "gelenek_karsilik": "Kredi Vadesi",
+    "sema_alani": ["vade_ay"],
+    "varyantlar": [
+      "vade suresi",
+      "aya varan vade",
+      "ay vade",
+      "taksit suresi"
+    ]
+  },
+  "odul_miktari": {
+    "standart_terim": "Ödül Miktarı",
+    "gelenek_karsilik": "Kampanya Hediyesi",
+    "sema_alani": ["odul_miktari", "odul_birimi"],
+    "varyantlar": [
+      "odul miktari",
+      "hediye miktari",
+      "puan hediyesi",
+      "mil hediyesi",
+      "bankkart lira hediyesi",
+      "parafpara hediyesi",
+      "worldpuan hediyesi"
+    ]
+  }
+}

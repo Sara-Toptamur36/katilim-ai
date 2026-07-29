@@ -38,3 +38,6 @@ qdrant-client>=1.11
 langchain-text-splitters>=0.3
 gliner>=0.2.13
 tiktoken>=0.7
+
+# --- Altin Veri Seti (Excel okuma) ---
+openpyxl>=3.1

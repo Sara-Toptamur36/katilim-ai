@@ -1,10 +1,5 @@
 # KatılımAI
 
-**Katılım bankacılığında güvenilir, açıklanabilir yanıtlar sunan yapay zekâ tabanlı dil ajanı**
-
-TEKNOFEST 2026 — Yapay Zekâ Dil Ajanları Yarışması
-Katılım Bankacılığı Finansal Metin Madenciliği, Bilgi Çıkarımı ve Akıllı Dashboard-Asistan Çözümleri (2. Senaryo)
-
 Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliği
 
 `BilisimVadisi2026` · Türkiye Açık Kaynak Platformu

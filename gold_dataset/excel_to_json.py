@@ -27,6 +27,7 @@ VERI_BASLANGIC_SATIRI = 3  # 1: baslik, 2: aciklama
 
 SAYISAL_ALANLAR = {
     "kar_payi_orani",
+    "maliyet_orani",
     "vade_ay",
     "finansman_tutari",
     "odul_miktari",

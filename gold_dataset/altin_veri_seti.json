@@ -6,6 +6,7 @@
     "kampanya_turu": "Konut Finansmani Kampanyasi",
     "kaynak_url": "https://ornek-a-bankasi.com.tr/konut-finansmani",
     "kar_payi_orani": 1.89,
+    "maliyet_orani": null,
     "oran_periyodu": "aylik",
     "vade_ay": 120,
     "finansman_tutari": null,
@@ -31,6 +32,7 @@
     "kampanya_turu": "Konut Finansmani Kampanyasi",
     "kaynak_url": "https://ornek-b-bankasi.com.tr/konut-finansmani",
     "kar_payi_orani": 1.95,
+    "maliyet_orani": null,
     "oran_periyodu": "aylik",
     "vade_ay": 120,
     "finansman_tutari": null,
@@ -58,6 +60,7 @@
     "kampanya_turu": "Konut Finansmani Kampanyasi",
     "kaynak_url": "https://ornek-c-bankasi.com.tr/konut-finansmani",
     "kar_payi_orani": 1.87,
+    "maliyet_orani": null,
     "oran_periyodu": "aylik",
     "vade_ay": 96,
     "finansman_tutari": null,
@@ -84,6 +87,7 @@
     "kampanya_turu": "Kart Kampanyasi",
     "kaynak_url": "https://ornek-d-bankasi.com.tr/kart-kampanyasi",
     "kar_payi_orani": null,
+    "maliyet_orani": null,
     "oran_periyodu": null,
     "vade_ay": null,
     "finansman_tutari": null,
@@ -102,6 +106,36 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true
+    }
+  },
+  {
+    "kayit_id": "KT-001",
+    "banka": "Kuveyt Türk",
+    "kampanya_adi": "Taksitlio'da Yeni Müşterilere Özel Kuveyt Türk Alışveriş Finansmanı Fırsatı!",
+    "kampanya_turu": "Konut Finansmani Kampanyasi",
+    "kaynak_url": "www.kuveytturk.com.tr/kampanyalar/kendim-icin/finansman-kampanyalari/taksitlioda-yeni-musterilere-ozel-kuveyt-turk-alisveris-finansmani-firsati",
+    "kar_payi_orani": 1.99,
+    "maliyet_orani": null,
+    "oran_periyodu": null,
+    "vade_ay": null,
+    "finansman_tutari": null,
+    "odul_miktari": null,
+    "odul_birimi": null,
+    "kampanya_avantaji": null,
+    "masraf_durumu": null,
+    "kampanya_baslangic": null,
+    "kampanya_bitis": null,
+    "hedef_kitle": null,
+    "ekran_goruntusu": null,
+    "giren_kisi": null,
+    "giris_tarihi": null,
+    "notlar": null,
+    "alan_belirtilmemis": {
+      "vade_ay": true,
+      "odul_miktari": true,
+      "masraf_durumu": true,
+      "kampanya_bitis": true,
+      "hedef_kitle": true
     }
   }
 ]

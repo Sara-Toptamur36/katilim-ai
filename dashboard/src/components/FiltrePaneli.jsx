@@ -2,7 +2,7 @@ import { Select, Space } from "antd";
 
 export default function FiltrePaneli({ bankalar, turler, filtreler, onDegistir }) {
   return (
-    <Space style={{ marginBottom: 16 }}>
+    <Space wrap style={{ marginBottom: 16 }}>
       <Select
         placeholder="Banka secin"
         style={{ width: 200 }}

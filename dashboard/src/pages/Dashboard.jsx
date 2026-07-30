@@ -1,8 +1,13 @@
 import { useEffect, useState } from "react";
-import { Alert } from "antd";
+import { Alert, Divider, Typography } from "antd";
 import { kampanyalariGetir } from "../api/client";
 import KampanyaTablosu from "../components/KampanyaTablosu";
 import FiltrePaneli from "../components/FiltrePaneli";
+import IstatistikKartlari from "../components/IstatistikKartlari";
+import KarsilastirmaPaneli from "../components/KarsilastirmaPaneli";
+import TerminolojiSozlugu from "../components/TerminolojiSozlugu";
+
+const { Title } = Typography;
 
 export default function Dashboard() {
   const [kampanyalar, setKampanyalar] = useState([]);
@@ -10,6 +15,7 @@ export default function Dashboard() {
   const [yukleniyor, setYukleniyor] = useState(true);
   const [hata, setHata] = useState(null);
   const [filtreler, setFiltreler] = useState({});
+  const [secilenIdler, setSecilenIdler] = useState([]);
 
   // Filtre secenekleri icin bir kez, hic filtresiz veri cekilir
   useEffect(() => {
@@ -31,25 +37,47 @@ export default function Dashboard() {
   const bankalar = [...new Set(tumKampanyalar.map((k) => k.banka))];
   const turler = [...new Set(tumKampanyalar.map((k) => k.kampanya_turu))];
 
+  const rowSelection = {
+    selectedRowKeys: secilenIdler,
+    onChange: setSecilenIdler,
+  };
+
   return (
     <div>
-      <h2>Kampanya Karsilastirma Panosu</h2>
+      <Title level={3}>Kampanya Karsilastirma Panosu</Title>
+
+      <IstatistikKartlari kampanyalar={kampanyalar} />
+
       <FiltrePaneli
         bankalar={bankalar}
         turler={turler}
         filtreler={filtreler}
         onDegistir={setFiltreler}
       />
+
       {hata && (
         <Alert
           type="error"
-          message="Veri alinamadi"
+          title="Veri alinamadi"
           description={hata}
           style={{ marginBottom: 16 }}
           showIcon
         />
       )}
-      <KampanyaTablosu kampanyalar={kampanyalar} yukleniyor={yukleniyor} />
+
+      <KampanyaTablosu
+        kampanyalar={kampanyalar}
+        yukleniyor={yukleniyor}
+        rowSelection={rowSelection}
+      />
+
+      <Divider />
+      <Title level={4}>Kampanya Karsilastir</Title>
+      <KarsilastirmaPaneli secilenIdler={secilenIdler} />
+
+      <Divider />
+      <Title level={4}>Terminoloji Sozlugu</Title>
+      <TerminolojiSozlugu />
     </div>
   );
 }

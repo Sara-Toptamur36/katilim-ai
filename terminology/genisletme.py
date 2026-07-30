@@ -11,6 +11,17 @@ from difflib import SequenceMatcher
 from terminology.sozluk import sozluk_yukle
 
 
+def _turkce_kucult(metin: str) -> str:
+    """Python'un standart str.lower() Turkce noktali buyuk 'İ' harfini
+    duz 'i' degil, gorunmez bir birlesik nokta karakteriyle kucultur
+    (ornek: 'İ'.lower() -> 'i' + U+0307), bu da ALL-CAPS/Title Case
+    gercek taranmis metinde SequenceMatcher oranini haksiz yere dusurur.
+    Duz ASCII 'I' harfine bilerek dokunulmuyor - o hem 'I' hem 'ı'
+    anlamina gelebilir (belirsiz), yanlis donusum yeni uyusmazlik yaratir.
+    """
+    return metin.replace("İ", "i").lower()
+
+
 def benzer_terim_bul(
     ifade: str, sozluk: dict | None = None, esik: float = 0.75
 ) -> tuple[str | None, float]:
@@ -24,7 +35,9 @@ def benzer_terim_bul(
     en_iyi_skor = 0.0
     for anahtar, veri in sozluk.items():
         for varyant in veri["varyantlar"]:
-            skor = SequenceMatcher(None, ifade.lower(), varyant.lower()).ratio()
+            skor = SequenceMatcher(
+                None, _turkce_kucult(ifade), _turkce_kucult(varyant)
+            ).ratio()
             if skor > en_iyi_skor:
                 en_iyi_skor = skor
                 en_iyi_eslesme = anahtar

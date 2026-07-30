@@ -145,3 +145,14 @@ def test_dar_makas_kar_payi_orani_ile_karismaz():
     kar payi orani degildir)."""
     anahtar, _ = benzer_terim_bul("dar makas")
     assert anahtar != "kar_payi_orani"
+
+
+def test_benzer_terim_bul_turkce_noktali_buyuk_i_dogru_kucultulur():
+    """BILINEN TUZAK: str.lower() Turkce 'İ' harfini duz 'i' yerine
+    gorunmez bir birlesik nokta karakteriyle kucultur, bu da ALL-CAPS/
+    Title Case gercek taranmis metinde benzerlik oranini haksiz yere
+    dusurur. Bu test, buyuk harfli Turkce metnin de dogru eslesmesini
+    garanti eder."""
+    anahtar, skor = benzer_terim_bul("FAİZSİZ FİNANSMAN FIRSATI")
+    assert anahtar == "masrafsiz_finansman"
+    assert skor >= 0.75

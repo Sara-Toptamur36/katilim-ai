@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Input, Spin, Typography } from "antd";
 import { chatGonder, tokenAl } from "../api/client";
 import ChatMesaji from "../components/ChatMesaji";
+import { useAudit } from "../context/AuditContext";
 
 const { Title } = Typography;
 
@@ -12,6 +13,7 @@ export default function Chatbot() {
   });
   const [girdi, setGirdi] = useState("");
   const [bekleniyor, setBekleniyor] = useState(false);
+  const { auditEkle } = useAudit();
 
   useEffect(() => {
     sessionStorage.setItem("chat_gecmisi", JSON.stringify(mesajlar));
@@ -39,7 +41,8 @@ export default function Chatbot() {
           fallback: yanit.fallback,
         },
       ]);
-    } catch (e) {
+      auditEkle(yanit.audit, soru);
+    } catch {
       setMesajlar((onceki) => [
         ...onceki,
         {
@@ -98,7 +101,7 @@ export default function Chatbot() {
         kopya[kopya.length - 1] = { ...kopya[kopya.length - 1], streaming: false };
         return kopya;
       });
-    } catch (e) {
+    } catch {
       setMesajlar((onceki) => [
         ...onceki,
         {

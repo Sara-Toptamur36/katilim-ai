@@ -3,6 +3,7 @@ import { Menu, Layout } from "antd";
 import Dashboard from "./pages/Dashboard";
 import Chatbot from "./pages/Chatbot";
 import AuditPanel from "./pages/AuditPanel";
+import { AuditProvider } from "./context/AuditContext";
 
 const { Header, Content } = Layout;
 
@@ -25,18 +26,20 @@ function Gezinme() {
 function App() {
   return (
     <BrowserRouter>
-      <Layout style={{ minHeight: "100vh" }}>
-        <Header style={{ display: "flex", alignItems: "center" }}>
-          <Gezinme />
-        </Header>
-        <Content style={{ padding: 24 }}>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/chatbot" element={<Chatbot />} />
-            <Route path="/audit" element={<AuditPanel />} />
-          </Routes>
-        </Content>
-      </Layout>
+      <AuditProvider>
+        <Layout style={{ minHeight: "100vh" }}>
+          <Header style={{ display: "flex", alignItems: "center" }}>
+            <Gezinme />
+          </Header>
+          <Content style={{ padding: 24 }}>
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/chatbot" element={<Chatbot />} />
+              <Route path="/audit" element={<AuditPanel />} />
+            </Routes>
+          </Content>
+        </Layout>
+      </AuditProvider>
     </BrowserRouter>
   );
 }

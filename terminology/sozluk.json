@@ -29,10 +29,13 @@
     "standart_terim": "Katılım Fonu",
     "gelenek_karsilik": "Vadeli Mevduat",
     "sema_alani": ["kampanya_turu"],
+    "sema_notu": "kampanya_turu enum'inda (api/schemas.py) 'Katilim Fonu' diye bir deger yok; en yakin aday YATIRIM (Yatirim Urunu Kampanyasi) ama bu dogrulanmamis - Sara ile netlestirilecek.",
     "varyantlar": [
       "katilim fonu",
       "kar payi hesabi",
       "katilim hesabi",
+      "katilma hesabi",
+      "avantajli katilma hesabi",
       "fona katilim"
     ]
   },
@@ -45,7 +48,11 @@
       "dosya masrafi yok",
       "ekspertiz ucretsiz",
       "masraf alinmiyor",
-      "ucretsiz finansman firsati"
+      "ucretsiz finansman firsati",
+      "ucretsiz",
+      "aidatsiz",
+      "masraf odenmiyor",
+      "pesin fiyatina taksit"
     ]
   },
   "avantajli_finansman": {
@@ -56,7 +63,9 @@
       "avantajli finansman",
       "avantajli oranli finansman firsati",
       "ozel finansman firsati",
-      "kampanyali finansman"
+      "kampanyali finansman",
+      "indirim",
+      "indirim kodu"
     ]
   },
   "vade_suresi": {
@@ -81,7 +90,9 @@
       "mil hediyesi",
       "bankkart lira hediyesi",
       "parafpara hediyesi",
-      "worldpuan hediyesi"
+      "worldpuan hediyesi",
+      "bonus",
+      "happy bonus"
     ]
   },
   "kesirli_kar_paylasimi": {
@@ -105,8 +116,45 @@
       "kar payi yok",
       "beklemek yok",
       "faizsiz",
-      "faizsiz finansman"
+      "faizsiz finansman",
+      "vade farksiz",
+      "vade farksiz taksit"
     ],
-    "ornek_kaynak": "Albaraka Turk (On Degerlendirme Raporu Bolum 3)"
+    "ornek_kaynak": "Albaraka Turk (On Degerlendirme Raporu Bolum 3); vade farksiz - Altin Veri Seti'nde 62 kayittan 13'unde gorulen en yaygin sifir-oran ifadesi"
+  },
+  "odemesiz_donem": {
+    "standart_terim": "Ödemesiz Dönem",
+    "gelenek_karsilik": "Grace Period (Ödemesiz Taksit)",
+    "sema_alani": [],
+    "sema_notu": "CampaignRecord semasinda dogrudan karsiligi yok - ne oran, ne vade, ne masraf alanina oturuyor; taksit baslama zamaninin ertelenmesi ayri bir mekanizma. Sara ile sema kapsamı konusulmali.",
+    "varyantlar": [
+      "odemesiz donem",
+      "odemesiz taksit",
+      "esnek odeme"
+    ],
+    "ornek_kaynak": "Kuveyt Turk / Turkiye Finans (Altin Veri Seti KT-003, TF-001)"
+  },
+  "dar_makas": {
+    "standart_terim": "Dar Makas (Döviz/Emtia Spreadi)",
+    "gelenek_karsilik": "— (döviz piyasasında da aynı terim kullanılır, katılım bankacılığına özgü bir çeviri farkı yok)",
+    "sema_alani": [],
+    "sema_notu": "DIKKAT: bu kavram sayisal bir deger tasiyabilir (ornek: '%0,1 dar makas') ama kar_payi_orani ILE KARISTIRILMAMALI - doviz/altin/gumus alim-satim spreadi, kar payi orani degildir. Regex yazilirken kar_payi_orani_bul'un bu ifadeleri yanlislikla yakalamadigindan emin olunmali.",
+    "varyantlar": [
+      "dar makas",
+      "rekabetci kur",
+      "rekabetci fiyat"
+    ],
+    "ornek_kaynak": "Hayat Finans (Altin Veri Seti HF-003, HF-005)"
+  },
+  "nakit_iade": {
+    "standart_terim": "Nakit İade",
+    "gelenek_karsilik": "Cashback",
+    "sema_alani": ["odul_miktari", "odul_birimi"],
+    "sema_notu": "odul_miktari (TL) + odul_birimi='TL' olarak yorumlanabilir, ama hesaplama yontemi farkli: genelde harcamanin yuzdesi + bir tavan tutar seklinde ifade edilir (odul_miktari gibi sabit bir hediye degil).",
+    "varyantlar": [
+      "nakit iade",
+      "nakit geri odeme"
+    ],
+    "ornek_kaynak": "Turkiye Emlak Katilim / Hayat Finans (Altin Veri Seti TEK-001, HF-002)"
   }
 }

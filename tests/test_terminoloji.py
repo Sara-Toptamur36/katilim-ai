@@ -1,5 +1,7 @@
 """Terminoloji sozlugu ve genisletme servisi testleri (Sprint 1, Gun 2-3)."""
 
+import pytest
+
 from terminology.genisletme import benzer_terim_bul
 from terminology.sozluk import gelenek_karsiligi_bul, sema_alanlarini_bul, sozluk_yukle
 
@@ -32,6 +34,24 @@ def test_sartname_kavramlari_sozlukte_var():
 def test_rapor_bolum3_ornekleri_sozlukte_var():
     sozluk = sozluk_yukle()
     for anahtar, standart_terim in RAPOR_BOLUM3_KAVRAMLARI.items():
+        assert anahtar in sozluk, f"{anahtar} sozlukte eksik"
+        assert sozluk[anahtar]["standart_terim"] == standart_terim
+        assert len(sozluk[anahtar]["varyantlar"]) > 0
+        assert "ornek_kaynak" in sozluk[anahtar]
+
+
+# Altin Veri Seti (62 gercek kayit, 13 banka) analizinden cikan,
+# mevcut 9 kavramin hicbirine oturmayan yeni kavramlar
+ALTIN_VERI_SETI_KAVRAMLARI = {
+    "odemesiz_donem": "Ödemesiz Dönem",
+    "dar_makas": "Dar Makas (Döviz/Emtia Spreadi)",
+    "nakit_iade": "Nakit İade",
+}
+
+
+def test_altin_veri_seti_kavramlari_sozlukte_var():
+    sozluk = sozluk_yukle()
+    for anahtar, standart_terim in ALTIN_VERI_SETI_KAVRAMLARI.items():
         assert anahtar in sozluk, f"{anahtar} sozlukte eksik"
         assert sozluk[anahtar]["standart_terim"] == standart_terim
         assert len(sozluk[anahtar]["varyantlar"]) > 0
@@ -94,3 +114,34 @@ def test_benzer_terim_bul_tam_cumlede_zayif_kalir():
     anahtar, skor = benzer_terim_bul("Kar payi yok. Beklemek yok.")
     assert anahtar is None
     assert skor < 0.75
+
+
+@pytest.mark.parametrize(
+    "ifade,beklenen_anahtar",
+    [
+        ("vade farksiz", "sifir_oran_ifadesi"),  # 62 kayittan 13'unde gorulen en yaygin sifir-oran ifadesi
+        ("katilma hesabi", "katilim_fonu"),  # TEK-007, HF-004 - "katilim hesabi" degil gercek terim
+        ("bonus", "odul_miktari"),  # Turkiye Finans'in kendi odul birimi
+        ("indirim kodu", "avantajli_finansman"),  # VK-004
+        ("odemesiz donem", "odemesiz_donem"),  # KT-003, TF-001
+        ("dar makas", "dar_makas"),  # HF-003, HF-005
+        ("nakit iade", "nakit_iade"),  # TEK-001, HF-002
+        ("aidatsiz", "masrafsiz_finansman"),  # TF-007
+        ("masraf odenmiyor", "masrafsiz_finansman"),  # TF-007
+        ("pesin fiyatina taksit", "masrafsiz_finansman"),  # DK-006, DK-007
+    ],
+)
+def test_benzer_terim_bul_altin_veri_seti_izole_varyantlari(ifade, beklenen_anahtar):
+    """Altin Veri Seti'ndeki (62 gercek kayit) ifadelerin izole/kisa
+    aday haliyle dogru kavrama eslestigini dogrular."""
+    anahtar, skor = benzer_terim_bul(ifade)
+    assert anahtar == beklenen_anahtar, f"'{ifade}' -> {anahtar!r} (beklenen: {beklenen_anahtar!r}, skor={skor:.2f})"
+    assert skor >= 0.75
+
+
+def test_dar_makas_kar_payi_orani_ile_karismaz():
+    """Dar makas ifadesi sayisal deger tasisa da (%0,1 gibi) kar_payi_orani
+    ile ayni kavram olarak eslestirilmemeli (dovizin/altinin spread'i,
+    kar payi orani degildir)."""
+    anahtar, _ = benzer_terim_bul("dar makas")
+    assert anahtar != "kar_payi_orani"

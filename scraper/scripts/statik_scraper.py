@@ -20,7 +20,7 @@ from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
 
 from preprocessing.normalizer import metni_normalize_et
-from scraper.scripts import ortak
+from scraper.scripts import ortak, pdf_isle, tablo_isle
 
 CONFIG_DOSYASI = ortak.BASE_DIR / "config" / "bankalar.json"
 
@@ -112,6 +112,12 @@ def sayfa_tara(
 
     ortak.ham_kaydet(banka_kod, slug, sayfa_metni)
 
+    # Bolum 17/18: sayfada PDF eki veya HTML tablosu var mi? (get_text()
+    # tablo yapisini duzlestirir - bu yuzden TAM soup uzerinden, icerik
+    # secicisiyle sinirlamadan bakilir)
+    pdf_kayitlari = pdf_isle.pdflari_isle(banka_kod, soup, url)
+    tablolar = tablo_isle.tablolari_json_yap(tablo_isle.sayfadaki_tablolari_al(yanit.text))
+
     ham_kayit = {
         "banka": ayar["ad"],
         "kategori": kategori,
@@ -124,6 +130,8 @@ def sayfa_tara(
         "http_durumu": yanit.status_code,
         "content_type": yanit.headers.get("Content-Type"),
         "encoding": yanit.encoding,
+        "pdf_dosyalari": pdf_kayitlari,
+        "tablolar": tablolar,
     }
     json_dosya = ortak.islenmis_kaydet(banka_kod, slug, ham_kayit)
 

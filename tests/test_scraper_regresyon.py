@@ -130,6 +130,8 @@ def test_her_kayitta_zorunlu_meta_alanlari_var():
         "http_durumu",
         "content_type",
         "encoding",
+        "pdf_dosyalari",
+        "tablolar",
     )
     for json_dosya in RAW_DATA.glob("*/json/*.json"):
         with open(json_dosya, encoding="utf-8") as f:

@@ -67,15 +67,36 @@ hazır bekliyor (Sprint 2).
    Unicode kod noktalarını taşıyor (`ü` = U+00FC vb.). Tüm dosyalar
    `encoding="utf-8", ensure_ascii=False` ile yazıldı ve `Read` aracıyla doğrulandı.
 
+## Güncelleme — 2026-07-31 (aynı gün, ikinci tur)
+
+Sprint 1'in açık kalan üç noktası kapatıldı:
+
+- **`scraper/scripts/pdf_isle.py`** yazıldı (Bölüm 17: link bulma, indirme, pypdf ile
+  metne çevirme) ve `statik_scraper.sayfa_tara`'ya entegre edildi. 3 bankanın 23
+  kampanya sayfasında hiç PDF bulunmadı (0 PDF) — kod hazır, ilk PDF'li bankada
+  (muhtemelen ücret tarifesi sayfaları, Sprint 2) devreye girecek.
+- **`scraper/scripts/tablo_isle.py`** yazıldı (Bölüm 18: `pd.read_html` ile tablo
+  çıkarma) ve entegre edildi. **Albaraka'nın "Dijital Müşterilere Özel Pratik
+  Finansman Kart" sayfasında gerçek bir kâr payı oranı tablosu bulundu** (Finansman
+  Tutarı / Vade / Aylık Kar Oranı, 4 satır) — tam olarak rehberin öngördüğü senaryo.
+  İlk halinde `pd.read_html` sütunları `0/1/2` olarak döndürdü (sayfada `<th>` yok,
+  gerçek başlık ilk satıra düşmüştü); `_basligi_duzelt()` eklenerek düzeltildi ve
+  birim testle (`tests/test_tablo_isle.py`) doğrulandı.
+- **`scraper/scripts/js_scraper.py`** yazıldı (Bölüm 16: Playwright + pop-up kapatma).
+  3 hedef banka da "HTML statik" olduğu için (Bölüm 13.3) çalıştırılmadı — kod hazır
+  ama `playwright install chromium` (tarayıcı motoru indirme, ~100+ MB) henüz
+  yapılmadı. Ziraat/Emlak gibi JS gerektiren bir bankaya geçilince bu adım atılmalı.
+- Toplam test sayısı 121'den **127'ye** çıktı (yeni: `test_tablo_isle.py`,
+  `test_pdf_isle.py`), hepsi geçiyor.
+
 ## Bilinen sınırlamalar / sıradaki adımlar
 
-- Playwright henüz gerçek bir sayfada kullanılmadı — 3 hedef banka da "HTML statik"
-  olduğu için (Bölüm 13.3) gerekmedi. Ziraat/Emlak gibi bankalara geçilirken JS
-  testi (Bölüm 14.2) tekrarlanmalı.
-- PDF indirme/OCR modülü henüz yazılmadı — 3 bankanın kampanya sayfalarında PDF eki
-  rastlanmadı. Ücret tarifesi sayfaları (Bölüm 17) Sprint 2'de ele alınacak.
 - `unicodedata.normalize("NFKC", ...)`, sayıları bozmasa da bazı sembol/emoji
   karakterlerini (ör. ℹ️ → "i") sadeleştiriyor — sayısal alanlar etkilenmiyor,
   ama bilinçli bir gözlem olarak not düşüldü.
 - Standart Veri Takip Tablosu şimdilik `docs/sayfa_takip_tablosu.md` olarak yerel
-  tutuluyor; rehberin önerdiği paylaşımlı Google Sheets'e taşınması gerekiyor.
+  tutuluyor; rehberin önerdiği paylaşımlı Google Sheets'e taşınması **Zeynep'in
+  yapması gereken tek manuel adım** (Google hesabı gerektirdiği için otomatik
+  yapılamadı).
+- `playwright install chromium` henüz çalıştırılmadı (yalnızca pip paketi kuruldu) -
+  JS gerektiren ilk bankada bu komut çalıştırılmalı.

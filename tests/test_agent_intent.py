@@ -37,6 +37,18 @@ def test_turkce_buyuk_i_harfi_niyet_tespitini_bozmaz():
     assert niyet == Niyet.SOZLUK
 
 
+def test_dogru_turkce_diyakritiklerle_yazilan_soru_da_tespit_edilir():
+    """Gercek /chat uctan uca testinde bulunan hata: anahtar kelime
+    listeleri ASCII yazili ('karsilastir', 'en dusuk'), ama kullanicilar
+    dogal olarak Turkce karakterlerle yazar ('karşılaştır', 'en düşük').
+    Katlama olmadan bu soru BILINMIYOR donerdi."""
+    niyet, guven = niyet_tespit_et(
+        "Kuveyt Türk ve Albaraka Türk karşılaştırması yap, en düşük kâr payı hangisinde?"
+    )
+    assert niyet == Niyet.KARSILASTIRMA
+    assert guven > 0
+
+
 def test_birden_fazla_anahtar_kelime_guveni_artirir():
     az_kelimeli = niyet_tespit_et("hesapla")
     cok_kelimeli = niyet_tespit_et("taksit hesapla, aylik odeme ne kadar olur")

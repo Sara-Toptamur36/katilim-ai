@@ -26,6 +26,20 @@ def _turkce_kucult(metin: str) -> str:
     return metin.replace("İ", "i").lower()
 
 
+_TR_ASCII_HARITASI = str.maketrans("şığüöç", "siguoc")
+
+
+def turkce_ascii_katla(metin: str) -> str:
+    """Turkce harfleri ASCII'ye katlar (ş->s, ı->i, ğ->g, ü->u, ö->o, ç->c).
+
+    Anahtar kelime listeleri ASCII yazilir (ornek: 'karsilastir'), ama
+    gercek kullanicilar dogal olarak Turkce karakterlerle yazar ('karşılaştır').
+    Katlama olmadan bu iki yazim ASLA eslesmez - jurinin normal Turkce
+    yazacagi bir soru niyeti hic tespit edilemez (gercek /chat testinde
+    bulundu, bkz. bu dosyanin testleri)."""
+    return _turkce_kucult(metin).translate(_TR_ASCII_HARITASI)
+
+
 # Anahtar kelimeler rapor Bolum 5.2 ornek sorularindan ve gercek kullanici
 # ifadelerinden turetildi. Liste kucuk ve deterministik tutulur - amac
 # %100 dogruluk degil, LLM baglanana kadar makul bir ilk tahmindir.
@@ -58,7 +72,7 @@ def niyet_tespit_et(soru: str) -> tuple[Niyet, float]:
     Hicbir kelime eslesmezse BILINMIYOR + 0.0 doner (rapor Bolum 5.7/15:
     belirsizlik gizlenmez, acikca isaretlenir).
     """
-    s = _turkce_kucult(soru)
+    s = turkce_ascii_katla(soru)
 
     eslesme_sayilari = {
         niyet: sum(1 for k in kelimeler if k in s)

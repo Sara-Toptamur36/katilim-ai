@@ -11,6 +11,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from agent.intent import turkce_ascii_katla
 from agent.parametre_cikar import eksik_parametreler, hesaplama_parametrelerini_cikar
 from calculator.calculator import HesapGirdiHatasi, aylik_taksit_hesapla
 from comparison.compare_engine import BilinmeyenKriter, aciklama_uret, karsilastir_bellekte
@@ -41,7 +42,10 @@ def _bilinen_bankalari_yukle() -> list[str]:
 
 
 def _sorudaki_kriteri_tespit_et(soru: str) -> str:
-    s = soru.lower()
+    # Katlama: anahtar kelimeler ASCII yazili ("en dusuk"), gercek soru ise
+    # dogal Turkce ("en düşük") - katlama olmadan hicbir zaman eslesmez
+    # (bkz. agent/intent.py'deki ayni bulgu).
+    s = turkce_ascii_katla(soru)
     for kriter, kelimeler in _KRITER_ANAHTAR_KELIMELERI.items():
         if any(k in s for k in kelimeler):
             return kriter
@@ -49,8 +53,15 @@ def _sorudaki_kriteri_tespit_et(soru: str) -> str:
 
 
 def _sozluk_terimini_cikar(soru: str) -> str:
-    """'Kâr payı oranı ne demek?' -> 'kâr payı oranı'."""
-    s = soru.strip().rstrip("?!.").lower()
+    """'Kâr payı oranı ne demek?' -> 'kar payi orani'.
+
+    NOT: Kalip cikarma ASCII katlanmis metin uzerinde yapilir (yukaridaki
+    kriter tespitiyle ayni gerekce), bu yuzden donen terim de katlanmis
+    olur. terminology/genisletme.py'nin benzer_terim_bul() fonksiyonu
+    zaten kendi Turkce-guvenli kucultmesini yapip bulanik eslesme
+    kullandigi icin (bkz. o dosyanin testleri), diyakritiksiz bir terim de
+    dogru sozluk girdisini bulur."""
+    s = turkce_ascii_katla(soru.strip().rstrip("?!."))
     for kalip in _SOZLUK_SORU_KALIPLARI:
         s = s.replace(kalip, "")
     return s.strip()
@@ -128,9 +139,13 @@ def karsilastirma_aracini_cagir(soru: str, kayit_getirici) -> dict[str, Any]:
     GERCEK_VERI_AKTIF durumuna gore api/main.py bunu mock ya da DB
     kaynagina baglar (bkz. agent/orchestrator.py).
     """
-    s = soru.lower()
+    # Katlama iki yonlu de yapilir: kullanici diyakritiksiz yazsa bile
+    # ("Kuveyt Turk") banka adi "Kuveyt Türk" ile eslesmeli.
+    s = turkce_ascii_katla(soru)
     bilinen_bankalar = _bilinen_bankalari_yukle()
-    bulunan_bankalar = [b for b in bilinen_bankalar if b.lower() in s]
+    bulunan_bankalar = [
+        b for b in bilinen_bankalar if turkce_ascii_katla(b) in s
+    ]
 
     if len(bulunan_bankalar) < 2:
         return {

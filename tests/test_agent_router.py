@@ -86,6 +86,40 @@ def test_karsilastirma_araci_tek_banka_tespit_edilirse_basarisiz_doner():
     assert "banka" in sonuc["sebep"].lower()
 
 
+def test_karsilastirma_araci_dogru_turkce_diyakritiklerle_de_calisir():
+    """Gercek /chat uctan uca testinde bulundu: kullanicilar dogal olarak
+    'karşılaştır'/'en düşük' gibi Turkce karakterlerle yazar, ama anahtar
+    kelime listeleri ASCII'dir ('karsilastir'/'en dusuk'). Katlama
+    olmadan bu soru hicbir zaman eslesmezdi (bkz. agent/intent.py
+    turkce_ascii_katla)."""
+    def sahte_getirici(banka: str) -> list[CampaignRecord]:
+        veriler = {
+            "Kuveyt Türk": [_kayit("Kuveyt Türk", 1.99)],
+            "Albaraka Türk": [_kayit("Albaraka Türk", 1.5)],
+        }
+        return veriler.get(banka, [])
+
+    soru = "Kuveyt Türk ve Albaraka Türk karşılaştırması yap, en düşük kâr payı hangisinde?"
+    sonuc = karsilastirma_aracini_cagir(soru, sahte_getirici)
+    assert sonuc["basarili"] is True
+    assert sonuc["veri"]["kriter"] == "en_dusuk_kar_payi"
+
+
+def test_karsilastirma_araci_diyakritiksiz_yazilan_banka_adiyla_da_calisir():
+    """Ters yon: banka adi 'Kuveyt Türk' iken kullanici Turkce klavyesi
+    olmadan 'Kuveyt Turk' yazsa bile eslesmeli (iki yonlu katlama)."""
+    def sahte_getirici(banka: str) -> list[CampaignRecord]:
+        veriler = {
+            "Kuveyt Türk": [_kayit("Kuveyt Türk", 1.99)],
+            "Albaraka Türk": [_kayit("Albaraka Türk", 1.5)],
+        }
+        return veriler.get(banka, [])
+
+    soru = "Kuveyt Turk ile Albaraka Turk'u karsilastir"
+    sonuc = karsilastirma_aracini_cagir(soru, sahte_getirici)
+    assert sonuc["basarili"] is True
+
+
 def test_karsilastirma_kriteri_soru_metninden_dogru_tespit_edilir():
     def sahte_getirici(banka: str) -> list[CampaignRecord]:
         return [

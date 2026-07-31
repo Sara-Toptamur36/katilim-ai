@@ -75,6 +75,12 @@ class CampaignRecord(BaseModel):
     vade_ay: int | None = Field(None, description="Standart ay cinsinden vade")
     finansman_tutari: float | None = Field(None, description="TL cinsinden")
 
+    # Vade/taksit/erteleme UC AYRI kavramdir (regex_extractor gercek veriyle
+    # dogruladi: "12 aya varan taksit" vade degildir; "2 ay ertelemeli"
+    # de ayrica farkli bir kavramdir - bkz. extraction/regex_extractor.py)
+    taksit_sayisi: int | None = Field(None, description="Ornek: 12 (vade DEGIL, taksit adedi)")
+    erteleme_suresi_ay: int | None = Field(None, description="Odemesiz donem, ornek: 2 ay ertelemeli")
+
     # --- Odul / avantaj ---
     odul_miktari: float | None = None
     odul_birimi: str | None = Field(

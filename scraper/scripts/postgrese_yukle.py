@@ -36,6 +36,8 @@ HENUZ_CIKARILMAMIS_ALANLAR = [
     "kar_payi_orani_percent",
     "kar_payi_orani_decimal",
     "vade_ay",
+    "taksit_sayisi",
+    "erteleme_suresi_ay",
     "finansman_tutari",
     "odul_miktari",
     "odul_birimi",

@@ -32,6 +32,13 @@ class Kampanya(Base):
     vade_ay = Column(Integer, nullable=True)
     finansman_tutari = Column(Float, nullable=True)
 
+    # Vade/taksit/erteleme UC AYRI kavramdir - gercek banka verisiyle
+    # dogrulandi (ornek: "2 ay ertelemeli ... 12 aya varan taksit" hicbir
+    # yerde klasik "vade" ifadesi gecmez). Bunlari vade_ay'a sikistirmak
+    # yanlis veri uretir (Yagmur, extraction/regex_extractor.py).
+    taksit_sayisi = Column(Integer, nullable=True)
+    erteleme_suresi_ay = Column(Integer, nullable=True)
+
     # Odul / avantaj
     odul_miktari = Column(Float, nullable=True)
     odul_birimi = Column(String(50), nullable=True)

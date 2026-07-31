@@ -59,6 +59,7 @@ def soru_isle(soru: str, kayit_getirici: KayitGetirici) -> dict:
         arac = "fallback"
 
     latency_ms = int((time.time() - baslangic) * 1000)
+    veri = sonuc.get("veri", {})
 
     return {
         "cevap": sonuc["cevap"],
@@ -71,5 +72,10 @@ def soru_isle(soru: str, kayit_getirici: KayitGetirici) -> dict:
             "cagrilan_arac": arac,
             "latency_ms": latency_ms,
             "sebep": sonuc.get("sebep"),
+            # Yalnizca karsilastirma araci (gercek kampanya kayitlari
+            # kullanir) doldurur; hesaplama/sozluk icin None kalir - bu
+            # alanlarin o araclarda anlami yoktur (rapor Bolum 5.7/15).
+            "extraction_confidence": veri.get("extraction_confidence"),
+            "regex_basari_orani": veri.get("regex_basari_orani"),
         },
     }

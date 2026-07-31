@@ -62,8 +62,46 @@ def test_audit_ekstra_tum_alanlari_icerir():
     from agent.orchestrator import soru_isle
 
     sonuc = soru_isle("test", _sahte_getirici)
-    for alan in ("intent", "intent_confidence", "cagrilan_arac", "latency_ms", "sebep"):
+    for alan in (
+        "intent", "intent_confidence", "cagrilan_arac", "latency_ms", "sebep",
+        "extraction_confidence", "regex_basari_orani",
+    ):
         assert alan in sonuc["audit_ekstra"], f"Audit alani eksik: {alan}"
+
+
+def test_karsilastirma_sorusunda_extraction_confidence_doldurulur():
+    """Regex motoruyla (extraction/regex_extractor.py) zenginlestirilmis
+    kayitlar karsilastirmada kullanildiginda, audit panelindeki
+    extraction_confidence/regex_basari_orani ARTIK sabit 0.0/None DEGIL,
+    kullanilan kayitlarin gercek guven skorlarindan hesaplanmali."""
+    from agent.orchestrator import soru_isle
+
+    def zengin_getirici(banka: str) -> list[CampaignRecord]:
+        veriler = {
+            "Kuveyt Türk": [CampaignRecord(
+                banka="Kuveyt Türk", kampanya_adi="Ornek", kaynak_url="https://ornek.com",
+                kar_payi_orani_percent=1.99, confidence=0.8, cikarim_yontemi="regex",
+            )],
+            "Albaraka Türk": [CampaignRecord(
+                banka="Albaraka Türk", kampanya_adi="Ornek", kaynak_url="https://ornek.com",
+                kar_payi_orani_percent=1.5, confidence=0.6, cikarim_yontemi="regex",
+            )],
+        }
+        return veriler.get(banka, [])
+
+    sonuc = soru_isle("Kuveyt Türk ile Albaraka Türk'ü karsilastir", zengin_getirici)
+    assert sonuc["audit_ekstra"]["extraction_confidence"] == 0.7
+    assert sonuc["audit_ekstra"]["regex_basari_orani"] == 1.0
+
+
+def test_hesaplama_sorusunda_extraction_confidence_none_kalir():
+    """Kampanya kaydi kullanmayan araclarda (hesaplama/sozluk) bu alanlarin
+    anlami yok - sessizce 0 uretmek yerine ACIKCA None kalmali."""
+    from agent.orchestrator import soru_isle
+
+    sonuc = soru_isle("500.000 TL, %1,99 oranla 24 ay vadeyle taksitim ne kadar olur?", _sahte_getirici)
+    assert sonuc["audit_ekstra"]["extraction_confidence"] is None
+    assert sonuc["audit_ekstra"]["regex_basari_orani"] is None
 
 
 def test_latency_olculur():

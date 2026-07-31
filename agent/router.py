@@ -177,5 +177,28 @@ def karsilastirma_aracini_cagir(soru: str, kayit_getirici) -> dict[str, Any]:
     return {
         "basarili": True,
         "cevap": aciklama_uret(sonuc),
-        "veri": {"kriter": kriter, "sonuc_sayisi": len(sonuc["sonuclar"])},
+        "veri": {
+            "kriter": kriter,
+            "sonuc_sayisi": len(sonuc["sonuclar"]),
+            "extraction_confidence": _ortalama_confidence(kayitlar),
+            "regex_basari_orani": _regex_basari_orani(kayitlar),
+        },
     }
+
+
+def _ortalama_confidence(kayitlar: list) -> float | None:
+    """Karsilastirmada kullanilan kayitlarin cikarim guven skorlarinin
+    ortalamasi - Juri Audit Paneli'nin extraction_confidence alani icin
+    (rapor Bolum 10.2). Hicbir kayitta confidence yoksa None doner."""
+    degerler = [k.confidence for k in kayitlar if k.confidence is not None]
+    return round(sum(degerler) / len(degerler), 4) if degerler else None
+
+
+def _regex_basari_orani(kayitlar: list) -> float | None:
+    """Karsilastirmada kullanilan kayitlarin ne kadarinin regex motoruyla
+    (extraction/regex_extractor.py) zenginlestirildigini gosterir - hala
+    ham/cikarim yapilmamis kayitlarin oranini seffaf sekilde ortaya koyar."""
+    if not kayitlar:
+        return None
+    regex_ile = sum(1 for k in kayitlar if k.cikarim_yontemi and k.cikarim_yontemi.value == "regex")
+    return round(regex_ile / len(kayitlar), 4)

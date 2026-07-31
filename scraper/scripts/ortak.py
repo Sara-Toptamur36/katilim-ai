@@ -212,6 +212,29 @@ def gorulen_hashleri_yukle(banka_kod: str) -> dict[str, str]:
     return gorulen
 
 
+def url_hashlerini_yukle(banka_kod: str) -> dict[str, str]:
+    """O bankanin json/ klasorundeki mevcut kayitlardan {url: hash} haritasi
+    kurar. `gorulen_hashleri_yukle`den farki: bu, AYNI url'nin bir onceki
+    taramaya gore icerigi degisti mi sorusuna cevap vermek icindir
+    (Bolum 22.1 - delta kontrolu); `gorulen_hashleri_yukle` ise FARKLI
+    url'lerin ayni icerigi tasiyip tasimadigini kontrol eder (22.2)."""
+    harita: dict[str, str] = {}
+    json_klasor = RAW_DATA_DIR / banka_kod / "json"
+    if not json_klasor.exists():
+        return harita
+    for dosya in sorted(json_klasor.glob("*.json")):
+        try:
+            with open(dosya, encoding="utf-8") as f:
+                kayit = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            continue
+        h = kayit.get("icerik_hash")
+        u = kayit.get("url")
+        if h and u:
+            harita[u] = h
+    return harita
+
+
 def duplicate_mi(sayfa_metni: str, bu_url: str, gorulen_hashler: dict[str, str]) -> str | None:
     """Ayni icerik daha once BASKA bir URL'de gorulmus mu? Duplicate ise
     ilk gorulen URL'yi, degilse None doner. Yeni ise kaydini gorulen_hashler'e

@@ -74,6 +74,7 @@ def sayfa_tara(
     ayar: dict,
     url: str,
     gorulen_hashler: dict[str, str],
+    url_hashler: dict[str, str] | None = None,
     kategori: str = "kampanya",
 ) -> dict:
     """Tek bir kampanya detay sayfasini ceker, dogrular, normalize eder,
@@ -102,13 +103,23 @@ def sayfa_tara(
         ortak.log_yaz(banka_kod, f"DOGRULAMA BASARISIZ ({url}): {dogrulama.sorunlar}")
         return {"url": url, "durum": "dogrulama_basarisiz", "sorunlar": dogrulama.sorunlar}
 
+    # Bolum 22.1 - Delta kontrolu: bu URL daha once tarandiysa VE icerigi
+    # degismediyse yeniden islemeye gerek yok (Sprint 3 Gun 5 - periyodik
+    # calistirmada gereksiz is yapmama garantisi).
+    guncel_hash = ortak.icerik_hashi(sayfa_metni)
+    if url_hashler is not None:
+        degisti, _ = ortak.icerik_degisti_mi(sayfa_metni, url_hashler.get(url))
+        if not degisti:
+            ortak.log_yaz(banka_kod, f"DEGISMEDI, atlandi: {url}")
+            return {"url": url, "durum": "degismedi"}
+
+    # Bolum 22.2 - Duplicate kontrolu: ayni icerik BASKA bir URL'de mi?
     onceki_url = ortak.duplicate_mi(sayfa_metni, url, gorulen_hashler)
     if onceki_url:
         ortak.log_yaz(banka_kod, f"DUPLICATE: {url} -> zaten islenmis: {onceki_url}")
         return {"url": url, "durum": "duplicate", "ilk_url": onceki_url}
 
     normalize_metin = metni_normalize_et(sayfa_metni)
-    guncel_hash = ortak.icerik_hashi(sayfa_metni)
 
     ortak.ham_kaydet(banka_kod, slug, sayfa_metni)
 
@@ -134,6 +145,8 @@ def sayfa_tara(
         "tablolar": tablolar,
     }
     json_dosya = ortak.islenmis_kaydet(banka_kod, slug, ham_kayit)
+    if url_hashler is not None:
+        url_hashler[url] = guncel_hash
 
     ortak.nazik_bekle(crawl_delay or ayar.get("crawl_delay"))
 
@@ -147,6 +160,7 @@ def banka_tara(banka_kod: str, ayar: dict) -> dict:
     - her biri {url, durum, ...} sozlukleri listesi.
     """
     gorulen_hashler = ortak.gorulen_hashleri_yukle(banka_kod)
+    url_hashler = ortak.url_hashlerini_yukle(banka_kod)
     ozet: dict[str, list] = {"basarili": [], "atlandi": [], "hatali": []}
 
     try:
@@ -159,7 +173,7 @@ def banka_tara(banka_kod: str, ayar: dict) -> dict:
     ortak.log_yaz(banka_kod, f"{len(linkler)} kampanya linki bulundu")
 
     for url in linkler:
-        sonuc = sayfa_tara(banka_kod, ayar, url, gorulen_hashler)
+        sonuc = sayfa_tara(banka_kod, ayar, url, gorulen_hashler, url_hashler)
         if sonuc["durum"] == "basarili":
             ozet["basarili"].append(sonuc)
         elif sonuc["durum"] == "hata":

@@ -32,6 +32,13 @@ def test_saglik_kontrolu_calisiyor():
     assert yanit.json()["durum"] == "saglikli"
 
 
+def test_token_ucnoktasi_mock_modda_400_doner():
+    """Varsayilan (JWT_AKTIF ayarli degil) modda /token gereksizdir -
+    herhangi bir Bearer token zaten kabul edilir (bkz. api/auth.py)."""
+    yanit = client.post("/token", data={"username": "test", "password": "test"})
+    assert yanit.status_code == 400
+
+
 @pytest.mark.parametrize(
     "yol,metot,govde",
     [

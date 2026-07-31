@@ -128,6 +128,13 @@ class KarsilastirIstek(BaseModel):
     )
 
 
+class TokenYanit(BaseModel):
+    """POST /token yaniti - GERCEK_JWT_AKTIF modunda kullanilir."""
+
+    access_token: str
+    token_type: str = "bearer"
+
+
 class ChatIstek(BaseModel):
     soru: str = Field(..., min_length=1, max_length=500)
 

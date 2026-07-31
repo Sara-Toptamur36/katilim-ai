@@ -23,11 +23,13 @@ import time
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordRequestForm
 
 from agent.orchestrator import soru_isle
-from api.auth import token_dogrula
+from api.auth import GERCEK_JWT_AKTIF, token_dogrula, token_uret
 from api.db import oturum_al
 from api.kampanya_repository import id_ile_getir_db, kampanyalari_getir_db
+from api.kullanici_repository import kullanici_dogrula
 from api.logging_config import log
 from api.mock_data import id_ile_getir, kampanyalari_getir
 from api.schemas import (
@@ -40,6 +42,7 @@ from api.schemas import (
     KarsilastirIstek,
     KarsilastirYanit,
     OdemeSatiriYanit,
+    TokenYanit,
 )
 from calculator.calculator import (
     HesapGirdiHatasi,
@@ -112,6 +115,33 @@ def kok():
 def saglik():
     """Health check - CI ve docker-compose icin."""
     return {"durum": "saglikli"}
+
+
+@app.post("/token", response_model=TokenYanit, tags=["Kimlik Dogrulama"])
+def token_al(form: OAuth2PasswordRequestForm = Depends()):
+    """Kullanici adi/parolayla JWT alir (yalnizca JWT_AKTIF=true iken).
+
+    Mock modda (varsayilan, Sprint 1-3) bu uc nokta kullanilmaz - herhangi
+    bir 'Bearer <token>' zaten kabul edilir (bkz. api/auth.py).
+    """
+    if not GERCEK_JWT_AKTIF:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Gercek JWT modu aktif degil (JWT_AKTIF=true degil). "
+                "Mock modda herhangi bir 'Bearer <token>' kabul edilir, "
+                "/token gerekmez."
+            ),
+        )
+    oturum = next(oturum_al())
+    try:
+        kullanici = kullanici_dogrula(oturum, form.username, form.password)
+    finally:
+        oturum.close()
+    if kullanici is None:
+        log.warning("Basarisiz giris denemesi | kullanici_adi=%s", form.username)
+        raise HTTPException(status_code=401, detail="Kullanici adi veya parola hatali")
+    return TokenYanit(access_token=token_uret(kullanici.kullanici_adi, kullanici.rol))
 
 
 @app.get("/kampanyalar", response_model=list[CampaignRecord], tags=["Kampanyalar"])

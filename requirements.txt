@@ -13,8 +13,10 @@ pydantic>=2.9
 python-multipart>=0.0.12
 
 # --- Kimlik dogrulama (Sprint 4'te aktiflesecek) ---
+# Not: passlib artik bakim gormuyor ve bcrypt>=4.1 ile uyumsuz (surum
+# tespiti kirildi) - parola hashleme dogrudan bcrypt ile yapilir.
 python-jose[cryptography]>=3.3
-passlib[bcrypt]>=1.7
+bcrypt>=4.0
 
 # --- Veritabani ---
 sqlalchemy>=2.0

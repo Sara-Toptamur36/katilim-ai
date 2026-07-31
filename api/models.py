@@ -68,6 +68,23 @@ class Kampanya(Base):
     guncellenme = Column(DateTime(timezone=True), onupdate=func.now())
 
 
+class Kullanici(Base):
+    """Gercek JWT girisi icin kullanici kaydi (rapor Bolum 11 - RBAC).
+
+    GUVENLIK: Duz metin parola HICBIR ZAMAN saklanmaz - yalnizca bcrypt
+    hash'i (bkz. api/auth.py sifre_hashle/sifre_dogrula).
+    """
+
+    __tablename__ = "kullanicilar"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    kullanici_adi = Column(String(100), nullable=False, unique=True, index=True)
+    sifre_hash = Column(String(100), nullable=False)
+    rol = Column(String(50), nullable=False, default="banka_calisani")
+    aktif = Column(Boolean, default=True)
+    olusturulma = Column(DateTime(timezone=True), server_default=func.now())
+
+
 class AuditKayit(Base):
     """Audit log (rapor Bolum 11): kim, ne zaman, hangi sorguyu calistirdi.
 

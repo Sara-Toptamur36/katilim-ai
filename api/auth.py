@@ -12,9 +12,12 @@ degiskeninden okunur (KODA YAZILMAZ).
 import os
 from datetime import datetime, timedelta, timezone
 
+import bcrypt
 from fastapi import Header, HTTPException
 
 from api.logging_config import log
+
+_BCRYPT_MAX_BAYT = 72  # bcrypt'in kendi siniri - daha uzun parolalar kesilir
 
 # Sprint 4'te True yapilacak
 GERCEK_JWT_AKTIF = os.environ.get("JWT_AKTIF", "false").lower() == "true"
@@ -32,6 +35,22 @@ def _gizli_anahtar() -> str:
             "Gercek JWT icin bu deger zorunludur ve koda yazilmaz."
         )
     return anahtar
+
+
+def sifre_hashle(duz_sifre: str) -> str:
+    """Parolayi bcrypt ile hash'ler. Duz metin ASLA saklanmaz."""
+    ham = duz_sifre.encode("utf-8")[:_BCRYPT_MAX_BAYT]
+    return bcrypt.hashpw(ham, bcrypt.gensalt()).decode("utf-8")
+
+
+def sifre_dogrula(duz_sifre: str, hash_deger: str) -> bool:
+    """Girilen parolanin saklanan hash ile eslesip eslesmedigini kontrol eder."""
+    ham = duz_sifre.encode("utf-8")[:_BCRYPT_MAX_BAYT]
+    try:
+        return bcrypt.checkpw(ham, hash_deger.encode("utf-8"))
+    except ValueError:
+        # Bozuk/gecersiz hash formati - guvenlik icin sessizce False
+        return False
 
 
 def token_uret(kullanici_adi: str, rol: str = "banka_calisani") -> str:

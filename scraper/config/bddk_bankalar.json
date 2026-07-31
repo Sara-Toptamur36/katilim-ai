@@ -1,0 +1,82 @@
+[
+  {
+    "kod": "kuveytturk",
+    "ad": "Kuveyt Türk Katılım Bankası A.Ş.",
+    "dijital": false,
+    "kapsam_durumu": "kapsandi",
+    "kampanya_listesi": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin",
+    "gerekce": ""
+  },
+  {
+    "kod": "albaraka",
+    "ad": "Albaraka Türk Katılım Bankası A.Ş.",
+    "dijital": false,
+    "kapsam_durumu": "kapsandi",
+    "kampanya_listesi": "https://www.albaraka.com.tr/tr/kampanyalar",
+    "gerekce": ""
+  },
+  {
+    "kod": "vakifkatilim",
+    "ad": "Vakıf Katılım Bankası A.Ş.",
+    "dijital": false,
+    "kapsam_durumu": "kapsandi",
+    "kampanya_listesi": "https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/mevcut-kampanyalar",
+    "gerekce": ""
+  },
+  {
+    "kod": "turkiyefinans",
+    "ad": "Türkiye Finans Katılım Bankası A.Ş.",
+    "dijital": false,
+    "kapsam_durumu": "sirada",
+    "kampanya_listesi": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/finansman-kampanyalari.aspx",
+    "gerekce": "Sprint 2'de eklenecek (Bolum 13.3/Tablo 6). ASPX sayfa yapisi - once HTML/JS testi tekrarlanmali."
+  },
+  {
+    "kod": "ziraatkatilim",
+    "ad": "Ziraat Katılım Bankası A.Ş.",
+    "dijital": false,
+    "kapsam_durumu": "sirada",
+    "kampanya_listesi": "https://www.ziraatkatilim.com.tr/kart-kampanyalari",
+    "gerekce": "150+ kampanya - Sprint 2'de toplu link cikarma (Bolum 14.3) ile eklenecek. DIKKAT: /bireysel/kampanyalar DEGIL, /kart-kampanyalari kullanilmali; ?IsArchived=true olanlar alinmamali."
+  },
+  {
+    "kod": "emlakkatilim",
+    "ad": "Türkiye Emlak Katılım Bankası A.Ş.",
+    "dijital": false,
+    "kapsam_durumu": "sirada",
+    "kampanya_listesi": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar",
+    "gerekce": "Sprint 2'de eklenecek. DIKKAT: turkiyeemlak.com.tr / turkiyeemlakkatilim.com.tr YANLIS domain, dogrusu emlakkatilim.com.tr."
+  },
+  {
+    "kod": "dunyakatilim",
+    "ad": "Dünya Katılım Bankası A.Ş.",
+    "dijital": false,
+    "kapsam_durumu": "sirada",
+    "kampanya_listesi": "https://www.dunyakatilim.com.tr/kampanyalar",
+    "gerekce": "Sprint 3'te eklenecek (Bolum 13.3)."
+  },
+  {
+    "kod": "hayatfinans",
+    "ad": "Hayat Finans Katılım Bankası A.Ş.",
+    "dijital": true,
+    "kapsam_durumu": "sirada",
+    "kampanya_listesi": "https://www.hayatfinans.com.tr/kampanyalar",
+    "gerekce": "Dijital banka, Sprint 3'te eklenecek. DIKKAT: 'Avantajli Hesap' mevduat urunu Kapsam Disi'na gider, kampanya davet/FX odulleri Sayfa 2'ye girer (Bolum 13.3)."
+  },
+  {
+    "kod": "tombank",
+    "ad": "T.O.M. Katılım Bankası A.Ş.",
+    "dijital": true,
+    "kapsam_durumu": "sirada",
+    "kampanya_listesi": "https://www.tombank.com.tr/kampanyalar.html",
+    "gerekce": "Dijital banka, Sprint 3'te eklenecek. DIKKAT: URL '.html' uzantili olmali (uzantisiz /kampanyalar YANLIS). Kosullar accordion icinde gizli ama ham HTML kaynaginda mevcut - Playwright'a gerek yok, requests+BeautifulSoup yeterli."
+  },
+  {
+    "kod": "adilkatilim",
+    "ad": "Adil Katılım Bankası A.Ş.",
+    "dijital": true,
+    "kapsam_durumu": "haric_tutuldu",
+    "kampanya_listesi": null,
+    "gerekce": "29 Temmuz 2026'da ziyaret edildi: sitede hicbir urun/kampanya/finansman sayfasi yok, yalnizca Hakkimizda/KVKK/Iletisim sayfalari var; ana sayfada 'Mobil uygulamamiz cok yakinda' notu bulunuyor. Veri uydurulmadi, birkac hafta sonra tekrar kontrol edilecek (Bolum 13.3)."
+  }
+]

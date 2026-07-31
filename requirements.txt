@@ -3,6 +3,8 @@
 # Lisanslar: FastAPI/Pydantic/SQLAlchemy/Alembic (MIT), uvicorn (BSD),
 #            psycopg (LGPL - dinamik baglanti, kullanimda kisit yaratmaz),
 #            python-jose (MIT), sse-starlette (BSD)
+#            beautifulsoup4/html5lib (MIT), playwright (Apache-2.0),
+#            pypdf/pandas/lxml (BSD)
 
 # --- API katmani ---
 fastapi>=0.115
@@ -24,6 +26,15 @@ sse-starlette>=2.1
 
 # --- Yerel LLM'e istek (Ollama) ---
 requests>=2.32
+
+# --- Veri toplama / scraper (Zeynep) ---
+# Not: requests yukarida zaten tanimli, tekrar eklenmedi.
+beautifulsoup4>=4.12
+playwright>=1.47
+pypdf>=5.0
+pandas>=2.2
+lxml>=5.3
+html5lib>=1.1
 
 # --- Test ---
 pytest>=8.3

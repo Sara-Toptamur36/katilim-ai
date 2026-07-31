@@ -1,0 +1,56 @@
+{
+  "kuveytturk": {
+    "ad": "Kuveyt Türk",
+    "kod": "kuveytturk",
+    "dijital": false,
+    "ana_sayfa": "https://www.kuveytturk.com.tr",
+    "kampanya_listesi": [
+      "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin"
+    ],
+    "detay_link_deseni": "/kampanyalar/kendim-icin/",
+    "cerez_secicileri": [
+      "button:has-text('Kabul Et')",
+      "#onetrust-accept-btn-handler"
+    ],
+    "icerik_secici": ".campaign-detail",
+    "sayfa_turu": "HTML",
+    "crawl_delay": 1,
+    "not": "Rehber Bolum 13.3/Tablo 6 ile dogrulandi (28 Tem 2026). requests+BeautifulSoup ile calisir, JS gerekmez."
+  },
+  "albaraka": {
+    "ad": "Albaraka Türk",
+    "kod": "albaraka",
+    "dijital": false,
+    "ana_sayfa": "https://www.albaraka.com.tr",
+    "kampanya_listesi": [
+      "https://www.albaraka.com.tr/tr/kampanyalar"
+    ],
+    "detay_link_deseni": "/tr/kampanyalar/detay/",
+    "cerez_secicileri": [
+      "#onetrust-reject-all-handler",
+      "button:has-text('Reddet')"
+    ],
+    "icerik_secici": ".searchContent",
+    "sayfa_turu": "HTML",
+    "crawl_delay": 1,
+    "not": "Kampanya listesi sayfasindaki Facebook/Twitter paylas linkleri gercek detay URL'sini query string icinde tekrarliyor - link toplarken yalnizca kendi domainindeki /tr/kampanyalar/detay/ linkleri alinmali, sosyal medya echo linkleri filtrelenmeli."
+  },
+  "vakifkatilim": {
+    "ad": "Vakıf Katılım",
+    "kod": "vakifkatilim",
+    "dijital": false,
+    "ana_sayfa": "https://www.vakifkatilim.com.tr",
+    "kampanya_listesi": [
+      "https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/mevcut-kampanyalar"
+    ],
+    "detay_link_deseni": "/tr/kendim-icin/kampanyalar/detay/",
+    "cerez_secicileri": [
+      "#onetrust-accept-btn-handler",
+      "button:has-text('Kabul Et')"
+    ],
+    "icerik_secici": ".mask-area",
+    "sayfa_turu": "HTML",
+    "crawl_delay": 1,
+    "not": "Sayfada .menu-detail-box gibi genel site menu bloklari var - icerik_secici olarak ONLARI DEGIL, .mask-area'yi kullan (yalniz kampanyaya ozel metni verir)."
+  }
+}

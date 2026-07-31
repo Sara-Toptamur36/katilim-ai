@@ -4,18 +4,29 @@ SPRINT 1 DURUMU: Uc uc nokta mock veriyle calisir. Mock JWT dogrulamasi
 ILK GUNDEN aktiftir; /chat yaniti audit blogunu ILK GUNDEN icerir (ici bos
 olsa da), boylece Havin arayuzunu bekletmeden kurabilir.
 
+GERCEK VERI GECISI: /kampanyalar ve /karsilastir, GERCEK_VERI_AKTIF ortam
+degiskeni "true" oldugunda mock_data.py yerine PostgreSQL'i (api/db.py,
+api/kampanya_repository.py) kullanir. Varsayilan DEGERI FALSE'tur - boylece
+Havin'in sozlesme testleri (tests/test_api_sozlesme.py, sabit A/B/C/D Bankasi
+degerlerine dayanir) ve mevcut gelistirme akisi bozulmaz. Zeynep'in
+scraper/scripts/postgrese_yukle.py ile PostgreSQL'e veri yukledigi ve ekip
+gercek veriyle calismaya hazir oldugunda bu bayrak "true" yapilir.
+
 Calistirma:
     uvicorn api.main:app --reload
 Swagger:
     http://localhost:8000/docs
 """
 
+import os
 import time
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.auth import token_dogrula
+from api.db import oturum_al
+from api.kampanya_repository import id_ile_getir_db, kampanyalari_getir_db
 from api.logging_config import log
 from api.mock_data import id_ile_getir, kampanyalari_getir
 from api.schemas import (
@@ -69,6 +80,9 @@ app.add_middleware(
 MODEL_ADI = "qwen2.5:7b-instruct-q4_K_M"  # rapor Bolum 5.3
 TEMPERATURE = 0.0  # rapor Bolum 8: tutarli/tekrarlanabilir cikti
 
+# Sprint 2'de "true" yapilacak (bkz. dosya basi aciklamasi).
+GERCEK_VERI_AKTIF = os.environ.get("GERCEK_VERI_AKTIF", "false").lower() == "true"
+
 
 def _bos_audit(**kwargs) -> AuditBilgisi:
     """Sprint 1'de tum audit alanlari bos doner ama YAPI hazirdir."""
@@ -105,23 +119,37 @@ def kampanyalar(
     kampanya_turu: str | None = Query(None, description="Kampanya turune gore filtrele"),
     kullanici: dict = Depends(token_dogrula),
 ):
-    """Kampanya listesi (Sprint 1: mock veri).
+    """Kampanya listesi (GERCEK_VERI_AKTIF=false iken mock, true iken PostgreSQL).
 
     ONEMLI: Eksik alanlar GIZLENMEZ. None donen alanlar, `alan_belirtilmemis`
     sozlugunde True olarak isaretlenir (rapor Bolum 5.7/15 - seffaflik ilkesi).
     """
     log.info(
-        "kampanyalar sorgusu | kullanici=%s | banka=%s | tur=%s",
+        "kampanyalar sorgusu | kullanici=%s | banka=%s | tur=%s | kaynak=%s",
         kullanici.get("kullanici"),
         banka,
         kampanya_turu,
+        "db" if GERCEK_VERI_AKTIF else "mock",
     )
+    if GERCEK_VERI_AKTIF:
+        oturum = next(oturum_al())
+        try:
+            return kampanyalari_getir_db(oturum, banka=banka, kampanya_turu=kampanya_turu)
+        finally:
+            oturum.close()
     return kampanyalari_getir(banka=banka, kampanya_turu=kampanya_turu)
 
 
 @app.get("/kampanyalar/{kampanya_id}", response_model=CampaignRecord, tags=["Kampanyalar"])
 def kampanya_detay(kampanya_id: int, kullanici: dict = Depends(token_dogrula)):
-    kayit = id_ile_getir(kampanya_id)
+    if GERCEK_VERI_AKTIF:
+        oturum = next(oturum_al())
+        try:
+            kayit = id_ile_getir_db(oturum, kampanya_id)
+        finally:
+            oturum.close()
+    else:
+        kayit = id_ile_getir(kampanya_id)
     if kayit is None:
         raise HTTPException(status_code=404, detail="Kampanya bulunamadi")
     return kayit
@@ -146,7 +174,16 @@ def karsilastir(istek: KarsilastirIstek, kullanici: dict = Depends(token_dogrula
         istek.kriter,
     )
 
-    secilenler = [k for k in (id_ile_getir(i) for i in istek.ids) if k is not None]
+    if GERCEK_VERI_AKTIF:
+        oturum = next(oturum_al())
+        try:
+            secilenler = [
+                k for k in (id_ile_getir_db(oturum, i) for i in istek.ids) if k is not None
+            ]
+        finally:
+            oturum.close()
+    else:
+        secilenler = [k for k in (id_ile_getir(i) for i in istek.ids) if k is not None]
     if len(secilenler) < 2:
         raise HTTPException(
             status_code=404, detail="Karsilastirma icin en az 2 gecerli kampanya gerekli"

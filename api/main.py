@@ -24,6 +24,7 @@ import time
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
+from agent.orchestrator import soru_isle
 from api.auth import token_dogrula
 from api.db import oturum_al
 from api.kampanya_repository import id_ile_getir_db, kampanyalari_getir_db
@@ -274,38 +275,53 @@ def hesapla(istek: HesapIstek, kullanici: dict = Depends(token_dogrula)):
     )
 
 
+def _banka_kayitlarini_getir(banka: str) -> list:
+    """agent/router.py'nin karsilastirma araci icin kayit kaynagi.
+
+    GERCEK_VERI_AKTIF bayragina gore mock/DB ayrimini burada yapariz -
+    agent/ paketi hangi kaynaktan geldigini hic bilmez (Sprint 2'de
+    kurulan ayni ayrimla tutarli, bkz. dosya basi aciklamasi).
+    """
+    if GERCEK_VERI_AKTIF:
+        oturum = next(oturum_al())
+        try:
+            return kampanyalari_getir_db(oturum, banka=banka)
+        finally:
+            oturum.close()
+    return kampanyalari_getir(banka=banka)
+
+
 @app.post("/chat", response_model=ChatYanit, tags=["Chatbot"])
 def chat(istek: ChatIstek, kullanici: dict = Depends(token_dogrula)):
-    """Dogal dilde soru-cevap (Sprint 1: mock).
+    """Dogal dilde soru-cevap - Ajan Orkestratoru (agent/orchestrator.py).
 
-    Sprint 3'te agent/orchestrator.py devreye girecek:
-      Intent Detection -> Tool Router -> (SQL|Calculator|Dictionary|RAG|Fallback)
-      -> Response Generator -> Terminology Check -> Verifier -> Provenance
+    SPRINT 3 KAPSAMI: Intent Detection -> Tool Router -> Hesaplama/Sozluk/
+    Karsilastirma araclari. RAG (embedding/Qdrant) ve LLM tabanli serbest
+    metin uretimi Sprint 4'te eklenecek; o zamana kadar taninmayan sorular
+    FALLBACK'e duser (sebep alaninda acikca belirtilir, sessizce yanlis
+    cevap uretilmez - rapor Bolum 5.7/15).
 
     NOT: audit blogu ILK GUNDEN doludur (degerler bos olsa da). Havin'in
     Juri Audit Paneli bu alan adlarina gore kurulur; sonradan isim
     degistirmek onun kodunu bozar.
     """
-    baslangic = time.time()
-    log.info("chat sorgusu | kullanici=%s", kullanici.get("kullanici"))
+    log.info("chat sorgusu | kullanici=%s | soru=%s", kullanici.get("kullanici"), istek.soru)
 
-    latency = int((time.time() - baslangic) * 1000)
+    sonuc = soru_isle(istek.soru, _banka_kayitlarini_getir)
+    ekstra = sonuc["audit_ekstra"]
 
     return ChatYanit(
-        cevap=(
-            "Bu bir MOCK yanittir. Ajan orkestratoru Sprint 3'te devreye girecek. "
-            "Su an yalnizca API sozlesmesi ve arayuz entegrasyonu test edilmektedir."
-        ),
-        kaynaklar=[],
-        confidence=0.0,
-        fallback=False,
+        cevap=sonuc["cevap"],
+        kaynaklar=sonuc["kaynaklar"],
+        confidence=sonuc["confidence"],
+        fallback=sonuc["fallback"],
         audit=_bos_audit(
-            intent="mock",
-            intent_confidence=0.0,
-            cagrilan_arac="mock",
-            extraction_confidence=0.0,
-            response_confidence=0.0,
-            latency_ms=latency,
-            sebep="Sprint 1 - ajan orkestratoru henuz baglanmadi",
+            intent=ekstra["intent"],
+            intent_confidence=ekstra["intent_confidence"],
+            cagrilan_arac=ekstra["cagrilan_arac"],
+            extraction_confidence=0.0,  # RAG/extraction henuz baglanmadi (Sprint 4)
+            response_confidence=sonuc["confidence"],
+            latency_ms=ekstra["latency_ms"],
+            sebep=ekstra["sebep"],
         ),
     )

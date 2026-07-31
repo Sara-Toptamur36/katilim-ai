@@ -1,0 +1,166 @@
+"""Tool Router - tespit edilen niyete gore dogru deterministik araci cagirir.
+
+Mimari (rapor Bolum 8): Intent Detection -> TOOL ROUTER -> SQL/Calculator/
+Dictionary/RAG/Fallback. Bu dosya ortadaki katmandir. RAG henuz baglanmadigi
+icin (Qdrant/embedding Sprint 3'te), "bilgi" turu serbest sorular simdilik
+Fallback'e duser - bu ACIKCA sebep alaninda belirtilir, sessizce yanlis
+cevap uretilmez.
+"""
+
+import json
+from pathlib import Path
+from typing import Any
+
+from agent.parametre_cikar import eksik_parametreler, hesaplama_parametrelerini_cikar
+from calculator.calculator import HesapGirdiHatasi, aylik_taksit_hesapla
+from comparison.compare_engine import BilinmeyenKriter, aciklama_uret, karsilastir_bellekte
+from terminology.genisletme import benzer_terim_bul
+from terminology.sozluk import gelenek_karsiligi_bul, sozluk_yukle
+
+BANKALAR_JSON = Path(__file__).resolve().parents[1] / "scraper" / "config" / "bankalar.json"
+
+_SOZLUK_SORU_KALIPLARI = ["ne demek", "nedir", "anlamina gelir", "aciklar misin", "ne anlama", "tanimi ne"]
+
+_KRITER_ANAHTAR_KELIMELERI = {
+    "en_yuksek_odul": ["en yuksek odul", "en cok odul", "en yuksek hediye"],
+    "en_uzun_vade": ["en uzun vade"],
+    "en_dusuk_masraf": ["en dusuk masraf", "en az masraf"],
+    "en_dusuk_kar_payi": ["en dusuk oran", "en dusuk kar payi", "en avantajli oran"],
+}
+
+
+def _bilinen_bankalari_yukle() -> list[str]:
+    """scraper/config/bankalar.json'daki kisa banka adlarini (DB'deki
+    `banka` sutunuyla ayni format) doner. Zeynep yeni banka ekledikce
+    bu liste otomatik buyur - burada AYRICA hardcode edilmez."""
+    if not BANKALAR_JSON.exists():
+        return []
+    with open(BANKALAR_JSON, encoding="utf-8") as f:
+        veri = json.load(f)
+    return [banka["ad"] for banka in veri.values()]
+
+
+def _sorudaki_kriteri_tespit_et(soru: str) -> str:
+    s = soru.lower()
+    for kriter, kelimeler in _KRITER_ANAHTAR_KELIMELERI.items():
+        if any(k in s for k in kelimeler):
+            return kriter
+    return "en_dusuk_kar_payi"  # varsayilan (sartname Md. 5.7 ornegi)
+
+
+def _sozluk_terimini_cikar(soru: str) -> str:
+    """'Kâr payı oranı ne demek?' -> 'kâr payı oranı'."""
+    s = soru.strip().rstrip("?!.").lower()
+    for kalip in _SOZLUK_SORU_KALIPLARI:
+        s = s.replace(kalip, "")
+    return s.strip()
+
+
+def hesaplama_aracini_cagir(soru: str) -> dict[str, Any]:
+    """Calculator Tool: sorudan anapara/oran/vade cikarip taksit hesaplar."""
+    parametreler = hesaplama_parametrelerini_cikar(soru)
+    eksikler = eksik_parametreler(parametreler)
+    if eksikler:
+        return {
+            "basarili": False,
+            "cevap": (
+                "Hesaplama icin şu bilgiler eksik: "
+                + ", ".join(eksikler)
+                + ". Ornek: '500.000 TL, %1,99 oranla 24 ay vadeyle taksitim ne kadar olur?'"
+            ),
+            "sebep": f"Eksik parametre(ler): {', '.join(eksikler)}",
+        }
+    try:
+        sonuc = aylik_taksit_hesapla(
+            parametreler["anapara"],
+            parametreler["aylik_oran_percent"] / 100,
+            parametreler["vade_ay"],
+        )
+    except HesapGirdiHatasi as e:
+        return {"basarili": False, "cevap": f"Girdi hatasi: {e}", "sebep": str(e)}
+
+    return {
+        "basarili": True,
+        "cevap": sonuc.ozet_metni(),
+        "veri": {
+            "anapara": sonuc.anapara,
+            "aylik_taksit": sonuc.aylik_taksit,
+            "toplam_odeme": sonuc.toplam_odeme,
+            "toplam_kar_payi": sonuc.toplam_kar_payi,
+        },
+    }
+
+
+def sozluk_aracini_cagir(soru: str) -> dict[str, Any]:
+    """Dictionary Tool: terminoloji sozlugunde birebir/benzer terim arar."""
+    terim = _sozluk_terimini_cikar(soru)
+    if not terim:
+        return {
+            "basarili": False,
+            "cevap": "Hangi terimi sormak istediginizi anlayamadim.",
+            "sebep": "Sozluk sorgusu icin terim cikarilamadi",
+        }
+
+    sozluk = sozluk_yukle()
+    anahtar, skor = benzer_terim_bul(terim, sozluk)
+    if anahtar is None:
+        return {
+            "basarili": False,
+            "cevap": f"'{terim}' terimini sozlugumde bulamadim.",
+            "sebep": f"En yakin eslesme esigin altinda kaldi (skor={skor:.2f})",
+        }
+
+    gelenek = gelenek_karsiligi_bul(anahtar, sozluk)
+    standart = sozluk[anahtar]["standart_terim"]
+    cevap = f"{standart}, geleneksel bankacilikta '{gelenek}' kavramina karsilik gelir."
+    return {
+        "basarili": True,
+        "cevap": cevap,
+        "veri": {"anahtar": anahtar, "eslesme_skoru": round(skor, 2)},
+    }
+
+
+def karsilastirma_aracini_cagir(soru: str, kayit_getirici) -> dict[str, Any]:
+    """SQL/Karsilastirma Tool: sorudaki banka adlarini tespit edip
+    karsilastirir.
+
+    kayit_getirici: banka adi -> CampaignRecord listesi doner fonksiyon.
+    GERCEK_VERI_AKTIF durumuna gore api/main.py bunu mock ya da DB
+    kaynagina baglar (bkz. agent/orchestrator.py).
+    """
+    s = soru.lower()
+    bilinen_bankalar = _bilinen_bankalari_yukle()
+    bulunan_bankalar = [b for b in bilinen_bankalar if b.lower() in s]
+
+    if len(bulunan_bankalar) < 2:
+        return {
+            "basarili": False,
+            "cevap": (
+                "Karsilastirma icin en az 2 banka adi gerekiyor. "
+                "Şu an taninan bankalar: " + ", ".join(bilinen_bankalar)
+            ),
+            "sebep": f"Soruda yalnizca {len(bulunan_bankalar)} banka tespit edildi",
+        }
+
+    kayitlar = []
+    for banka in bulunan_bankalar:
+        kayitlar.extend(kayit_getirici(banka))
+
+    if len(kayitlar) < 2:
+        return {
+            "basarili": False,
+            "cevap": "Tespit edilen bankalar icin karsilastirilacak yeterli kampanya bulunamadi.",
+            "sebep": "Kayit sayisi < 2",
+        }
+
+    kriter = _sorudaki_kriteri_tespit_et(soru)
+    try:
+        sonuc = karsilastir_bellekte(kayitlar, kriter=kriter)
+    except BilinmeyenKriter as e:
+        return {"basarili": False, "cevap": str(e), "sebep": str(e)}
+
+    return {
+        "basarili": True,
+        "cevap": aciklama_uret(sonuc),
+        "veri": {"kriter": kriter, "sonuc_sayisi": len(sonuc["sonuclar"])},
+    }

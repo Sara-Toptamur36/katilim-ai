@@ -28,10 +28,11 @@ genişletilecektir (bkz. rehber Bölüm 10, Gün 5).
 | Albaraka Türk | `/tr/kampanyalar` | 11 | 1 |
 | Vakıf Katılım | `/tr/kendim-icin/kampanyalar/mevcut-kampanyalar` | 2 | 1 |
 
-Kalan 7 BDDK bankası (Türkiye Finans, Ziraat Katılım, Türkiye Emlak Katılım, Dünya
-Katılım, Hayat Finans, T.O.M. Katılım) ve gerekçeli hariç tutulan Adil Katılım,
-`scraper/config/bddk_bankalar.json` içinde referans URL'leri ve banka-özel notlarıyla
-hazır bekliyor (Sprint 2).
+(Bu tablo Sprint 1 sonundaki durumu gösterir — Türkiye Finans, Ziraat Katılım ve
+Türkiye Emlak Katılım artık Sprint 2'de eklendi, bkz. "Sprint 2" bölümü aşağıda.)
+Kalan 4 BDDK bankası (Dünya Katılım, Hayat Finans, T.O.M. Katılım - Sprint 3) ve
+gerekçeli hariç tutulan Adil Katılım, `scraper/config/bddk_bankalar.json` içinde
+referans URL'leri ve banka-özel notlarıyla hazır bekliyor.
 
 ## Karşılaşılan sorunlar ve çözümler
 
@@ -72,9 +73,17 @@ hazır bekliyor (Sprint 2).
 Sprint 1'in açık kalan üç noktası kapatıldı:
 
 - **`scraper/scripts/pdf_isle.py`** yazıldı (Bölüm 17: link bulma, indirme, pypdf ile
-  metne çevirme) ve `statik_scraper.sayfa_tara`'ya entegre edildi. 3 bankanın 23
-  kampanya sayfasında hiç PDF bulunmadı (0 PDF) — kod hazır, ilk PDF'li bankada
-  (muhtemelen ücret tarifesi sayfaları, Sprint 2) devreye girecek.
+  metne çevirme) ve `statik_scraper.sayfa_tara`'ya entegre edildi. İlk 3 bankanın 23
+  kampanya sayfasında hiç PDF bulunmadı; **Sprint 2'de Ziraat Katılım'da gerçek bir
+  PDF yakalandı ve başarıyla işlendi:** `acik_riza_metilnleri.pdf` (486 KB,
+  `ziraatkatilim.com.tr/sites/default/files/2025-03/...`) — KVKK açık rıza metni,
+  14 farklı kart kampanyası sayfasından paylaşılan ortak/herkese açık bir hukuki
+  belge (kişisel veri içermiyor). 5192 karakter metin çıkarıldı, taranmış/görüntü
+  PDF değil (`tarama_supheli: false`). **Bilinen küçük verimsizlik:** aynı PDF 14
+  sayfadan referans verildiği için her seferinde yeniden indirilip aynı dosyanın
+  üzerine yazılıyor — hash tabanlı bir "bu PDF zaten indirildi mi" önbelleği
+  (robots.txt önbelleğine benzer) eklenmesi ileride değerlendirilebilir, şu an
+  zararsız (küçük dosya, yalnızca bant genişliği israfı).
 - **`scraper/scripts/tablo_isle.py`** yazıldı (Bölüm 18: `pd.read_html` ile tablo
   çıkarma) ve entegre edildi. **Albaraka'nın "Dijital Müşterilere Özel Pratik
   Finansman Kart" sayfasında gerçek bir kâr payı oranı tablosu bulundu** (Finansman
@@ -89,14 +98,78 @@ Sprint 1'in açık kalan üç noktası kapatıldı:
 - Toplam test sayısı 121'den **127'ye** çıktı (yeni: `test_tablo_isle.py`,
   `test_pdf_isle.py`), hepsi geçiyor.
 
+## Sprint 2 (Gün 1-4) — 2026-07-31, aynı gün üçüncü tur
+
+**Kapsam 3 bankadan 6 bankaya çıktı**, toplam kayıt 23'ten **109**'a:
+
+| Banka | Kampanya listesi | Çekilen | Atlanan (gerekçeli) |
+|---|---|---|---|
+| Ziraat Katılım | `/kart-kampanyalari` (72 link) | 40 | 32 (çoğu kısa "X taksit" kart kampanyası) |
+| Türkiye Finans | `/kampanyalar/Sayfalar/*.aspx` (12 link) | 4 | 8 (kategori/index sayfaları) |
+| Türkiye Emlak Katılım | `/bireysel/kampanyalar` (63 link) | 42 | 21 |
+
+Altın Veri Seti karşılaştırması: **Emlak Katılım 7/7 (%100) hâlâ canlı** — şimdiye
+kadarki en yüksek eşleşme oranı; Ziraat 7/8; Türkiye Finans yalnızca 1/7 (yine hızlı
+kampanya rotasyonu — Sprint 1'deki Kuveyt Türk/Vakıf gözlemiyle tutarlı).
+
+**Bu turda bulunup düzeltilen gerçek hatalar** (self-review sırasında yakalandı):
+
+1. **Delta kontrolü (Bölüm 22.1) hiç bağlanmamıştı.** `icerik_degisti_mi` fonksiyonu
+   `ortak.py`'da yazılıydı ama hiçbir yerde çağrılmıyordu — yalnızca duplicate (22.2)
+   kontrolü vardı. Eklendi (`url_hashlerini_yukle` + `sayfa_tara`'ya `url_hashler`
+   parametresi); 3 bankada ikinci çalıştırmada tüm sayfaların doğru şekilde
+   "değişmedi" sayıldığı doğrulandı.
+2. **robots.txt her sayfa için yeniden indiriliyordu.** `sayfa_tara` her çağrıldığında
+   `robots_kontrol_et` tekrar ağa gidiyordu — Ziraat'in 72 sayfasında bu, 72 gereksiz
+   ekstra istek demekti. `ortak.robots_kontrol_et` artık banka başına bir kez
+   sonucu belleğe alıyor (`_ROBOTS_CACHE`) — hem daha hızlı hem siteye karşı daha nazik.
+3. **Türkiye Finans'ta 0 kampanya bulunuyordu.** `detay_link_deseni` küçük harfle
+   yazılmıştı (`/kampanyalar/sayfalar/`) ama gerçek URL'ler büyük S ile
+   (`/Kampanyalar/Sayfalar/`) geliyordu — ASP.NET/SharePoint URL'leri büyük/küçük
+   harfe duyarlı. `kampanya_linklerini_topla`'daki karşılaştırma artık
+   büyük/küçük harf duyarsız.
+4. **Ziraat'te arşivlenmiş kampanyalar (`?IsArchived=true`) filtrelenmemişti.**
+   Query string strip edildiğinde arşiv linki, güncel kampanyayla AYNI URL'ye
+   dönüşüp yanlışlıkla "güncel" sayılırdı. Genel amaçlı `haric_link_desenleri`
+   config alanı eklendi (Ziraat için `["IsArchived"]`).
+5. **Kendi yazdığım regresyon testinde Türkçe "İ" hatası.** Altın Veri Seti'ndeki
+   "İlk Ek Kredi Kartınıza..." gibi kayıtlar, Python'un `str.lower()`'ının Türkçe
+   noktalı büyük İ'yi yanlış küçültmesi yüzünden (`"İ".lower()` → görünmez birleşik
+   nokta karakteri üretir, düz "i" değil) yanlış negatif veriyordu — bu, projenin
+   `terminology/genisletme.py`'de zaten bilinen/çözülmüş bir sorun; aynı düzeltme
+   (İ → i manuel değişimi, sonra `.lower()`) test dosyama da eklendi.
+
+**Sprint 2 Gün 4 — ACTIVE/EXPIRED yaşam döngüsü:** `storage/yasam_dongusu.py` yazıldı,
+8 testle doğrulandı (özellikle: tarih bilgisi hiç yoksa `BILINMIYOR` döner, `EXPIRED`
+DEĞİL — şeffaflık ilkesi).
+
+**Sprint 2 Gün 3 — PostgreSQL yazma:** `storage/postgres_yaz.py` yazıldı (parametreli
+INSERT, SQL injection'a karşı güvenli — bu, sahte/mock bir imleçle
+`tests/test_postgres_yaz.py`'de doğrulandı). **ÖNEMLİ SINIR:** bu geliştirme
+ortamında Docker mevcut değil, bu yüzden **gerçek bir PostgreSQL'e yazma bu oturumda
+denenmedi/doğrulanmadı**. Kod, rehberin gösterdiği baglanti/parametre desenini birebir
+takip ediyor; gerçek çalıştırma için `docker compose up -d` + `alembic upgrade head`
+sonrası `python -m storage.postgres_yaz` çalıştırılmalı.
+
 ## Bilinen sınırlamalar / sıradaki adımlar
 
 - `unicodedata.normalize("NFKC", ...)`, sayıları bozmasa da bazı sembol/emoji
   karakterlerini (ör. ℹ️ → "i") sadeleştiriyor — sayısal alanlar etkilenmiyor,
   ama bilinçli bir gözlem olarak not düşüldü.
-- Standart Veri Takip Tablosu şimdilik `docs/sayfa_takip_tablosu.md` olarak yerel
-  tutuluyor; rehberin önerdiği paylaşımlı Google Sheets'e taşınması **Zeynep'in
+- Standart Veri Takip Tablosu şimdilik `docs/sayfa_takip_tablosu.md` / `.csv` olarak
+  yerel tutuluyor; rehberin önerdiği paylaşımlı Google Sheets'e taşınması **Zeynep'in
   yapması gereken tek manuel adım** (Google hesabı gerektirdiği için otomatik
-  yapılamadı).
+  yapılamadı) — hazır CSV, doğrudan içe aktarılabilir.
 - `playwright install chromium` henüz çalıştırılmadı (yalnızca pip paketi kuruldu) -
-  JS gerektiren ilk bankada bu komut çalıştırılmalı.
+  JS gerektiren ilk bankada (Dünya Katılım/Hayat Finans/T.O.M., Sprint 3) bu komut
+  çalıştırılmalı.
+- **PostgreSQL'e gerçek yazma bu ortamda doğrulanamadı** (Docker yok) - kod hazır ve
+  birim testle (mock imleç) doğrulandı, ama gerçek bir veritabanına karşı hiç
+  çalıştırılmadı. Sara/Zeynep'in kendi makinesinde `docker compose up -d` sonrası
+  denenmesi gerekiyor.
+- `kampanya_adi` alanı PostgreSQL kaydında şu an URL slug'ından türetilen GEÇİCİ bir
+  yer tutucu (`_slug_baslik_uret`) - gerçek başlık Yağmur'un çıkarım katmanınca
+  güncellenecek.
+- Kalan 4 BDDK bankası (Dünya Katılım, Hayat Finans, T.O.M. Katılım - hepsi Sprint 3
+  için işaretli) ve gerekçeli hariç tutulan Adil Katılım henüz taranmadı;
+  `scraper/config/bddk_bankalar.json`'da referans URL'leri hazır.

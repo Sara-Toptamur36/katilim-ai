@@ -27,25 +27,25 @@
     "kod": "turkiyefinans",
     "ad": "Türkiye Finans Katılım Bankası A.Ş.",
     "dijital": false,
-    "kapsam_durumu": "sirada",
+    "kapsam_durumu": "kapsandi",
     "kampanya_listesi": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/finansman-kampanyalari.aspx",
-    "gerekce": "Sprint 2'de eklenecek (Bolum 13.3/Tablo 6). ASPX sayfa yapisi - once HTML/JS testi tekrarlanmali."
+    "gerekce": "31 Tem 2026: HTML statik dogrulandi (JS gerekmiyor). Kategori/index sayfalari (diger-kampanyalar.aspx vb.) ile gercek kampanyalar ayni /Sayfalar/ klasorunde - icerik uzunlugu (min 1000 karakter) index sayfalarini otomatik eliyor. 4 gercek kampanya bulundu (12 linkten 8'i index sayfasi cikti)."
   },
   {
     "kod": "ziraatkatilim",
     "ad": "Ziraat Katılım Bankası A.Ş.",
     "dijital": false,
-    "kapsam_durumu": "sirada",
+    "kapsam_durumu": "kapsandi",
     "kampanya_listesi": "https://www.ziraatkatilim.com.tr/kart-kampanyalari",
-    "gerekce": "150+ kampanya - Sprint 2'de toplu link cikarma (Bolum 14.3) ile eklenecek. DIKKAT: /bireysel/kampanyalar DEGIL, /kart-kampanyalari kullanilmali; ?IsArchived=true olanlar alinmamali."
+    "gerekce": "31 Tem 2026: /kart-kampanyalari'nda 72 kampanya linki bulundu (tahminle uyumlu). ?IsArchived=true'lu linkler haric_link_desenleri ile filtrelendi. 40 kampanya basariyla islendi; kalan ~32'si kisa 'X taksit' tipi kart kampanyalari (1000 karakter esiginin altinda, veri hatasi degil - gercekten kisa metinler)."
   },
   {
     "kod": "emlakkatilim",
     "ad": "Türkiye Emlak Katılım Bankası A.Ş.",
     "dijital": false,
-    "kapsam_durumu": "sirada",
+    "kapsam_durumu": "kapsandi",
     "kampanya_listesi": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar",
-    "gerekce": "Sprint 2'de eklenecek. DIKKAT: turkiyeemlak.com.tr / turkiyeemlakkatilim.com.tr YANLIS domain, dogrusu emlakkatilim.com.tr."
+    "gerekce": "31 Tem 2026: DOGRU domain (emlakkatilim.com.tr) ile tarandi, turkiyeemlak.com.tr DEGIL. 63 link bulundu, 42 kampanya basariyla islendi. Altin Veri Seti'ndeki 7 TEK kaydinin 7'si de hala canli (%100 - en yuksek eslesme orani)."
   },
   {
     "kod": "dunyakatilim",

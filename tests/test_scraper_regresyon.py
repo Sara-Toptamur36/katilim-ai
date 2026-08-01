@@ -31,7 +31,14 @@ GOLD = Path(__file__).parent.parent / "gold_dataset" / "altin_veri_seti.json"
 RAW_DATA = Path(__file__).parent.parent / "scraper" / "raw_data"
 
 # kayit_id onekinden scraper klasor koduna (rehber Bolum 13.3/Tablo 6)
-KOD_HARITASI = {"KT": "kuveytturk", "AL": "albaraka", "VK": "vakifkatilim"}
+KOD_HARITASI = {
+    "KT": "kuveytturk",
+    "AL": "albaraka",
+    "VK": "vakifkatilim",
+    "ZK": "ziraatkatilim",
+    "TF": "turkiyefinans",
+    "TEK": "emlakkatilim",
+}
 
 
 def altin_kayitlari_yukle() -> list[dict]:
@@ -88,8 +95,14 @@ def test_scraper_altin_veriyle_uyusuyor(altin):
     assert "Ã" not in ham_metin, f"{altin['kayit_id']}: encoding bozuk (mojibake, cift-UTF8)"
 
     # Kampanya adinin ayirt edici ilk kelimesi ham metinde geciyor mu?
-    ilk_kelime = altin["kampanya_adi"].split()[0].strip(".,!?'’")
-    assert ilk_kelime.lower() in ham_metin.lower(), (
+    # NOT: Python'un str.lower()'i Turkce noktali buyuk 'I' harfini ('İ')
+    # duz 'i' degil, gorunmez bir birlesik nokta karakteriyle kucultur
+    # ('İ'.lower() -> 'i' + U+0307) - bu, "İlk" gibi kelimelerde yanlis
+    # negatif verirdi. Ayni duzeltme terminology/genisletme.py'de de var
+    # (o modul Yagmur'un alani, oradan import edilmiyor - kucuk, kararli
+    # bir tek satirlik mantik oldugu icin burada ayrica tutuluyor).
+    ilk_kelime = altin["kampanya_adi"].split()[0].strip(".,!?'’").replace("İ", "i").lower()
+    assert ilk_kelime in ham_metin.replace("İ", "i").lower(), (
         f"{altin['kayit_id']}: beklenen ifade ('{ilk_kelime}') ham metinde yok - "
         "sayfa degismis veya secici bozulmus olabilir"
     )

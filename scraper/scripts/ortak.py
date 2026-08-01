@@ -65,21 +65,36 @@ def log_yaz(banka_kod: str, mesaj: str) -> None:
 # ---------------------------------------------------------------------------
 
 
+_ROBOTS_CACHE: dict[str, tuple[RobotFileParser | None, float | None]] = {}
+
+
 def robots_kontrol_et(ana_sayfa: str) -> tuple[RobotFileParser | None, float | None]:
     """robots.txt'i okur. Donen: (parser, crawl_delay).
 
     robots.txt hic ulasilamazsa (site yoksa/hata verirse) None doner -
     bu durumda cagiran taraf ihtiyatli davranip yalnizca bilinen/
     onceden dogrulanmis sayfalari cekmelidir.
+
+    Ayni banka icin AYNI SURECTE tekrar tekrar cagirilirsa (ör. Ziraat'in
+    72 kampanya sayfasinin her biri icin) robots.txt'i her seferinde
+    yeniden indirmez - ilk sonucu bellekte tutar. Bu hem gereksiz agi
+    trafigini onler hem de siteye karsi daha naziktir (Bolum 20).
     """
+    if ana_sayfa in _ROBOTS_CACHE:
+        return _ROBOTS_CACHE[ana_sayfa]
+
     rp = RobotFileParser()
     rp.set_url(ana_sayfa.rstrip("/") + "/robots.txt")
     try:
         rp.read()
     except Exception as e:  # noqa: BLE001 - robots okunamazsa devam edemeyiz
         log_yaz("genel", f"robots.txt okunamadi ({ana_sayfa}): {e}")
-        return None, None
-    return rp, rp.crawl_delay("*")
+        sonuc = (None, None)
+    else:
+        sonuc = (rp, rp.crawl_delay("*"))
+
+    _ROBOTS_CACHE[ana_sayfa] = sonuc
+    return sonuc
 
 
 def izinli_mi(rp: RobotFileParser | None, url: str) -> bool:

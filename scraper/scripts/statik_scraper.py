@@ -39,9 +39,17 @@ def kampanya_linklerini_topla(ayar: dict) -> list[str]:
     detay URL'sini kendi query string'leri icinde tasiyor
     (ör. facebook.com/sharer.php?u=https://www.albaraka.com.tr/...) -
     domain filtresi olmadan bunlar da "link" sanilip toplanirdi.
+
+    `haric_link_desenleri` (config, opsiyonel): query string DAHIL tam
+    URL'de bu alt metinlerden biri geçiyorsa link tamamen atlanir - query
+    strip edilmeden ONCE kontrol edilir. Ziraat Katilim icin gerekli:
+    "?IsArchived=true" ile isaretli arsivlenmis kampanyalar, query strip
+    edildikten sonra normal bir kampanyayla ayni URL'ye donusur ve
+    yanlislikla "guncel" sanilirdi (Bolum 13.3).
     """
     ana_domain = urlparse(ayar["ana_sayfa"]).netloc
     desen = ayar["detay_link_deseni"]
+    haric_desenler = ayar.get("haric_link_desenleri", [])
     linkler: set[str] = set()
 
     for liste_url in ayar["kampanya_listesi"]:
@@ -58,10 +66,17 @@ def kampanya_linklerini_topla(ayar: dict) -> list[str]:
             parcalar = urlparse(tam_url)
             if parcalar.netloc != ana_domain:
                 continue  # sosyal medya / farkli domain echo linki - atla
-            if desen not in tam_url:
+            # Kucuk/buyuk harf duyarsiz karsilastirma: bazi bankalar (ör.
+            # Turkiye Finans'in ASPX/SharePoint URL'leri, ".../Sayfalar/...")
+            # yol bilesenlerinde buyuk harf kullanir - sabit kucuk harfli
+            # bir desen bunlari sessizce (0 sonucla) kacirirdi.
+            tam_url_kucuk = tam_url.lower()
+            if desen.lower() not in tam_url_kucuk:
                 continue
-            if tam_url.rstrip("/").endswith(desen.rstrip("/")):
+            if tam_url.rstrip("/").lower().endswith(desen.rstrip("/").lower()):
                 continue  # bos sablon linki (ör. sadece ".../detay/")
+            if any(h.lower() in tam_url_kucuk for h in haric_desenler):
+                continue  # ör. arsivlenmis kampanya (Ziraat: ?IsArchived=true)
             linkler.add(tam_url.split("?")[0].split("#")[0])
 
         ortak.nazik_bekle(crawl_delay or ayar.get("crawl_delay"))

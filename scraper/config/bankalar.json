@@ -52,5 +52,60 @@
     "sayfa_turu": "HTML",
     "crawl_delay": 1,
     "not": "Sayfada .menu-detail-box gibi genel site menu bloklari var - icerik_secici olarak ONLARI DEGIL, .mask-area'yi kullan (yalniz kampanyaya ozel metni verir)."
+  },
+  "ziraatkatilim": {
+    "ad": "Ziraat Katılım",
+    "kod": "ziraatkatilim",
+    "dijital": false,
+    "ana_sayfa": "https://www.ziraatkatilim.com.tr",
+    "kampanya_listesi": [
+      "https://www.ziraatkatilim.com.tr/kart-kampanyalari"
+    ],
+    "detay_link_deseni": "/kart-kampanyalari/",
+    "haric_link_desenleri": ["IsArchived"],
+    "cerez_secicileri": [
+      "#onetrust-accept-btn-handler",
+      "button:has-text('Kabul Et')"
+    ],
+    "icerik_secici": ".body-content",
+    "sayfa_turu": "HTML",
+    "crawl_delay": 1,
+    "not": "DIKKAT (Bolum 13.3): /bireysel/kampanyalar DEGIL, /kart-kampanyalari kullanilir - orasi neredeyse bos. ~70-75 kampanya, toplu link cikarma calisti (72 link bulundu). haric_link_desenleri olmadan ?IsArchived=true'lu arsiv kampanyalari, query strip edildikten sonra guncel kampanyayla ayni URL'ye donusup yanlislikla 'guncel' sayilirdi. Cogu kart kampanyasi kisa ('X taksit', orani yok) - 1000 karakter esigi altinda kalip dogrulama_kontrolu tarafindan atlanabilir, bu veri hatasi degildir."
+  },
+  "turkiyefinans": {
+    "ad": "Türkiye Finans",
+    "kod": "turkiyefinans",
+    "dijital": false,
+    "ana_sayfa": "https://www.turkiyefinans.com.tr",
+    "kampanya_listesi": [
+      "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/finansman-kampanyalari.aspx"
+    ],
+    "detay_link_deseni": "/kampanyalar/sayfalar/",
+    "cerez_secicileri": [
+      "button:has-text('Kabul Et')",
+      "#onetrust-accept-btn-handler"
+    ],
+    "icerik_secici": "#content",
+    "sayfa_turu": "HTML",
+    "crawl_delay": 1,
+    "not": "ASPX (SharePoint) tabanli site - HTML statik oldugu dogrulandi (JS gerekmiyor). Kategori/index sayfalari (ör. diger-kampanyalar.aspx) ile gercek kampanya detay sayfalari AYNI /Sayfalar/ klasorunde ve URL deseniyle ayirt edilemiyor - ama index sayfalari icerik acisindan cok kisa (~470 karakter), dogrulama_kontrolu (min 1000 karakter) bunlari otomatik eliyor, ozel bir ayrim kodu YAZILMADI (mevcut mekanizma yeterli). #content secicisi ustte kategori menusu (kisa, ~13 satir) icerse de asil kampanya metnini/tablolarini dogru veriyor."
+  },
+  "emlakkatilim": {
+    "ad": "Türkiye Emlak Katılım",
+    "kod": "emlakkatilim",
+    "dijital": false,
+    "ana_sayfa": "https://www.emlakkatilim.com.tr",
+    "kampanya_listesi": [
+      "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar"
+    ],
+    "detay_link_deseni": "/bireysel/kampanyalar/kampanya/",
+    "cerez_secicileri": [
+      "button:has-text('Kabul Et')",
+      "#onetrust-accept-btn-handler"
+    ],
+    "icerik_secici": ".o-page__content",
+    "sayfa_turu": "HTML",
+    "crawl_delay": 1,
+    "not": "DIKKAT (Bolum 13.3): turkiyeemlak.com.tr / turkiyeemlakkatilim.com.tr YANLIS domain, dogrusu emlakkatilim.com.tr. 63 kampanya linki bulundu."
   }
 }

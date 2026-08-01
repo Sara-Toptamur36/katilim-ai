@@ -51,25 +51,25 @@
     "kod": "dunyakatilim",
     "ad": "Dünya Katılım Bankası A.Ş.",
     "dijital": false,
-    "kapsam_durumu": "sirada",
+    "kapsam_durumu": "kapsandi",
     "kampanya_listesi": "https://www.dunyakatilim.com.tr/kampanyalar",
-    "gerekce": "Sprint 3'te eklenecek (Bolum 13.3)."
+    "gerekce": "1 Agu 2026: 5 kampanya linki bulundu, 5'i de basariyla islendi. 'main' secicisi calisiyor."
   },
   {
     "kod": "hayatfinans",
     "ad": "Hayat Finans Katılım Bankası A.Ş.",
     "dijital": true,
-    "kapsam_durumu": "sirada",
-    "kampanya_listesi": "https://www.hayatfinans.com.tr/kampanyalar",
-    "gerekce": "Dijital banka, Sprint 3'te eklenecek. DIKKAT: 'Avantajli Hesap' mevduat urunu Kapsam Disi'na gider, kampanya davet/FX odulleri Sayfa 2'ye girer (Bolum 13.3)."
+    "kapsam_durumu": "kapsandi",
+    "kampanya_listesi": "https://hayatfinans.com.tr/kampanyalar",
+    "gerekce": "1 Agu 2026: DIKKAT - sitenin kendi ic linkleri 'www' ONEKI OLMADAN veriliyor (www'lu surum www'suza yonleniyor); ana_sayfa config'te www'suz yazilmali yoksa domain filtresi tum linkleri yanlislikla disarida birakir. Next.js/SSR sitesi ama icerik ham HTML'de mevcut, Playwright gerekmedi. 10 linkten 8'i basariyla islendi (2'si kisa icerik nedeniyle atlandi - veri hatasi degil)."
   },
   {
     "kod": "tombank",
     "ad": "T.O.M. Katılım Bankası A.Ş.",
     "dijital": true,
-    "kapsam_durumu": "sirada",
+    "kapsam_durumu": "kapsandi",
     "kampanya_listesi": "https://www.tombank.com.tr/kampanyalar.html",
-    "gerekce": "Dijital banka, Sprint 3'te eklenecek. DIKKAT: URL '.html' uzantili olmali (uzantisiz /kampanyalar YANLIS). Kosullar accordion icinde gizli ama ham HTML kaynaginda mevcut - Playwright'a gerek yok, requests+BeautifulSoup yeterli."
+    "gerekce": "1 Agu 2026: DIKKAT - URL '.html' uzantili olmali. Diger bankalardan FARKLI: ayri detay URL'si yok, 3 kampanya TEK sayfada Bootstrap accordion panelinde - statik_scraper.tek_sayfa_coklu_kampanya_tara ile ayri sanal kayitlara bolunerek islendi (3/3 basarili). AYRICA: sunucu Content-Type basliginda charset belirtmiyor, requests varsayilan olarak ISO-8859-1'e duserdi (Turkce karakterler bozulurdu) - ortak._encoding_duzelt ile duzeltildi (Bolum 23.1). Playwright'a gerek yok."
   },
   {
     "kod": "adilkatilim",

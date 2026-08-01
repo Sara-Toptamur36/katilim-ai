@@ -143,13 +143,45 @@ kampanya rotasyonu — Sprint 1'deki Kuveyt Türk/Vakıf gözlemiyle tutarlı).
 8 testle doğrulandı (özellikle: tarih bilgisi hiç yoksa `BILINMIYOR` döner, `EXPIRED`
 DEĞİL — şeffaflık ilkesi).
 
-**Sprint 2 Gün 3 — PostgreSQL yazma:** `storage/postgres_yaz.py` yazıldı (parametreli
-INSERT, SQL injection'a karşı güvenli — bu, sahte/mock bir imleçle
-`tests/test_postgres_yaz.py`'de doğrulandı). **ÖNEMLİ SINIR:** bu geliştirme
-ortamında Docker mevcut değil, bu yüzden **gerçek bir PostgreSQL'e yazma bu oturumda
-denenmedi/doğrulanmadı**. Kod, rehberin gösterdiği baglanti/parametre desenini birebir
-takip ediyor; gerçek çalıştırma için `docker compose up -d` + `alembic upgrade head`
-sonrası `python -m storage.postgres_yaz` çalıştırılmalı.
+**Sprint 2 Gün 3 — PostgreSQL yazma:** `storage/postgres_yaz.py` yazıldı ama **pull
+sırasında Sara'nın aynı işi yapan `scraper/scripts/postgrese_yukle.py`'si (SQLAlchemy
+ORM, idempotent - Yağmur'un doldurduğu alanları ezmiyor) zaten repoda olduğu
+görüldü** — kendi versiyonum silindi, çakışan/çift kod repoya girmedi. PostgreSQL'e
+gerçek yazma bu ortamda (Docker yok) hiç denenmedi, ama zaten Sara'nın çözümü bunu
+karşılıyor.
+
+## Sprint 3 (Gün 1-2) — 1 Ağustos 2026
+
+**Kalan 3 banka eklendi, kapsam 9 bankaya çıktı** (Adil Katılım hâlâ gerekçeli hariç):
+
+| Banka | Bulunan | Başarılı | Not |
+|---|---|---|---|
+| Dünya Katılım | 5 link | 5 | `main` seçicisi sorunsuz |
+| Hayat Finans | 10 link | 8 | Next.js/SSR ama içerik ham HTML'de, Playwright gerekmedi |
+| T.O.M. Katılım | 3 kampanya (tek sayfa) | 3 | **Farklı yapı** — ayrı detay URL'si yok |
+
+**Bu turda bulunan 2 yeni gerçek hata:**
+
+1. **Hayat Finans'ın kendi iç linkleri `www` önekisiz.** Config'te `ana_sayfa` `www`'lu
+   yazılsaydı, domain filtresi TÜM linkleri "farklı domain" sanıp elerdi (siteler
+   `www` ve `www`'suz sürümü aynı içeriğe yönlendiriyor ama link üretimi tutarsız).
+   Çözüm: config'te `ana_sayfa` `www`'suz yazıldı.
+2. **T.O.M.'un sunucusu Content-Type başlığında charset belirtmiyor** — `requests`
+   bu durumda HTTP spesifikasyonu gereği ISO-8859-1'e düşüyor, sayfa gerçekte UTF-8
+   olsa bile ("Katılım" → "KatÄ±lÄ±m" gibi bozulma, rapor Bölüm 23.1). Genel amaçlı
+   `ortak._encoding_duzelt()` eklendi: Content-Type'ta charset yoksa
+   `response.apparent_encoding` kullanılır. 3 birim testle doğrulandı
+   (`tests/test_ortak_encoding.py`) — **string yazdırma/print DEĞİL, `==` karşılaştırması
+   ile**, çünkü bu ortamın konsolu (cp1254) doğru UTF-8 metni bile yanlış gösterebiliyor.
+
+**Yeni mimari: `tek_sayfa_coklu_kampanya_tara`.** T.O.M.'un 3 kampanyası da ayrı
+detay URL'leri olmadan, tek bir sayfada Bootstrap accordion panellerinde duruyor
+(rehber Bölüm 13.3'ün öngördüğü senaryo). Mevcut `kampanya_linklerini_topla` +
+`sayfa_tara` akışı buna uygun değildi (URL-başına-kayıt varsayıyor); bunun yerine
+her accordion paneli, panelden ÖNCEKİ başlık etiketiyle (h1-h5) birlikte, sentetik
+bir URL (`liste_url#slug`) ile ayrı bir "sanal" kampanya kaydı olarak işleniyor —
+hash/duplicate/delta kontrolü ve Yağmur'un URL bazlı eşlemesi normal çalışmaya devam
+ediyor. Config'te `cok_kampanyali_sayfa: true` bayrağıyla tetikleniyor.
 
 ## Bilinen sınırlamalar / sıradaki adımlar
 
@@ -160,16 +192,17 @@ sonrası `python -m storage.postgres_yaz` çalıştırılmalı.
   yerel tutuluyor; rehberin önerdiği paylaşımlı Google Sheets'e taşınması **Zeynep'in
   yapması gereken tek manuel adım** (Google hesabı gerektirdiği için otomatik
   yapılamadı) — hazır CSV, doğrudan içe aktarılabilir.
-- `playwright install chromium` henüz çalıştırılmadı (yalnızca pip paketi kuruldu) -
-  JS gerektiren ilk bankada (Dünya Katılım/Hayat Finans/T.O.M., Sprint 3) bu komut
-  çalıştırılmalı.
-- **PostgreSQL'e gerçek yazma bu ortamda doğrulanamadı** (Docker yok) - kod hazır ve
-  birim testle (mock imleç) doğrulandı, ama gerçek bir veritabanına karşı hiç
-  çalıştırılmadı. Sara/Zeynep'in kendi makinesinde `docker compose up -d` sonrası
-  denenmesi gerekiyor.
-- `kampanya_adi` alanı PostgreSQL kaydında şu an URL slug'ından türetilen GEÇİCİ bir
-  yer tutucu (`_slug_baslik_uret`) - gerçek başlık Yağmur'un çıkarım katmanınca
-  güncellenecek.
-- Kalan 4 BDDK bankası (Dünya Katılım, Hayat Finans, T.O.M. Katılım - hepsi Sprint 3
-  için işaretli) ve gerekçeli hariç tutulan Adil Katılım henüz taranmadı;
-  `scraper/config/bddk_bankalar.json`'da referans URL'leri hazır.
+- `playwright install chromium` hâlâ hiç çalıştırılmadı — 9 bankanın hepsi HTML
+  statik (Hayat Finans Next.js/SSR olsa da içerik ham HTML'de mevcut, T.O.M.
+  encoding düzeltmesiyle) çıktı, JS gerektiren bankaya rastlanmadı. Kod
+  (`js_scraper.py`) hazır bekliyor.
+- **PostgreSQL'e gerçek yazma bu ortamda hâlâ doğrulanamadı** (Docker yok) - ama
+  bu artık benim sorunum değil, Sara'nın `postgrese_yukle.py`'si bu işi zaten
+  yapıyor (repoda mevcut, benim `storage/postgres_yaz.py`'ım silindi).
+- BDDK listesindeki 9/10 banka kapsandı (Adil Katılım gerekçeli hariç — bkz.
+  `scraper/config/bddk_bankalar.json`). Adil Katılım'ın "birkaç hafta sonra tekrar
+  kontrol edilecek" notu hâlâ geçerli, henüz o süre dolmadı.
+- T.O.M.'un slug'ları Türkçe karakterleri kaybediyor (ör. "restoran-harcamalar-nda"
+  — "ı" harfleri düşüyor) çünkü `_slug_uret` yalnızca a-z0-9 karakterlerini
+  korumak üzere tasarlandı. Bu yalnızca DOSYA ADI/URL fragment'i içindir, `ham_metin`
+  alanındaki gerçek Türkçe metni ETKİLEMİYOR - kozmetik bir gözlem.

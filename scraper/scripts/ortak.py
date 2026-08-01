@@ -126,6 +126,20 @@ def nazik_bekle(crawl_delay: float | None = None) -> None:
 # ---------------------------------------------------------------------------
 
 
+def _encoding_duzelt(yanit: requests.Response) -> None:
+    """Bazi bankalar (ör. T.O.M.) Content-Type basliginda charset
+    belirtmiyor - bu durumda `requests`, HTTP spesifikasyonu geregi
+    varsayilan olarak ISO-8859-1'e duser, sayfa gercekte UTF-8 olsa
+    bile. Bu, Turkce karakterleri sessizce bozar (ör. "Katılım" ->
+    "KatÄ±lÄ±m") - Bolum 23.1'deki "okurken olusan bozulma" ornegi.
+
+    Content-Type'ta charset YOKSA, requests'in kendi icerik-tabanli
+    tahminini (apparent_encoding) esas al."""
+    content_type = yanit.headers.get("Content-Type", "")
+    if "charset" not in content_type.lower():
+        yanit.encoding = yanit.apparent_encoding
+
+
 def istek_at_retry_ile(
     url: str, maks_deneme: int = 3, baslangic_bekleme: float = 2.0, timeout: int = 10
 ) -> requests.Response:
@@ -146,6 +160,7 @@ def istek_at_retry_ile(
             continue
 
         if yanit.status_code == 200:
+            _encoding_duzelt(yanit)
             return yanit
 
         if yanit.status_code in KALICI_HATALAR:

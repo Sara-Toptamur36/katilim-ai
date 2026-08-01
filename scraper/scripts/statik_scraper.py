@@ -13,6 +13,7 @@ modul gerekir (henuz yazilmadi, bkz. docs/veri_toplama_notlari.md).
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import urljoin, urlparse
@@ -168,12 +169,115 @@ def sayfa_tara(
     return {"url": url, "durum": "basarili", "json_dosya": str(json_dosya)}
 
 
+def _slug_uret(baslik: str, yedek_indeks: int) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", baslik.lower()).strip("-")
+    return slug or f"kampanya-{yedek_indeks}"
+
+
+def tek_sayfa_coklu_kampanya_tara(banka_kod: str, ayar: dict) -> dict:
+    """Kampanyalarin ayri detay URL'leri OLMADIGI, hepsinin TEK bir sayfada
+    (ör. accordion panellerinde) durdugu bankalar icin (T.O.M. Katilim,
+    Bolum 13.3).
+
+    Her panel, kendi ONCESINDEKI baslik etiketiyle (h1-h5) birlikte,
+    sentetik bir URL (liste_url + '#slug') ile AYRI bir "sanal" kampanya
+    kaydi olarak islenir - boylece hash/duplicate/delta kontrolu ve
+    Yagmur'un url bazli cikarim eslesmesi normal calisir, tek bir dev
+    kayida karisik butun kampanyalar yazilmaz.
+    """
+    liste_url = ayar["kampanya_listesi"][0]
+    kapsayici_secici = ayar["kampanya_kapsayici_secici"]
+    govde_secici = ayar["kampanya_govde_secici"]
+
+    rp, crawl_delay = ortak.robots_kontrol_et(ayar["ana_sayfa"])
+    if not ortak.izinli_mi(rp, liste_url):
+        ortak.log_yaz(banka_kod, f"robots.txt engelledi: {liste_url}")
+        return {"basarili": [], "atlandi": [{"url": liste_url, "durum": "robots_engelledi"}], "hatali": []}
+
+    yanit = ortak.istek_at_retry_ile(liste_url)
+    soup = BeautifulSoup(yanit.text, "html.parser")
+
+    gorulen_hashler = ortak.gorulen_hashleri_yukle(banka_kod)
+    url_hashler = ortak.url_hashlerini_yukle(banka_kod)
+    ozet: dict[str, list] = {"basarili": [], "atlandi": [], "hatali": []}
+
+    for i, panel in enumerate(soup.select(kapsayici_secici)):
+        govde = panel.select_one(govde_secici)
+        if govde is None:
+            continue
+
+        baslik_tag = panel.find_previous(["h1", "h2", "h3", "h4", "h5"])
+        direkt_metin = baslik_tag.find(string=True, recursive=False) if baslik_tag else None
+        baslik = (
+            direkt_metin.strip()
+            if direkt_metin
+            else (baslik_tag.get_text(" ", strip=True) if baslik_tag else f"Kampanya {i + 1}")
+        )
+
+        slug = _slug_uret(baslik, i)
+        sentetik_url = f"{liste_url}#{slug}"
+        sayfa_metni = f"{baslik}\n{govde.get_text(chr(10), strip=True)}"
+
+        dogrulama = ortak.dogrulama_kontrolu(sayfa_metni)
+        if not dogrulama.basarili:
+            ortak.log_yaz(banka_kod, f"DOGRULAMA BASARISIZ ({sentetik_url}): {dogrulama.sorunlar}")
+            ozet["atlandi"].append(
+                {"url": sentetik_url, "durum": "dogrulama_basarisiz", "sorunlar": dogrulama.sorunlar}
+            )
+            continue
+
+        guncel_hash = ortak.icerik_hashi(sayfa_metni)
+        degisti, _ = ortak.icerik_degisti_mi(sayfa_metni, url_hashler.get(sentetik_url))
+        if not degisti:
+            ortak.log_yaz(banka_kod, f"DEGISMEDI, atlandi: {sentetik_url}")
+            ozet["atlandi"].append({"url": sentetik_url, "durum": "degismedi"})
+            continue
+
+        onceki_url = ortak.duplicate_mi(sayfa_metni, sentetik_url, gorulen_hashler)
+        if onceki_url:
+            ozet["atlandi"].append({"url": sentetik_url, "durum": "duplicate", "ilk_url": onceki_url})
+            continue
+
+        normalize_metin = metni_normalize_et(sayfa_metni)
+        ortak.ham_kaydet(banka_kod, slug, sayfa_metni)
+
+        ham_kayit = {
+            "banka": ayar["ad"],
+            "kategori": "kampanya",
+            "url": sentetik_url,
+            "sayfa_turu": ayar.get("sayfa_turu", "HTML"),
+            "erisim_zamani": datetime.now().isoformat(),
+            "ham_metin": sayfa_metni,
+            "normalize_metin": normalize_metin,
+            "icerik_hash": guncel_hash,
+            "http_durumu": yanit.status_code,
+            "content_type": yanit.headers.get("Content-Type"),
+            "encoding": yanit.encoding,
+            "pdf_dosyalari": [],
+            "tablolar": [],
+        }
+        json_dosya = ortak.islenmis_kaydet(banka_kod, slug, ham_kayit)
+        url_hashler[sentetik_url] = guncel_hash
+
+        ozet["basarili"].append({"url": sentetik_url, "durum": "basarili", "json_dosya": str(json_dosya)})
+
+    ortak.nazik_bekle(crawl_delay or ayar.get("crawl_delay"))
+    return ozet
+
+
 def banka_tara(banka_kod: str, ayar: dict) -> dict:
     """Bir bankanin kampanya listesini + tum detay sayfalarini tarar.
 
     Donen ozet: {"basarili": [...], "atlandi": [...], "hatali": [...]}
     - her biri {url, durum, ...} sozlukleri listesi.
+
+    `cok_kampanyali_sayfa` config bayragi varsa (T.O.M. gibi ayri detay
+    URL'si olmayan bankalar), farkli bir akisa (tek_sayfa_coklu_kampanya_tara)
+    yonlendirilir.
     """
+    if ayar.get("cok_kampanyali_sayfa"):
+        return tek_sayfa_coklu_kampanya_tara(banka_kod, ayar)
+
     gorulen_hashler = ortak.gorulen_hashleri_yukle(banka_kod)
     url_hashler = ortak.url_hashlerini_yukle(banka_kod)
     ozet: dict[str, list] = {"basarili": [], "atlandi": [], "hatali": []}

@@ -107,5 +107,55 @@
     "sayfa_turu": "HTML",
     "crawl_delay": 1,
     "not": "DIKKAT (Bolum 13.3): turkiyeemlak.com.tr / turkiyeemlakkatilim.com.tr YANLIS domain, dogrusu emlakkatilim.com.tr. 63 kampanya linki bulundu."
+  },
+  "dunyakatilim": {
+    "ad": "Dünya Katılım",
+    "kod": "dunyakatilim",
+    "dijital": false,
+    "ana_sayfa": "https://www.dunyakatilim.com.tr",
+    "kampanya_listesi": [
+      "https://www.dunyakatilim.com.tr/kampanyalar"
+    ],
+    "detay_link_deseni": "/kampanyalar/",
+    "cerez_secicileri": [
+      "button:has-text('Kabul Et')",
+      "#onetrust-accept-btn-handler"
+    ],
+    "icerik_secici": "main",
+    "sayfa_turu": "HTML",
+    "crawl_delay": 1,
+    "not": "Kucuk banka, 5 kampanya linki bulundu. main etiketi calisiyor (bazi sayfalarda sonunda kucuk bir footer-menu/modal payi da geliyor ama anahtar kelime/uzunluk kontrolunu bozmuyor)."
+  },
+  "hayatfinans": {
+    "ad": "Hayat Finans",
+    "kod": "hayatfinans",
+    "dijital": true,
+    "ana_sayfa": "https://hayatfinans.com.tr",
+    "kampanya_listesi": [
+      "https://hayatfinans.com.tr/kampanyalar"
+    ],
+    "detay_link_deseni": "/kampanyalar/",
+    "cerez_secicileri": [
+      "button:has-text('Tümünü Kabul Et')"
+    ],
+    "icerik_secici": "main",
+    "sayfa_turu": "HTML",
+    "crawl_delay": 1,
+    "not": "DIKKAT: sitenin kendi ic linkleri 'www' ONEKI OLMADAN veriliyor (hayatfinans.com.tr, www.hayatfinans.com.tr degil - ikisi de calisiyor ama www'lu surum www'suza yonleniyor). ana_sayfa'yi www'suz yazmazsan domain filtresi TUM linkleri 'farkli domain' sanip atar. Next.js/SSR sitesi ama icerik ham HTML'de zaten mevcut, Playwright GEREKMEZ. main etiketi cookie/menu/footer sizintisini onluyor. Bazi kampanyalar kisa (<1000 karakter, ör. Xiaomi kampanyasi 775 karakter) - veri hatasi degil."
+  },
+  "tombank": {
+    "ad": "T.O.M. Katılım",
+    "kod": "tombank",
+    "dijital": true,
+    "ana_sayfa": "https://www.tombank.com.tr",
+    "kampanya_listesi": [
+      "https://www.tombank.com.tr/kampanyalar.html"
+    ],
+    "cok_kampanyali_sayfa": true,
+    "kampanya_kapsayici_secici": ".accordion-item",
+    "kampanya_govde_secici": ".accordion-body",
+    "sayfa_turu": "HTML",
+    "crawl_delay": 1,
+    "not": "DIKKAT (Bolum 13.3): URL '.html' uzantili olmali (uzantisiz /kampanyalar YANLIS - 404). Diger bankalardan FARKLI YAPI: ayri detay URL'leri YOK, butun kampanyalar TEK bir sayfada Bootstrap accordion panellerinde duruyor (3 kampanya). Bu yuzden kampanya_linklerini_topla/sayfa_tara yerine statik_scraper.tek_sayfa_coklu_kampanya_tara kullanilir (cok_kampanyali_sayfa=true ile tetiklenir); her accordion paneli, panelden ONCEKI baslik etiketiyle (h1-h5) birlikte sentetik bir URL (#slug) ile ayri bir kayit olarak islenir. AYRICA: sunucu Content-Type basliginda charset BELIRTMIYOR - requests bu yuzden ISO-8859-1'e duser (Turkce karakterler bozulur), ortak._encoding_duzelt bunu otomatik duzeltiyor (Bolum 23.1). Kosullar accordion icinde 'gizli' gorunse de ham HTML kaynaginda mevcut - Playwright GEREKMEZ."
   }
 }

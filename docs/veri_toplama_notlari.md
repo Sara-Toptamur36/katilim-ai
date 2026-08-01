@@ -183,6 +183,30 @@ bir URL (`liste_url#slug`) ile ayrı bir "sanal" kampanya kaydı olarak işleniy
 hash/duplicate/delta kontrolü ve Yağmur'un URL bazlı eşlemesi normal çalışmaya devam
 ediyor. Config'te `cok_kampanyali_sayfa: true` bayrağıyla tetikleniyor.
 
+## Sprint 3 (Gün 3-4) — 1 Ağustos 2026
+
+**Regresyon test kümesi 9 bankaya genişletildi.** Eşleştirme mantığı
+(`_scraper_kaydini_bul`, `_ilk_kelime`, `KOD_HARITASI`) tekrar kullanılabilir
+olması için `scraper/scripts/gold_eslesme.py`'ye taşındı. **T.O.M. için özel
+bir sorun çıktı:** gold dataset'teki 3 T.O.M. kaydının hepsi AYNI kaynak_url'yi
+paylaşıyor (tek sayfa olduğu için), bu yüzden slug'a göre eşleştirme tek bir
+kayıt ayırt edemiyordu. Çözüm: T.O.M. gibi "tek sayfalı" kodlar için slug yerine
+kampanya adının ayırt edici ilk kelimesiyle eşleştirme yapılıyor — 3/3 doğru
+eşleşti.
+
+**Extraction Accuracy ilk gerçek ölçümü yapıldı** (`scraper/scripts/extraction_accuracy.py`,
+detaylı analiz `docs/extraction_accuracy_raporu.md`): Yağmur'un
+`extraction/regex_extractor.py`'si doğrudan (Docker/DB gerekmeden, saf
+fonksiyon çağrısıyla) Altın Veri Seti ile karşılaştırıldı.
+
+**Sonuç: %37.5 doğruluk (64 alanın 24'ü), hedeflenen %95'in oldukça altında.**
+Hata dağılımı rastgele değil, yoğunlaşmış: `odul_birimi` (18 hata — banka-özel
+sadakat birimleri Bankkart Lira/ParafPara tanınmıyor, varsayılan "TL" dönüyor),
+`odul_miktari` (9), `vade_ay` (7), `kar_payi_orani_percent` (4 — hepsi
+Albaraka'nın "Vade Farksız" ifadesinin %0 kâr payına bağlanmaması). Bu
+**Yağmur'un extraction/ katmanına yönelik** somut, eyleme geçirilebilir bir
+bulgu — kodun kendisine dokunulmadı (Yağmur'un alanı).
+
 ## Bilinen sınırlamalar / sıradaki adımlar
 
 - `unicodedata.normalize("NFKC", ...)`, sayıları bozmasa da bazı sembol/emoji

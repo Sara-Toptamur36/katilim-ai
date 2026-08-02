@@ -28,26 +28,37 @@ from extraction.normalizer import aya_cevir, tarihe_cevir, tutara_cevir, turkce_
 # belgeler - boylece bir kalip degistirildiginde hangi gercek ornegin
 # bozulabilecegi onceden bilinir.
 
-# Kar payi orani kalibi "kar pay" baglamini ZORUNLU kilar. Neden? "tahsis
-# ucreti finansman tutarinin %0,5'idir" gibi ifadeler kar payi orani
+# Kar payi orani kalibi "kar pay"/"kar oran" baglamini ZORUNLU kilar. Neden?
+# "tahsis ucreti finansman tutarinin %0,5'idir" gibi ifadeler kar payi orani
 # SANILABILIYOR (yanlis pozitif). Tam sayi yuzdeler de desteklenir (%0, %5
 # gibi; "kar paysiz" kampanyalarda oran gercekten 0 olabiliyor).
+# NOT: gercek banka metinlerinde "kar payi" kadar sik "kar orani" da
+# geciyor (ör. Kuveyt Turk: "Aylik kar orani %1,99") - ikisi de kapsanir.
 RE_KAR_PAYI_SAYI_ONCE = re.compile(
-    r"%\s*\d{1,2}(?:[.,]\d{1,4})?(?=[^%\n]{0,25}k[aâ]r\s*pay)", re.IGNORECASE
+    r"%\s*\d{1,2}(?:[.,]\d{1,4})?(?=[^%\n]{0,25}k[aâ]r\s*(?:pay\w*|oran\w*))", re.IGNORECASE
 )
 RE_KAR_PAYI_BAGLAM_ONCE = re.compile(
-    r"k[aâ]r\s*pay\w*[^%\n]{0,25}%\s*\d{1,2}(?:[.,]\d{1,4})?", re.IGNORECASE
+    r"k[aâ]r\s*(?:pay\w*|oran\w*)[^%\n]{0,25}%\s*\d{1,2}(?:[.,]\d{1,4})?", re.IGNORECASE
 )
 RE_KAR_PAYSIZ = re.compile(r"k[aâ]r\s*pays[ıi]z", re.IGNORECASE)
 # "0 kar payli" gibi yuzde isareti OLMADAN sifir oran ifadeleri de var.
 RE_KAR_PAYI_SIFIR = re.compile(r"\b0\s*k[aâ]r\s*pay\w*", re.IGNORECASE)
+# "Vade farksiz" (katilim bankaciliginda "vade farki" gelenek faiz kavramina
+# karsilik gelir - farksiz olmasi kar payi oraninin o islem icin 0 oldugu
+# anlamina gelir). Gercek veride en yaygin sifir-oran ifadesi budur (62
+# Altin Veri Seti kaydindan 13'unde gorulmustur).
+RE_VADE_FARKSIZ = re.compile(r"vade\s*farks[ıi]z", re.IGNORECASE)
 # Dusuk guvenli fallback: kisa kampanya basliklarinda "kar payi" kelimesi
 # hic gecmeden sadece "%X oranla" denebiliyor. Bu durumda, yakininda ucret/
-# masraf baglami YOKSA genel yuzdeyi kar payi say (dusuk guven).
+# masraf/maliyet baglami YOKSA genel yuzdeyi kar payi say (dusuk guven).
 RE_KAR_PAYI_GENEL = re.compile(r"%\s*\d{1,2}(?:[.,]\d{1,4})?", re.IGNORECASE)
 _UCRET_BAGLAM_DISLAMA_KELIMELERI = [
     "ücret", "masraf", "komisyon", "vergi", "bsmv", "kkdf",
-    "peşinat", "ekspertiz", "tahsis", "indirim", "stopaj",
+    "peşinat", "ekspertiz", "tahsis", "indirim", "stopaj", "maliyet",
+    # "iade": nakit iade/cashback yuzdesi kar payi orani DEGILDIR (ör.
+    # "restoran harcamasinda %10 iade" - TOM-002'de bu yuzden kar payi
+    # oranina yanlislikla eslesiyordu).
+    "iade",
 ]
 
 
@@ -66,6 +77,12 @@ RE_VADE = re.compile(
     r"|\d{1,3}\s*ay\s*vade(?:ye kadar|li)?"
     r"|\d{1,3}\s*aya?\s*varan\s*vade\w*"
     r"|vade\w*\s+\d{1,3}\s*ay\b"
+    # "vade suresi ... 36 aydir" gibi aralarinda 1-3 kelime olabilen
+    # bicimler (ör. "uygulanacak maksimum vade suresi 36 aydir"). Sondaki
+    # \b KASITLI OLARAK yok - "aydir/aydan" gibi Turkce eklerde "ay" ile
+    # ek arasinda kelime siniri OLUSMAZ (ikisi de harf), \b kullanilsaydi
+    # bu cok yaygin cekim bicimini kacirirdik.
+    r"|vade\s*s[üu]resi(?:\s+\S+){0,4}?\s+\d{1,3}\s*ay"
     r"|\d{1,2}\s*y[ıi]l(?:a kadar)?\s*vade",
     re.IGNORECASE,
 )
@@ -111,16 +128,39 @@ RE_MASRAFSIZ = re.compile(
 
 # Odul ifadeleri cok cesitli: "5.000 TL degerinde alisveris ceki",
 # "10.000 Mil'e varan hediye" (TL disi birim!), "250 TL ParafPara",
-# "2.000 TL'ye varan Bankkart Lira" (banka-ozel sadakat birimleri).
+# "2.000 TL'ye varan Bankkart Lira" (banka-ozel sadakat birimleri),
+# "1.000 TL'ye kadar iade", "1.250 TL Worldpuan".
+# NOT: "nakit ödül"/"ödül" bilerek BURAYA eklenmedi - bu kelimeler genelde
+# kisi-basi/birim tutari da tasir (ör. "500 TL nakit ödül... toplamda
+# maksimum 10.000 TL"), .search() ILK eslesmeyi aldigi icin erken/yanlis
+# (kisi basi) tutari yakalardi. Bu durumlar asagidaki RE_ODUL_TAVAN
+# ("en fazla"/"maksimum" tetikleyicili) desenine birakildi.
 RE_ODUL = re.compile(
     r"\d{1,3}(?:\.\d{3})*(?:,\d+)?\s*(?:TL|₺)"
     r"(?:['’](?:ye|ya|e|a))?\s*"
-    r"(?:değerinde\s*)?(?:varan\s*)?"
+    r"(?:değerinde\s*|varan\s*|kadar\s*)?"
     r"(?:alışveriş çeki|alışveriş kartı|hediye çeki|alışveriş puanı|hediye|kazan\w*"
-    r"|indirim|bankkart lira|parafpara|nakit iade\w*)",
+    r"|indirim|bankkart lira|parafpara|worldpuan|nakit iade\w*|iade\b)",
     re.IGNORECASE,
 )
-RE_ODUL_MIL = re.compile(r"\d{1,3}(?:\.\d{3})*(?:,\d+)?\s*Mil'?[ea]?\s*varan\s*hediye", re.IGNORECASE)
+# Banka-ozel sadakat birimleri (Mil, Gram) TL disinda oldugu icin ayri
+# desenler gerekir. NOT: gercek metinlerde egik/tipografik apostrof (’,
+# U+2019) kullanilir, duz apostrof (') degil - ikisi de kapsanmali.
+RE_ODUL_MIL = re.compile(r"\d{1,3}(?:\.\d{3})*(?:,\d+)?\s*Mil['’]?[ea]?\s*varan\s*hediye", re.IGNORECASE)
+# Tavan/limit ifadeleri: "en fazla 5 gram", "maksimum 10.000 TL", "kişi
+# başı maksimum 2.000 TL, toplamda ... maksimum 10.000 TL nakit ödül" gibi
+# cok sayida aday oldugunda SONUNCUSU (genelde "toplamda" olan) tercih
+# edilir - finditer + son eslesme.
+RE_ODUL_TAVAN = re.compile(
+    r"(?:en fazla|maksimum)\s+(?:\S+\s+){0,4}?"
+    r"(\d{1,3}(?:\.\d{3})*(?:,\d+)?)\s*(TL|₺|gram\w*|gr\b)",
+    re.IGNORECASE,
+)
+# "2.500 TL ile sınırlıdır" gibi "sinirli/sinirlidir" ile biten tavan ifadesi.
+RE_ODUL_SINIRLI = re.compile(
+    r"(\d{1,3}(?:\.\d{3})*(?:,\d+)?)\s*(TL|₺)['’]?\s*(?:ile\s+)?s[ıi]n[ıi]rl[ıi]",
+    re.IGNORECASE,
+)
 RE_ODUL_GRAM = re.compile(
     r"\d{1,3}(?:,\d+)?\s*gram\w*\s*(?:['’]?[ea]?\s*kadar\s*)?(?:hediye|kazan\w*)", re.IGNORECASE
 )
@@ -167,6 +207,22 @@ def _kar_payi_ata(alanlar: dict, izler: dict, span: str, guven: float) -> bool:
 def _ilk_eslesme(desen: re.Pattern, metin: str) -> Optional[str]:
     m = desen.search(metin)
     return m.group(0) if m else None
+
+
+def _odul_birimini_tespit_et(eslesen_metin: str) -> str:
+    """RE_ODUL'un eslesen metninde HANGI banka-ozel sadakat biriminin
+    gectigini tespit eder. Eskiden bu fonksiyon yoktu, RE_ODUL eslestigi
+    surece odul_birimi kosulsuz "TL" atanirdi - bu yuzden Bankkart Lira/
+    ParafPara/Worldpuan gibi TL-disi birimler bile yanlislikla "TL" olarak
+    kaydediliyordu (Extraction Accuracy raporu, 18/40 hata)."""
+    metin_l = turkce_kucult(eslesen_metin)
+    if "bankkart lira" in metin_l:
+        return "Bankkart Lira"
+    if "parafpara" in metin_l:
+        return "ParafPara"
+    if "worldpuan" in metin_l:
+        return "Worldpuan"
+    return "TL"
 
 
 def _kampanya_turunu_tespit_et(metin: str) -> Optional[str]:
@@ -223,6 +279,15 @@ def kaydi_cikar(ham_metin: str) -> dict:
             alanlar["kar_payi_orani_decimal"] = 0.0
             alanlar["kar_payi_orani_percent"] = 0.0
             izler["kar_payi_orani_percent"] = ("kâr paysız / 0 kâr paylı", 0.85)
+        elif RE_VADE_FARKSIZ.search(ham_metin):
+            # "Vade farksiz" katilim bankaciliginda o islem icin kar payi
+            # oraninin 0 oldugu anlamina gelir (Extraction Accuracy raporu +
+            # terminology/sozluk.json'daki sifir_oran_ifadesi kavramiyla
+            # tutarli). Dogrudan "kar paysiz" kadar yuksek guvenli degil
+            # (0.8 < 0.85) - farkli bir ifade oldugu icin.
+            alanlar["kar_payi_orani_decimal"] = 0.0
+            alanlar["kar_payi_orani_percent"] = 0.0
+            izler["kar_payi_orani_percent"] = ("vade farksız", 0.8)
         else:
             for gm in RE_KAR_PAYI_GENEL.finditer(ham_metin):
                 if not _ucret_baglaminda_mi(ham_metin, gm.start(), gm.end()):
@@ -273,8 +338,43 @@ def kaydi_cikar(ham_metin: str) -> dict:
             m = RE_ODUL.search(ham_metin)
             if m:
                 alanlar["odul_miktari"] = tutara_cevir(m.group(0))
-                alanlar["odul_birimi"] = "TL"
+                # ONCEDEN: kosulsuz "TL" atanirdi - Bankkart Lira/ParafPara/
+                # Worldpuan gibi TL-disi birimler yanlis kaydediliyordu.
+                alanlar["odul_birimi"] = _odul_birimini_tespit_et(m.group(0))
                 izler["odul_miktari"] = (m.group(0), 0.8)
+            else:
+                # Yukaridaki "varan/kadar/degerinde + anahtar kelime"
+                # kaliplarinin hicbiri eslesmediyse, tavan/limit ifadelerini
+                # dene ("en fazla 5 gram", "maksimum 10.000 TL nakit odul",
+                # "2.500 TL ile sinirlidir"). Bunlar dusuk-orta guvenlidir
+                # cunku hangi tutarin "asil" oldugu yorum gerektirebilir.
+                #
+                # BIRDEN FAZLA aday olabilir (gunluk/aylik/kisi-basi ARA
+                # basamak tavanlari + nihai toplam) ve hangisinin "asil"
+                # oldugu ifadeye gore degisir (ör. TOM-001'de son gecen
+                # "sinirlidir" dogru toplamdir; HF-004'te ise metnin
+                # BASKA bir yerindeki alakasiz "500 TL ile sinirli" ifadesi
+                # "maksimum 10.000 TL"den KUCUK ve yanlis olurdu). Ara
+                # basamak tavanlari tanim geregi nihai toplamdan KUCUK
+                # olacagi icin, tum adaylar arasindan EN BUYUK degerli
+                # olan secilir - bu iki gercek ornekte de dogru sonucu verir.
+                adaylar: list[tuple[float, str, str]] = []  # (tutar, birim, span)
+                m = RE_ODUL_SINIRLI.search(ham_metin)
+                if m:
+                    tutar = tutara_cevir(m.group(1))
+                    if tutar is not None:
+                        adaylar.append((tutar, "TL", m.group(0)))
+                for tm in RE_ODUL_TAVAN.finditer(ham_metin):
+                    tutar = tutara_cevir(tm.group(1))
+                    if tutar is not None:
+                        birim_ham = turkce_kucult(tm.group(2))
+                        birim = "Gram" if birim_ham.startswith("gr") else "TL"
+                        adaylar.append((tutar, birim, tm.group(0)))
+                if adaylar:
+                    tutar, birim, span = max(adaylar, key=lambda a: a[0])
+                    alanlar["odul_miktari"] = tutar
+                    alanlar["odul_birimi"] = birim
+                    izler["odul_miktari"] = (span, 0.7)
 
     # --- Masraf bilgisi ---------------------------------------------------
     span = _ilk_eslesme(RE_MASRAFSIZ, ham_metin)

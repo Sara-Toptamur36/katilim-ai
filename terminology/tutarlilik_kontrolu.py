@@ -11,13 +11,14 @@ Hediyesi" veya "Grace Period" gibi karşılıkların flaglenecek anlamlı
 tek bir kelimesi yoktur). Bunun yerine, özenle seçilmiş, ayrı bir
 gelenek-terim listesi kullanılır.
 
-Altın Veri Seti'ndeki (62 gerçek kayıt) analiz iki somut istisna ortaya
-çıkardı:
-- "faizsiz" kelimesi "faiz" kökünü içerir ama aslında doğru/istenen bir
-  ifadedir (bkz. sifir_oran_ifadesi kavramı) - flaglenmemeli.
-- "kredi kartı" 62 kayıttan 17'sinde meşru bir ürün adı olarak geçiyor
-  (katılım bankaları da kart ürünlerini "kredi kartı" diye pazarlıyor,
-  "finansman kartı" demiyorlar) - flaglenmemeli.
+İki ayrı gerçek veri kaynağına karşı doğrulandı:
+1. Altın Veri Seti (62 kayıt): "faizsiz" (faiz kökünü içerir ama doğru
+   ifade) ve "kredi kartı" (17/62 kayıtta meşru ürün adı) istisnaları.
+2. Zeynep'in tam scraper verisi (129 gerçek kayıt, 9 banka): "kredi
+   skoru/notu/politikası" (sektör-standart terimler, katılım bankaları
+   da kullanıyor) ve "açık kredi"/"veresiye kredi" (kredi'den ÖNCE gelen
+   meşru bileşikler - önceki istisna mantığı yalnızca SONRASINA
+   bakıyordu) istisnaları bu taramada ortaya çıktı.
 """
 
 import re
@@ -26,37 +27,60 @@ import re
 # katilim bankaciligi karsiligi), guvenli_ek_onekleri (kok+bu onekle
 # baslayan kelimeler meşru sayilir, ornek: faiz+siz="faizsiz"),
 # guvenli_sonraki_kelime_onekleri (kokten hemen sonraki kelime bu onekle
-# basliyorsa meşru sayilir, ornek: "kredi" + "kart...")
+# basliyorsa meşru sayilir, ornek: "kredi" + "kart..."),
+# guvenli_onceki_kelimeler (kokten hemen ONCEKI kelime tam olarak buysa
+# meşru sayilir, ornek: "acik" + "kredi")
 GELENEK_TERIM_ESLESTIRMELERI = [
     {
         "kok": "faiz",
         "standart_terim": "Kâr Payı",
         "guvenli_ek_onekleri": ["siz"],
         "guvenli_sonraki_kelime_onekleri": [],
+        "guvenli_onceki_kelimeler": [],
     },
     {
         "kok": "mevduat",
         "standart_terim": "Katılım Fonu",
         "guvenli_ek_onekleri": [],
         "guvenli_sonraki_kelime_onekleri": [],
+        "guvenli_onceki_kelimeler": [],
     },
     {
         "kok": "kredi",
         "standart_terim": "Finansman",
         "guvenli_ek_onekleri": [],
-        # "kredi karti/kartiyla" (urun adi) ve "kredi bakiyesi/limiti"
-        # (kart ekosisteminde katilim bankalarinin da kullandigi yerlesik
-        # jargon) mesru sayilir - Altin Veri Seti TOM-002'de gorulen
-        # "kredi bakiyesi" ornegiyle dogrulandi.
-        "guvenli_sonraki_kelime_onekleri": ["kart", "bakiye", "limit"],
+        # "kredi karti/kartiyla" (urun adi), "kredi bakiyesi/limiti" (kart
+        # ekosisteminde yerlesik jargon - Altin Veri Seti TOM-002), "kredi
+        # skoru/notu" ve "kredi politikasi" (sektor-standart, katilim
+        # bankalari da kullanir - Zeynep'in 129 kayitlik verisinde
+        # Albaraka/Vakif Katilim/Turkiye Finans sayfalarinda gorulmustur).
+        "guvenli_sonraki_kelime_onekleri": ["kart", "bakiye", "limit", "skor", "not", "politika"],
+        # "acik kredi" ve "veresiye kredi" T.O.M. Bank sayfasinda gorulen,
+        # kredi'den ONCE gelen mesru bileşik terimler.
+        "guvenli_onceki_kelimeler": ["açık", "veresiye"],
     },
 ]
 
 
+def turkce_kucult(metin: str) -> str:
+    """str.lower() Turkce noktali buyuk 'İ' harfini duz 'i' degil, gorunmez
+    bir birlesik nokta karakteriyle kucultur - bu yuzden once manuel
+    degistirilir. Ayni duzeltme terminology/genisletme.py ve
+    extraction/normalizer.py'de de var (bagimsiz olarak bulundu)."""
+    return metin.replace("İ", "i").lower()
+
+
+def _kelime_temizle(parca: str) -> str:
+    """Kelime sinirindaki noktalama isaretlerini (parantez, virgul vb.)
+    temizler - ornek: 'Kredi) bakiyesinin' metninde ')' karakteri
+    'bakiye' onek kontrolunu bozmasin diye."""
+    return parca.strip(" \t\n)(\"'”’,.;:!?-")
+
+
 def terminoloji_tutarliligini_kontrol_et(yanit_metni: str) -> dict:
     """Yanıt metninde geleneksel bankacılık teriminin sızıp sızmadığını
-    denetler. Meşru bileşik kullanımlar (ör. "faizsiz", "kredi kartı")
-    istisna tutulur.
+    denetler. Meşru bileşik kullanımlar (ör. "faizsiz", "kredi kartı",
+    "açık kredi") istisna tutulur.
 
     Döner: {"tutarli": bool, "bulunan_sorunlar": [{"gelenek_terim", "onerilen"}]}
     """
@@ -72,12 +96,21 @@ def terminoloji_tutarliligini_kontrol_et(yanit_metni: str) -> dict:
             ):
                 continue  # ornek: "faizsiz" -> mesru, atla
 
-            sonraki_kelime = yanit_metni[m.end():m.end() + 20].lstrip()
+            # 30 karakterlik pencere: "kredi kartı" gibi bitisik bilesikleri
+            # de "kredi ve tahsis politikaları" gibi arada 1-2 kelime olan
+            # bicimleri de (Albaraka/Vakif Katilim - kredi skoru/politikasi
+            # aciklama cumlesi) kapsar.
+            sonraki_pencere = turkce_kucult(yanit_metni[m.end():m.end() + 30])
             if any(
-                sonraki_kelime.lower().startswith(guvenli)
+                guvenli in sonraki_pencere
                 for guvenli in eslesme_kurali["guvenli_sonraki_kelime_onekleri"]
             ):
-                continue  # ornek: "kredi kartı" -> mesru urun adi, atla
+                continue  # ornek: "kredi kartı" / "kredi ... politikaları" -> mesru, atla
+
+            onceki_kelime = _kelime_temizle(yanit_metni[max(0, m.start() - 20):m.start()]).split()
+            onceki_kelime = onceki_kelime[-1].lower() if onceki_kelime else ""
+            if onceki_kelime in eslesme_kurali["guvenli_onceki_kelimeler"]:
+                continue  # ornek: "açık kredi" -> mesru bilesik terim, atla
 
             sorunlar.append({
                 "gelenek_terim": kelime,

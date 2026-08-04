@@ -2,23 +2,44 @@
 
 GERCEK Ollama/Qwen2.5 servisine baglanir - bu testler YAVAS calisir
 (her cagrı birkac saniye surer, ilk cagrı model soguk basladiginda
-~20 saniyeye kadar cikabilir). Ollama servisi calismiyorsa tum testler
-llm_ile_sor()'un None donmesi nedeniyle "bulunamadi" sonucu uretir,
-hata FIRLATMAZ (bkz. modul docstring'i - baglanti hatasinda kademeli
-fallback ilkesi).
+~20 saniyeye kadar cikabilir). llm_ile_sor() kendisi baglanti hatasinda
+None doner, hata FIRLATMAZ (kademeli fallback ilkesi) - AMA bu dosyadaki
+testler beklenen degerleri (ornegin 1.89) dogrudan kontrol ettigi icin,
+Ollama gercekten calismiyorsa testler BASARISIZ olur (assert None == 1.89
+gibi). Bu yuzden CI'da (GitHub Actions ubuntu-latest, yerel Ollama
+servisi YOK) tum dosya, DB'ye bagli testlerdeki (test_kullanici_repository.py
+vb.) AYNI desenle skip edilir - CI'da bu servisin bulunmamasi normaldir,
+bir regresyon degildir.
 """
 
 import json
 from pathlib import Path
 
+import pytest
+import requests
+
 from extraction.llm_extractor import (
     _kesirli_oran_mi,
     _llm_sayisini_dogrula,
     _odul_ifadesi_gercekten_var_mi,
+    _OLLAMA_URL,
     llm_ile_cikar,
 )
 
 RAW_DATA = Path(__file__).parent.parent / "scraper" / "raw_data"
+
+
+def _ollama_erisilebilir_mi() -> bool:
+    try:
+        requests.get(_OLLAMA_URL.replace("/api/generate", "/api/tags"), timeout=2)
+        return True
+    except requests.RequestException:
+        return False
+
+
+OLLAMA_YOK_MESAJI = "Yerel Ollama servisi calismiyor (ollama serve) - CI'da beklenen durum"
+
+pytestmark = pytest.mark.skipif(not _ollama_erisilebilir_mi(), reason=OLLAMA_YOK_MESAJI)
 
 
 def test_temel_alanlari_dogru_cikarir():

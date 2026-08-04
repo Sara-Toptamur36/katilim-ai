@@ -1,15 +1,25 @@
 """Extraction Accuracy olcumu (Zeynep Veri Toplama Rehberi, Sprint 3 Gun 4).
 
-Yagmur'un regex cikarim motorunu (extraction/regex_extractor.py), scraper'in
-gercek verisi + Altin Veri Seti referans degerleriyle karsilastirip alan
-bazli dogruluk yuzdesi hesaplar.
+Regex cikarim motorunu (extraction/regex_extractor.py), scraper'in gercek
+verisi + Altin Veri Seti referans degerleriyle karsilastirip alan bazli
+dogruluk yuzdesi hesaplar.
 
-BAGIMSIZLIK NOTU: Bu olcum Docker/PostgreSQL GEREKTIRMEZ ve Yagmur'un aktif
-olarak bir sey yapmasini beklemez - `kaydi_cikar()` saf bir fonksiyondur
+BAGIMSIZLIK NOTU: Bu olcum Docker/PostgreSQL GEREKTIRMEZ ve aktif olarak
+bir sey yapilmasini beklemez - `kaydi_cikar()` saf bir fonksiyondur
 (veritabani yok), dogrudan scraper'in urettigi ham_metin uzerinde cagrilir.
 
 Rapor Bolum 13: Extraction Accuracy hedefi >= %95 (henuz gercek veriyle
 olculmemis bir hedefti - bu script ilk gercek olcumu yapar).
+
+SPRINT 2 GENELLESTIRMESI: `extraction_accuracy_hesapla()` artik hangi
+cikarim fonksiyonunun olculecegini parametre olarak alir (varsayilan
+kaydi_cikar - mevcut regex-only davranis/regresyon testi degismedi).
+Boylece extraction/hybrid_pipeline.py::kaydi_hibrit_cikar() gibi ayni
+{"alan": deger, ..., "_izler": {...}} seklini doner uyumlu herhangi bir
+fonksiyon da AYNI altin veri setiyle olculebilir - bkz.
+scraper/scripts/hibrit_extraction_accuracy.py (NER+LLM katmanlarinin
+eklenmesi regex'in tek basina dogrulugunu gercekten artiriyor mu sorusu
+icin).
 
 Kullanim:
     python -m scraper.scripts.extraction_accuracy
@@ -52,9 +62,15 @@ def altin_kayitlari_yukle() -> list[dict]:
         return json.load(f)
 
 
-def extraction_accuracy_hesapla() -> dict:
-    """Alan bazli dogruluk: her altin kayittaki her DOLU alan icin, regex
-    cikariminin ayni degeri uretip uretmedigini kontrol eder.
+def extraction_accuracy_hesapla(cikarim_fonksiyonu=kaydi_cikar) -> dict:
+    """Alan bazli dogruluk: her altin kayittaki her DOLU alan icin,
+    `cikarim_fonksiyonu(ham_metin)` cikariminin ayni degeri uretip
+    uretmedigini kontrol eder.
+
+    `cikarim_fonksiyonu`, kaydi_cikar() ile AYNI imzaya (ham_metin -> dict)
+    ve alan adlarina sahip herhangi bir fonksiyon olabilir - ornegin
+    extraction/hybrid_pipeline.py::kaydi_hibrit_cikar(). Varsayilan deger
+    kaydi_cikar (regex) - mevcut cagiran kodlar/testler etkilenmez.
 
     Yalnizca (a) altin kayitta o alan gercekten doluysa VE (b) kampanya
     hala sitede canliysa (scraper_kaydini_bul bir kayit buluyorsa) olcuma
@@ -73,7 +89,7 @@ def extraction_accuracy_hesapla() -> dict:
             continue
         canli_kayit_sayisi += 1
 
-        cikarilan = kaydi_cikar(cikti_json["ham_metin"])
+        cikarilan = cikarim_fonksiyonu(cikti_json["ham_metin"])
 
         for extractor_alan, gold_alan in ALAN_ESLEME.items():
             beklenen = altin.get(gold_alan)

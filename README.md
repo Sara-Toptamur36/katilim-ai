@@ -25,7 +25,8 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 | Kapsanan katılım bankası | **9 / 10** (BDDK listesi; Adil Katılım gerekçeli hariç — ürün/kampanya yayımlamıyor) |
 | Toplanan gerçek kampanya kaydı | **234** ham kayıt |
 | Altın Veri Seti (elle doğrulanmış referans) | **58** kayıt + ekran görüntüsü kanıtı |
-| Çıkarım — dolu alan doğruluğu | **%85,94** (hibrit: regex+NER+LLM) |
+| Çıkarım — dolu alan doğruluğu | **~%86–89** (hibrit: regex+NER+LLM; aşağıdaki sapma notuna bakınız) |
+| Çıkarım — dolu alan doğruluğu (yalnızca regex, deterministik) | **%84,38** |
 | Çıkarım — boş alan doğruluğu (yanlış pozitif) | **%91,78** — 6 yanlış pozitif |
 | Otomatik test | **358** test, CI her push'ta çalışır |
 

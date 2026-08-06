@@ -101,6 +101,75 @@ PostgreSQL                 Semantik parcalama → Embedding
 
 ---
 
+## Kurulum ve Çalıştırma
+
+**Gereksinimler:** Python 3.11+, Docker Desktop, Node.js 18+ (dashboard için).
+Tüm Python bağımlılıkları sürümleriyle sabitlenmiş olarak
+[`requirements.txt`](requirements.txt) dosyasındadır.
+
+```bash
+# 1) Altyapı (PostgreSQL 5432, Qdrant 6333, Ollama 11434)
+docker compose up -d
+
+# 2) Python ortamı
+python -m venv venv
+venv\Scripts\activate          # Windows
+source venv/bin/activate       # macOS/Linux
+pip install -r requirements.txt
+
+# 3) Veritabanı şeması
+alembic upgrade head
+
+# 4) API  →  http://localhost:8000/docs (Swagger)
+uvicorn api.main:app --reload
+
+# 5) Dashboard
+cd dashboard && npm install && npm run dev
+```
+
+> **Ekip kuralı:** Şemayı değiştiren kişi migration dosyasını da commit'ler;
+> diğerleri `git pull` sonrası `alembic upgrade head` çalıştırır.
+
+### Gerçek veriyi yükle (isteğe bağlı)
+
+```bash
+python -m scraper.scripts.postgrese_yukle      # ham veriyi PostgreSQL'e aktar
+python -m extraction.regex_ile_zenginlestir    # finansal alanları çıkar
+python -m chunking.indeksleyici                # RAG indeksini kur (~700 parça)
+ollama pull qwen2.5:7b-instruct-q4_K_M         # hibrit çıkarımın LLM katmanı
+```
+
+API'yi gerçek veriyle çalıştırmak için `GERCEK_VERI_AKTIF=true` verin.
+Ollama kurulu değilse sistem çalışmaya devam eder — LLM katmanı atlanır,
+regex + NER sonuçları kullanılır.
+
+**Veri seti** depoya dâhildir: [`gold_dataset/`](gold_dataset/) (elle
+doğrulanmış referans + ekran görüntüleri), [`scraper/raw_data/`](scraper/raw_data/)
+(ham kampanya metinleri).
+
+### Uç noktalar
+
+Tümü `Authorization: Bearer <token>` başlığı ister. Gerçek JWT doğrulaması
+`JWT_AKTIF=true` ile açılır; **başlık formatı iki modda da aynıdır**, bu yüzden
+arayüz kodu geçişte değişmez.
+
+| Metot | Yol | Açıklama |
+|---|---|---|
+| GET | `/` · `/saglik` | Servis bilgisi / health check (kimlik gerektirmez) |
+| POST | `/token` | Kullanıcı adı-parola ile JWT (yalnızca `JWT_AKTIF=true`) |
+| GET | `/kampanyalar` | Kampanya listesi (`?banka=` `?kampanya_turu=`) |
+| GET | `/kampanyalar/{id}` | Tek kampanya detayı |
+| POST | `/karsilastir` | Kampanya karşılaştırma |
+| POST | `/hesapla` | Taksit/kâr payı hesabı (saf Python, LLM yok) |
+| POST | `/chat` | Doğal dilde soru-cevap (kaynak + audit bilgisiyle) |
+
+```bash
+curl -H "Authorization: Bearer test-token" \
+     "http://localhost:8000/kampanyalar?banka=Kuveyt%20T%C3%BCrk"
+```
+
+---
+
 ## Tasarım İlkeleri
 
 **1. Eksik veri gizlenmez, işaretlenir.**

@@ -10,12 +10,27 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 
 | Sprint | İçerik | Durum |
 |---|---|---|
-| **Sprint 1** (1. hafta) | API sözleşmesi, mock uç noktalar, veri toplama (3 banka), terminoloji sözlüğü, dashboard iskeleti | 🚧 Devam ediyor |
-| Sprint 2 (2. hafta) | Karşılaştırma motoru, hesap makinesi, hibrit çıkarım, PostgreSQL | ⬜ Planlandı |
-| Sprint 3 (3. hafta) | Ajan orkestratör, chunking + embedding + Qdrant, chatbot arayüzü | ⬜ Planlandı |
-| Sprint 4 (4. hafta) | RAG, Intent Classifier, Jüri Audit Paneli, güvenlik sertleştirme | ⬜ Planlandı |
+| **Sprint 1** | API sözleşmesi, uç noktalar, veri toplama, terminoloji sözlüğü, dashboard iskeleti | ✅ Tamamlandı |
+| **Sprint 2** | Karşılaştırma motoru, hesap makinesi, hibrit çıkarım (regex+NER+LLM), PostgreSQL | ✅ Tamamlandı |
+| **Sprint 3** | Ajan orkestratör, chatbot arayüzü | ✅ Tamamlandı |
+| | Semantik chunking + embedding + Qdrant indeksleme | 🚧 Devam ediyor |
+| **Sprint 4** | Intent tespiti, Jüri Audit Paneli, gerçek JWT kimlik doğrulama | ✅ Tamamlandı |
+| | RAG (kaynaklı serbest metin yanıtı) | ⬜ Planlandı |
 
-**Şu an:** Uç noktalar mock veri döndürmektedir. Gerçek mantık sprint sprint bağlanacaktır.
+### Ölçülebilir durum
+
+| Gösterge | Değer |
+|---|---|
+| Kapsanan katılım bankası | **9 / 10** (BDDK listesi; Adil Katılım gerekçeli hariç — ürün/kampanya yayımlamıyor) |
+| Toplanan gerçek kampanya kaydı | **234** ham kayıt |
+| Altın Veri Seti (elle doğrulanmış referans) | **58** kayıt + ekran görüntüsü kanıtı |
+| Extraction Accuracy (hibrit: regex+NER+LLM) | **%85,94** — bkz. [`docs/extraction_accuracy_raporu.md`](docs/extraction_accuracy_raporu.md) |
+| Otomatik test | **347** test, CI her push'ta çalışır |
+
+**Şu an:** Uç noktalar gerçek verilerle çalışır. Veri kaynağı `GERCEK_VERI_AKTIF`
+ortam değişkeniyle seçilir (`false` = mock/sözleşme testi verisi, `true` = PostgreSQL).
+Serbest/açık uçlu bilgi soruları RAG bağlanmadığı için henüz yanıtlanmaz —
+sistem bu durumda **sessizce yanlış cevap üretmek yerine** durumu açıkça bildirir.
 
 ---
 
@@ -35,28 +50,31 @@ Bu çeşitlilik, banka çalışanlarının ve son kullanıcıların ürünleri k
 
 Ham kampanya metninden karşılaştırılabilir yapılandırılmış veriye ve **kaynak gösteren** doğal dil yanıtlarına uzanan uçtan uca bir sistem:
 
+Hedef mimari — `[✓]` kurulu ve çalışıyor, `[ ]` henüz kodlanmadı:
+
 ```
-Banka kaynaklari (BDDK/TKBB dogrulamali)
+Banka kaynaklari (BDDK listesi)                              [✓]
         ↓
-Scraper (statik + JS + PDF/OCR) → SHA-256 delta kontrolu
-        ↓
-Normalizasyon → Regex + NER + LLM hibrit cikarim → Validator
+Scraper (statik + JS + PDF) → SHA-256 delta kontrolu         [✓]
+        ↓                      (OCR henuz yok)               [ ]
+Normalizasyon → Regex + NER + LLM hibrit cikarim             [✓]
         ↓
    ┌────────────────┬─────────────────┐
    ↓                                  ↓
-PostgreSQL                    Embedding (bge-m3) → Qdrant
-(ACTIVE/EXPIRED)                      ↓
+PostgreSQL                    Embedding → Qdrant
+(ACTIVE/EXPIRED)         [✓]                      [ ]
    └────────────────┬─────────────────┘
                     ↓
-            AJAN ORKESTRATOR
+            AJAN ORKESTRATOR                                 [✓]
     Intent Detection → Tool Router
         ↓      ↓      ↓      ↓      ↓
       SQL  Calculator Dict  RAG  Fallback
+      [✓]     [✓]    [✓]   [ ]    [✓]
                     ↓
-    Response Generator → Terminoloji Kontrolu
-    → Verifier → Provenance Injection
+    Response Generator → Terminoloji Kontrolu                [✓]
+    → Verifier                                              [ ]
                     ↓
-    Dashboard · Chatbot · Juri Audit Paneli
+    Dashboard · Chatbot · Juri Audit Paneli                  [✓]
 ```
 
 **Sistemi bir "dil ajanı" yapan katman:** kullanıcı niyetini anlayıp doğru aracı seçen orkestrasyon. Sayısal karşılaştırma sabit SQL şablonlarıyla, hesaplamalar saf Python fonksiyonlarıyla yapılır — LLM'e bırakılmaz.
@@ -114,12 +132,35 @@ uvicorn api.main:app --reload
 - API: http://localhost:8000
 - **Swagger (interaktif dokümantasyon): http://localhost:8000/docs**
 
-### 6. Dashboard (Sprint 1'de eklenecek)
+### 6. Dashboard
 ```bash
 cd dashboard
 npm install
 npm run dev
 ```
+
+### 7. (İsteğe bağlı) Gerçek veriyi yükle
+
+Scraper çıktısını PostgreSQL'e aktarıp çıkarım motoruyla zenginleştirir:
+
+```bash
+python -m scraper.scripts.postgrese_yukle
+python -m extraction.regex_ile_zenginlestir
+```
+
+Ardından API'yi gerçek veriyle çalıştırmak için `GERCEK_VERI_AKTIF=true` verin.
+
+### 8. (İsteğe bağlı) Yerel LLM
+
+Hibrit çıkarımın LLM katmanı için:
+
+```bash
+ollama pull qwen2.5:7b-instruct-q4_K_M
+```
+
+> Ollama kurulu değilse sistem çalışmaya devam eder — LLM katmanı atlanır,
+> regex + NER sonuçları kullanılır. GPU'suz makinelerde tek bir LLM çağrısı
+> birkaç dakika sürebilir.
 
 ---
 
@@ -131,9 +172,9 @@ Tüm uç noktalar `Authorization` başlığı gerektirir:
 Authorization: Bearer <token>
 ```
 
-> Sprint 1-3'te herhangi bir token kabul edilir (mock doğrulama).
-> Sprint 4'te gerçek JWT devreye girer — **başlık formatı değişmez**,
-> yalnızca doğrulama sertleşir. Bu sayede arayüz kodu hiç değişmez.
+Gerçek JWT doğrulaması `JWT_AKTIF=true` ortam değişkeniyle açılır. Varsayılan
+(`false`) modda herhangi bir token kabul edilir — **başlık formatı iki modda da
+aynıdır**, bu yüzden arayüz kodu geçişte hiç değişmez.
 
 ### Uç noktalar
 
@@ -141,16 +182,24 @@ Authorization: Bearer <token>
 |---|---|---|
 | GET | `/` | Servis bilgisi (kimlik gerektirmez) |
 | GET | `/saglik` | Health check |
+| POST | `/token` | Kullanıcı adı/parola ile JWT alma (yalnızca `JWT_AKTIF=true` iken) |
 | GET | `/kampanyalar` | Kampanya listesi (`?banka=` `?kampanya_turu=` ile filtreli) |
 | GET | `/kampanyalar/{id}` | Tek kampanya detayı |
 | POST | `/karsilastir` | Kampanya karşılaştırma |
+| POST | `/hesapla` | Taksit/kâr payı hesabı (saf Python, LLM kullanılmaz) |
 | POST | `/chat` | Doğal dilde soru-cevap (audit bilgisiyle) |
 
 ### Örnek
 
 ```bash
 curl -H "Authorization: Bearer test-token" \
-     "http://localhost:8000/kampanyalar?banka=C%20Bankasi"
+     "http://localhost:8000/kampanyalar?banka=Kuveyt%20T%C3%BCrk"
+```
+
+Gerçek JWT modunda kullanıcı oluşturma:
+
+```bash
+python -m api.scripts.kullanici_ekle
 ```
 
 ---
@@ -163,17 +212,33 @@ Bir alan kaynakta yoksa `null` bırakılır ve `alan_belirtilmemis` içinde bayr
 **2. Sayısal işler LLM'e bırakılmaz.**
 Karşılaştırma sabit, parametreli SQL şablonlarıyla yapılır (serbest metinden SQL üretilmez). Taksit/kâr payı hesapları saf Python fonksiyonlarıdır.
 
-**3. Her cevap kaynağını gösterir.**
-Kaynak URL, belge tarihi, chunk ID ve benzerlik skoru yanıta iliştirilir.
+**3. Her kayıt kaynağını taşır.**
+Her kampanya kaydında kaynak URL ve belge tarihi tutulur; hangi alanı hangi
+çıkarım katmanının (regex/NER/LLM) doldurduğu ve güven skoru izlenir.
+*(Chunk ID ve benzerlik skoru alanları API sözleşmesinde hazırdır, RAG
+bağlandığında dolacaktır — şu an boş döner.)*
 
-**4. Her cevap doğrulanır.**
-Verifier, LLM yanıtındaki sayıların aracın döndürdüğü ham sonuçta gerçekten bulunup bulunmadığını kontrol eder.
+**4. Şeffaflık iki kitleye ayrılır.**
+Banka çalışanı iş odaklı dashboard'u görür; jüri/geliştirici, çağrılan aracı,
+tespit edilen niyeti, çalıştırılan SQL'i, güven skorlarını ve gecikmeyi
+gösteren ayrı bir Audit Paneli'ni.
 
-**5. Canlı demo güvenliği.**
-Bir sorgu 5 saniye içinde yanıtlanamazsa sistem otomatik olarak deterministik katmana düşer.
+**5. Bir katman çalışmazsa sistem durmaz.**
+Hibrit çıkarımda regex → NER → LLM kademeli çalışır; Ollama kapalıysa veya
+yanıt vermezse LLM katmanı sessizce atlanır ve deterministik katmanların
+sonucu döner. Aynı şekilde niyet tespit edilemezse sistem uydurma cevap
+üretmek yerine durumu açıkça bildirir.
 
-**6. Şeffaflık iki kitleye ayrılır.**
-Banka çalışanı iş odaklı dashboard'u görür; jüri/geliştirici, çağrılan aracı, çalıştırılan SQL'i, güven skorlarını ve gecikmeyi gösteren ayrı bir Audit Paneli'ni.
+### Henüz kurulmayanlar (dürüstlük notu)
+
+Aşağıdakiler hedef mimaride yer alır ancak **bu depoda henüz kodlanmamıştır**;
+tasarım ilkesi olarak sunulmakla birlikte çalışan bir özellik değildir:
+
+- **Verifier:** yanıttaki her sayının kaynak pasajda/araç çıktısında geçtiğini
+  doğrulayan katman (`validation/` klasörü şu an boş).
+- **RAG:** semantik chunking, embedding ve Qdrant indeksleme (`chunking/` boş).
+- **Zaman aşımına bağlı otomatik fallback:** ölçülmüş bir p95 eşiğine göre
+  deterministik katmana düşme.
 
 ---
 
@@ -186,16 +251,16 @@ katilim-ai/
 ├── preprocessing/    # Turkce normalizasyon
 ├── terminology/      # Katilim bankaciligi terminoloji sozlugu (Yagmur)
 ├── extraction/       # Regex + NER + LLM hibrit cikarim (Yagmur)
-├── validation/       # Pydantic sema + confidence + consistency
-├── chunking/         # Semantik chunking + embedding (Yagmur)
+├── validation/       # (planlandi) Verifier - henuz bos
+├── chunking/         # (planlandi) Semantik chunking + embedding - henuz bos
 ├── storage/          # PostgreSQL + Qdrant erisimi
 ├── comparison/       # Karsilastirma motoru - SQL Tool (Sara)
 ├── calculator/       # Hesap makinesi araci (Sara)
 ├── agent/            # Ajan orkestrator + tool router (Sara)
 ├── dashboard/        # React + Ant Design arayuz (Havin)
 ├── gold_dataset/     # Altin Veri Seti (dogrulama referansi)
-├── tests/            # API sozlesme testleri
-└── docs/             # Proje dokumantasyonu
+├── tests/            # Sozlesme, cikarim, regresyon ve entegrasyon testleri
+└── docs/             # Proje dokumantasyonu + olcum raporlari
 ```
 
 ## Ekip ve Sorumluluklar
@@ -216,8 +281,8 @@ Tüm bileşenler açık kaynaklıdır (şartname Md. 5.10 / 8):
 | Katman | Teknoloji | Lisans |
 |---|---|---|
 | Veri toplama | Requests, BeautifulSoup4, Playwright | Apache-2.0 / MIT / BSD |
-| PDF / OCR | pypdf, pytesseract / PaddleOCR | BSD / Apache-2.0 |
-| Bilgi çıkarımı | regex, BERTurk, GLiNER | MIT / Apache-2.0 |
+| PDF | pypdf | BSD |
+| Bilgi çıkarımı | regex, GLiNER (`urchade/gliner_multi-v2.1`) | MIT / Apache-2.0 |
 | Yerel LLM | Qwen2.5-Instruct (GGUF Q4_K_M), Ollama | Apache-2.0 / MIT |
 | Yapılandırılmış çıktı | Pydantic | MIT |
 | Vektör veritabanı | Qdrant | Apache-2.0 |
@@ -226,6 +291,20 @@ Tüm bileşenler açık kaynaklıdır (şartname Md. 5.10 / 8):
 | Arayüz | React, Ant Design | MIT |
 
 **Kullanılmayanlar:** özel/custom lisanslı LLM'ler, AGPL kütüphaneler, kapalı kaynak bulut API'leri, ücretli servisler.
+
+> **NER model tercihi:** Önce BERTurk (`dbmdz/bert-base-turkish-cased`) denendi;
+> bu checkpoint NER için fine-tune edilmemiş olduğundan span çıkarımında
+> kullanılamadı. Yerine zero-shot çalışan GLiNER seçildi — gerekçe
+> [`extraction/ner_extractor.py`](extraction/ner_extractor.py) başında belgelenmiştir.
+>
+> **OCR:** Taranmış/görüntü PDF'ler için OCR bu depoda kurulu değildir
+> (Tesseract binary'si ayrı yerel kurulum gerektirir). Metin tabanlı PDF'ler
+> pypdf ile işlenir; taranmış bir PDF'te metin boş dönerse kayıt düşük güven
+> skoruyla işaretlenir, sessizce doğru varsayılmaz.
+
+**Sürüm sabitleme:** Tüm Python bağımlılıkları `requirements.txt`'te tam sürümle
+(`==`), Docker imajları da sabit etiketle sabitlenmiştir — aynı commit her
+makinede aynı sürümlerle kurulur.
 
 ---
 
@@ -236,6 +315,23 @@ pytest tests/ -v
 ```
 
 CI, `main` dalına her push'ta testleri ve sızmış sır taramasını otomatik çalıştırır.
+
+Bazı testler dış servis gerektirir ve servis yoksa **hata vermez, atlanır**:
+
+| Test grubu | Gereksinim | Servis yoksa |
+|---|---|---|
+| Veritabanı testleri | PostgreSQL (`docker compose up -d postgres`) | atlanır |
+| LLM / hibrit testleri | Ollama + Qwen2.5 modeli | atlanır |
+
+Bu yüzden CI'da (dış servis yok) test sayısı yerelden düşük görünür — bu bir
+regresyon değil, beklenen durumdur.
+
+Çıkarım doğruluğunu Altın Veri Seti'ne karşı ölçmek için:
+
+```bash
+python -m scraper.scripts.extraction_accuracy         # yalnizca regex
+python -m scraper.scripts.hibrit_extraction_accuracy  # regex + NER + LLM
+```
 
 ---
 

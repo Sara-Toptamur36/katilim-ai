@@ -33,6 +33,14 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 > ağırlıkta hatalardır ve ikincisi finansal kararlarda daha tehlikelidir.
 > Yöntem ve tespit edilen yanlış pozitifler:
 > [`docs/extraction_accuracy_raporu.md`](docs/extraction_accuracy_raporu.md)
+>
+> **Çalıştırmalar arası sapma:** LLM katmanı `temperature=0` ile çağrılsa da
+> `hibrit_extraction_accuracy.py` her çalıştırmada birebir aynı yüzdeyi
+> vermeyebilir (ölçüldü: aynı veri setinde %89,06 ↔ %87,5 arası oynama) —
+> Ollama'nın kendi çalışma zamanı determinizmi tam garanti etmiyor. Bu bir
+> regresyon değildir; script'i tekrar çalıştırıp farklı bir sayı görmek
+> normaldir, birkaç çalıştırmanın ortalaması tek bir çalıştırmadan daha
+> güvenilir bir gösterge kabul edilmelidir.
 
 **Şu an:** Uç noktalar gerçek verilerle çalışır. Veri kaynağı `GERCEK_VERI_AKTIF`
 ortam değişkeniyle seçilir (`false` = mock/sözleşme testi verisi, `true` = PostgreSQL).

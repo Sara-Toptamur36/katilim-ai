@@ -16,33 +16,25 @@ bir regresyon degildir.
 """
 
 import json
+import time
 from pathlib import Path
 
 import pytest
-import requests
 
+import extraction.llm_extractor as llm_extractor
 from extraction.llm_extractor import (
     _kesirli_oran_mi,
     _llm_sayisini_dogrula,
     _odul_ifadesi_gercekten_var_mi,
-    _OLLAMA_URL,
+    _ollama_hazir_mi,
     llm_ile_cikar,
 )
 
 RAW_DATA = Path(__file__).parent.parent / "scraper" / "raw_data"
 
-
-def _ollama_erisilebilir_mi() -> bool:
-    try:
-        requests.get(_OLLAMA_URL.replace("/api/generate", "/api/tags"), timeout=2)
-        return True
-    except requests.RequestException:
-        return False
-
-
 OLLAMA_YOK_MESAJI = "Yerel Ollama servisi calismiyor (ollama serve) - CI'da beklenen durum"
 
-pytestmark = pytest.mark.skipif(not _ollama_erisilebilir_mi(), reason=OLLAMA_YOK_MESAJI)
+pytestmark = pytest.mark.skipif(not _ollama_hazir_mi(), reason=OLLAMA_YOK_MESAJI)
 
 
 def test_temel_alanlari_dogru_cikarir():
@@ -148,6 +140,33 @@ def test_bos_alan_kumesiyle_hicbir_sey_sorulmaz():
     izler = sonuc.pop("_izler")
     assert all(v is None for v in sonuc.values())
     assert izler == {}
+
+
+def test_ollama_kapaliyken_erisilebilirlik_onbelleklenir(monkeypatch):
+    """DENETIM BULGUSU 4: Ollama kapaliyken "localhost"a baglanma
+    denemesi anlik degil ~4 saniye suruyor (Windows'ta IPv6/IPv4 sirali
+    denemesi, olcumle dogrulandi) - onbellek olmadan, cok sayida kaydi
+    isleyen bir akiste (ornegin hibrit_extraction_accuracy.py) bu bedel
+    HER kayit icin ayri ayri odenirdi. _ollama_hazir_mi() durumu 30
+    saniye onbellekte tutmali - ilk cagridan SONRAKI cagrilar aga hic
+    gitmeden aninda donmeli."""
+    # _OLLAMA_DURUM_CACHE'i YENI bir dict ile degistiriyoruz (clear()
+    # yerine) - monkeypatch, test sonunda ORIJINAL dict nesnesini geri
+    # yukler, boylece bu testin ciziği baska hicbir teste sizmaz (ilk
+    # yazimda clear() kullanilmisti - bu, sonraki testlerin GERCEK
+    # Ollama'yi yanlislikla "kapali" sanmasina yol acabilirdi).
+    monkeypatch.setattr(llm_extractor, "_OLLAMA_TAGS_URL", "http://localhost:19999/api/tags")
+    monkeypatch.setattr(llm_extractor, "_OLLAMA_DURUM_CACHE", {})
+
+    ilk_sonuc = llm_extractor._ollama_hazir_mi()
+    assert ilk_sonuc is False
+
+    baslangic = time.monotonic()
+    ikinci_sonuc = llm_extractor._ollama_hazir_mi()
+    sure = time.monotonic() - baslangic
+
+    assert ikinci_sonuc is False
+    assert sure < 0.1, f"Onbellekten donmesi gerekiyordu, {sure:.2f}sn surdu - aga tekrar gitmis olabilir"
 
 
 def test_ilgisiz_metinde_hicbir_alan_bulunmaz():

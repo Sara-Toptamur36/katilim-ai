@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import json
 import re
+import time
 from typing import Optional
 
 import requests
@@ -30,6 +31,7 @@ import tiktoken
 from extraction.normalizer import tarihe_cevir, turkce_kucult
 
 _OLLAMA_URL = "http://localhost:11434/api/generate"
+_OLLAMA_TAGS_URL = "http://localhost:11434/api/tags"
 _MODEL_ADI = "qwen2.5:7b-instruct-q4_K_M"
 
 # Qwen'in kendi tokenizer'i degil ama rehberin kendi notuna gore (Sprint 2
@@ -69,6 +71,36 @@ def _girdiyi_guvenli_kirp(metin: str, maks: int = _MAKS_GIRDI_TOKEN) -> str:
     return metin[: int(len(metin) * oran * 0.95)]  # %5 guvenlik payi
 
 
+_OLLAMA_DURUM_CACHE: dict[str, float | bool] = {}
+_OLLAMA_DURUM_CACHE_SURESI_SN = 30.0
+
+
+def _ollama_hazir_mi() -> bool:
+    """DENETIM BULGUSU: Ollama kapaliyken "localhost"a baglanma denemesi
+    ~4 saniye suruyor (Windows'ta once IPv6 (::1) sonra IPv4 (127.0.0.1)
+    denendigi icin, olcumle dogrulandi) - anlik bir "reddedildi" hatasi
+    DEGIL. hibrit_extraction_accuracy.py gibi cok sayida kaydi sirayla
+    isleyen bir akiste, Ollama kapaliyken HER kayit bu bedeli ayri ayri
+    oderdi (ornegin 36 kayit x ~4sn = 2.5 dakika sirf baglanti
+    denemesinde harcanirdi) - rapor Bolum 8'in "internet/GPU olmasa bile
+    hizli calisir" ilkesine aykiri. Bu fonksiyon durumu 30 saniye
+    onbellekte tutar: Ollama kapaliysa ilk kontrolden sonraki cagrilar
+    aga hic gitmeden ANINDA None doner; sure dolunca tekrar kontrol
+    edilir (Ollama sonradan baslatilmis olabilir)."""
+    simdi = time.monotonic()
+    son_kontrol = _OLLAMA_DURUM_CACHE.get("zaman")
+    if son_kontrol is not None and (simdi - son_kontrol) < _OLLAMA_DURUM_CACHE_SURESI_SN:
+        return bool(_OLLAMA_DURUM_CACHE["hazir"])
+    try:
+        requests.get(_OLLAMA_TAGS_URL, timeout=2)
+        hazir = True
+    except requests.RequestException:
+        hazir = False
+    _OLLAMA_DURUM_CACHE["hazir"] = hazir
+    _OLLAMA_DURUM_CACHE["zaman"] = simdi
+    return hazir
+
+
 def llm_ile_sor(prompt: str, model: str = _MODEL_ADI, zaman_asimi: int = 400) -> Optional[str]:
     """Ollama'nin yerel API'sine istek atar, Temperature=0 ile (rapor
     Bolum 8: tutarli/tekrarlanabilir cevap icin). Baglanti/zaman asimi
@@ -84,7 +116,14 @@ def llm_ile_sor(prompt: str, model: str = _MODEL_ADI, zaman_asimi: int = 400) ->
     (hata firlatmadigi icin fark edilmesi zor bir bulgu). 400sn, gozlenen
     en yavas gercek olcumun (~300sn) uzerine guvenlik payi birakir - kesin
     bir tavan degil, donanima gore yine de yetersiz kalabilir; boyle bir
-    durumda fonksiyon yine sessizce None doner (davranis degismedi)."""
+    durumda fonksiyon yine sessizce None doner (davranis degismedi).
+
+    Once _ollama_hazir_mi() ile ONBELLEKLI bir erisilebilirlik kontrolu
+    yapilir - Ollama kapaliyken her cagrida ayri ayri ~4 saniyelik
+    baglanti-reddi beklemesi odenmesin diye (bkz. _ollama_hazir_mi
+    docstring'i)."""
+    if not _ollama_hazir_mi():
+        return None
     try:
         yanit = requests.post(
             _OLLAMA_URL,

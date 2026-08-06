@@ -12,24 +12,14 @@ otomatik atlanir, bir regresyon degildir.
 """
 
 import pytest
-import requests
 
 from extraction.hybrid_pipeline import kaydi_hibrit_cikar
-from extraction.llm_extractor import _OLLAMA_URL
+from extraction.llm_extractor import _ollama_hazir_mi
 from scraper.scripts.extraction_accuracy import extraction_accuracy_hesapla
-
-
-def _ollama_erisilebilir_mi() -> bool:
-    try:
-        requests.get(_OLLAMA_URL.replace("/api/generate", "/api/tags"), timeout=2)
-        return True
-    except requests.RequestException:
-        return False
-
 
 OLLAMA_YOK_MESAJI = "Yerel Ollama servisi calismiyor (ollama serve) - CI'da beklenen durum"
 
-pytestmark = pytest.mark.skipif(not _ollama_erisilebilir_mi(), reason=OLLAMA_YOK_MESAJI)
+pytestmark = pytest.mark.skipif(not _ollama_hazir_mi(), reason=OLLAMA_YOK_MESAJI)
 
 
 def test_hibrit_dogruluk_regex_only_esiginin_altina_dusmez():

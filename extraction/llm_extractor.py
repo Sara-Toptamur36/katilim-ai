@@ -69,11 +69,22 @@ def _girdiyi_guvenli_kirp(metin: str, maks: int = _MAKS_GIRDI_TOKEN) -> str:
     return metin[: int(len(metin) * oran * 0.95)]  # %5 guvenlik payi
 
 
-def llm_ile_sor(prompt: str, model: str = _MODEL_ADI, zaman_asimi: int = 60) -> Optional[str]:
+def llm_ile_sor(prompt: str, model: str = _MODEL_ADI, zaman_asimi: int = 400) -> Optional[str]:
     """Ollama'nin yerel API'sine istek atar, Temperature=0 ile (rapor
     Bolum 8: tutarli/tekrarlanabilir cevap icin). Baglanti/zaman asimi
     hatasinda None doner - cagiran taraf (hybrid_pipeline) bu durumda
-    regex/NER sonucuyla yetinmeli (kademeli fallback, rapor Bolum 8)."""
+    regex/NER sonucuyla yetinmeli (kademeli fallback, rapor Bolum 8).
+
+    ZAMAN ASIMI NOTU: eskiden 60sn idi, ama GPU'suz/dusuk VRAM'li
+    makinelerde (ornegin `ollama ps` ile dogrulandi: model agirlikli
+    olarak CPU'da calisiyordu, GPU'ya yalnizca kucuk bir kismi sigdi)
+    gercek cikarim suresi istenen alan sayisina ve modelin bellekte
+    "sicak" olup olmamasina gore 150-300+ saniye arasinda degisebiliyor.
+    60sn'de sessizce None donup LLM katmanini devre disi birakiyordu
+    (hata firlatmadigi icin fark edilmesi zor bir bulgu). 400sn, gozlenen
+    en yavas gercek olcumun (~300sn) uzerine guvenlik payi birakir - kesin
+    bir tavan degil, donanima gore yine de yetersiz kalabilir; boyle bir
+    durumda fonksiyon yine sessizce None doner (davranis degismedi)."""
     try:
         yanit = requests.post(
             _OLLAMA_URL,

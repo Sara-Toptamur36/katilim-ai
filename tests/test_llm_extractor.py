@@ -1,8 +1,11 @@
 """extraction/llm_extractor.py testleri (Sprint 2 Gun 2).
 
-GERCEK Ollama/Qwen2.5 servisine baglanir - bu testler YAVAS calisir
-(her cagrı birkac saniye surer, ilk cagrı model soguk basladiginda
-~20 saniyeye kadar cikabilir). llm_ile_sor() kendisi baglanti hatasinda
+GERCEK Ollama/Qwen2.5 servisine baglanir - bu testler YAVAS calisir.
+Sure donanima gore COK degisir: GPU'da saniyeler surerken, GPU'suz/
+dusuk VRAM'li makinelerde (model CPU'ya duser) tek bir cagrı gercekte
+~150 saniyeye kadar cikabiliyor (bkz. llm_extractor.py'deki zaman_asimi
+notu) - bu dosya bu yuzden yavas calisabilir, beklenen durumdur.
+llm_ile_sor() kendisi baglanti/zaman asimi hatasinda
 None doner, hata FIRLATMAZ (kademeli fallback ilkesi) - AMA bu dosyadaki
 testler beklenen degerleri (ornegin 1.89) dogrudan kontrol ettigi icin,
 Ollama gercekten calismiyorsa testler BASARISIZ olur (assert None == 1.89

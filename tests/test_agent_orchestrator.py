@@ -119,6 +119,46 @@ def test_hesaplama_sorusunda_extraction_confidence_none_kalir():
     assert sonuc["audit_ekstra"]["regex_basari_orani"] is None
 
 
+def test_arac_yetersiz_kalirsa_raga_geri_cekilir():
+    """DENETIM BULGUSU: Anahtar kelime tabanli niyet tespiti dogal
+    sorularda yanilabiliyor - "Ziraat Katilim kart kampanyalarinda TAKSIT
+    var mi?" yalnizca "taksit" kelimesi yuzunden hesap makinesine gidiyor
+    ve kullaniciya "Hesaplama icin su bilgiler eksik: anapara..." deniyordu.
+    Oysa bu bir BILGI sorusu ve cevabi kaynaklarda var.
+
+    Secilen arac basarisiz olursa RAG'e geri cekilinmeli."""
+    from agent.orchestrator import soru_isle
+
+    def basarili_rag(soru: str) -> dict:
+        return {
+            "basarili": True,
+            "cevap": "Kaynaklarda bulduklarim: ...",
+            "kaynaklar": [{"kaynak_url": "https://ornek.com", "similarity_score": 0.9}],
+        }
+
+    sonuc = soru_isle(
+        "Ziraat Katılım kart kampanyalarında taksit var mı?",
+        _sahte_getirici,
+        rag_araci=basarili_rag,
+    )
+    assert sonuc["audit_ekstra"]["cagrilan_arac"] == "rag"
+    assert sonuc["fallback"] is False
+    assert sonuc["kaynaklar"]
+    # Ilk aracin neden yetmedigi audit'te KORUNMALI (juri paneli icin)
+    assert "calculator" in (sonuc["audit_ekstra"]["sebep"] or "")
+
+
+def test_rag_de_bulamazsa_ilk_aracin_cevabi_korunur():
+    """Geri cekilme, cevabi UYDURMAYA donusmemeli: RAG de kaynak
+    bulamazsa sistem yine acikca cekimser kalir."""
+    from agent.orchestrator import soru_isle
+
+    sonuc = soru_isle("taksitimi hesapla", _sahte_getirici, rag_araci=_sahte_rag)
+    assert sonuc["fallback"] is True
+    assert sonuc["confidence"] == 0.0
+    assert sonuc["audit_ekstra"]["sebep"]
+
+
 def test_latency_olculur():
     from agent.orchestrator import soru_isle
 

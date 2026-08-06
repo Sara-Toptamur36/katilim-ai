@@ -38,6 +38,12 @@ def soru_isle(soru: str, kayit_getirici: KayitGetirici, rag_araci=None) -> dict:
     baslangic = time.time()
     niyet, guven = niyet_tespit_et(soru)
 
+    # `rag_araci` enjekte edilebilir (kayit_getirici ile ayni desen):
+    # yonlendirme mantigini test eden birim testleri, gercek embedding
+    # modelini yuklemek zorunda kalmasin diye - olculdu: gercek RAG ile
+    # bu testler 2 sn yerine 121 sn suruyordu.
+    rag = rag_araci or rag_aracini_cagir
+
     if niyet == Niyet.HESAPLAMA:
         sonuc = hesaplama_aracini_cagir(soru)
         arac = "calculator"
@@ -48,17 +54,32 @@ def soru_isle(soru: str, kayit_getirici: KayitGetirici, rag_araci=None) -> dict:
         sonuc = karsilastirma_aracini_cagir(soru, kayit_getirici)
         arac = "sql"
     else:
-        # Belirli bir arac eslesmedi -> serbest bilgi sorusu olabilir:
-        # kaynaklarda ara (RAG). Kaynak bulunamazsa rag_aracini_cagir
-        # zaten basarili=False ve gerekce doner - cevap UYDURULMAZ.
-        #
-        # `rag_araci` enjekte edilebilir (kayit_getirici ile ayni desen):
-        # yonlendirme mantigini test eden birim testleri, gercek embedding
-        # modelini yuklemek zorunda kalmasin diye - olculdu: gercek RAG
-        # ile bu testler 2 sn yerine 121 sn suruyordu.
-        sonuc = (rag_araci or rag_aracini_cagir)(soru)
+        sonuc = rag(soru)
         niyet = Niyet.BILGI
         arac = "rag" if sonuc.get("basarili") else "fallback"
+
+    # KADEMELI GERI CEKILME: Anahtar kelime tabanli niyet tespiti dogal
+    # sorularda yanilabiliyor - olculdu: "Ziraat Katilim kart
+    # kampanyalarinda TAKSIT var mi?" yalnizca "taksit" kelimesi yuzunden
+    # hesap makinesine gidiyor ve kullaniciya "Hesaplama icin su bilgiler
+    # eksik: anapara, aylik_oran_percent, vade_ay" deniyordu. Oysa bu bir
+    # BILGI sorusu ve cevabi kaynaklarda var.
+    #
+    # Bu yuzden: secilen arac basarisiz olursa vazgecmek yerine RAG'e
+    # sorulur. RAG de kaynak bulamazsa sistem yine acikca cekimser kalir
+    # (rapor Bolum 5.7/15) - uydurma cevap hicbir yolda uretilmez.
+    if not sonuc.get("basarili") and arac != "rag":
+        rag_sonucu = rag(soru)
+        if rag_sonucu.get("basarili"):
+            # Ilk aracin neden yetmedigi audit'te korunur - juri
+            # panelinde "hangi yol denendi?" gorunur olsun.
+            rag_sonucu["sebep"] = (
+                f"{arac} yetersiz kaldi ({sonuc.get('sebep')}), "
+                "yanit kaynaklardan uretildi"
+            )
+            sonuc = rag_sonucu
+            niyet = Niyet.BILGI
+            arac = "rag"
 
     latency_ms = int((time.time() - baslangic) * 1000)
     veri = sonuc.get("veri", {})

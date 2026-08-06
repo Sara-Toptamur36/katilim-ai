@@ -192,8 +192,15 @@ gösteren ayrı bir Audit Paneli'ni.
 **5. Bir katman çalışmazsa sistem durmaz.**
 Hibrit çıkarımda regex → NER → LLM kademeli çalışır; Ollama kapalıysa veya
 yanıt vermezse LLM katmanı sessizce atlanır ve deterministik katmanların
-sonucu döner. Aynı şekilde niyet tespit edilemezse sistem uydurma cevap
-üretmek yerine durumu açıkça bildirir.
+sonucu döner.
+
+Ajan tarafında da aynı kademelilik var: seçilen araç yetersiz kalırsa
+sistem vazgeçmez, soruyu RAG'e sorar. Gerekçesi ölçüldü — *"Ziraat Katılım
+kart kampanyalarında **taksit** var mı?"* sorusu yalnızca "taksit" kelimesi
+yüzünden hesap makinesine gidiyor ve kullanıcıya *"Hesaplama için şu
+bilgiler eksik: anapara…"* deniyordu; oysa bu bir bilgi sorusu ve cevabı
+kaynaklarda var. Hangi aracın neden yetmediği audit kaydında korunur.
+RAG de kaynak bulamazsa sistem yine **açıkça çekimser kalır.**
 
 **6. RAG kaynaksız cevap üretmez.**
 Serbest bilgi soruları hibrit arama (anlamsal embedding + BM25 kelime araması,

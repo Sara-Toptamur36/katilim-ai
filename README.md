@@ -13,7 +13,8 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 | **Sprint 1** | API sözleşmesi, uç noktalar, veri toplama, terminoloji sözlüğü, dashboard iskeleti | ✅ Tamamlandı |
 | **Sprint 2** | Karşılaştırma motoru, hesap makinesi, hibrit çıkarım (regex+NER+LLM), PostgreSQL | ✅ Tamamlandı |
 | **Sprint 3** | Ajan orkestratör, chatbot arayüzü | ✅ Tamamlandı |
-| | Semantik chunking + embedding + Qdrant indeksleme | 🚧 Devam ediyor |
+| | Qdrant + embedding altyapısı (uçtan uca doğrulandı) | ✅ Tamamlandı |
+| | Semantik chunking + tam indeksleme | 🚧 Devam ediyor |
 | **Sprint 4** | Intent tespiti, Jüri Audit Paneli, gerçek JWT kimlik doğrulama | ✅ Tamamlandı |
 | | RAG (kaynaklı serbest metin yanıtı) | ⬜ Planlandı |
 
@@ -26,7 +27,7 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 | Altın Veri Seti (elle doğrulanmış referans) | **58** kayıt + ekran görüntüsü kanıtı |
 | Çıkarım — dolu alan doğruluğu | **%85,94** (hibrit: regex+NER+LLM) |
 | Çıkarım — boş alan doğruluğu (yanlış pozitif) | **%91,78** — 6 yanlış pozitif |
-| Otomatik test | **351** test, CI her push'ta çalışır |
+| Otomatik test | **358** test, CI her push'ta çalışır |
 
 > Çıkarım kalitesi **tek bir yüzdeyle** değil iki metrikle raporlanır: bir
 > alanı *kaçırmak* ile kaynakta olmayan bir değeri *uydurmak* farklı
@@ -77,7 +78,7 @@ Normalizasyon → Regex + NER + LLM hibrit cikarim             [✓]
    ┌────────────────┬─────────────────┐
    ↓                                  ↓
 PostgreSQL                    Embedding → Qdrant
-(ACTIVE/EXPIRED)         [✓]                      [ ]
+(ACTIVE/EXPIRED)         [✓]                      [✓]
    └────────────────┬─────────────────┘
                     ↓
             AJAN ORKESTRATOR                                 [✓]
@@ -251,7 +252,9 @@ tasarım ilkesi olarak sunulmakla birlikte çalışan bir özellik değildir:
 
 - **Verifier:** yanıttaki her sayının kaynak pasajda/araç çıktısında geçtiğini
   doğrulayan katman (`validation/` klasörü şu an boş).
-- **RAG:** semantik chunking, embedding ve Qdrant indeksleme (`chunking/` boş).
+- **RAG:** Qdrant + embedding altyapısı kuruldu ve uçtan uca doğrulandı
+  ([`docs/qdrant_spike_raporu.md`](docs/qdrant_spike_raporu.md)); semantik
+  chunking ve tam indeksleme henüz yapılmadı, ajan `/chat` akışına bağlanmadı.
 - **Zaman aşımına bağlı otomatik fallback:** ölçülmüş bir p95 eşiğine göre
   deterministik katmana düşme.
 
@@ -267,7 +270,7 @@ katilim-ai/
 ├── terminology/      # Katilim bankaciligi terminoloji sozlugu (Yagmur)
 ├── extraction/       # Regex + NER + LLM hibrit cikarim (Yagmur)
 ├── validation/       # (planlandi) Verifier - henuz bos
-├── chunking/         # (planlandi) Semantik chunking + embedding - henuz bos
+├── chunking/         # Qdrant baglantisi + embedding (semantik chunking henuz yok)
 ├── storage/          # PostgreSQL + Qdrant erisimi
 ├── comparison/       # Karsilastirma motoru - SQL Tool (Sara)
 ├── calculator/       # Hesap makinesi araci (Sara)
@@ -337,6 +340,7 @@ Bazı testler dış servis gerektirir ve servis yoksa **hata vermez, atlanır**:
 |---|---|---|
 | Veritabanı testleri | PostgreSQL (`docker compose up -d postgres`) | atlanır |
 | LLM / hibrit testleri | Ollama + Qwen2.5 modeli | atlanır |
+| Vektör arama testleri | Qdrant (`docker compose up -d qdrant`) + embedding modeli | atlanır |
 
 Bu yüzden CI'da (dış servis yok) test sayısı yerelden düşük görünür — bu bir
 regresyon değil, beklenen durumdur.

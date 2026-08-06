@@ -21,13 +21,10 @@ Kullanim:
 from __future__ import annotations
 
 from extraction.hybrid_pipeline import kaydi_hibrit_cikar
-from scraper.scripts.extraction_accuracy import extraction_accuracy_hesapla
+from scraper.scripts.extraction_accuracy import extraction_accuracy_hesapla, ozet_yazdir
 
 if __name__ == "__main__":
-    sonuc = extraction_accuracy_hesapla(kaydi_hibrit_cikar)
-    print(f"Hibrit Extraction Accuracy: %{sonuc['accuracy']} ({sonuc['dogru_alan']}/{sonuc['toplam_alan']} alan)")
-    print(f"Olcume dahil edilen canli kayit sayisi: {sonuc['canli_kayit_sayisi']}")
-    if sonuc["hatalar"]:
-        print(f"\nHatalar ({len(sonuc['hatalar'])}):")
-        for h in sonuc["hatalar"]:
-            print(f"  [{h['kayit_id']}] {h['alan']}: beklenen={h['beklenen']!r} bulunan={h['bulunan']!r}")
+    print("=== HIBRIT (regex + NER + LLM) ===")
+    # ozet_yazdir, regex-only olcumle AYNI iki metrigi yazdirir - iki
+    # calistirmanin ciktisi dogrudan kiyaslanabilir olsun diye ortak.
+    ozet_yazdir(extraction_accuracy_hesapla(kaydi_hibrit_cikar))

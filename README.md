@@ -24,8 +24,15 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 | Kapsanan katılım bankası | **9 / 10** (BDDK listesi; Adil Katılım gerekçeli hariç — ürün/kampanya yayımlamıyor) |
 | Toplanan gerçek kampanya kaydı | **234** ham kayıt |
 | Altın Veri Seti (elle doğrulanmış referans) | **58** kayıt + ekran görüntüsü kanıtı |
-| Extraction Accuracy (hibrit: regex+NER+LLM) | **%85,94** — bkz. [`docs/extraction_accuracy_raporu.md`](docs/extraction_accuracy_raporu.md) |
-| Otomatik test | **347** test, CI her push'ta çalışır |
+| Çıkarım — dolu alan doğruluğu | **%85,94** (hibrit: regex+NER+LLM) |
+| Çıkarım — boş alan doğruluğu (yanlış pozitif) | **%91,78** — 6 yanlış pozitif |
+| Otomatik test | **351** test, CI her push'ta çalışır |
+
+> Çıkarım kalitesi **tek bir yüzdeyle** değil iki metrikle raporlanır: bir
+> alanı *kaçırmak* ile kaynakta olmayan bir değeri *uydurmak* farklı
+> ağırlıkta hatalardır ve ikincisi finansal kararlarda daha tehlikelidir.
+> Yöntem ve tespit edilen yanlış pozitifler:
+> [`docs/extraction_accuracy_raporu.md`](docs/extraction_accuracy_raporu.md)
 
 **Şu an:** Uç noktalar gerçek verilerle çalışır. Veri kaynağı `GERCEK_VERI_AKTIF`
 ortam değişkeniyle seçilir (`false` = mock/sözleşme testi verisi, `true` = PostgreSQL).

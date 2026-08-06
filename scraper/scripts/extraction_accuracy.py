@@ -11,6 +11,31 @@ bir sey yapilmasini beklemez - `kaydi_cikar()` saf bir fonksiyondur
 Rapor Bolum 13: Extraction Accuracy hedefi >= %95 (henuz gercek veriyle
 olculmemis bir hedefti - bu script ilk gercek olcumu yapar).
 
+IKI AYRI METRIK OLCULUR - tek bir "accuracy" sayisi yaniltici olur:
+
+  1. accuracy (dolu alan dogrulugu): Altin Veri Seti'nde DOLU olan
+     alanlarda motor dogru degeri buluyor mu? "Kacirma" (recall) hatasini
+     olcer.
+
+  2. bos_alan_dogrulugu (yanlis pozitif kontrolu): Kaynakta GERCEKTEN
+     OLMAYAN bir alan icin motor deger UYDURUYOR mu? Bu, finansal bir
+     uygulamada kacirmaktan DAHA TEHLIKELIDIR (kullanici olmayan bir
+     kampanya kosuluna guvenerek karar verebilir).
+
+NEDEN AYRI OLCULMELI: Ilk yazimda yalnizca (1) olculuyordu; gold'da bos
+olan alanlar `continue` ile atlaniyordu. Bu, hicbir alani doldurmayan bos
+bir motorun bile yuksek "accuracy" almasini engellemiyordu - motor bir
+alani uydurdugunda hicbir ceza yoktu. (2) bu acigi kapatir.
+
+BOS ALAN OLCUMUNUN KAPSAMI: Yanlis pozitif yalnizca, altin kayitta
+`alan_belirtilmemis[alan] is True` ile ACIKCA "kaynakta belirtilmemis"
+diye isaretlenmis alanlarda sayilir. Gold'da bos olup bayraklanMAMIS
+alanlar olcum disi tutulur - cunku orada "kaynakta yok" ile "etiketleyici
+bu sutunu doldurmadi" ayirt edilemez; ikisini karistirmak motoru haksiz
+yere cezalandirirdi. Bu yuzden `bos_alan_olculebilen` degeri, toplam bos
+alan sayisindan dusuktur (bkz. altin veri setinde taksit_sayisi /
+erteleme_suresi_ay sutunlari hic doldurulmamis).
+
 SPRINT 2 GENELLESTIRMESI: `extraction_accuracy_hesapla()` artik hangi
 cikarim fonksiyonunun olculecegini parametre olarak alir (varsayilan
 kaydi_cikar - mevcut regex-only davranis/regresyon testi degismedi).
@@ -82,6 +107,8 @@ def extraction_accuracy_hesapla(cikarim_fonksiyonu=kaydi_cikar) -> dict:
     dogru_alan = 0
     hatalar: list[dict] = []
     canli_kayit_sayisi = 0
+    bos_alan_olculebilen = 0
+    yanlis_pozitifler: list[dict] = []
 
     for altin in altin_kayitlari_yukle():
         cikti_json = scraper_kaydini_bul(altin)
@@ -90,13 +117,29 @@ def extraction_accuracy_hesapla(cikarim_fonksiyonu=kaydi_cikar) -> dict:
         canli_kayit_sayisi += 1
 
         cikarilan = cikarim_fonksiyonu(cikti_json["ham_metin"])
+        belirtilmemis = altin.get("alan_belirtilmemis") or {}
 
         for extractor_alan, gold_alan in ALAN_ESLEME.items():
             beklenen = altin.get(gold_alan)
-            if beklenen is None:
-                continue  # altin kayitta bu alan yoksa olcume katma
-            toplam_alan += 1
             bulunan = cikarilan.get(extractor_alan)
+
+            if beklenen is None:
+                # Altin kayitta bu alan bos. Yalnizca ACIKCA "kaynakta
+                # belirtilmemis" diye bayraklanmissa yanlis pozitif olcumune
+                # girer (bkz. modul docstring'i, "BOS ALAN OLCUMUNUN KAPSAMI").
+                if belirtilmemis.get(gold_alan) is True:
+                    bos_alan_olculebilen += 1
+                    if bulunan is not None:
+                        yanlis_pozitifler.append(
+                            {
+                                "kayit_id": altin["kayit_id"],
+                                "alan": extractor_alan,
+                                "uydurulan": bulunan,
+                            }
+                        )
+                continue
+
+            toplam_alan += 1
             if _degerler_esit_mi(beklenen, bulunan):
                 dogru_alan += 1
             else:
@@ -110,20 +153,55 @@ def extraction_accuracy_hesapla(cikarim_fonksiyonu=kaydi_cikar) -> dict:
                 )
 
     oran = round(dogru_alan / toplam_alan * 100, 2) if toplam_alan else 0.0
+    bos_alan_dogru = bos_alan_olculebilen - len(yanlis_pozitifler)
+    bos_oran = (
+        round(bos_alan_dogru / bos_alan_olculebilen * 100, 2)
+        if bos_alan_olculebilen
+        else 0.0
+    )
+
     return {
         "accuracy": oran,
         "toplam_alan": toplam_alan,
         "dogru_alan": dogru_alan,
         "canli_kayit_sayisi": canli_kayit_sayisi,
         "hatalar": hatalar,
+        # --- Yanlis pozitif (bos alan) metrigi ---
+        "bos_alan_dogrulugu": bos_oran,
+        "bos_alan_olculebilen": bos_alan_olculebilen,
+        "yanlis_pozitif_sayisi": len(yanlis_pozitifler),
+        "yanlis_pozitifler": yanlis_pozitifler,
     }
 
 
-if __name__ == "__main__":
-    sonuc = extraction_accuracy_hesapla()
-    print(f"Extraction Accuracy: %{sonuc['accuracy']} ({sonuc['dogru_alan']}/{sonuc['toplam_alan']} alan)")
+def ozet_yazdir(sonuc: dict) -> None:
+    """Olcum sonucunu iki metrikle birlikte yazdirir (hem bu script hem
+    hibrit_extraction_accuracy.py ayni ciktiyi kullanir)."""
+    print(
+        f"1) Dolu alan dogrulugu : %{sonuc['accuracy']} "
+        f"({sonuc['dogru_alan']}/{sonuc['toplam_alan']} alan)"
+    )
+    print(
+        f"2) Bos alan dogrulugu  : %{sonuc['bos_alan_dogrulugu']} "
+        f"({sonuc['bos_alan_olculebilen'] - sonuc['yanlis_pozitif_sayisi']}"
+        f"/{sonuc['bos_alan_olculebilen']} alan) "
+        f"- {sonuc['yanlis_pozitif_sayisi']} yanlis pozitif"
+    )
     print(f"Olcume dahil edilen canli kayit sayisi: {sonuc['canli_kayit_sayisi']}")
+
     if sonuc["hatalar"]:
-        print(f"\nHatalar ({len(sonuc['hatalar'])}):")
+        print(f"\nDolu alan hatalari - kacirilan/yanlis ({len(sonuc['hatalar'])}):")
         for h in sonuc["hatalar"]:
             print(f"  [{h['kayit_id']}] {h['alan']}: beklenen={h['beklenen']!r} bulunan={h['bulunan']!r}")
+
+    if sonuc["yanlis_pozitifler"]:
+        print(
+            f"\nYANLIS POZITIF - kaynakta olmayan alana deger uretildi "
+            f"({len(sonuc['yanlis_pozitifler'])}):"
+        )
+        for y in sonuc["yanlis_pozitifler"]:
+            print(f"  [{y['kayit_id']}] {y['alan']}: uydurulan={y['uydurulan']!r}")
+
+
+if __name__ == "__main__":
+    ozet_yazdir(extraction_accuracy_hesapla())

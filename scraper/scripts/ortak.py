@@ -38,6 +38,13 @@ VARSAYILAN_HEADERS = {"User-Agent": USER_AGENT}
 
 ANAHTAR_KELIMELER = ["kampanya", "kâr payı", "kar payi", "finansman", "oran"]
 MIN_METIN_UZUNLUGU = 1000
+# Bu esigin altindaki metin gercekten bos/bozuk sayilir ve HICBIR sekilde
+# kaydedilmez. MIN_METIN_UZUNLUGU ile bu taban arasindaki metin ("kisa ama
+# gecerli" - ör. "X magazasinda Y taksit" tipi kisa kart kampanyalari)
+# ARTIK reddedilmiyor, "icerik_kalitesi": "kisa" olarak isaretlenip
+# kaydediliyor - proje ilkesi "eksik veri gizlenmez, isaretlenir" (bkz.
+# modul docstring'i), veri KAYBEDILMEZ.
+MIN_METIN_UZUNLUGU_TABAN = 150
 
 GECICI_HATALAR = {429, 500, 502, 503, 504}  # tekrar denenir
 KALICI_HATALAR = {403, 404}  # tekrar DENENMEZ
@@ -186,18 +193,24 @@ def istek_at_retry_ile(
 class DogrulamaSonucu:
     basarili: bool
     sorunlar: list[str] = field(default_factory=list)
+    kisa_icerik: bool = False
 
 
 def dogrulama_kontrolu(metin: str) -> DogrulamaSonucu:
     """Cekilen metnin 'gercekten' kullanilabilir olup olmadigini kontrol
-    eder. Ucunden biri bile basarisiz olursa kayit ONERILMEZ."""
+    eder. Ucunden biri bile basarisiz olursa kayit ONERILMEZ.
+
+    Uzunluk iki kademeli: MIN_METIN_UZUNLUGU_TABAN'in altindaki metin
+    gercekten bos/bozuk sayilir (basarisiz). Bu tabanla MIN_METIN_UZUNLUGU
+    arasindaki metin ise basarili sayilir ama kisa_icerik=True olarak
+    isaretlenir - cagiran taraf bunu kaydeder, sadece kalitesini not eder."""
     sorunlar: list[str] = []
 
     if not metin or not metin.strip():
         sorunlar.append("sayfa metni bos")
 
-    if len(metin) < MIN_METIN_UZUNLUGU:
-        sorunlar.append(f"metin cok kisa ({len(metin)} karakter, min {MIN_METIN_UZUNLUGU})")
+    if len(metin) < MIN_METIN_UZUNLUGU_TABAN:
+        sorunlar.append(f"metin cok kisa ({len(metin)} karakter, min {MIN_METIN_UZUNLUGU_TABAN})")
 
     if not any(k in metin.lower() for k in ANAHTAR_KELIMELER):
         sorunlar.append("beklenen anahtar kelimelerden hicbiri bulunamadi")
@@ -205,7 +218,8 @@ def dogrulama_kontrolu(metin: str) -> DogrulamaSonucu:
     if "�" in metin or "Ã" in metin:
         sorunlar.append("encoding bozuk gorunuyor (mojibake)")
 
-    return DogrulamaSonucu(basarili=not sorunlar, sorunlar=sorunlar)
+    kisa_icerik = not sorunlar and len(metin) < MIN_METIN_UZUNLUGU
+    return DogrulamaSonucu(basarili=not sorunlar, sorunlar=sorunlar, kisa_icerik=kisa_icerik)
 
 
 # ---------------------------------------------------------------------------

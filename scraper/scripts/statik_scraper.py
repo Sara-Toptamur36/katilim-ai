@@ -118,6 +118,8 @@ def sayfa_tara(
     if not dogrulama.basarili:
         ortak.log_yaz(banka_kod, f"DOGRULAMA BASARISIZ ({url}): {dogrulama.sorunlar}")
         return {"url": url, "durum": "dogrulama_basarisiz", "sorunlar": dogrulama.sorunlar}
+    if dogrulama.kisa_icerik:
+        ortak.log_yaz(banka_kod, f"KISA AMA GECERLI, kaydedildi ({len(sayfa_metni)} karakter): {url}")
 
     # Bolum 22.1 - Delta kontrolu: bu URL daha once tarandiysa VE icerigi
     # degismediyse yeniden islemeye gerek yok (Sprint 3 Gun 5 - periyodik
@@ -159,6 +161,7 @@ def sayfa_tara(
         "encoding": yanit.encoding,
         "pdf_dosyalari": pdf_kayitlari,
         "tablolar": tablolar,
+        "icerik_kalitesi": "kisa" if dogrulama.kisa_icerik else "tam",
     }
     json_dosya = ortak.islenmis_kaydet(banka_kod, slug, ham_kayit)
     if url_hashler is not None:
@@ -225,6 +228,10 @@ def tek_sayfa_coklu_kampanya_tara(banka_kod: str, ayar: dict) -> dict:
                 {"url": sentetik_url, "durum": "dogrulama_basarisiz", "sorunlar": dogrulama.sorunlar}
             )
             continue
+        if dogrulama.kisa_icerik:
+            ortak.log_yaz(
+                banka_kod, f"KISA AMA GECERLI, kaydedildi ({len(sayfa_metni)} karakter): {sentetik_url}"
+            )
 
         guncel_hash = ortak.icerik_hashi(sayfa_metni)
         degisti, _ = ortak.icerik_degisti_mi(sayfa_metni, url_hashler.get(sentetik_url))
@@ -255,6 +262,7 @@ def tek_sayfa_coklu_kampanya_tara(banka_kod: str, ayar: dict) -> dict:
             "encoding": yanit.encoding,
             "pdf_dosyalari": [],
             "tablolar": [],
+            "icerik_kalitesi": "kisa" if dogrulama.kisa_icerik else "tam",
         }
         json_dosya = ortak.islenmis_kaydet(banka_kod, slug, ham_kayit)
         url_hashler[sentetik_url] = guncel_hash

@@ -28,6 +28,7 @@ from pathlib import Path
 import pytest
 
 from scraper.scripts.gold_eslesme import KOD_HARITASI, ilk_kelime, scraper_kaydini_bul
+from scraper.scripts.ortak import MIN_METIN_UZUNLUGU_TABAN
 
 GOLD = Path(__file__).parent.parent / "gold_dataset" / "altin_veri_seti.json"
 RAW_DATA = Path(__file__).parent.parent / "scraper" / "raw_data"
@@ -79,14 +80,21 @@ def test_scraper_altin_veriyle_uyusuyor(altin):
 
 def test_hicbir_kayit_bos_degil():
     """Scraper'in urettigi HICBIR json kaydi bos/anlamsiz olmamali
-    (Bolum 15.1 dogrulama kontrolunun kayit-sonrasi guvencesi)."""
+    (Bolum 15.1 dogrulama kontrolunun kayit-sonrasi guvencesi).
+
+    Esik olarak ortak.MIN_METIN_UZUNLUGU_TABAN kullanilir (sabit 500 DEGIL):
+    "kisa ama gecerli" kayitlar (icerik_kalitesi=kisa, ör. "X magazada Y
+    taksit" tipi kisa kart kampanyalari) artik KASITLI olarak bu tabanla
+    MIN_METIN_UZUNLUGU arasinda kaydediliyor - dogrulama_kontrolu'nun
+    gercek tabanindan farkli, keyfi bir sayi kullanmak testi mantiksizca
+    gercek disi kilardi."""
     dosyalar = list(RAW_DATA.glob("*/json/*.json"))
     assert dosyalar, "Henuz hic scraper ciktisi yok - once scraper'i calistir"
     for json_dosya in dosyalar:
         with open(json_dosya, encoding="utf-8") as f:
             kayit = json.load(f)
         assert kayit.get("ham_metin"), f"Bos kayit: {json_dosya}"
-        assert len(kayit["ham_metin"]) > 500, f"Cok kisa kayit: {json_dosya}"
+        assert len(kayit["ham_metin"]) >= MIN_METIN_UZUNLUGU_TABAN, f"Cok kisa kayit: {json_dosya}"
 
 
 def test_hicbir_kayitta_encoding_bozuk_degil():

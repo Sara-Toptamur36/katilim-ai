@@ -74,26 +74,63 @@ def test_bilerek_flaglenmeye_devam_eden_durumlar(metin, beklenen_terim):
     assert beklenen_terim.lower() in bulunan_terimler
 
 
-def test_gercek_scraper_verisinde_musteriye_yansimayan_metinde_beklenen_alarm_sayisi():
-    """Zeynep'in tam scraper verisi (129 gercek kayit, 9 banka) uzerinde
-    kosuldugunda, sadece BILEREK flaglenmeye birakilan 3 dosyada alarm
-    olmali (Turkiye Finans'in duzenleyici 'Ihtiyac Kredisi' referansi x2
-    + site menusundeki 'Mevduat Kampanyalari' linki) - hicbiri regex/
-    mesru urun adi kaynakli yanlis alarm olmamali."""
+# Alarm vermesi BEKLENEN sayfalar - her biri, bankanin kendi metninde
+# gercekten gelenek bankacilik terimi kullanmasindan kaynaklanir (yanlis
+# pozitif DEGIL). Dosya adindaki tarih onekinden bagimsiz olmasi icin
+# yalnizca sayfa slug'i tutulur: ayni sayfa farkli tarihlerde tekrar
+# tarandiginda (Zeynep'in periyodik taramalari) bu liste degismez.
+#
+# NOT: Bu test bilerek SAYI yerine KALIP kontrol eder. Onceden
+# "len(alarmlar) <= 3" seklindeydi; veri 129 -> 234 kayda buyuyunce
+# (10 banka tam tarama + ayni sayfalarin ikinci tarama tarihi) test
+# gercek bir hata olmadigi halde kirildi. Kalip tabanli kontrol hem
+# veri buyumesine hem yeniden taramaya dayaniklidir, ama YENI bir
+# yanlis pozitif cikarsa yine de yakalar.
+ALARM_VERMESI_BEKLENEN_SAYFALAR = {
+    # Turkiye Finans: site menusundeki "Mevduat Kampanyalari" kategori linki
+    "turkiyefinans_tr-tr_kampanyalar_Sayfalar_Biten-Kampanyalar",
+    # Turkiye Finans: "resmi olarak Ihtiyac Kredisi olarak da nitelendirilmekte"
+    # - duzenleyici sinif adi, ama katilim bankasinin PAZARLADIGI terim degil
+    "turkiyefinans_tr-tr_kampanyalar_Sayfalar_banka-calisanlarina-ozel-ihtiyac-finansmani",
+    "turkiyefinans_tr-tr_kampanyalar_Sayfalar_kamu-calisanlarina-ozel-ihtiyac-finansmani",
+    # Hayat Finans: yasal uyari metninde "uygun gormedigi kredi
+    # basvurularini onaylamama hakkina sahiptir" - bankanin kendi
+    # metninde gelenek terim; test_bilerek_flaglenmeye_devam_eden_
+    # durumlar'daki ayni ilke geregi (kaynagi ne olursa olsun ayni
+    # kural gecerli) flaglenmeye devam etmeli.
+    "hayatfinans_kampanyalar_bana-bunu-al-is-ortagim-ile-troy-magaza-firsatlari",
+    "hayatfinans_kampanyalar_xiaomi-urunlerinde-finansman-avantaji",
+}
+
+
+def test_gercek_scraper_verisinde_yalnizca_bilinen_sayfalar_alarm_veriyor():
+    """Zeynep'in tam scraper verisi uzerinde kosuldugunda, YALNIZCA
+    yukarida gerekcesi belgelenmis sayfalarda alarm olmali - hicbiri
+    regex/mesru urun adi kaynakli yanlis alarm olmamali.
+
+    Yeni bir dosya alarm verirse test kirilir; o zaman karar verilmeli:
+    (a) gercek bir gelenek-terim kullanimi mi -> listeye gerekcesiyle
+    eklenir, (b) yanlis pozitif mi -> tutarlilik_kontrolu.py'deki
+    istisna listesi duzeltilir.
+    """
     raw_data = Path(__file__).parent.parent / "scraper" / "raw_data"
     dosyalar = sorted(raw_data.glob("*/json/*.json"))
     assert len(dosyalar) >= 100, "beklenen fixture sayisi degisti, kontrol et"
 
-    alarmli_dosyalar = []
+    beklenmeyen_alarmlar = []
     for dosya in dosyalar:
         with open(dosya, encoding="utf-8") as f:
             kayit = json.load(f)
         metin = kayit.get("ham_metin") or ""
         sonuc = terminoloji_tutarliligini_kontrol_et(metin)
-        if not sonuc["tutarli"]:
-            alarmli_dosyalar.append(dosya.name)
+        if not sonuc["tutarli"] and not any(
+            slug in dosya.stem for slug in ALARM_VERMESI_BEKLENEN_SAYFALAR
+        ):
+            beklenmeyen_alarmlar.append((dosya.name, sonuc["bulunan_sorunlar"]))
 
-    assert len(alarmli_dosyalar) <= 3, f"Beklenenden fazla alarm: {alarmli_dosyalar}"
+    assert beklenmeyen_alarmlar == [], (
+        f"Beklenmeyen yanlis alarm(lar): {beklenmeyen_alarmlar}"
+    )
 
 
 def test_onerilen_standart_terim_dogru():

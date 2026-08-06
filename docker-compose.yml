@@ -11,6 +11,11 @@
 # GUVENLIK NOTU: Asagidaki parola YALNIZCA yerel gelistirme icindir.
 # Gercek/disa acik bir kuruluma gecilirse ortam degiskeni (.env) ile
 # verilmeli ve repoya konmamalidir.
+#
+# SURUM SABITLEME: qdrant ve ollama onceden ":latest" kullaniyordu -
+# bu, ayni docker-compose.yml'nin farkli gunlerde farkli surum cekmesine
+# ve juri demosu sirasinda beklenmedik davranis degisikligine yol
+# acabilirdi. requirements.txt ile ayni gerekce (bkz. oradaki not).
 
 services:
   postgres:
@@ -31,7 +36,9 @@ services:
       retries: 5
 
   qdrant:
-    image: qdrant/qdrant:latest
+    # v1.18.x, requirements.txt'teki qdrant-client==1.18.0 ile ayni
+    # minor hatta - istemci/sunucu surum uyumsuzlugu riskini onler.
+    image: qdrant/qdrant:v1.18.1
     container_name: katilimai-qdrant
     ports:
       - "6333:6333"   # REST API + dashboard
@@ -40,7 +47,9 @@ services:
       - qdrantdata:/qdrant/storage
 
   ollama:
-    image: ollama/ollama:latest
+    # Yerel gelistirmede kurulu olan surumle ayni (winget ile kurulan
+    # Ollama 0.32.5) - Docker'daki ve yereldeki davranis ayrisamasin.
+    image: ollama/ollama:0.32.5
     container_name: katilimai-ollama
     ports:
       - "11434:11434"

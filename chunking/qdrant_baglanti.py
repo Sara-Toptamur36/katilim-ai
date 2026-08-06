@@ -63,6 +63,11 @@ def istemci_al():
     return _istemci
 
 
+# Hibrit koleksiyonda vektorler ISIMLENDIRILIR (tek isimsiz vektor yerine)
+YOGUN_AD = "yogun"
+SEYREK_AD = "seyrek"
+
+
 def koleksiyon_hazirla(
     koleksiyon: str = VARSAYILAN_KOLEKSIYON,
     vektor_boyutu: int = 768,
@@ -87,6 +92,42 @@ def koleksiyon_hazirla(
             # (normalize_embeddings=True), normalize vektorlerde kosinus
             # benzerligi dogru olcudur.
             vectors_config=VectorParams(size=vektor_boyutu, distance=Distance.COSINE),
+        )
+
+
+def hibrit_koleksiyon_hazirla(
+    koleksiyon: str = VARSAYILAN_KOLEKSIYON,
+    vektor_boyutu: int = 768,
+    sifirla: bool = False,
+) -> None:
+    """Hem YOGUN (anlamsal) hem SEYREK (kelime/BM25) vektor tasiyan
+    koleksiyon olusturur.
+
+    Seyrek vektore `Modifier.IDF` verilir: terim frekanslarini biz
+    gonderiyoruz, nadirlik agirligini (IDF) Qdrant sunucu tarafinda
+    hesapliyor - korpus istatistigini istemcide tutmaya gerek kalmiyor
+    (bkz. chunking/seyrek_vektor.py).
+    """
+    from qdrant_client.models import (
+        Distance,
+        Modifier,
+        SparseVectorParams,
+        VectorParams,
+    )
+
+    istemci = istemci_al()
+    if sifirla and istemci.collection_exists(koleksiyon):
+        istemci.delete_collection(koleksiyon)
+
+    if not istemci.collection_exists(koleksiyon):
+        istemci.create_collection(
+            collection_name=koleksiyon,
+            vectors_config={
+                YOGUN_AD: VectorParams(size=vektor_boyutu, distance=Distance.COSINE)
+            },
+            sparse_vectors_config={
+                SEYREK_AD: SparseVectorParams(modifier=Modifier.IDF)
+            },
         )
 
 
@@ -128,6 +169,92 @@ def ara(
         collection_name=koleksiyon, query=sorgu_vektoru, limit=limit
     ).points
     return [{"skor": s.score, "ustveri": s.payload} for s in sonuclar]
+
+
+def hibrit_parcalari_ekle(
+    yogun_vektorler: list[list[float]],
+    seyrek_vektorler: list[tuple[list[int], list[float]]],
+    ustveriler: list[dict],
+    koleksiyon: str = VARSAYILAN_KOLEKSIYON,
+    baslangic_id: int = 0,
+) -> int:
+    """Yogun + seyrek vektorleri birlikte yazar."""
+    from qdrant_client.models import PointStruct, SparseVector
+
+    if not (len(yogun_vektorler) == len(seyrek_vektorler) == len(ustveriler)):
+        raise ValueError(
+            f"yogun ({len(yogun_vektorler)}), seyrek ({len(seyrek_vektorler)}) ve "
+            f"ustveri ({len(ustveriler)}) sayilari eslesmiyor"
+        )
+
+    noktalar = []
+    for i, (yogun, (indeksler, degerler), ustveri) in enumerate(
+        zip(yogun_vektorler, seyrek_vektorler, ustveriler)
+    ):
+        noktalar.append(
+            PointStruct(
+                id=baslangic_id + i,
+                vector={
+                    YOGUN_AD: yogun,
+                    SEYREK_AD: SparseVector(indices=indeksler, values=degerler),
+                },
+                payload=ustveri,
+            )
+        )
+
+    istemci_al().upsert(collection_name=koleksiyon, points=noktalar)
+    return len(noktalar)
+
+
+def hibrit_ara(
+    yogun_sorgu: list[float],
+    seyrek_sorgu: tuple[list[int], list[float]],
+    limit: int = 5,
+    koleksiyon: str = VARSAYILAN_KOLEKSIYON,
+    aday_limiti: int = 20,
+    filtre=None,
+) -> list[dict]:
+    """Yogun + seyrek aramayi birlikte calistirip RRF ile birlestirir.
+
+    RRF (Reciprocal Rank Fusion): iki aramanin SIRALAMALARINI birlestirir,
+    ham skorlarini degil. Bu onemli - yogun ve seyrek skorlar farkli
+    olceklerdedir (kosinus 0-1, BM25 sinirsiz), dogrudan toplanamazlar.
+
+    `filtre` verilirse (ornegin belirli bir banka) her iki aramaya da
+    uygulanir.
+    """
+    from qdrant_client.models import Fusion, FusionQuery, Prefetch, SparseVector
+
+    indeksler, degerler = seyrek_sorgu
+    on_aramalar = [
+        Prefetch(query=yogun_sorgu, using=YOGUN_AD, limit=aday_limiti, filter=filtre),
+    ]
+    # Sorguda hic token yoksa (ornegin yalnizca noktalama) seyrek arama
+    # anlamsizdir - Qdrant'a bos vektor gondermek yerine atlanir.
+    if indeksler:
+        on_aramalar.append(
+            Prefetch(
+                query=SparseVector(indices=indeksler, values=degerler),
+                using=SEYREK_AD,
+                limit=aday_limiti,
+                filter=filtre,
+            )
+        )
+
+    sonuclar = istemci_al().query_points(
+        collection_name=koleksiyon,
+        prefetch=on_aramalar,
+        query=FusionQuery(fusion=Fusion.RRF),
+        limit=limit,
+    ).points
+    return [{"skor": s.score, "ustveri": s.payload} for s in sonuclar]
+
+
+def banka_filtresi(banka: str):
+    """Belirli bir bankaya daraltan Qdrant filtresi uretir."""
+    from qdrant_client.models import FieldCondition, Filter, MatchValue
+
+    return Filter(must=[FieldCondition(key="banka", match=MatchValue(value=banka))])
 
 
 def koleksiyon_sayisi(koleksiyon: str = VARSAYILAN_KOLEKSIYON) -> Optional[int]:

@@ -1,10 +1,13 @@
 """Tool Router - tespit edilen niyete gore dogru deterministik araci cagirir.
 
 Mimari (rapor Bolum 8): Intent Detection -> TOOL ROUTER -> SQL/Calculator/
-Dictionary/RAG/Fallback. Bu dosya ortadaki katmandir. RAG henuz baglanmadigi
-icin (Qdrant/embedding Sprint 3'te), "bilgi" turu serbest sorular simdilik
-Fallback'e duser - bu ACIKCA sebep alaninda belirtilir, sessizce yanlis
-cevap uretilmez.
+Dictionary/RAG/Fallback. Bu dosya ortadaki katmandir.
+
+RAG: Belirli bir araca (hesaplama/sozluk/karsilastirma) uymayan serbest
+bilgi sorulari `rag_aracini_cagir` ile kaynakli olarak yanitlanir. Kaynak
+bulunamazsa cevap UYDURULMAZ - durum acikca bildirilir (rapor Bolum
+5.7/15). Bu karar retriever katmaninda verilir
+(chunking/retriever.py, abstention kurali).
 """
 
 import json
@@ -182,6 +185,64 @@ def karsilastirma_aracini_cagir(soru: str, kayit_getirici) -> dict[str, Any]:
             "sonuc_sayisi": len(sonuc["sonuclar"]),
             "extraction_confidence": _ortalama_confidence(kayitlar),
             "regex_basari_orani": _regex_basari_orani(kayitlar),
+        },
+    }
+
+
+def rag_aracini_cagir(soru: str) -> dict[str, Any]:
+    """RAG Tool: soruyu indekslenmis banka belgelerinde arar ve KAYNAKLI
+    yanit uretir.
+
+    TEMBEL IMPORT: chunking.retriever, sentence_transformers'i cekiyor
+    (olculdu: yalnizca import ~55 sn). Modul basinda import edilseydi,
+    RAG'e hic dokunmayan her API acilisi ve her test bu bedeli oderdi.
+
+    LLM KULLANILMIYOR: Bu katman, bulunan kaynak parcalarini dogrudan
+    dondurur - uzerine serbest metin URETMEZ. Boylece halusinasyon
+    yapisal olarak imkansizdir: kullaniciya gosterilen her cumle bir
+    kaynak belgeden birebir gelir. (LLM ile ozetleme sonraki adimdir ve
+    ancak Verifier ile birlikte guvenli olur.)
+    """
+    from chunking.retriever import getir
+
+    sonuc = getir(soru, limit=3)
+
+    if not sonuc.yeterli_kaynak_var:
+        return {
+            "basarili": False,
+            "cevap": (
+                "Bu soruyu yanitlayacak yeterli kaynak bulamadim. "
+                "Elimdeki banka kampanya belgelerinde sorunuzla eslesen "
+                "bir icerik yok; yanlis bilgi vermektense cevap vermemeyi "
+                "tercih ediyorum."
+            ),
+            "sebep": sonuc.sebep or "Yeterli kaynak bulunamadi",
+            "veri": {"terim_ortusmesi": sonuc.terim_ortusmesi},
+        }
+
+    kaynaklar = []
+    satirlar = []
+    for i, parca in enumerate(sonuc.parcalar, 1):
+        ustveri = parca.get("ustveri") or {}
+        satirlar.append(f"{i}. {ustveri.get('metin', '')}")
+        kaynaklar.append(
+            {
+                "banka": ustveri.get("banka"),
+                "kampanya_adi": ustveri.get("kampanya_adi"),
+                "kaynak_url": ustveri.get("kaynak_url"),
+                "similarity_score": round(parca.get("skor", 0.0), 4),
+                "metin": ustveri.get("metin", ""),
+            }
+        )
+
+    return {
+        "basarili": True,
+        "cevap": "Kaynaklarda bulduklarim:\n" + "\n".join(satirlar),
+        "kaynaklar": kaynaklar,
+        "veri": {
+            "terim_ortusmesi": sonuc.terim_ortusmesi,
+            "eslesen_terimler": sonuc.eslesen_terimler,
+            "parca_sayisi": len(sonuc.parcalar),
         },
     }
 

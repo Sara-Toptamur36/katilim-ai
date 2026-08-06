@@ -13,10 +13,9 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 | **Sprint 1** | API sözleşmesi, uç noktalar, veri toplama, terminoloji sözlüğü, dashboard iskeleti | ✅ Tamamlandı |
 | **Sprint 2** | Karşılaştırma motoru, hesap makinesi, hibrit çıkarım (regex+NER+LLM), PostgreSQL | ✅ Tamamlandı |
 | **Sprint 3** | Ajan orkestratör, chatbot arayüzü | ✅ Tamamlandı |
-| | Qdrant + embedding altyapısı (uçtan uca doğrulandı) | ✅ Tamamlandı |
-| | Semantik chunking + tam indeksleme | 🚧 Devam ediyor |
+| | Semantik chunking + embedding + Qdrant indeksleme | ✅ Tamamlandı |
 | **Sprint 4** | Intent tespiti, Jüri Audit Paneli, gerçek JWT kimlik doğrulama | ✅ Tamamlandı |
-| | RAG (kaynaklı serbest metin yanıtı) | ⬜ Planlandı |
+| | RAG: hibrit arama + kaynaklı yanıt + abstention | ✅ Tamamlandı |
 
 ### Ölçülebilir durum
 
@@ -28,6 +27,9 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 | Çıkarım — dolu alan doğruluğu | **~%86–89** (hibrit: regex+NER+LLM; aşağıdaki sapma notuna bakınız) |
 | Çıkarım — dolu alan doğruluğu (yalnızca regex, deterministik) | **%84,38** |
 | Çıkarım — boş alan doğruluğu (yanlış pozitif) | **%91,78** — 6 yanlış pozitif |
+| RAG — indekslenen parça | **734** (234 belgeden, tekilleştirilmiş) |
+| RAG — Recall@5 | **%96,88** (31/32 kampanya) |
+| RAG — abstention doğruluğu | **%100** (5/5 alan dışı soruda cevap üretilmedi) |
 | Otomatik test | **358** test, CI her push'ta çalışır |
 
 > Çıkarım kalitesi **tek bir yüzdeyle** değil iki metrikle raporlanır: bir
@@ -46,8 +48,8 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 
 **Şu an:** Uç noktalar gerçek verilerle çalışır. Veri kaynağı `GERCEK_VERI_AKTIF`
 ortam değişkeniyle seçilir (`false` = mock/sözleşme testi verisi, `true` = PostgreSQL).
-Serbest/açık uçlu bilgi soruları RAG bağlanmadığı için henüz yanıtlanmaz —
-sistem bu durumda **sessizce yanlış cevap üretmek yerine** durumu açıkça bildirir.
+Serbest/açık uçlu bilgi soruları RAG ile **kaynak göstererek** yanıtlanır;
+kaynak bulunamazsa sistem **cevap uydurmak yerine açıkça çekimser kalır.**
 
 ---
 
@@ -78,16 +80,17 @@ Normalizasyon → Regex + NER + LLM hibrit cikarim             [✓]
         ↓
    ┌────────────────┬─────────────────┐
    ↓                                  ↓
-PostgreSQL                    Embedding → Qdrant
-(ACTIVE/EXPIRED)         [✓]                      [✓]
+PostgreSQL                 Semantik parcalama → Embedding
+(ACTIVE/EXPIRED)      [✓]  + BM25 seyrek vektor → Qdrant    [✓]
    └────────────────┬─────────────────┘
                     ↓
             AJAN ORKESTRATOR                                 [✓]
     Intent Detection → Tool Router
         ↓      ↓      ↓      ↓      ↓
       SQL  Calculator Dict  RAG  Fallback
-      [✓]     [✓]    [✓]   [ ]    [✓]
-                    ↓
+      [✓]     [✓]    [✓]   [✓]    [✓]
+                    ↓        └─ hibrit arama (yogun+seyrek, RRF)
+                    ↓           + abstention + citation
     Response Generator → Terminoloji Kontrolu                [✓]
     → Verifier                                              [ ]
                     ↓
@@ -97,6 +100,147 @@ PostgreSQL                    Embedding → Qdrant
 **Sistemi bir "dil ajanı" yapan katman:** kullanıcı niyetini anlayıp doğru aracı seçen orkestrasyon. Sayısal karşılaştırma sabit SQL şablonlarıyla, hesaplamalar saf Python fonksiyonlarıyla yapılır — LLM'e bırakılmaz.
 
 ---
+
+## Kurulum
+
+### Gereksinimler
+- Python 3.11+
+- Docker Desktop
+- Node.js 18+ (dashboard için)
+
+### 1. Depoyu klonla
+```bash
+git clone <repo-adresi>
+cd katilim-ai
+```
+
+### 2. Altyapı servislerini başlat
+```bash
+docker compose up -d
+```
+Bu, PostgreSQL (5432), Qdrant (6333) ve Ollama (11434) servislerini ayağa kaldırır.
+
+Doğrulama:
+```bash
+docker ps
+```
+
+### 3. Python ortamı
+```bash
+python -m venv venv
+# Windows:
+venv\Scripts\activate
+# macOS/Linux:
+source venv/bin/activate
+
+pip install -r requirements.txt
+```
+
+### 4. Veritabanı şemasını uygula
+```bash
+alembic upgrade head
+```
+
+> **Ekip kuralı:** Şemayı değiştiren kişi migration dosyasını da commit'ler.
+> Diğerleri `git pull` sonrası `alembic upgrade head` çalıştırır.
+
+### 5. API'yi başlat
+```bash
+uvicorn api.main:app --reload
+```
+
+- API: http://localhost:8000
+- **Swagger (interaktif dokümantasyon): http://localhost:8000/docs**
+
+### 6. Dashboard
+```bash
+cd dashboard
+npm install
+npm run dev
+```
+
+### 7. (İsteğe bağlı) Gerçek veriyi yükle
+
+Scraper çıktısını PostgreSQL'e aktarıp çıkarım motoruyla zenginleştirir:
+
+```bash
+python -m scraper.scripts.postgrese_yukle
+python -m extraction.regex_ile_zenginlestir
+```
+
+Ardından API'yi gerçek veriyle çalıştırmak için `GERCEK_VERI_AKTIF=true` verin.
+
+### 8. RAG indeksini kur
+
+Chatbot'un serbest bilgi sorularını kaynak göstererek yanıtlaması için:
+
+```bash
+python -m chunking.indeksleyici
+```
+
+Ham kampanya metinlerini semantik olarak parçalar, hem anlamsal (embedding)
+hem kelime (BM25) vektörü üretip Qdrant'a yazar. Tek seferlik toplu bir
+iştir (~700 parça, birkaç dakika); indeks Qdrant volume'ünde kalır.
+
+Retrieval kalitesini ölçmek için:
+```bash
+python -m scraper.scripts.rag_degerlendirme
+```
+
+### 9. (İsteğe bağlı) Yerel LLM
+
+Hibrit çıkarımın LLM katmanı için:
+
+```bash
+ollama pull qwen2.5:7b-instruct-q4_K_M
+```
+
+> Ollama kurulu değilse sistem çalışmaya devam eder — LLM katmanı atlanır,
+> regex + NER sonuçları kullanılır. GPU'suz makinelerde tek bir LLM çağrısı
+> birkaç dakika sürebilir.
+
+---
+
+## API Kullanımı
+
+Tüm uç noktalar `Authorization` başlığı gerektirir:
+
+```
+Authorization: Bearer <token>
+```
+
+Gerçek JWT doğrulaması `JWT_AKTIF=true` ortam değişkeniyle açılır. Varsayılan
+(`false`) modda herhangi bir token kabul edilir — **başlık formatı iki modda da
+aynıdır**, bu yüzden arayüz kodu geçişte hiç değişmez.
+
+### Uç noktalar
+
+| Metot | Yol | Açıklama |
+|---|---|---|
+| GET | `/` | Servis bilgisi (kimlik gerektirmez) |
+| GET | `/saglik` | Health check |
+| POST | `/token` | Kullanıcı adı/parola ile JWT alma (yalnızca `JWT_AKTIF=true` iken) |
+| GET | `/kampanyalar` | Kampanya listesi (`?banka=` `?kampanya_turu=` ile filtreli) |
+| GET | `/kampanyalar/{id}` | Tek kampanya detayı |
+| POST | `/karsilastir` | Kampanya karşılaştırma |
+| POST | `/hesapla` | Taksit/kâr payı hesabı (saf Python, LLM kullanılmaz) |
+| POST | `/chat` | Doğal dilde soru-cevap (audit bilgisiyle) |
+
+### Örnek
+
+```bash
+curl -H "Authorization: Bearer test-token" \
+     "http://localhost:8000/kampanyalar?banka=Kuveyt%20T%C3%BCrk"
+```
+
+Gerçek JWT modunda kullanıcı oluşturma:
+
+```bash
+python -m api.scripts.kullanici_ekle
+```
+
+---
+
 ## Tasarım İlkeleri
 
 **1. Eksik veri gizlenmez, işaretlenir.**
@@ -122,6 +266,23 @@ yanıt vermezse LLM katmanı sessizce atlanır ve deterministik katmanların
 sonucu döner. Aynı şekilde niyet tespit edilemezse sistem uydurma cevap
 üretmek yerine durumu açıkça bildirir.
 
+**6. RAG kaynaksız cevap üretmez.**
+Serbest bilgi soruları hibrit arama (anlamsal embedding + BM25 kelime araması,
+RRF ile birleştirilir) ile yanıtlanır. Yanıt, bulunan kaynak parçalarını
+**birebir** gösterir; üzerine serbest metin üretilmez — böylece halüsinasyon
+yapısal olarak imkânsızdır.
+
+Kaynak yeterli değilse sistem **cevap vermez.** Bu karar ham benzerlik
+skoruna göre değil, sorunun ayırt edici terimlerinin kaynaklarda gerçekten
+geçip geçmediğine göre verilir. Gerekçesi ölçüldü: yalnızca vektör
+benzerliğine bakıldığında "uzay istasyonunda yerçekimi" gibi tamamen alakasız
+bir soru bile 0,78 skor alıyordu
+([`docs/qdrant_spike_raporu.md`](docs/qdrant_spike_raporu.md), Bulgu 2) —
+yani skor eşiği tek başına yanlış pozitif üretirdi.
+
+Eşik tahminle değil ölçümle seçildi; yöntem, kalibrasyon ve sonuçlar:
+[`docs/rag_tasarim_ve_olcum.md`](docs/rag_tasarim_ve_olcum.md)
+
 ### Henüz kurulmayanlar (dürüstlük notu)
 
 Aşağıdakiler hedef mimaride yer alır ancak **bu depoda henüz kodlanmamıştır**;
@@ -129,11 +290,11 @@ tasarım ilkesi olarak sunulmakla birlikte çalışan bir özellik değildir:
 
 - **Verifier:** yanıttaki her sayının kaynak pasajda/araç çıktısında geçtiğini
   doğrulayan katman (`validation/` klasörü şu an boş).
-- **RAG:** Qdrant + embedding altyapısı kuruldu ve uçtan uca doğrulandı
-  ([`docs/qdrant_spike_raporu.md`](docs/qdrant_spike_raporu.md)); semantik
-  chunking ve tam indeksleme henüz yapılmadı, ajan `/chat` akışına bağlanmadı.
 - **Zaman aşımına bağlı otomatik fallback:** ölçülmüş bir p95 eşiğine göre
   deterministik katmana düşme.
+- **LLM ile yanıt özetleme:** RAG şu an bulduğu kaynak parçalarını *birebir*
+  döndürür, üzerine serbest metin üretmez — bu, halüsinasyonu yapısal olarak
+  imkânsız kılar. Özetleme ancak Verifier ile birlikte güvenli olur.
 
 ---
 
@@ -147,7 +308,7 @@ katilim-ai/
 ├── terminology/      # Katilim bankaciligi terminoloji sozlugu (Yagmur)
 ├── extraction/       # Regex + NER + LLM hibrit cikarim (Yagmur)
 ├── validation/       # (planlandi) Verifier - henuz bos
-├── chunking/         # Qdrant baglantisi + embedding (semantik chunking henuz yok)
+├── chunking/         # RAG: parcalayici, embedding, seyrek vektor, retriever, indeksleyici
 ├── storage/          # PostgreSQL + Qdrant erisimi
 ├── comparison/       # Karsilastirma motoru - SQL Tool (Sara)
 ├── calculator/       # Hesap makinesi araci (Sara)

@@ -21,13 +21,14 @@ from agent.intent import Niyet, niyet_tespit_et
 from agent.router import (
     hesaplama_aracini_cagir,
     karsilastirma_aracini_cagir,
+    rag_aracini_cagir,
     sozluk_aracini_cagir,
 )
 
 KayitGetirici = Callable[[str], list]
 
 
-def soru_isle(soru: str, kayit_getirici: KayitGetirici) -> dict:
+def soru_isle(soru: str, kayit_getirici: KayitGetirici, rag_araci=None) -> dict:
     """Bir kullanici sorusunu isler, cevap + Juri Audit Paneli icin
     gereken tum izlenebilirlik alanlarini doner (rapor Bolum 10.2).
 
@@ -47,23 +48,28 @@ def soru_isle(soru: str, kayit_getirici: KayitGetirici) -> dict:
         sonuc = karsilastirma_aracini_cagir(soru, kayit_getirici)
         arac = "sql"
     else:
-        sonuc = {
-            "basarili": False,
-            "cevap": (
-                "Bu soruyu su an hangi araca yonlendirecegimi tespit edemedim. "
-                "Hesaplama, sozluk veya banka karsilastirmasi ile ilgili "
-                "bir soru sorabilir misiniz?"
-            ),
-            "sebep": "Niyet tespit edilemedi (anahtar kelime eslesmesi yok)",
-        }
-        arac = "fallback"
+        # Belirli bir arac eslesmedi -> serbest bilgi sorusu olabilir:
+        # kaynaklarda ara (RAG). Kaynak bulunamazsa rag_aracini_cagir
+        # zaten basarili=False ve gerekce doner - cevap UYDURULMAZ.
+        #
+        # `rag_araci` enjekte edilebilir (kayit_getirici ile ayni desen):
+        # yonlendirme mantigini test eden birim testleri, gercek embedding
+        # modelini yuklemek zorunda kalmasin diye - olculdu: gercek RAG
+        # ile bu testler 2 sn yerine 121 sn suruyordu.
+        sonuc = (rag_araci or rag_aracini_cagir)(soru)
+        niyet = Niyet.BILGI
+        arac = "rag" if sonuc.get("basarili") else "fallback"
 
     latency_ms = int((time.time() - baslangic) * 1000)
     veri = sonuc.get("veri", {})
 
+    # Kaynaklar YALNIZCA RAG'den gelir - hesaplama/sozluk/karsilastirma
+    # araclari belge degil yapilandirilmis veri kullanir.
+    kaynaklar = sonuc.get("kaynaklar", [])
+
     return {
         "cevap": sonuc["cevap"],
-        "kaynaklar": [],  # RAG baglanmadan provenance uretilemez (Sprint 4)
+        "kaynaklar": kaynaklar,
         "confidence": 1.0 if sonuc.get("basarili") else 0.0,
         "fallback": not sonuc.get("basarili", False),
         "audit_ekstra": {
@@ -77,5 +83,15 @@ def soru_isle(soru: str, kayit_getirici: KayitGetirici) -> dict:
             # alanlarin o araclarda anlami yoktur (rapor Bolum 5.7/15).
             "extraction_confidence": veri.get("extraction_confidence"),
             "regex_basari_orani": veri.get("regex_basari_orani"),
+            # Juri Audit Paneli'nin retriever bolumu (rapor Bolum 10.2):
+            # hangi parcalar, hangi skorla getirildi?
+            "retriever_sonuclari": [
+                {
+                    "chunk_id": k.get("kaynak_url") or "",
+                    "similarity_score": k.get("similarity_score"),
+                    "metin_ozeti": (k.get("metin") or "")[:200],
+                }
+                for k in kaynaklar
+            ],
         },
     }

@@ -15,6 +15,12 @@ class Niyet(str, Enum):
     HESAPLAMA = "hesaplama"
     KARSILASTIRMA = "karsilastirma"
     SOZLUK = "sozluk"
+    # BILGI: belirli bir araca uymayan ama kaynaklarda aranabilecek
+    # serbest bilgi sorusu ("X kampanyasinin sartlari neler?"). Anahtar
+    # kelimeyle tespit EDILMEZ - acik uclu oldugu icin kelime listesiyle
+    # yakalanamaz; niyet_tespit_et hicbir arac eslesmediginde orkestrator
+    # bu yola gider ve RAG'e sorar (bkz. agent/orchestrator.py).
+    BILGI = "bilgi"
     BILINMIYOR = "bilinmiyor"
 
 

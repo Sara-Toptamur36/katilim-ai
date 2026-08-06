@@ -351,6 +351,7 @@ def chat(istek: ChatIstek, kullanici: dict = Depends(token_dogrula)):
             cagrilan_arac=ekstra["cagrilan_arac"],
             extraction_confidence=ekstra["extraction_confidence"],
             regex_basari_orani=ekstra["regex_basari_orani"],
+            retriever_sonuclari=ekstra["retriever_sonuclari"],
             response_confidence=sonuc["confidence"],
             latency_ms=ekstra["latency_ms"],
             sebep=ekstra["sebep"],

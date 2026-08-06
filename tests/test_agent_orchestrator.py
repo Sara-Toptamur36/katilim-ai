@@ -5,6 +5,21 @@ kayit_getirici ile)."""
 from api.schemas import CampaignRecord
 
 
+def _sahte_rag(soru: str) -> dict:
+    """Kaynak bulamayan sahte RAG araci.
+
+    Bu dosya YONLENDIRME mantigini test eder, retrieval kalitesini degil.
+    Gercek RAG kullanilsaydi her test embedding modelini yukleyip Qdrant'a
+    baglanirdi (olculdu: 2 sn -> 121 sn). Gercek RAG yolunun uctan uca
+    testi tests/test_rag_uctan_uca.py'de, Qdrant yoksa atlanarak yapilir.
+    """
+    return {
+        "basarili": False,
+        "cevap": "Bu soruyu yanitlayacak yeterli kaynak bulamadim.",
+        "sebep": "Yeterli kaynak bulunamadi (sahte RAG)",
+    }
+
+
 def _sahte_getirici(banka: str) -> list[CampaignRecord]:
     veriler = {
         "Kuveyt Türk": [CampaignRecord(
@@ -22,7 +37,7 @@ def _sahte_getirici(banka: str) -> list[CampaignRecord]:
 def test_hesaplama_sorusu_calculator_araciyla_cevaplanir():
     from agent.orchestrator import soru_isle
 
-    sonuc = soru_isle("500.000 TL, %1,99 oranla 24 ay vadeyle taksitim ne kadar olur?", _sahte_getirici)
+    sonuc = soru_isle("500.000 TL, %1,99 oranla 24 ay vadeyle taksitim ne kadar olur?", _sahte_getirici, rag_araci=_sahte_rag)
     assert sonuc["audit_ekstra"]["intent"] == "hesaplama"
     assert sonuc["audit_ekstra"]["cagrilan_arac"] == "calculator"
     assert sonuc["confidence"] == 1.0
@@ -32,24 +47,24 @@ def test_hesaplama_sorusu_calculator_araciyla_cevaplanir():
 def test_sozluk_sorusu_dictionary_araciyla_cevaplanir():
     from agent.orchestrator import soru_isle
 
-    sonuc = soru_isle("Kâr payı oranı nedir?", _sahte_getirici)
+    sonuc = soru_isle("Kâr payı oranı nedir?", _sahte_getirici, rag_araci=_sahte_rag)
     assert sonuc["audit_ekstra"]["cagrilan_arac"] == "dictionary"
 
 
 def test_karsilastirma_sorusu_sql_araciyla_cevaplanir():
     from agent.orchestrator import soru_isle
 
-    sonuc = soru_isle("Kuveyt Türk ile Albaraka Türk'ü karsilastir", _sahte_getirici)
+    sonuc = soru_isle("Kuveyt Türk ile Albaraka Türk'ü karsilastir", _sahte_getirici, rag_araci=_sahte_rag)
     assert sonuc["audit_ekstra"]["cagrilan_arac"] == "sql"
     assert sonuc["fallback"] is False
 
 
-def test_bilinmeyen_soru_fallback_araciyla_cevaplanir_ve_sebep_belirtilir():
-    """Rapor Bolum 5.7/15: RAG henuz baglanmadigi icin taninmayan sorular
-    ACIKCA fallback'e duser, sessizce yanlis/uydurma cevap uretilmez."""
+def test_kaynak_bulunamayan_soru_fallbacke_duser_ve_sebep_belirtilir():
+    """Rapor Bolum 5.7/15: RAG de kaynak bulamazsa sistem ACIKCA
+    cekimser kalir - sessizce yanlis/uydurma cevap uretilmez."""
     from agent.orchestrator import soru_isle
 
-    sonuc = soru_isle("Bugun hava nasil?", _sahte_getirici)
+    sonuc = soru_isle("Bugun hava nasil?", _sahte_getirici, rag_araci=_sahte_rag)
     assert sonuc["audit_ekstra"]["cagrilan_arac"] == "fallback"
     assert sonuc["fallback"] is True
     assert sonuc["confidence"] == 0.0
@@ -61,7 +76,7 @@ def test_audit_ekstra_tum_alanlari_icerir():
     (rapor Bolum 10.2)."""
     from agent.orchestrator import soru_isle
 
-    sonuc = soru_isle("test", _sahte_getirici)
+    sonuc = soru_isle("test", _sahte_getirici, rag_araci=_sahte_rag)
     for alan in (
         "intent", "intent_confidence", "cagrilan_arac", "latency_ms", "sebep",
         "extraction_confidence", "regex_basari_orani",
@@ -89,7 +104,7 @@ def test_karsilastirma_sorusunda_extraction_confidence_doldurulur():
         }
         return veriler.get(banka, [])
 
-    sonuc = soru_isle("Kuveyt Türk ile Albaraka Türk'ü karsilastir", zengin_getirici)
+    sonuc = soru_isle("Kuveyt Türk ile Albaraka Türk'ü karsilastir", zengin_getirici, rag_araci=_sahte_rag)
     assert sonuc["audit_ekstra"]["extraction_confidence"] == 0.7
     assert sonuc["audit_ekstra"]["regex_basari_orani"] == 1.0
 
@@ -99,7 +114,7 @@ def test_hesaplama_sorusunda_extraction_confidence_none_kalir():
     anlami yok - sessizce 0 uretmek yerine ACIKCA None kalmali."""
     from agent.orchestrator import soru_isle
 
-    sonuc = soru_isle("500.000 TL, %1,99 oranla 24 ay vadeyle taksitim ne kadar olur?", _sahte_getirici)
+    sonuc = soru_isle("500.000 TL, %1,99 oranla 24 ay vadeyle taksitim ne kadar olur?", _sahte_getirici, rag_araci=_sahte_rag)
     assert sonuc["audit_ekstra"]["extraction_confidence"] is None
     assert sonuc["audit_ekstra"]["regex_basari_orani"] is None
 
@@ -107,5 +122,5 @@ def test_hesaplama_sorusunda_extraction_confidence_none_kalir():
 def test_latency_olculur():
     from agent.orchestrator import soru_isle
 
-    sonuc = soru_isle("taksit hesapla", _sahte_getirici)
+    sonuc = soru_isle("taksit hesapla", _sahte_getirici, rag_araci=_sahte_rag)
     assert sonuc["audit_ekstra"]["latency_ms"] >= 0

@@ -6,13 +6,26 @@ kullanilir cunku regex sayisal alanlarda halusinasyon riski tasimadan
 yuksek kesinlik saglar; LLM ise regex'in yakalayamadigi dolayli
 ifadeleri genelleyebilir. Asla yalnizca LLM'e guvenilmez."
 
-TEMEL KURAL: Bir katmanin doldurdugu alan, sonraki katman tarafindan
-ASLA EZILMEZ. Regex en yuksek kesinlikli katmandir ve her zaman once
-calisir; NER ve LLM yalnizca regex'in (ve sirasiyla NER'in) BOS
-biraktigi alanlara bakar. Bu, ner_extractor.py ve llm_extractor.py'nin
-kendi testlerinde de dogrulanan `sadece_bu_alanlar` sozlesmesiyle
-saglanir (bkz. tests/test_ner_extractor.py::
-test_sadece_bu_alanlar_filtresi_disindaki_alanlari_doldurmaz).
+TEMEL KURAL - ADAY + UZLASTIRICI (guven esikli):
+Her katman bir alan icin ADAY deger uretir. Bir alan, onu dolduran
+katmanin guveni KILITLEME_GUVEN_ESIGI'nin (0.8) ustundeyse kilitlenir
+ve sonraki katmanlar onu ezemez. Altindaysa daha yuksek guvenli bir
+aday devralabilir.
+
+NEDEN DEGISTI: Ilk tasarimda kural "bir katmanin doldurdugu alan ASLA
+ezilmez" idi. Bu yuksek kesinlik saglıyordu ama regex YANLIS bir deger
+urettiginde hata KALICI oluyordu. Olculen kanit
+(docs/extraction_accuracy_raporu.md): 6 yanlis pozitifin 4'u
+kar_payi_orani alanindaydi ve regex'in 0.6 guvenli "genel yuzde"
+fallback'inden geliyordu - sonraki katmanlar bunlari duzeltemiyordu.
+Mentor denetiminde de "regex kilitleme riski" olarak isaretlendi.
+
+Esik, regex'in guvenilir baglam-eslesmeli kaliplarinin (0.85-0.9) ile
+hataya acik fallback'inin (0.6) arasina konmustur: yuksek kesinlik
+korunur, hatali dusuk-guvenli tahminler duzeltilebilir hale gelir.
+
+Her catisma `_catismalar` altinda kaydedilir (hangi katman ne onerdi,
+neden bu secildi) - Juri Audit Paneli icin.
 
 PERFORMANS: Regex zaten TUM alanlari doldurduysa (ornegin kisa/basit
 bir kampanya metni), NER modeli hic yuklenmez ve Ollama'ya hic istek
@@ -54,26 +67,125 @@ _NER_LLM_DESTEKLI_ALANLAR = {
 }
 
 
-def _eksik_alanlari_bul(alanlar: dict) -> set[str]:
-    return {alan for alan in _NER_LLM_DESTEKLI_ALANLAR if alanlar.get(alan) is None}
+# LLM katmaninin urettigi sabit guven (bkz. llm_extractor.py: izlere
+# her alan icin 0.6 yazilir). Asagida neden onemli oldugu aciklaniyor.
+_LLM_SABIT_GUVENI = 0.6
+
+
+def _adaya_acik_alanlar(
+    alanlar: dict, izler: dict, dusuk_guvenlileri_dahil_et: bool
+) -> set[str]:
+    """Sonraki katmana sorulacak alanlar.
+
+    `dusuk_guvenlileri_dahil_et=True` ise bos alanlara EK OLARAK, dusuk
+    guvenle doldurulmus alanlar da sorulur - bu, regex'in YANLIS ama dolu
+    biraktigi bir alanin duzeltilebilmesini saglar ("regex kilitleme"
+    sorununun cozumu).
+
+    NEDEN HER KATMAN ICIN AYNI DEGIL: LLM katmani her alana SABIT 0.6
+    guven verir (llm_extractor.py). Devralma kurali `yeni_guven >
+    mevcut_guven` istedigi icin, LLM ancak guveni 0.6'DAN KUCUK bir alani
+    devralabilir - regex ise en dusuk 0.6 uretir. Yani dusuk guvenli
+    alanlari LLM'e sormak MATEMATIKSEL OLARAK hicbir zaman devralmaya yol
+    acmaz; yalnizca gereksiz LLM cagrisi yapar (olculdu: GPU'suz makinede
+    cagri basina 150-300 sn). Bu yuzden dusuk guvenli alanlar YALNIZCA
+    NER'e sorulur - GLiNER degisken guven uretir (esik 0.4) ve gercekten
+    devralabilir.
+    """
+    acik = set()
+    for alan in _NER_LLM_DESTEKLI_ALANLAR:
+        if alanlar.get(alan) is None:
+            acik.add(alan)
+        elif dusuk_guvenlileri_dahil_et and (
+            izler.get(alan, (None, 0.0))[1] < KILITLEME_GUVEN_ESIGI
+        ):
+            acik.add(alan)
+    return acik
+
+
+# KILITLEME ESIGI: Bir katman bir alani BU guvenin uzerinde doldurduysa
+# sonraki katmanlar onu ezemez. Altindaysa daha yuksek guvenli bir aday
+# devralabilir.
+#
+# 0.8 degeri gercek olcume dayanir (docs/extraction_accuracy_raporu.md):
+# regex'in baglam eslesmeli kaliplari 0.85-0.9 guven uretir ve bunlar
+# guvenilirdir; 0.6'lik "genel yuzde" fallback'i ise olculen 6 yanlis
+# pozitifin 4'unu tek basina uretmisti. Esik tam bu ikisinin arasina
+# konarak yuksek kesinlik korunur, hatali dusuk-guvenli tahminler ise
+# duzeltilebilir hale gelir.
+KILITLEME_GUVEN_ESIGI = 0.8
 
 
 def _katman_sonucunu_birlestir(
-    alanlar: dict, izler: dict, kaynaklar: dict, katman_sonucu: dict, katman_adi: str
+    alanlar: dict,
+    izler: dict,
+    kaynaklar: dict,
+    katman_sonucu: dict,
+    katman_adi: str,
+    adaylar: dict,
+    catismalar: list,
 ) -> None:
-    """katman_sonucu'ndaki degerleri, `alanlar` icinde HALA None olan
-    alanlara yazar. Daha once baska bir katman tarafindan doldurulmus
-    bir alan asla ezilmez - hibrit boru hattinin tek kuralı budur."""
+    """Katmanin urettigi degerleri ADAY olarak kaydeder ve gerekiyorsa
+    mevcut degeri devralir.
+
+    ESKI DAVRANIS (ve neden degisti): once "bir katmanin doldurdugu alan
+    ASLA ezilmez" kurali vardi. Bu, yuksek kesinlik saglıyordu ama regex
+    YANLIS bir deger urettiginde hata KALICI oluyordu - sonraki katmanlar
+    duzeltemiyordu. Mentor denetiminde de "regex kilitleme riski" olarak
+    isaretlendi.
+
+    YENI DAVRANIS: alan, onu dolduran katmanin guveni
+    KILITLEME_GUVEN_ESIGI'nin ustundeyse kilitlidir. Altindaysa, daha
+    yuksek guvenli bir aday devralabilir. Devralma olsun olmasin, farkli
+    deger oneren her katman `_catismalar`'a yazilir - Juri Audit
+    Paneli'nde "hangi katman ne onerdi, neden bu secildi?" gorunur.
+    """
     katman_izler = katman_sonucu.get("_izler", {})
+
     for alan, deger in katman_sonucu.items():
         if alan == "_izler" or deger is None:
             continue
-        if alanlar.get(alan) is not None:
+
+        guven = katman_izler.get(alan, (None, 0.0))[1]
+        adaylar.setdefault(alan, []).append(
+            {"katman": katman_adi, "deger": deger, "guven": guven}
+        )
+
+        mevcut = alanlar.get(alan)
+        if mevcut is None:
+            alanlar[alan] = deger
+            if alan in katman_izler:
+                izler[alan] = katman_izler[alan]
+            kaynaklar[alan] = katman_adi
             continue
-        alanlar[alan] = deger
-        if alan in katman_izler:
-            izler[alan] = katman_izler[alan]
-        kaynaklar[alan] = katman_adi
+
+        # Alan zaten dolu - ayni degeri oneriyorsa yapacak bir sey yok
+        if mevcut == deger:
+            continue
+
+        mevcut_guven = izler.get(alan, (None, 0.0))[1]
+        devralindi = (
+            mevcut_guven < KILITLEME_GUVEN_ESIGI and guven > mevcut_guven
+        )
+
+        catismalar.append(
+            {
+                "alan": alan,
+                "korunan" if not devralindi else "onceki": mevcut,
+                "onceki_katman": kaynaklar.get(alan),
+                "onceki_guven": mevcut_guven,
+                "yeni_katman": katman_adi,
+                "yeni_deger": deger,
+                "yeni_guven": guven,
+                "devralindi": devralindi,
+            }
+        )
+
+        if devralindi:
+            alanlar[alan] = deger
+            if alan in katman_izler:
+                izler[alan] = katman_izler[alan]
+            kaynaklar[alan] = katman_adi
 
 
 def kaydi_hibrit_cikar(ham_metin: str) -> dict:
@@ -97,17 +209,34 @@ def kaydi_hibrit_cikar(ham_metin: str) -> dict:
     alanlar = kaydi_cikar(ham_metin)
     izler = alanlar.pop("_izler")
     kaynaklar = {alan: "regex" for alan in izler}
+    adaylar: dict[str, list[dict]] = {
+        alan: [{"katman": "regex", "deger": alanlar.get(alan), "guven": iz[1]}]
+        for alan, iz in izler.items()
+    }
+    catismalar: list[dict] = []
 
-    eksik = _eksik_alanlari_bul(alanlar)
-    if eksik:
-        ner_sonucu = ner_ile_cikar(ham_metin, sadece_bu_alanlar=eksik)
-        _katman_sonucunu_birlestir(alanlar, izler, kaynaklar, ner_sonucu, "ner")
+    # NER: bos alanlar + dusuk guvenli alanlar (ucuz, gercekten devralabilir)
+    acik = _adaya_acik_alanlar(alanlar, izler, dusuk_guvenlileri_dahil_et=True)
+    if acik:
+        ner_sonucu = ner_ile_cikar(ham_metin, sadece_bu_alanlar=acik)
+        _katman_sonucunu_birlestir(
+            alanlar, izler, kaynaklar, ner_sonucu, "ner", adaylar, catismalar
+        )
 
-    eksik = _eksik_alanlari_bul(alanlar)
-    if eksik:
-        llm_sonucu = llm_ile_cikar(ham_metin, sadece_bu_alanlar=eksik)
-        _katman_sonucunu_birlestir(alanlar, izler, kaynaklar, llm_sonucu, "llm")
+    # LLM: YALNIZCA hala bos alanlar (bkz. _adaya_acik_alanlar docstring'i -
+    # sabit 0.6 guveniyle dusuk guvenli bir alani devralmasi imkansiz,
+    # sormak yalnizca 150-300 sn'lik bir cagriyi bosa harcardi)
+    acik = _adaya_acik_alanlar(alanlar, izler, dusuk_guvenlileri_dahil_et=False)
+    if acik:
+        llm_sonucu = llm_ile_cikar(ham_metin, sadece_bu_alanlar=acik)
+        _katman_sonucunu_birlestir(
+            alanlar, izler, kaynaklar, llm_sonucu, "llm", adaylar, catismalar
+        )
 
     alanlar["_izler"] = izler
     alanlar["_kaynaklar"] = kaynaklar
+    # Juri Audit Paneli / hata ayiklama icin: her alan icin hangi katman
+    # ne onerdi, hangi catismalar yasandi ve neden bu deger secildi?
+    alanlar["_adaylar"] = adaylar
+    alanlar["_catismalar"] = catismalar
     return alanlar

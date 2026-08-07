@@ -21,6 +21,7 @@ uydurulmaz (rapor Bolum 5.7/15).
 from __future__ import annotations
 
 import json
+import os
 import re
 import time
 from typing import Optional
@@ -34,10 +35,37 @@ _OLLAMA_URL = "http://localhost:11434/api/generate"
 _OLLAMA_TAGS_URL = "http://localhost:11434/api/tags"
 _MODEL_ADI = "qwen2.5:7b-instruct-q4_K_M"
 
-# Qwen'in kendi tokenizer'i degil ama rehberin kendi notuna gore (Sprint 2
-# Gun 2) guvenli bir ust sinir vermek icin bu yaklasik sayim yeterlidir.
+# TOKENIZER NOTU (olculdu, tahmin degil): Bu, Qwen'in kendi tokenizer'i
+# degil. Gercek Qwen2.5 tokenizer'iyla karsilastirildiginda cl100k_base,
+# Turkce banka metinlerinde token sayisini %5-16 FAZLA gosteriyor
+# (25 gercek metinde olculen oran: Qwen/cl100k = 0.84-0.95, medyan 0.88).
+# Yani yaklasim GUVENLI YONDE hata yapiyor - gercekte oldugundan daha uzun
+# sanip erken kirpiyor, baglam penceresini asma riski yaratmiyor.
+# Gercek tokenizer'i calisma aninda indirmek, sartname Md. 5.9'un
+# (dis servise bagimli olmama) ruhuna aykiri ek bir indirme getirirdi.
 _KODLAYICI = tiktoken.get_encoding("cl100k_base")
-_MAKS_GIRDI_TOKEN = 3000  # modelin 32K baglam penceresinin cok altinda, guvenli pay
+
+# BAGLAM PENCERESI - SESSIZ TUZAK: Qwen2.5 modeli 32768 token destekler
+# AMA Ollama, istekte `num_ctx` verilmezse modeli VARSAYILAN 4096 ile
+# servis eder (`ollama ps` ciktisiyla dogrulandi). Kod "model 32K
+# destekliyor, bol pay var" varsayimiyla yazilmisti; gercekte uzun bir
+# prompt Ollama tarafindan SESSIZCE kirpilirdi - hata donmez, yalnizca
+# cikarim kalitesi duser. Bu yuzden num_ctx artik ACIKCA gonderilir.
+#
+# NEDEN 32768 DEGIL: baglami buyutmek CPU'da cikarimi belirgin
+# yavaslatiyor (olculdu: 4096 ile ~150-300 sn, 8192 ile 404 sn - yani
+# zaman asimini asiyor). Bu donanimda 4096 tek calisabilir deger.
+# Daha guclu bir makinede (ornegin juri demo bilgisayari) ortam
+# degiskeniyle buyutulebilir; girdi siniri de otomatik olarak buna
+# gore olceklenir.
+_BAGLAM_PENCERESI = int(os.environ.get("LLM_BAGLAM_PENCERESI", "4096"))
+
+# Girdi siniri baglam penceresinden TURETILIR: prompt sablonu ve model
+# ciktisi icin ~1100 token pay birakilir. 4096'da bu ~3000 eder - gercek
+# veride 234 belgenin 12'si bu siniri asip kirpilir. Bu bir gozden kacma
+# DEGIL, donanimin dayattigi bilincli bir sinirdir: alternatifi (8192)
+# olculdu ve zaman asimina yol acti.
+_MAKS_GIRDI_TOKEN = max(1000, _BAGLAM_PENCERESI - 1100)
 
 _ALAN_ACIKLAMALARI = {
     "kar_payi_orani_percent": "kâr payı oranı, yüzde olarak sayı (ör. 1.89). '98/2' gibi KESİRLİ paylaşım formatlarını BURAYA YAZMA, null bırak.",
@@ -101,22 +129,34 @@ def _ollama_hazir_mi() -> bool:
     return hazir
 
 
-def llm_ile_sor(prompt: str, model: str = _MODEL_ADI, zaman_asimi: int = 400) -> Optional[str]:
+# Zaman asimi da donanima gore degisir; ortam degiskeniyle ayarlanabilir.
+# 900 sn (15 dk) bu CPU-agirlikli makinede gercek banka metinleri icin
+# olculen sureye (>400 sn) genis pay birakir. Cikarim CEVRIMDISI toplu bir
+# istir - kullanici bu sureyi beklemez, bu yuzden comert bir zaman asimi
+# "sessizce None donmek"ten her zaman iyidir.
+_VARSAYILAN_ZAMAN_ASIMI = int(os.environ.get("LLM_ZAMAN_ASIMI", "900"))
+
+
+def llm_ile_sor(
+    prompt: str, model: str = _MODEL_ADI, zaman_asimi: int = _VARSAYILAN_ZAMAN_ASIMI
+) -> Optional[str]:
     """Ollama'nin yerel API'sine istek atar, Temperature=0 ile (rapor
     Bolum 8: tutarli/tekrarlanabilir cevap icin). Baglanti/zaman asimi
     hatasinda None doner - cagiran taraf (hybrid_pipeline) bu durumda
     regex/NER sonucuyla yetinmeli (kademeli fallback, rapor Bolum 8).
 
-    ZAMAN ASIMI NOTU: eskiden 60sn idi, ama GPU'suz/dusuk VRAM'li
-    makinelerde (ornegin `ollama ps` ile dogrulandi: model agirlikli
-    olarak CPU'da calisiyordu, GPU'ya yalnizca kucuk bir kismi sigdi)
-    gercek cikarim suresi istenen alan sayisina ve modelin bellekte
-    "sicak" olup olmamasina gore 150-300+ saniye arasinda degisebiliyor.
-    60sn'de sessizce None donup LLM katmanini devre disi birakiyordu
-    (hata firlatmadigi icin fark edilmesi zor bir bulgu). 400sn, gozlenen
-    en yavas gercek olcumun (~300sn) uzerine guvenlik payi birakir - kesin
-    bir tavan degil, donanima gore yine de yetersiz kalabilir; boyle bir
-    durumda fonksiyon yine sessizce None doner (davranis degismedi).
+    ZAMAN ASIMI NOTU (olcumle iki kez guncellendi): Ilk deger 60sn idi ve
+    LLM katmanini SESSIZCE devre disi birakiyordu - hata firlatmadigi icin
+    fark edilmesi zor bir bulguydu. GPU'suz/dusuk VRAM'li makinelerde
+    (`ollama ps` ile dogrulandi: model agirlikli olarak CPU'da calisiyor)
+    gercek olcumler:
+        kisa prompt (birkac token)      :  ~67 sn
+        gercek banka metni (~600-3000 token) : >404 sn
+    400sn de yetersiz kaldi ve ayni sessiz None sorununu uretti; bu yuzden
+    varsayilan 900sn'ye cikarildi ve LLM_ZAMAN_ASIMI ortam degiskeniyle
+    ayarlanabilir yapildi. Cikarim CEVRIMDISI toplu bir istir - kullanici
+    bu sureyi beklemez - bu yuzden comert zaman asimi, sessizce None
+    donmekten her zaman iyidir.
 
     Once _ollama_hazir_mi() ile ONBELLEKLI bir erisilebilirlik kontrolu
     yapilir - Ollama kapaliyken her cagrida ayri ayri ~4 saniyelik
@@ -131,7 +171,14 @@ def llm_ile_sor(prompt: str, model: str = _MODEL_ADI, zaman_asimi: int = 400) ->
                 "model": model,
                 "prompt": prompt,
                 "stream": False,
-                "options": {"temperature": 0},
+                "options": {
+                    "temperature": 0,
+                    # num_ctx ACIKCA verilmeli: Ollama aksi halde modeli
+                    # 4096 baglamla servis eder (model 32768 desteklese
+                    # bile) ve uzun promptlari SESSIZCE kirpar - hata
+                    # donmez, yalnizca cikarim kalitesi duser.
+                    "num_ctx": _BAGLAM_PENCERESI,
+                },
             },
             timeout=zaman_asimi,
         )

@@ -12,6 +12,13 @@
 # Gercek/disa acik bir kuruluma gecilirse ortam degiskeni (.env) ile
 # verilmeli ve repoya konmamalidir.
 #
+# PORT BAGLAMA: Tum servisler "127.0.0.1:" oneki ile YALNIZCA localhost'a
+# baglanir. Onceki halinde ("5432:5432") Docker portu 0.0.0.0'a acar -
+# yani ayni agdaki her makine, varsayilan parolayla PostgreSQL'e ve
+# kimlik dogrulamasi olmayan Qdrant/Ollama'ya erisebilirdi. Yerel
+# gelistirme ve demo icin localhost yeterlidir; baska bir makineden
+# erisim gerekiyorsa bu bilerek ve kimlik dogrulamasiyla acilmalidir.
+#
 # SURUM SABITLEME: qdrant ve ollama onceden ":latest" kullaniyordu -
 # bu, ayni docker-compose.yml'nin farkli gunlerde farkli surum cekmesine
 # ve juri demosu sirasinda beklenmedik davranis degisikligine yol
@@ -26,7 +33,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-katilim_dev}
       POSTGRES_DB: ${POSTGRES_DB:-katilimai}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -41,8 +48,8 @@ services:
     image: qdrant/qdrant:v1.18.1
     container_name: katilimai-qdrant
     ports:
-      - "6333:6333"   # REST API + dashboard
-      - "6334:6334"   # gRPC
+      - "127.0.0.1:6333:6333"   # REST API + dashboard
+      - "127.0.0.1:6334:6334"   # gRPC
     volumes:
       - qdrantdata:/qdrant/storage
 
@@ -52,7 +59,7 @@ services:
     image: ollama/ollama:0.32.5
     container_name: katilimai-ollama
     ports:
-      - "11434:11434"
+      - "127.0.0.1:11434:11434"
     volumes:
       - ollamadata:/root/.ollama
 

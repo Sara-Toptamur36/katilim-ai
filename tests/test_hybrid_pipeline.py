@@ -147,3 +147,131 @@ def test_gercek_veriyle_uctan_uca_calisir():
     for alan, kaynak in sonuc["_kaynaklar"].items():
         assert kaynak in ("regex", "ner", "llm")
         assert sonuc[alan] is not None
+
+
+# ---------------------------------------------------------------------------
+# Aday + uzlastirici (guven esikli devralma) - "regex kilitleme" duzeltmesi
+# ---------------------------------------------------------------------------
+
+
+def _bos_regex_ciktisi(**dolu):
+    """Tum alanlari None olan bir regex ciktisi uretir, verilenleri doldurur."""
+    alanlar = {alan: None for alan in hp._NER_LLM_DESTEKLI_ALANLAR}
+    alanlar.update({"kampanya_turu": None, "kampanya_baslangic": None})
+    izler = {}
+    for alan, (deger, guven) in dolu.items():
+        alanlar[alan] = deger
+        izler[alan] = (str(deger), guven)
+    return alanlar | {"_izler": izler}
+
+
+def test_dusuk_guvenli_regex_degeri_daha_guvenli_ner_ile_duzeltilir(monkeypatch):
+    """DENETIM BULGUSU (mentor: "regex kilitleme riski"): Eskiden bir
+    katmanin doldurdugu alan ASLA ezilmiyordu; regex yanlis bir deger
+    urettiginde hata KALICI oluyordu. Olculen kanit: 6 yanlis pozitifin
+    4'u regex'in 0.6 guvenli "genel yuzde" fallback'inden geliyordu.
+
+    Artik guveni esigin ALTINDA olan bir alan, daha yuksek guvenli bir
+    aday tarafindan devralinabilir."""
+    monkeypatch.setattr(
+        hp, "kaydi_cikar",
+        lambda m: _bos_regex_ciktisi(kar_payi_orani_percent=(10.0, 0.6)),
+    )
+    monkeypatch.setattr(
+        hp, "ner_ile_cikar",
+        lambda m, sadece_bu_alanlar=None: {
+            "kar_payi_orani_percent": 1.89,
+            "_izler": {"kar_payi_orani_percent": ("%1,89", 0.75)},
+        },
+    )
+    monkeypatch.setattr(hp, "llm_ile_cikar", lambda *a, **k: {"_izler": {}})
+
+    sonuc = kaydi_hibrit_cikar("metin")
+    assert sonuc["kar_payi_orani_percent"] == 1.89, "Dusuk guvenli deger duzeltilmedi"
+    assert sonuc["_kaynaklar"]["kar_payi_orani_percent"] == "ner"
+
+
+def test_yuksek_guvenli_regex_degeri_korunur(monkeypatch):
+    """Kilitleme esigi yuksek kesinligi KORUMALI: regex'in baglam
+    eslesmeli (0.85-0.9) sonuclari daha dusuk guvenli bir adayla
+    degistirilmemeli."""
+    monkeypatch.setattr(
+        hp, "kaydi_cikar",
+        lambda m: _bos_regex_ciktisi(kar_payi_orani_percent=(1.89, 0.9)),
+    )
+    monkeypatch.setattr(
+        hp, "ner_ile_cikar",
+        lambda m, sadece_bu_alanlar=None: {
+            "kar_payi_orani_percent": 99.0,
+            "_izler": {"kar_payi_orani_percent": ("%99", 0.7)},
+        },
+    )
+    monkeypatch.setattr(hp, "llm_ile_cikar", lambda *a, **k: {"_izler": {}})
+
+    sonuc = kaydi_hibrit_cikar("metin")
+    assert sonuc["kar_payi_orani_percent"] == 1.89
+    assert sonuc["_kaynaklar"]["kar_payi_orani_percent"] == "regex"
+
+
+def test_catisma_audit_icin_kaydedilir(monkeypatch):
+    """Juri Audit Paneli: hangi katman ne onerdi, neden bu secildi?"""
+    monkeypatch.setattr(
+        hp, "kaydi_cikar",
+        lambda m: _bos_regex_ciktisi(vade_ay=(120, 0.9)),
+    )
+    monkeypatch.setattr(
+        hp, "ner_ile_cikar",
+        lambda m, sadece_bu_alanlar=None: {
+            "vade_ay": 36, "_izler": {"vade_ay": ("36 ay", 0.5)},
+        },
+    )
+    monkeypatch.setattr(hp, "llm_ile_cikar", lambda *a, **k: {"_izler": {}})
+
+    sonuc = kaydi_hibrit_cikar("metin")
+    catismalar = sonuc["_catismalar"]
+    assert len(catismalar) == 1
+    c = catismalar[0]
+    assert c["alan"] == "vade_ay"
+    assert c["devralindi"] is False
+    assert c["yeni_katman"] == "ner"
+    # Adaylar da izlenebilir olmali
+    assert len(sonuc["_adaylar"]["vade_ay"]) == 2
+
+
+def test_dusuk_guvenli_alanlar_LLMe_SORULMAZ(monkeypatch):
+    """MALIYET KURALI: LLM her alana SABIT 0.6 guven verir; devralma
+    `yeni > mevcut` istedigi icin 0.6'lik bir aday, 0.6'lik bir alani
+    devralamaz. Yani dusuk guvenli alani LLM'e sormak matematiksel olarak
+    hicbir zaman ise yaramaz - yalnizca 150-300 sn'lik bir cagriyi bosa
+    harcar. LLM'e YALNIZCA bos alanlar sorulmali."""
+    monkeypatch.setattr(
+        hp, "kaydi_cikar",
+        lambda m: _bos_regex_ciktisi(
+            kar_payi_orani_percent=(10.0, 0.6),   # dusuk guvenli, DOLU
+            vade_ay=(12, 0.9),
+            taksit_sayisi=(6, 0.85),
+            erteleme_suresi_ay=(2, 0.85),
+            finansman_tutari=(1000.0, 0.85),
+            odul_miktari=(50.0, 0.85),
+            odul_birimi=("TL", 0.85),
+            masraf_durumu=("yok", 0.85),
+            hedef_kitle=("yeni", 0.85),
+            kampanya_bitis=("2026-12-31", 0.85),
+            kar_payi_orani_decimal=(0.1, 0.6),
+        ),
+    )
+    monkeypatch.setattr(hp, "ner_ile_cikar", lambda m, sadece_bu_alanlar=None: {"_izler": {}})
+
+    llm_sorulan = {}
+
+    def _izleyen_llm(ham_metin, sadece_bu_alanlar=None):
+        llm_sorulan["alanlar"] = sadece_bu_alanlar
+        return {"_izler": {}}
+
+    monkeypatch.setattr(hp, "llm_ile_cikar", _izleyen_llm)
+    kaydi_hibrit_cikar("metin")
+
+    # Hicbir alan BOS degil -> LLM hic cagrilmamali
+    assert "alanlar" not in llm_sorulan, (
+        f"LLM gereksiz cagrildi: {llm_sorulan.get('alanlar')}"
+    )

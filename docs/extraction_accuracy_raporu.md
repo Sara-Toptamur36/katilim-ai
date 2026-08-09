@@ -137,6 +137,71 @@ gerçek değerine yükselecektir.
 
 ---
 
+## Ablation: katman katkısı — 9 Ağustos 2026
+
+`python -m scraper.scripts.ablation`
+
+"Hibrit %86" tek sayısı, katmanların **kendi** katkısını göstermez. Üst
+katmanlar tek tek kapatılarak üç varyant aynı Altın Veri Seti'ne karşı
+ölçülür.
+
+| Varyant | Dolu% | Boş% | Makro F1 | YP | Süre |
+|---|---|---|---|---|---|
+| regex | 85,94 | 93,15 | 72,56 | 5 | **0,8 sn** |
+| regex + NER | 85,94 | 93,15 | 72,56 **(+0,00)** | 5 | **222 sn** |
+| regex + NER + LLM | — | — | — | — | Ollama gerektirir |
+
+### "+0,00" yanıltıcıdır — NER aslında 7 alan dolduruyor
+
+Alan bazlı F1 hiçbir alanda değişmedi, ama bu **"NER hiçbir şey yapmadı"
+demek değil.** Katman katkısı sayımı:
+
+```
+ner    7 alan doldurdu  ->  0 ölçüme girdi, 7 ÖLÇÜM DIŞI
+```
+
+NER'in doldurduğu 7 `finansman_tutari` değerinin tamamı, Altın Veri
+Seti'nde o hücrenin **hiç etiketlenmediği** kayıtlara denk geliyor — yani
+ne katkısı ne hatası ölçüme yansıyor.
+
+### Ve bu 7 değer büyük olasılıkla YANLIŞ
+
+Değerler kayıtların `odul_miktari` alanıyla **birebir örtüşüyor**:
+
+| Kayıt | NER `finansman_tutari` | Gold `odul_miktari` | Kampanya |
+|---|---|---|---|
+| KT-007 | 750 | **750** | "…750 TL Kazan!" |
+| AL-003 | 1.250 | **1.250** | "…1.250 TL Worldpuan!" |
+| ZK-002 | 1.500 | **1.500** | "…1.500 TL Bankkart Lira!" |
+| ZK-007 | 400 | **400** | "…400 TL Bankkart Lira!" |
+| ZK-008 | 750 | **750** | "…750 TL Bankkart Lira!" |
+| TEK-001 | 500 | **500** | "…500 TL'ye Varan Nakit İade" |
+
+Bunlar kart kampanyaları — finansman ürünü değil, **ödül**. NER ödül
+tutarını finansman tutarı sanıyor. Bu, `extraction/ner_extractor.py`'nin
+kendi 1. bulgusunda zaten belgelenmiş hata:
+
+> *"400 TL Bankkart Lira" → "finansman tutarı" sandı (0,52), "ödül
+> miktarı" DEĞİL.*
+
+**Sonuç:** NER şu an ölçülebilir bir katkı sağlamıyor, 222 saniye
+maliyeti var ve muhtemelen yanlış veri üretiyor — ama bunların hiçbiri
+mevcut Altın Veri Seti kapsamıyla **kanıtlanamıyor**. `finansman_tutari`
+sütununun `alan_belirtilmemis` bayrakları tamamlanırsa (bkz.
+`gold_dataset/etiketleme_yardimcisi.py`) bu 7 alan ölçülebilir yanlış
+pozitife dönüşür ve NER'in gerçek etkisi ortaya çıkar.
+
+Bu, ablation tablosunun tek başına yeterli olmadığının somut örneğidir:
+F1 farkı 0 olan bir katman "zararsız" değil, "**ölçülemez**" olabilir.
+Betik bu durumu artık otomatik uyarıyor.
+
+> **Ollama kapalıyken üçüncü varyant geçersizdir.** `llm_ile_cikar`
+> erişemediğinde hata fırlatmaz, kademeli fallback gereği `None` döner —
+> tablo "LLM katkı yapmadı" gibi görünür, oysa LLM hiç çalışmamıştır.
+> Betik servisi kontrol edip satırı `GECERSIZ` işaretler.
+
+---
+
 ## Geçmiş ölçüm — 1 Ağustos 2026
 
 **%37.5 doğruluk (64 alanın 24'ü doğru), 36 canlı kayıt üzerinden ölçüldü.**

@@ -370,7 +370,13 @@ regresyon değil, beklenen durumdur.
 ```bash
 python -m scraper.scripts.extraction_accuracy         # yalnizca regex
 python -m scraper.scripts.hibrit_extraction_accuracy  # regex + NER + LLM
+python -m scraper.scripts.ablation                    # katman katkisi tablosu
 ```
+
+Ölçüm çıktısı **alan bazlı precision/recall/F1** de basar; `ablation`
+ise üç varyantı (regex / +NER / +NER+LLM) karşılaştırıp her katmanın
+katkısını ayrıştırır. Sonuçlar ve yorumu:
+[`docs/extraction_accuracy_raporu.md`](docs/extraction_accuracy_raporu.md)
 
 ---
 

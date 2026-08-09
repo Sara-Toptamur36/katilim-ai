@@ -196,9 +196,19 @@ def _katman_sonucunu_birlestir(
             kaynaklar[alan] = katman_adi
 
 
-def kaydi_hibrit_cikar(ham_metin: str) -> dict:
+def kaydi_hibrit_cikar(
+    ham_metin: str, ner_kullan: bool = True, llm_kullan: bool = True
+) -> dict:
     """Regex -> NER -> LLM sirasiyla ham metinden CampaignRecord
     alanlarini cikarir.
+
+    KATMAN ANAHTARLARI (`ner_kullan` / `llm_kullan`): ablation olcumu
+    icin eklendi - "her katman NE KATIYOR?" sorusu ancak ust katmanlar
+    kapatilarak cevaplanabilir (bkz. scraper/scripts/ablation.py).
+    Varsayilanlar True'dur; mevcut cagiran kod etkilenmez.
+
+    Regex katmani kapatilamaz: boru hattinin temeli odur ve digerleri
+    onun bos biraktigi alanlar uzerinde calisir.
 
     Donen sozluk regex_extractor.kaydi_cikar() ile ayni alanlara ek
     olarak iki denetim alani tasir:
@@ -224,22 +234,24 @@ def kaydi_hibrit_cikar(ham_metin: str) -> dict:
     catismalar: list[dict] = []
 
     # NER: bos alanlar + dusuk guvenli alanlar (ucuz, gercekten devralabilir)
-    acik = _adaya_acik_alanlar(alanlar, izler, dusuk_guvenlileri_dahil_et=True)
-    if acik:
-        ner_sonucu = ner_ile_cikar(ham_metin, sadece_bu_alanlar=acik)
-        _katman_sonucunu_birlestir(
-            alanlar, izler, kaynaklar, ner_sonucu, "ner", adaylar, catismalar
-        )
+    if ner_kullan:
+        acik = _adaya_acik_alanlar(alanlar, izler, dusuk_guvenlileri_dahil_et=True)
+        if acik:
+            ner_sonucu = ner_ile_cikar(ham_metin, sadece_bu_alanlar=acik)
+            _katman_sonucunu_birlestir(
+                alanlar, izler, kaynaklar, ner_sonucu, "ner", adaylar, catismalar
+            )
 
     # LLM: YALNIZCA hala bos alanlar (bkz. _adaya_acik_alanlar docstring'i -
     # sabit 0.6 guveniyle dusuk guvenli bir alani devralmasi imkansiz,
     # sormak yalnizca 150-300 sn'lik bir cagriyi bosa harcardi)
-    acik = _adaya_acik_alanlar(alanlar, izler, dusuk_guvenlileri_dahil_et=False)
-    if acik:
-        llm_sonucu = llm_ile_cikar(ham_metin, sadece_bu_alanlar=acik)
-        _katman_sonucunu_birlestir(
-            alanlar, izler, kaynaklar, llm_sonucu, "llm", adaylar, catismalar
-        )
+    if llm_kullan:
+        acik = _adaya_acik_alanlar(alanlar, izler, dusuk_guvenlileri_dahil_et=False)
+        if acik:
+            llm_sonucu = llm_ile_cikar(ham_metin, sadece_bu_alanlar=acik)
+            _katman_sonucunu_birlestir(
+                alanlar, izler, kaynaklar, llm_sonucu, "llm", adaylar, catismalar
+            )
 
     # Avantaj ozeti TUM katmanlar bittikten SONRA yeniden derlenir.
     # kaydi_cikar() bunu regex sonuclariyla zaten kurmustu; NER/LLM

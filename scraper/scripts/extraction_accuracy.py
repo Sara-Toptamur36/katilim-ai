@@ -170,6 +170,11 @@ def extraction_accuracy_hesapla(cikarim_fonksiyonu=kaydi_cikar) -> dict:
     # cikarim iki kez calisirdi ve hibrit olcumde bu, her kayit icin
     # ikinci bir LLM cagrisi demekti (olculdu: cagri basina 150-300 sn).
     sayaclar: dict[str, dict[str, int]] = {a: _bos_sayac() for a in ALAN_ESLEME}
+    # Hangi katman kac alan doldurdu ve bunlarin kaci OLCUM DISI kaldi?
+    # Ablation icin kritik: bir katmanin F1'e etkisi 0 cikabilir ama bu
+    # "hicbir sey yapmadi" demek DEGILDIR - doldurdugu alanlar gold'da
+    # etiketlenmemis olabilir, yani katkisi da hatasi da gorunmez olur.
+    katman_katkisi: dict[str, dict[str, int]] = {}
 
     for altin in altin_kayitlari_yukle():
         cikti_json = scraper_kaydini_bul(altin)
@@ -179,10 +184,22 @@ def extraction_accuracy_hesapla(cikarim_fonksiyonu=kaydi_cikar) -> dict:
 
         cikarilan = cikarim_fonksiyonu(cikti_json["ham_metin"])
         belirtilmemis = altin.get("alan_belirtilmemis") or {}
+        # Yalnizca hibrit boru hatti doldurur; regex-only fonksiyonda yoktur.
+        kaynaklar = cikarilan.get("_kaynaklar") or {}
 
         for extractor_alan, gold_alan in ALAN_ESLEME.items():
             beklenen = altin.get(gold_alan)
             bulunan = cikarilan.get(extractor_alan)
+
+            # Katman katkisi: bu alan olcume giriyor mu?
+            if bulunan is not None and extractor_alan in kaynaklar:
+                olculuyor = beklenen is not None or belirtilmemis.get(gold_alan) is True
+                katkı = katman_katkisi.setdefault(
+                    kaynaklar[extractor_alan], {"toplam": 0, "olcum_disi": 0}
+                )
+                katkı["toplam"] += 1
+                if not olculuyor:
+                    katkı["olcum_disi"] += 1
 
             if beklenen is None:
                 # Altin kayitta bu alan bos. Yalnizca ACIKCA "kaynakta
@@ -247,6 +264,9 @@ def extraction_accuracy_hesapla(cikarim_fonksiyonu=kaydi_cikar) -> dict:
         # ikisi geri ayrilamaz. Hangi hata turunun bastigini gormek
         # (ve olcumun kendisini dogrulamak) icin ham dokum korunur.
         "alan_sayaclari": sayaclar,
+        # katman -> {"toplam": doldurdugu alan, "olcum_disi": gold'da
+        # etiketlenmedigi icin dogrulanamayan alan sayisi}
+        "katman_katkisi": katman_katkisi,
     }
 
 

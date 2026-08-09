@@ -186,7 +186,14 @@ class HesapYanit(BaseModel):
 
 
 class Kaynak(BaseModel):
-    """Bir cevabin dayandigi kaynak (rapor Bolum 9 - Provenance)."""
+    """Bir cevabin dayandigi kaynak (rapor Bolum 9 - Provenance).
+
+    `metin`, RAG'in bulup BIREBIR dondurdugu kaynak parcasidir. Alan
+    eksikti: agent/router.py bu degeri zaten uretiyordu ama semada
+    karsiligi olmadigi icin Pydantic tarafindan SESSIZCE dusuruluyordu -
+    yani "her cumle bir kaynak belgeden gelir" iddiasinin kaniti
+    arayuze hic ulasmiyordu.
+    """
 
     banka: str | None = None
     kampanya_adi: str | None = None
@@ -194,6 +201,9 @@ class Kaynak(BaseModel):
     belge_tarihi: date | None = None
     chunk_id: str | None = None
     similarity_score: float | None = None
+    metin: str | None = Field(
+        None, description="Kaynak parcanin birebir metni (RAG yanitlarinda dolu)"
+    )
 
 
 class RetrieverSonuc(BaseModel):

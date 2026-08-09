@@ -168,11 +168,6 @@ içerir — olduğu gibi paylaşılabilir. Ayarları kalıcı değiştirmek içi
 | **gpu** | VRAM ≥ 8 GB | 16384 | 300 sn | **0 / 234** |
 | **cpu** | GPU yok **veya** VRAM < 8 GB | 4096 | 900 sn | 12 / 234 |
 
-> **Karar VRAM'e bakar, "GPU var mı"ya değil.** Ölçülmüş örnek: GeForce
-> MX230'lu bir makinede GPU *var* ama 2 GB VRAM — 7B model (~5 GB) sığmıyor,
-> Ollama modeli %84 oranında CPU'da çalıştırıyor ve tek çıkarım ~355 sn
-> sürüyor. "GPU var" hızlı demek değildir.
-
 Otomatik seçim ezilebilir:
 
 ```bash

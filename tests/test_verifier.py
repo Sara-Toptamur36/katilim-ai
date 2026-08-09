@@ -12,9 +12,19 @@ Iki katmanli test stratejisi:
 import json
 from pathlib import Path
 
+from scraper.scripts.gold_eslesme import scraper_kaydini_bul
 from validation.verifier import kaydi_dogrula, sayisal_iddiayi_dogrula
 
 RAW_DATA = Path(__file__).parent.parent / "scraper" / "raw_data"
+GOLD_DOSYASI = Path(__file__).parent.parent / "gold_dataset" / "altin_veri_seti.json"
+
+
+def _gold_kaydi(kayit_id: str) -> dict:
+    with open(GOLD_DOSYASI, encoding="utf-8") as f:
+        for altin in json.load(f):
+            if altin["kayit_id"] == kayit_id:
+                return altin
+    raise KeyError(kayit_id)
 
 # ---------------------------------------------------------------------------
 # 1) Sentetik metinlerle temel kurallar
@@ -142,3 +152,37 @@ def test_kaydi_dogrula_kt006_tum_alanlari_dogru_ayirir():
     assert sonuclar["finansman_tutari"].dogrulandi
     assert not sonuclar["odul_miktari"].dogrulandi
     assert not sonuclar["kar_payi_orani_percent"].dogrulandi
+
+
+# ---------------------------------------------------------------------------
+# 3) Satir sonu (\n) sinir REGRESYONU - gercek veriyle bulundu (9 Agustos 2026)
+# ---------------------------------------------------------------------------
+
+
+def test_satir_sonuyla_bolunmus_cumlede_dogru_deger_reddedilmez():
+    """DENETIM BULGUSU: ZK-005'in kaynak metninde '...en fazla 1.500 tl'
+    ile 'kazanabilecektir.' ARASINDA bir \\n var (scraper'in get_text
+    ile html blok elemanlarini ayirma bicimi) - AYNI cumle iki satira
+    bolunmus. \\n bir sure ONCE cumle siniri sayiliyordu; bu, GERCEK ve
+    dogru olan 1500 degerini yanlislikla reddediyordu. \\n artik sinir
+    sayilmiyor (yalnizca ., !, ?) - bu test o duzeltmenin regresyonunu
+    korur."""
+    altin = _gold_kaydi("ZK-005")
+    kayit = scraper_kaydini_bul(altin)
+    assert kayit is not None, "ZK-005 artik canli degilse baska bir kayitla degistirilmeli"
+
+    sonuc = sayisal_iddiayi_dogrula("odul_miktari", float(altin["odul_miktari"]), kayit["ham_metin"])
+    assert sonuc.dogrulandi
+
+
+def test_coklu_satirli_tablo_yapisinda_dogru_deger_reddedilmez():
+    """Ikinci ornek: DK-002'nin kaynak metninde odul degeri ('0,1 gram')
+    ile baglam kelimesi ('kazanirsin') arasinda birden fazla \\n var
+    (tablo/liste yapisi html'den duz metne cevrilirken satirlara
+    bolunuyor)."""
+    altin = _gold_kaydi("DK-002")
+    kayit = scraper_kaydini_bul(altin)
+    assert kayit is not None, "DK-002 artik canli degilse baska bir kayitla degistirilmeli"
+
+    sonuc = sayisal_iddiayi_dogrula("odul_miktari", float(altin["odul_miktari"]), kayit["ham_metin"])
+    assert sonuc.dogrulandi

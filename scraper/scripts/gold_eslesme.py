@@ -74,8 +74,20 @@ def scraper_kaydini_bul(altin_kayit: dict) -> dict | None:
     if kod not in TEK_SAYFALI_KODLAR or len(adaylar) == 1:
         return adaylar[0]
 
+    # DENETIM BULGUSU (9 Agustos 2026): Eskiden hedef kelime adayin TUM
+    # govde metninde araniyordu - bu, "ozel" gibi yaygin bir kelimenin
+    # BASKA bir kampanyanin govdesinde TESADUFEN gecmesi durumunda yanlis
+    # eslesme uretiyordu. Somut ornek: TOM-002'nin ("Ozel Okul Odemelerinde
+    # 10 Taksit") hedef kelimesi "ozel"; Restoran kampanyasinin govdesinde
+    # "Hadi Ozel Bankaciligi" ifadesi gectigi icin (ilgisiz bir segment
+    # adi), eslestirme YANLISLIKLA Restoran kaydini donduruyordu - dogru
+    # aday ("Ozel Okul Odemelerinde...") diskte mevcut olmasina ragmen.
+    # Duzeltme: hedef kelime, adayin TUM govdesinde degil yalnizca kendi
+    # BASLIGININ (ilk satirinin) ilk kelimesiyle karsilastirilir - ayni
+    # `ilk_kelime()` fonksiyonu simetrik olarak iki tarafa da uygulanir.
     hedef_kelime = ilk_kelime(altin_kayit["kampanya_adi"])
     for aday in adaylar:
-        if hedef_kelime in aday["ham_metin"].replace("İ", "i").lower():
+        aday_ilk_satir = aday["ham_metin"].split("\n", 1)[0]
+        if ilk_kelime(aday_ilk_satir) == hedef_kelime:
             return aday
     return None

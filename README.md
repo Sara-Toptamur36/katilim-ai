@@ -147,6 +147,46 @@ regex + NER sonuçları kullanılır.
 doğrulanmış referans + ekran görüntüleri), [`scraper/raw_data/`](scraper/raw_data/)
 (ham kampanya metinleri).
 
+### Donanım profili
+
+Sistem çalıştığı makineye göre **kendini otomatik ayarlar** — LLM çıkarım
+süresi donanıma göre 10 kattan fazla değişiyor, tek sabit ayar iki makineye
+birden uymuyor. Makineyi test etmek için:
+
+```bash
+python donanim_testi.py           # donanım + servisler + embedding/LLM hız ölçümü
+python donanim_testi.py --hizli   # LLM testini atla (uzun sürer)
+```
+
+Çıktı; donanımı, seçilen profili, servislerin (Qdrant/Ollama/PostgreSQL)
+durumunu, ölçülmüş embedding ve LLM sürelerini ve tam indeksleme tahminini
+içerir — olduğu gibi paylaşılabilir. Ayarları kalıcı değiştirmek için
+[`.env.ornek`](.env.ornek) dosyasını `.env` olarak kopyalayın.
+
+| Profil | Ne zaman | Bağlam | Zaman aşımı | Kırpılan belge |
+|---|---|---|---|---|
+| **gpu** | VRAM ≥ 8 GB | 16384 | 300 sn | **0 / 234** |
+| **cpu** | GPU yok **veya** VRAM < 8 GB | 4096 | 900 sn | 12 / 234 |
+
+> **Karar VRAM'e bakar, "GPU var mı"ya değil.** Ölçülmüş örnek: GeForce
+> MX230'lu bir makinede GPU *var* ama 2 GB VRAM — 7B model (~5 GB) sığmıyor,
+> Ollama modeli %84 oranında CPU'da çalıştırıyor ve tek çıkarım ~355 sn
+> sürüyor. "GPU var" hızlı demek değildir.
+
+Otomatik seçim ezilebilir:
+
+```bash
+KATILIMAI_PROFIL=gpu          # profili zorla (gpu | cpu)
+LLM_BAGLAM_PENCERESI=16384    # tek ayarı ezle
+LLM_ZAMAN_ASIMI=600
+EMBEDDING_YIGIN_BOYUTU=128
+```
+
+> **Neden bağlam penceresi açıkça gönderilir:** Ollama, istekte `num_ctx`
+> verilmezse modeli 4096 ile servis eder (model 32768 desteklese bile) ve
+> uzun promptu **sessizce kırpar** — hata dönmez, yalnızca çıkarım kalitesi
+> düşer. Bu, `ollama ps` çıktısıyla doğrulanmış gerçek bir tuzaktır.
+
 ### Uç noktalar
 
 Tümü `Authorization: Bearer <token>` başlığı ister. Gerçek JWT doğrulaması
@@ -252,7 +292,9 @@ katilim-ai/
 ├── dashboard/        # React + Ant Design arayuz (Havin)
 ├── gold_dataset/     # Altin Veri Seti (dogrulama referansi)
 ├── tests/            # Sozlesme, cikarim, regresyon ve entegrasyon testleri
-└── docs/             # Proje dokumantasyonu + olcum raporlari
+├── docs/             # Proje dokumantasyonu + olcum raporlari
+├── donanim.py        # Donanim profili (GPU/VRAM tespiti + ayarlar)
+└── donanim_testi.py  # Tanilama + hiz olcumu (baska makinede calistirilir)
 ```
 
 ## Ekip ve Sorumluluklar

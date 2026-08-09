@@ -36,12 +36,15 @@ from chunking.qdrant_baglanti import (
     qdrant_hazir_mi,
 )
 from chunking.seyrek_vektor import seyrek_vektor_uret
+from donanim import ayarlar as _donanim_ayarlari
 
 RAW_DATA = Path(__file__).resolve().parent.parent / "scraper" / "raw_data"
 
 # Embedding'i toplu yapmak tek tek yapmaktan belirgin hizli (olculdu:
-# 20 metin tek cagrida ~0.9 sn). Cok buyuk yigin bellek tuketir.
-YIGIN_BOYUTU = 32
+# 20 metin tek cagrida ~0.9 sn). Yigin boyutu donanima gore secilir
+# (bkz. donanim.py): GPU'da buyuk yigin belirgin hizlandirir, zayif
+# makinede ayni yigin bellegi zorlar.
+YIGIN_BOYUTU = _donanim_ayarlari().embedding_yigin_boyutu
 
 
 def ham_kayitlari_yukle() -> list[dict]:

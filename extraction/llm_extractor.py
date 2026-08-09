@@ -29,7 +29,12 @@ from typing import Optional
 import requests
 import tiktoken
 
+from donanim import ayarlar as _donanim_ayarlari
 from extraction.normalizer import tarihe_cevir, turkce_kucult
+
+# Donanima gore secilen ayarlar (GPU/VRAM tespitine dayanir, ortam
+# degiskenleriyle ezilebilir - bkz. donanim.py)
+_ayarlar = _donanim_ayarlari()
 
 _OLLAMA_URL = "http://localhost:11434/api/generate"
 _OLLAMA_TAGS_URL = "http://localhost:11434/api/tags"
@@ -52,19 +57,16 @@ _KODLAYICI = tiktoken.get_encoding("cl100k_base")
 # prompt Ollama tarafindan SESSIZCE kirpilirdi - hata donmez, yalnizca
 # cikarim kalitesi duser. Bu yuzden num_ctx artik ACIKCA gonderilir.
 #
-# NEDEN 32768 DEGIL: baglami buyutmek CPU'da cikarimi belirgin
-# yavaslatiyor (olculdu: 4096 ile ~150-300 sn, 8192 ile 404 sn - yani
-# zaman asimini asiyor). Bu donanimda 4096 tek calisabilir deger.
-# Daha guclu bir makinede (ornegin juri demo bilgisayari) ortam
-# degiskeniyle buyutulebilir; girdi siniri de otomatik olarak buna
-# gore olceklenir.
-_BAGLAM_PENCERESI = int(os.environ.get("LLM_BAGLAM_PENCERESI", "4096"))
+# Deger DONANIMA GORE secilir (bkz. donanim.py): zayif makinede genis
+# baglam zaman asimina yol aciyor (olculdu: 8192 -> 404 sn), guclu
+# makinede ise dar baglam bosuna belge kirpiyor.
+_BAGLAM_PENCERESI = _ayarlar.llm_baglam_penceresi
 
 # Girdi siniri baglam penceresinden TURETILIR: prompt sablonu ve model
-# ciktisi icin ~1100 token pay birakilir. 4096'da bu ~3000 eder - gercek
-# veride 234 belgenin 12'si bu siniri asip kirpilir. Bu bir gozden kacma
-# DEGIL, donanimin dayattigi bilincli bir sinirdir: alternatifi (8192)
-# olculdu ve zaman asimina yol acti.
+# ciktisi icin ~1100 token pay birakilir. CPU profilinde (4096) bu ~3000
+# eder ve 234 belgenin 12'si kirpilir - bu bir gozden kacma DEGIL,
+# donanimin dayattigi bilincli bir sinirdir. GPU profilinde (16384)
+# sinir ~15000 olur ve hicbir belge kirpilmaz.
 _MAKS_GIRDI_TOKEN = max(1000, _BAGLAM_PENCERESI - 1100)
 
 _ALAN_ACIKLAMALARI = {
@@ -129,12 +131,12 @@ def _ollama_hazir_mi() -> bool:
     return hazir
 
 
-# Zaman asimi da donanima gore degisir; ortam degiskeniyle ayarlanabilir.
-# 900 sn (15 dk) bu CPU-agirlikli makinede gercek banka metinleri icin
-# olculen sureye (>400 sn) genis pay birakir. Cikarim CEVRIMDISI toplu bir
+# Zaman asimi da donanima gore secilir (bkz. donanim.py): CPU profilinde
+# 900 sn - gercek banka metinleri icin olculen sureye (>400 sn) genis pay
+# birakir; GPU profilinde 300 sn yeterlidir. Cikarim CEVRIMDISI toplu bir
 # istir - kullanici bu sureyi beklemez, bu yuzden comert bir zaman asimi
 # "sessizce None donmek"ten her zaman iyidir.
-_VARSAYILAN_ZAMAN_ASIMI = int(os.environ.get("LLM_ZAMAN_ASIMI", "900"))
+_VARSAYILAN_ZAMAN_ASIMI = _ayarlar.llm_zaman_asimi_sn
 
 
 def llm_ile_sor(

@@ -1,6 +1,9 @@
 # --- Sirlar: ASLA repoya girmez ---
 .env
 .env.*
+# Istisna: ornek dosya sir ICERMEZ ve paylasilmasi gerekir - sartname
+# Md. 9 "calistirilmasi icin gerekli tum adimlar" kapsaminda.
+!.env.ornek
 *.pem
 *.key
 secrets/

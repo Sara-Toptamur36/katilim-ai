@@ -207,6 +207,35 @@ Albaraka'nın "Vade Farksız" ifadesinin %0 kâr payına bağlanmaması). Bu
 **Yağmur'un extraction/ katmanına yönelik** somut, eyleme geçirilebilir bir
 bulgu — kodun kendisine dokunulmadı (Yağmur'un alanı).
 
+## Güncelleme — 6 Ağustos 2026
+
+- **10/10 katılım bankasına ulaşıldı** (Adil Katılım'ın ürün/kampanya sayfası
+  hâlâ yok — 29 Temmuz'daki hariç tutma kararı tekrar kontrol edilip
+  doğrulandı). Kalan 9 banka yeniden tarandı: toplam **234 ham kayıt**.
+- **`dogrulama_kontrolu` iki kademeli hale getirildi.** Önceden 1000 karakterin
+  altındaki HER metin tek bir eşikle reddediliyordu; artık 150-999 karakter
+  arası ("X mağazada Y taksit" tipi kısa ama gerçek kart kampanyaları)
+  `icerik_kalitesi: "kisa"` etiketiyle **kaydediliyor**, veri kaybedilmiyor.
+  Bu tek değişiklik +67 kampanya kaydı kazandırdı (9 bankada toplam 118 → 185
+  canlı yakalama).
+- **`playwright install chromium` sonunda çalıştırıldı ve `js_scraper.py`
+  uçtan uca doğrulandı.** Hiçbir katılım bankası JS gerektirmediği için bu
+  kod yolu daha önce hiç test edilmemişti. `quotes.toscrape.com/js/`
+  (Zyte/Scrapinghub'ın scraper geliştiricileri için açtığı, herkese açık bir
+  test sitesi — bir katılım bankası değil, yalnızca JS-render mekanizmasını
+  kanıtlamak için) üzerinde çalıştırıldı: sayfa yalnızca JavaScript
+  çalıştıktan sonra DOM'a gelen bir alıntı metnini doğru şekilde çekti.
+  Kalıcı regresyon testi eklendi: `tests/test_js_scraper.py` (Ollama/Qdrant
+  testleriyle aynı desende, tarayıcı motoru kurulu değilse atlanır).
+- **OCR kurulumu (Tesseract) bilinçli olarak YAPILMADI.** Şu ana kadar
+  toplanan 14 PDF'in hiçbiri taranmış/görüntü PDF çıkmadı
+  (`tarama_supheli: false`, hepsi) — rehberin kendi karar kuralı zaten
+  "1-2 taranmış PDF varsa OCR kurmaktan elle kopyalamak daha hızlı" diyor,
+  şu an 0 tane var. Bunun yerine daha önce hiç test edilmemiş olan
+  **tespit mekanizmasının kendisi** (`pdf_metne_cevir`'in metin katmanı
+  olmayan bir PDF'i doğru "boş" olarak işaretlemesi) sentetik bir PDF ile
+  doğrulandı: `tests/test_pdf_isle.py::test_metin_katmani_olmayan_pdfde_bos_metin_doner`.
+
 ## Bilinen sınırlamalar / sıradaki adımlar
 
 - `unicodedata.normalize("NFKC", ...)`, sayıları bozmasa da bazı sembol/emoji
@@ -216,10 +245,6 @@ bulgu — kodun kendisine dokunulmadı (Yağmur'un alanı).
   yerel tutuluyor; rehberin önerdiği paylaşımlı Google Sheets'e taşınması **Zeynep'in
   yapması gereken tek manuel adım** (Google hesabı gerektirdiği için otomatik
   yapılamadı) — hazır CSV, doğrudan içe aktarılabilir.
-- `playwright install chromium` hâlâ hiç çalıştırılmadı — 9 bankanın hepsi HTML
-  statik (Hayat Finans Next.js/SSR olsa da içerik ham HTML'de mevcut, T.O.M.
-  encoding düzeltmesiyle) çıktı, JS gerektiren bankaya rastlanmadı. Kod
-  (`js_scraper.py`) hazır bekliyor.
 - **PostgreSQL'e gerçek yazma bu ortamda hâlâ doğrulanamadı** (Docker yok) - ama
   bu artık benim sorunum değil, Sara'nın `postgrese_yukle.py`'si bu işi zaten
   yapıyor (repoda mevcut, benim `storage/postgres_yaz.py`'ım silindi).

@@ -69,6 +69,23 @@ def sayfa_metnini_al(sayfa, icerik_secicileri: list[str] | None = None) -> str:
     return sayfa.inner_text("body")
 
 
+def chromium_hazir_mi() -> bool:
+    """`playwright install chromium` calistirilmis mi? (Bolum 16 kurulum
+    notu). CI'da ve bu adimi henuz atmamis gelistirici makinelerinde
+    tarayici motoru YOKTUR - bu durumda JS testleri hata vermek yerine
+    atlanmalidir (bkz. test_js_scraper.py, Ollama/Qdrant testleriyle
+    ayni desen)."""
+    from playwright.sync_api import sync_playwright
+
+    try:
+        with sync_playwright() as p:
+            tarayici = p.chromium.launch(headless=True)
+            tarayici.close()
+        return True
+    except Exception:  # noqa: BLE001 - executable yok/bozuk, herhangi bir hata "hazir degil" demektir
+        return False
+
+
 def js_sayfa_tara(banka_kod: str, url: str, icerik_secicileri: list[str] | None = None) -> dict:
     """JS ile yuklenen tek bir sayfayi Playwright ile ceker.
 

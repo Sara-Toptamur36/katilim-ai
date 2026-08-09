@@ -1,12 +1,16 @@
-"""scraper/scripts/pdf_isle.py testleri (rehber Bolum 17) - link tespiti.
+"""scraper/scripts/pdf_isle.py testleri (rehber Bolum 17) - link tespiti +
+taranmis/goruntu PDF tespiti (Bolum 17.4).
 
-Gercek indirme/aga bagimli olmayan kisim (pdf_linklerini_bul) test edilir;
-indirme + metne cevirme gercek dosya/ag gerektirdigi icin bu dosyada
-test edilmiyor (entegrasyon, gercek scraper calistirmalarinda dogrulandi)."""
+Aga bagimli kisim (pdf_indir) gercek dosya/ag gerektirdigi icin bu dosyada
+test edilmiyor (entegrasyon, gercek scraper calistirmalarinda dogrulandi).
+metne cevirme (pdf_metne_cevir) ise SAF bir fonksiyon oldugu icin (yalnizca
+diskteki bir PDF dosyasini okur, ag gerektirmez) yerelde uretilen bir PDF
+ile test edilebiliyor - bkz. asagidaki "taranmis PDF tespiti" bolumu."""
 
 from bs4 import BeautifulSoup
+from pypdf import PdfWriter
 
-from scraper.scripts.pdf_isle import pdf_linklerini_bul
+from scraper.scripts.pdf_isle import pdf_linklerini_bul, pdf_metne_cevir
 
 HTML = """
 <div>
@@ -90,3 +94,38 @@ def test_http_disi_semalar_reddedilir():
     linkler = pdf_linklerini_bul(BeautifulSoup(html, "html.parser"),
                                  "https://www.banka.com.tr/kampanyalar")
     assert linkler == []
+
+
+# ---------------------------------------------------------------------------
+# Taranmis/goruntu PDF tespiti (Bolum 17.4) - OCR'in kendisi bu depoda
+# kurulu degil (Tesseract ayri yerel kurulum gerektirir, rehberin karar
+# kurali: 1-2 taranmis PDF varsa OCR kurmaktan elle kopyalamak daha hizli -
+# ve su ana kadar toplanan 14 PDF'in HICBIRI taranmis cikmadi). Ama bu
+# testin amaci OCR'i denemek degil: pdf_metne_cevir'in, metin katmani
+# OLMAYAN bir PDF'i dogru sekilde "bos/cok kisa metin" olarak isaretleyip
+# isaretlemedigini (pdflari_isle'daki tarama_supheli esiginin dayandigi
+# davranis) dogrulamaktir - bu, gercek scraper calistirmalarinda hic
+# taranmis PDF'e rastlanmadigi icin simdiye kadar hicbir yerde test
+# edilmemisti.
+# ---------------------------------------------------------------------------
+
+
+def test_metin_katmani_olmayan_pdfde_bos_metin_doner(tmp_path):
+    """Taranmis/goruntu PDF'lerin ortak ozelligi: sayfada metin GOSTERME
+    operatoru (BT/Tj) yoktur, yalnizca bir raster goruntu vardir.
+    PdfWriter.add_blank_page() ile uretilen bos sayfa da ayni ozelligi
+    tasir (metin operatoru yok) - bu yuzden extract_text() acisindan
+    taranmis bir PDF'le ayni sekilde davranir; harici bir goruntu
+    kutuphanesi (Pillow/fitz - proje bagimliligi degil) gerektirmeden
+    gercek kod yolunu test eder."""
+    writer = PdfWriter()
+    writer.add_blank_page(width=200, height=200)
+    pdf_yolu = tmp_path / "taranmis_ornegi.pdf"
+    with open(pdf_yolu, "wb") as f:
+        writer.write(f)
+
+    metin = pdf_metne_cevir(pdf_yolu)
+
+    assert metin == ""
+    # pdflari_isle'daki esik: metin_uzunlugu < 200 -> tarama_supheli=True
+    assert len(metin) < 200

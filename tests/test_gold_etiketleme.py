@@ -141,6 +141,27 @@ def test_yardimci_kavram_gecmiyorsa_bos_doner():
     assert _kanit_cumleleri("Konut finansmaninda 120 ay vade firsati.", desen) == []
 
 
+def test_yardimci_yasakli_yok_yazimini_ONERMEZ(capsys):
+    """REGRESYON: yardimci bir ara surumde '[1] ... Excel'de `yok` yaz'
+    diyordu. Excel rehberi bunu yasakliyor ve excel_to_json.py sayisal
+    alanda 'yok' gorunce DogrulamaHatasi firlatiyor - yani talimati
+    uygulayan etiketleyicinin isi patlardi."""
+    from gold_dataset.etiketleme_yardimcisi import rapor_yazdir
+
+    rapor_yazdir(
+        {
+            "alan": "taksit_sayisi",
+            "hatirlatma": "test",
+            "yok": ["KT-001"],
+            "karar_gerek": [],
+            "kaynaksiz": [],
+        }
+    )
+    cikti = capsys.readouterr().out
+    assert "BOS BIRAK" in cikti
+    assert "`yok` yaz" not in cikti
+
+
 def test_yardimci_cikarim_motorunu_CAGIRMAZ():
     """DAIRESELLIK KORUMASI: Altin Veri Seti, motorun olculdugu
     referanstir. Yardimci motorun ciktisini onerirse olcum kendi kendini

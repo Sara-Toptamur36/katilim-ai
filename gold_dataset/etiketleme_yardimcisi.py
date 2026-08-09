@@ -9,12 +9,17 @@ BU BETIK NE YAPAR: her altin kaydin KAYNAK METNINDE ilgili kavramin
 gecip gecmedigine bakar ve etiketleyiciye karar icin gereken cumleleri
 gosterir. Boylece is ikiye ayrilir:
 
-  1. Kavram metinde HIC gecmiyor  -> "yok" (tek bakista karar, kanit net)
+  1. Kavram metinde HIC gecmiyor  -> hucre BOS kalir (yazilacak sey yok)
   2. Geciyor                      -> aday cumleler gosterilir, deger secilir
 
 Olculdu (9 Agustos 2026): 36 canli kayittan taksit icin yalnizca 8'i,
-erteleme icin yalnizca 2'si gercek karar gerektiriyor. Kalan 60 alan
-"yok" olarak isaretlenebilir.
+erteleme icin yalnizca 2'si gercek karar gerektiriyor.
+
+HUCREYE 'yok' YAZILMAZ: Excel'in "1. Nasil Doldurulur" sayfasi (satir 34)
+bunu acikca yasaklar - bos hucre zaten "kaynakta belirtilmemis" demektir.
+Bos hucrenin OLCUME girmesi icin sutunun etiketlemesinin bittiginin
+kaydedilmesi gerekir: excel_to_json.py'de sutun adini INCELENMEMIS_ALANLAR
+listesinden INCELENMIS_ALANLAR listesine tasi. Bu betigin sonunda hatirlatilir.
 
 >>> NEDEN CIKARIM MOTORUNUN CIKTISI KULLANILMIYOR (kritik) <<<
 Bu betik, extraction/regex_extractor.py'yi CAGIRMAZ ve onun bulduklarini
@@ -125,7 +130,11 @@ def rapor_yazdir(rapor: dict) -> None:
     print("=" * 74)
 
     yok = rapor["yok"]
-    print(f"\n[1] KAYNAK METINDE HIC GECMIYOR -> Excel'de `yok` yaz ({len(yok)} kayit)")
+    print(
+        f"\n[1] KAYNAK METINDE HIC GECMIYOR -> hucreyi BOS BIRAK ({len(yok)} kayit)"
+        "\n    Yazilacak bir sey yok; hucreler zaten bos. Bunlar, sutunun"
+        "\n    etiketlemesi bittiginde 'kaynakta belirtilmemis' sayilacak."
+    )
     if yok:
         for i in range(0, len(yok), 8):
             print("    " + "  ".join(yok[i:i + 8]))
@@ -143,9 +152,10 @@ def rapor_yazdir(rapor: dict) -> None:
         for i in range(0, len(kaynaksiz), 8):
             print("    " + "  ".join(kaynaksiz[i:i + 8]))
         print(
-            "    Bu kayitlar zaten Extraction Accuracy olcumunun DISINDA\n"
-            "    (scraper_kaydini_bul None donuyor). BOS birakmak dogrudur -\n"
-            "    `yok` yazmak, dogrulanamayan bir iddia kaydetmek olurdu."
+            "    Bunlar zaten Extraction Accuracy olcumunun DISINDA\n"
+            "    (scraper_kaydini_bul None donuyor). Ekran goruntusunden\n"
+            "    etiketlemek su an olcume hicbir sey katmaz; kampanya geri\n"
+            "    gelirse degerlendirilir."
         )
 
 
@@ -159,7 +169,12 @@ def main() -> int:
         rapor_yazdir(rapor_uret(alan))
 
     print(f"\n{'=' * 74}")
-    print("  Etiketledikten sonra:  python gold_dataset/excel_to_json.py")
+    print("  ETIKETLEME BITINCE, SIRASIYLA:")
+    print("    1) python gold_dataset/excel_to_json.py")
+    print("    2) excel_to_json.py'de sutun adini INCELENMEMIS_ALANLAR'dan")
+    print("       INCELENMIS_ALANLAR'a tasi  <-- yanlis pozitif olcumu")
+    print("       ANCAK bundan sonra acilir")
+    print("    3) python gold_dataset/excel_to_json.py   (kapsami dogrula)")
     print("=" * 74)
     return 0
 

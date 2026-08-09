@@ -8,6 +8,31 @@ KULLANIM:
 
 Excel'i her guncelledikten sonra bunu calistir ve uretilen JSON'u commit'le.
 CI, regresyon testlerinde bu JSON'u kullanir.
+
+---------------------------------------------------------------------------
+BOS HUCRE NE ZAMAN "KAYNAKTA YOK" SAYILIR (olcumun dogrulugu buna bagli)
+---------------------------------------------------------------------------
+Excel'in "1. Nasil Doldurulur" sayfasindaki kural nettir ve GECERLIDIR:
+bilgi sayfada yoksa hucre BOS birakilir; '-', 'yok', '0' YAZILMAZ.
+
+Ama bu kural yalnizca etiketleyicinin GERCEKTEN BAKTIGI sutunlar icin
+anlamlidir. Sonradan eklenen bir sutunda tum hucreler dogal olarak bostur
+ve bu "kaynakta yok" DEMEK DEGILDIR - sadece "henuz kimse bakmadi"
+demektir. Ikisini karistirmak, hic etiketlenmemis bir sutunu "hepsi bos,
+demek ki motor hic uydurmuyor" diye BEDAVA yuksek puana cevirirdi.
+
+Bu yuzden bos hucrenin anlamini SUTUN belirler:
+
+  * INCELENMIS_ALANLAR : bir etiketleme oturumunda tek tek gozden
+    gecirilmis sutunlar. Bos hucre = "kaynakta belirtilmemis" ->
+    `alan_belirtilmemis` bayragi konur, yanlis pozitif OLCULEBILIR.
+
+  * Listede olmayan sutunlar : olcum disi. scraper/scripts/
+    extraction_accuracy.py bunlarda yanlis pozitif saymaz.
+
+BIR SUTUNUN ETIKETLEMESI BITINCE yapilacak tek is: sutun adini
+INCELENMIS_ALANLAR'a eklemek. Etiketlemeyi hizlandirmak icin:
+    python gold_dataset/etiketleme_yardimcisi.py
 """
 
 import json
@@ -31,10 +56,41 @@ SAYISAL_ALANLAR = {
     "vade_ay",
     "finansman_tutari",
     "odul_miktari",
+    # Vade ile KARISTIRILMAMALI - ucu de ayri kavram (bkz.
+    # extraction/regex_extractor.py: "12 aya varan taksit" vade DEGILDIR).
+    "taksit_sayisi",
+    "erteleme_suresi_ay",
 }
 TARIH_ALANLARI = {"kampanya_baslangic", "kampanya_bitis", "giris_tarihi"}
 
 GECERLI_PERIYOTLAR = {"aylik", "yillik", "belirsiz"}
+
+# Etiketleme oturumunda tek tek gozden gecirilmis sutunlar: burada bos
+# hucre "kaynakta belirtilmemis" demektir (bkz. modul docstring'i).
+# 28 Temmuz 2026 oturumunun kapsami.
+INCELENMIS_ALANLAR = (
+    "kar_payi_orani",
+    "vade_ay",
+    "odul_miktari",
+    "masraf_durumu",
+    "kampanya_bitis",
+    "hedef_kitle",
+)
+
+# Semada/Excel'de VAR ama henuz bir etiketleme oturumundan gecmemis
+# sutunlar. Bos hucreleri "kaynakta yok" SAYILMAZ - olcum disidir.
+# Etiketlemesi biten sutun buradan cikarilip INCELENMIS_ALANLAR'a eklenir.
+#
+# taksit_sayisi / erteleme_suresi_ay : sutunlar 9 Agustos'ta eklendi.
+# odul_birimi / finansman_tutari     : 28 Temmuz oturumunda doldurulmus
+#   ama bos birakilanlar gozden gecirilmemis (30 ve 16 kayitta deger var,
+#   kalanlar icin "bakildi mi" bilinmiyor).
+INCELENMEMIS_ALANLAR = (
+    "taksit_sayisi",
+    "erteleme_suresi_ay",
+    "odul_birimi",
+    "finansman_tutari",
+)
 
 
 class DogrulamaHatasi(Exception):
@@ -152,12 +208,10 @@ def donustur(excel_yolu: Path = EXCEL) -> tuple[list[dict], list[str]]:
             else:
                 kayit[alan] = str(deger).strip() if deger is not None else None
 
-        # Seffaflik bayragi: hangi alanlar kaynakta belirtilmemis
+        # Seffaflik bayragi: YALNIZCA incelenmis sutunlarda bos hucre
+        # "kaynakta belirtilmemis" sayilir (bkz. modul docstring'i).
         kayit["alan_belirtilmemis"] = {
-            a: True
-            for a in ("kar_payi_orani", "vade_ay", "odul_miktari",
-                      "masraf_durumu", "kampanya_bitis", "hedef_kitle")
-            if kayit.get(a) is None
+            a: True for a in INCELENMIS_ALANLAR if kayit.get(a) is None
         }
 
         tum_uyarilar.extend(_kaydi_dogrula(kayit))
@@ -196,6 +250,25 @@ def main() -> int:
         for b, n in sorted(bankalar.items()):
             durum = "OK" if n >= 5 else f"yetersiz (hedef 5-8)"
             print(f"    {b:24} {n:2}  {durum}")
+
+    # Olcum kapsami: yanlis pozitif YALNIZCA incelenmis sutunlarda
+    # olculebilir (bkz. modul docstring'i).
+    print("\n  Yanlis pozitif olcum kapsami:")
+    for alan in INCELENMIS_ALANLAR:
+        bayrakli = sum(1 for k in gercek if k["alan_belirtilmemis"].get(alan) is True)
+        print(f"    {alan:20} olculebilir={bayrakli:2}/{len(gercek)}  (incelendi)")
+    for alan in INCELENMEMIS_ALANLAR:
+        dolu = sum(1 for k in gercek if k.get(alan) is not None)
+        print(
+            f"    {alan:20} olculebilir= 0/{len(gercek)}  "
+            f"(OLCUM DISI - {dolu} kayitta deger var, bos kalanlar incelenmedi)"
+        )
+    if INCELENMEMIS_ALANLAR:
+        print(
+            "\n    Bir sutunun etiketlemesi bitince adini excel_to_json.py'deki\n"
+            "    INCELENMIS_ALANLAR listesine tasi - yanlis pozitif o an olculur\n"
+            "    hale gelir. Yardimci: python gold_dataset/etiketleme_yardimcisi.py"
+        )
 
     if uyarilar:
         print(f"\n  UYARILAR ({len(uyarilar)}):")

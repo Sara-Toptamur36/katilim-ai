@@ -175,6 +175,38 @@ def test_satir_sonuyla_bolunmus_cumlede_dogru_deger_reddedilmez():
     assert sonuc.dogrulandi
 
 
+# ---------------------------------------------------------------------------
+# 4) TOM-002 gold_eslesme.py duzeltmesi sonrasi ek format varyantlari
+#    (gercek veriyle bulundu, 9 Agustos 2026)
+# ---------------------------------------------------------------------------
+
+
+def test_arasi_araligiyla_verilen_tutar_dogrulanir():
+    """AL-006: '30.000 TL- 500.000 TL ARASI okul odemelerinize...' -
+    literal 'tutar'/'finansman' kelimesi hic gecmiyor, 'arasi' ayirt
+    edici isarettir."""
+    altin = _gold_kaydi("AL-006")
+    kayit = scraper_kaydini_bul(altin)
+    assert kayit is not None, "AL-006 artik canli degilse baska bir kayitla degistirilmeli"
+
+    sonuc = sayisal_iddiayi_dogrula("finansman_tutari", float(altin["finansman_tutari"]), kayit["ham_metin"])
+    assert sonuc.dogrulandi
+
+
+def test_kelime_bazli_bin_ekiyle_verilen_tutar_dogrulanir():
+    """TOM-002 (gold_eslesme.py duzeltmesi sonrasi DOGRU metinle
+    eslesiyor): kaynak '250 Bin TL' yaziyor, '250.000 TL' DEGIL - kelime
+    bazli buyukluk eki. Ayrica 'kadar' baglam kelimesi de bu testte
+    dolayli olarak dogrulanir ('...250 Bin TL'ye KADAR...')."""
+    altin = _gold_kaydi("TOM-002")
+    kayit = scraper_kaydini_bul(altin)
+    assert kayit is not None, "TOM-002 artik canli degilse baska bir kayitla degistirilmeli"
+
+    sonuc = sayisal_iddiayi_dogrula("finansman_tutari", float(altin["finansman_tutari"]), kayit["ham_metin"])
+    assert sonuc.dogrulandi
+    assert "250 bin" in sonuc.denenen_varyantlar
+
+
 def test_coklu_satirli_tablo_yapisinda_dogru_deger_reddedilmez():
     """Ikinci ornek: DK-002'nin kaynak metninde odul degeri ('0,1 gram')
     ile baglam kelimesi ('kazanirsin') arasinda birden fazla \\n var

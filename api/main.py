@@ -1,16 +1,21 @@
 """KatilimAI API - FastAPI uygulamasi.
 
-SPRINT 1 DURUMU: Uc uc nokta mock veriyle calisir. Mock JWT dogrulamasi
-ILK GUNDEN aktiftir; /chat yaniti audit blogunu ILK GUNDEN icerir (ici bos
-olsa da), boylece Havin arayuzunu bekletmeden kurabilir.
+DURUM: Yedi uc nokta da gercek verilerle calisir. /chat, Ajan
+Orkestratoru uzerinden Intent Detection -> Tool Router -> (SQL /
+Calculator / Sozluk / RAG / Fallback) zincirini calistirir ve her
+yanitla birlikte Juri Audit Paneli'nin (rapor Bolum 10.2) ihtiyac
+duydugu izlenebilirlik blogunu doner.
 
-GERCEK VERI GECISI: /kampanyalar ve /karsilastir, GERCEK_VERI_AKTIF ortam
+VERI KAYNAGI: /kampanyalar ve /karsilastir, GERCEK_VERI_AKTIF ortam
 degiskeni "true" oldugunda mock_data.py yerine PostgreSQL'i (api/db.py,
-api/kampanya_repository.py) kullanir. Varsayilan DEGERI FALSE'tur - boylece
-Havin'in sozlesme testleri (tests/test_api_sozlesme.py, sabit A/B/C/D Bankasi
-degerlerine dayanir) ve mevcut gelistirme akisi bozulmaz. Zeynep'in
-scraper/scripts/postgrese_yukle.py ile PostgreSQL'e veri yukledigi ve ekip
-gercek veriyle calismaya hazir oldugunda bu bayrak "true" yapilir.
+api/kampanya_repository.py) kullanir. Varsayilan FALSE'tur; mock veri
+sartnamenin Senaryo-1 ornegini (A/B/C/D Bankasi) birebir tasir ve
+sozlesme testleri (tests/test_api_sozlesme.py) bu sabit degerlere
+dayanir - bu yuzden varsayilan bilerek degistirilmemistir.
+
+KIMLIK DOGRULAMA: Authorization basligi her zaman zorunludur; JWT_AKTIF
+"true" oldugunda token gercekten dogrulanir. Baslik formati iki modda da
+ayni oldugu icin arayuz kodu geciste degismez (bkz. api/auth.py).
 
 Calistirma:
     uvicorn api.main:app --reload
@@ -84,12 +89,15 @@ app.add_middleware(
 MODEL_ADI = "qwen2.5:7b-instruct-q4_K_M"  # rapor Bolum 5.3
 TEMPERATURE = 0.0  # rapor Bolum 8: tutarli/tekrarlanabilir cikti
 
-# Sprint 2'de "true" yapilacak (bkz. dosya basi aciklamasi).
+# Varsayilan "false" (bkz. dosya basi aciklamasi, VERI KAYNAGI).
 GERCEK_VERI_AKTIF = os.environ.get("GERCEK_VERI_AKTIF", "false").lower() == "true"
 
 
 def _bos_audit(**kwargs) -> AuditBilgisi:
-    """Sprint 1'de tum audit alanlari bos doner ama YAPI hazirdir."""
+    """Audit blogunu her uc nokta icin ortak varsayilanlarla (model,
+    temperature, cache_hit) kurar; cagiran uc nokta kendi alanlarini
+    ustune yazar. Bir alanin o uc noktada anlami yoksa None kalir -
+    uydurulmaz (rapor Bolum 5.7/15)."""
     varsayilan = {
         "model": MODEL_ADI,
         "temperature": TEMPERATURE,
@@ -101,13 +109,19 @@ def _bos_audit(**kwargs) -> AuditBilgisi:
 
 @app.get("/", tags=["Sistem"])
 def kok():
-    """Servis ayakta mi kontrolu (kimlik dogrulama gerektirmez)."""
+    """Servis ayakta mi kontrolu (kimlik dogrulama gerektirmez).
+
+    Aktif yapilandirmayi da doner - juri/gelistirici, API'nin gercek
+    veriyle mi mock veriyle mi calistigini ve JWT'nin acik olup
+    olmadigini sormadan gorebilsin (seffaflik ilkesi, rapor Bolum 5.7/15).
+    """
     return {
         "servis": "KatilimAI API",
         "surum": app.version,
         "durum": "calisiyor",
-        "sprint": 1,
-        "not": "Uc uc nokta su an MOCK veri dondurmektedir.",
+        "veri_kaynagi": "postgresql" if GERCEK_VERI_AKTIF else "mock",
+        "jwt_dogrulama": "gercek" if GERCEK_JWT_AKTIF else "mock",
+        "dokumantasyon": "/docs",
     }
 
 
@@ -121,8 +135,8 @@ def saglik():
 def token_al(form: OAuth2PasswordRequestForm = Depends()):
     """Kullanici adi/parolayla JWT alir (yalnizca JWT_AKTIF=true iken).
 
-    Mock modda (varsayilan, Sprint 1-3) bu uc nokta kullanilmaz - herhangi
-    bir 'Bearer <token>' zaten kabul edilir (bkz. api/auth.py).
+    Mock modda (varsayilan) bu uc nokta kullanilmaz - herhangi bir
+    'Bearer <token>' zaten kabul edilir (bkz. api/auth.py).
     """
     if not GERCEK_JWT_AKTIF:
         raise HTTPException(
@@ -194,8 +208,13 @@ def karsilastir(istek: KarsilastirIstek, kullanici: dict = Depends(token_dogrula
     - Eksik veri gizlenmez: NULLS LAST + eksik_alanlar isareti
     - Uretilen SQL, Juri Audit Paneli icin yanitla birlikte doner
 
-    Sprint 1'de siralama bellekte yapilir; uretilen SQL sablonu, Sprint 2'de
-    PostgreSQL'e gecildiginde AYNEN kullanilacaktir (cikti sekli degismez).
+    SIRALAMA BELLEKTE YAPILIR (bilincli): kayitlar PostgreSQL'den
+    cekilir, ama siralama/eksik-alan isaretleme comparison/
+    compare_engine.py'nin bellek modunda yurur. Boylece mock ve gercek
+    veri AYNI kod yolundan gecer ve iki mod arasindaki fark yalnizca
+    kayitlarin nereden geldigidir. `calistirilan_sql`, ayni kriterin
+    SQL karsiligidir ve seffaflik icin audit panelinde gosterilir -
+    su an calistirilmaz, uretilir.
     """
     baslangic = time.time()
     log.info(
@@ -249,10 +268,12 @@ def hesapla(istek: HesapIstek, kullanici: dict = Depends(token_dogrula)):
     """Taksit/kar payi hesabi - Calculator Tool.
 
     TASARIM ILKESI (rapor Bolum 8): Hesap LLM'e BIRAKILMAZ. Bu uc nokta
-    saf Python fonksiyonlarini cagirir; LLM yalnizca sonucu cumleye doker.
+    saf Python fonksiyonlarini cagirir; ozet cumle de dogrudan
+    sayilardan uretilir, LLM kullanilmaz.
 
-    Sprint 3'te Ajan Orkestratoru, "hesaplama" niyeti tespit ettiginde
-    dogrudan bu mantigi cagiracak.
+    Ajan Orkestratoru "hesaplama" niyeti tespit ettiginde ayni
+    calculator/ mantigini cagirir (bkz. agent/router.py) - iki yol da
+    tek bir hesap kaynagini kullanir.
     """
     baslangic = time.time()
     log.info(
@@ -325,15 +346,16 @@ def _banka_kayitlarini_getir(banka: str) -> list:
 def chat(istek: ChatIstek, kullanici: dict = Depends(token_dogrula)):
     """Dogal dilde soru-cevap - Ajan Orkestratoru (agent/orchestrator.py).
 
-    SPRINT 3 KAPSAMI: Intent Detection -> Tool Router -> Hesaplama/Sozluk/
-    Karsilastirma araclari. RAG (embedding/Qdrant) ve LLM tabanli serbest
-    metin uretimi Sprint 4'te eklenecek; o zamana kadar taninmayan sorular
-    FALLBACK'e duser (sebep alaninda acikca belirtilir, sessizce yanlis
-    cevap uretilmez - rapor Bolum 5.7/15).
+    AKIS: Intent Detection -> Tool Router -> SQL / Calculator / Sozluk /
+    RAG / Fallback. Belirli bir araca uymayan serbest bilgi sorulari
+    RAG ile KAYNAK GOSTEREREK yanitlanir; secilen arac yetersiz kalirsa
+    soru yine RAG'e sorulur (kademeli geri cekilme). Hicbir yolda
+    kaynaksiz cevap uretilmez - kaynak bulunamazsa sistem acikca
+    cekimser kalir (rapor Bolum 5.7/15).
 
-    NOT: audit blogu ILK GUNDEN doludur (degerler bos olsa da). Havin'in
-    Juri Audit Paneli bu alan adlarina gore kurulur; sonradan isim
-    degistirmek onun kodunu bozar.
+    NOT: audit blogu her yanitta bulunur; o an anlamsiz olan alanlar
+    None doner. Havin'in Juri Audit Paneli bu alan adlarina gore
+    kurulur; sonradan isim degistirmek onun kodunu bozar.
     """
     log.info("chat sorgusu | kullanici=%s | soru=%s", kullanici.get("kullanici"), istek.soru)
 

@@ -30,7 +30,7 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 | RAG — indekslenen parça | **734** (234 belgeden, tekilleştirilmiş) |
 | RAG — Recall@5 | **%96,88** (31/32 kampanya) |
 | RAG — abstention doğruluğu | **%100** (5/5 alan dışı soruda cevap üretilmedi) |
-| Otomatik test | **358** test, CI her push'ta çalışır |
+| Otomatik test | **442** test, CI her push'ta çalışır |
 
 > Çıkarım kalitesi **tek bir yüzdeyle** değil iki metrikle raporlanır: bir
 > alanı *kaçırmak* ile kaynakta olmayan bir değeri *uydurmak* farklı
@@ -69,7 +69,8 @@ Bu çeşitlilik, banka çalışanlarının ve son kullanıcıların ürünleri k
 
 Ham kampanya metninden karşılaştırılabilir yapılandırılmış veriye ve **kaynak gösteren** doğal dil yanıtlarına uzanan uçtan uca bir sistem:
 
-Hedef mimari — `[✓]` kurulu ve çalışıyor, `[ ]` henüz kodlanmadı:
+Hedef mimari — `[✓]` kurulu ve çalışıyor, `[~]` modül hazır ama bu yola
+henüz bağlanmadı, `[ ]` henüz kodlanmadı:
 
 ```
 Banka kaynaklari (BDDK listesi)                              [✓]
@@ -92,7 +93,8 @@ PostgreSQL                 Semantik parcalama → Embedding
                     ↓        └─ hibrit arama (yogun+seyrek, RRF)
                     ↓           + abstention + citation
     Response Generator → Terminoloji Kontrolu                [✓]
-    → Verifier                                              [ ]
+    → Verifier (modul hazir, cikarimda kullaniliyor;
+      ajan yanit yoluna henuz baglanmadi)                    [~]
                     ↓
     Dashboard · Chatbot · Juri Audit Paneli                  [✓]
 ```
@@ -256,11 +258,17 @@ Eşik tahminle değil ölçümle seçildi; yöntem, kalibrasyon ve sonuçlar:
 
 ### Henüz kurulmayanlar (dürüstlük notu)
 
-Aşağıdakiler hedef mimaride yer alır ancak **bu depoda henüz kodlanmamıştır**;
-tasarım ilkesi olarak sunulmakla birlikte çalışan bir özellik değildir:
+Aşağıdakiler hedef mimaride yer alır ancak **bu depoda henüz tamamlanmamıştır**;
+tasarım ilkesi olarak sunulmakla birlikte uçtan uca çalışan bir özellik değildir:
 
-- **Verifier:** yanıttaki her sayının kaynak pasajda/araç çıktısında geçtiğini
-  doğrulayan katman (`validation/` klasörü şu an boş).
+- **Verifier'ın ajan yanıt yoluna bağlanması:** `validation/verifier.py`
+  yazıldı ve gerçek veriyle ölçüldü (6/6 yanlış pozitif doğru şekilde
+  reddedildi, 41 gerçek iddianın 37'si onaylandı — yöntem ve bilinen
+  sınırlar modülün kendi başlığında belgelidir), ancak şu an yalnızca
+  **çıkarım** tarafındaki sayısal iddiaları doğrular; `/chat` yanıt
+  zincirinde çağrılmaz. Bu yolda doğrulanacak *üretilmiş* bir sayı
+  olmadığı için (RAG birebir alıntı döndürür) şimdilik gerekmiyor;
+  LLM ile özetleme eklenirse ikisi **birlikte** bağlanmalıdır.
 - **Zaman aşımına bağlı otomatik fallback:** ölçülmüş bir p95 eşiğine göre
   deterministik katmana düşme.
 - **LLM ile yanıt özetleme:** RAG şu an bulduğu kaynak parçalarını *birebir*
@@ -278,7 +286,7 @@ katilim-ai/
 ├── preprocessing/    # Turkce normalizasyon
 ├── terminology/      # Katilim bankaciligi terminoloji sozlugu (Yagmur)
 ├── extraction/       # Regex + NER + LLM hibrit cikarim (Yagmur)
-├── validation/       # (planlandi) Verifier - henuz bos
+├── validation/       # Verifier - sayisal iddialari kaynak metne karsi dogrular
 ├── chunking/         # RAG: parcalayici, embedding, seyrek vektor, retriever, indeksleyici
 ├── storage/          # PostgreSQL + Qdrant erisimi
 ├── comparison/       # Karsilastirma motoru - SQL Tool (Sara)

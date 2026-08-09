@@ -1,12 +1,18 @@
 """Kimlik dogrulama.
 
-SPRINT 1-3 (su an): Mock dogrulama. Authorization header ZORUNLU ama icerigi
-kontrol edilmez. Amac, Havin'in arayuzu ilk gunden dogru header formatiyla
-kurmasi; boylece Sprint 4'te gercek JWT'ye gecerken arayuzde HICBIR degisiklik
-gerekmez - yalnizca token'in degeri degisir.
+IKI MOD, TEK BASLIK FORMATI: Authorization basligi her iki modda da
+ZORUNLUDUR ve ayni ('Bearer <token>'). Degisen tek sey token'in
+dogrulanip dogrulanmadigidir - bu yuzden arayuz kodu modlar arasinda
+gecerken hic degismez.
 
-SPRINT 4: Asagidaki `GERCEK_JWT_AKTIF` True yapilir; gizli anahtar ortam
-degiskeninden okunur (KODA YAZILMAZ).
+  JWT_AKTIF ayarli degil (varsayilan): icerik kontrol edilmez, herhangi
+    bir Bearer token kabul edilir. Gelistirme ve sozlesme testleri icin.
+  JWT_AKTIF=true: token gercekten dogrulanir (HS256), rol bilgisi
+    token'dan okunur ve rol_gerekli() ile RBAC uygulanabilir.
+
+Gizli anahtar (JWT_SECRET) ORTAM DEGISKENINDEN okunur, koda YAZILMAZ;
+tanimli degilse gercek modda acikca hata verilir - sessiz bir
+varsayilana dusulmez.
 """
 
 import os
@@ -19,7 +25,6 @@ from api.logging_config import log
 
 _BCRYPT_MAX_BAYT = 72  # bcrypt'in kendi siniri - daha uzun parolalar kesilir
 
-# Sprint 4'te True yapilacak
 GERCEK_JWT_AKTIF = os.environ.get("JWT_AKTIF", "false").lower() == "true"
 
 ALGORITMA = "HS256"
@@ -54,7 +59,7 @@ def sifre_dogrula(duz_sifre: str, hash_deger: str) -> bool:
 
 
 def token_uret(kullanici_adi: str, rol: str = "banka_calisani") -> str:
-    """Sprint 4'te kullanilacak. Simdilik yalnizca test/hazirlik amacli."""
+    """POST /token'in urettigi JWT (yalnizca JWT_AKTIF=true iken kullanilir)."""
     from jose import jwt  # yerel import: mock modda bagimlilik gerekmesin
 
     veri = {
@@ -81,10 +86,10 @@ def token_dogrula(authorization: str | None = Header(None)) -> dict:
         raise HTTPException(status_code=401, detail="Token bos olamaz")
 
     if not GERCEK_JWT_AKTIF:
-        # --- MOCK MOD (Sprint 1-3) ---
+        # --- MOCK MOD (varsayilan) ---
         return {"kullanici": "mock_kullanici", "rol": "banka_calisani", "mock": True}
 
-    # --- GERCEK MOD (Sprint 4) ---
+    # --- GERCEK MOD (JWT_AKTIF=true) ---
     from jose import JWTError, jwt
 
     try:

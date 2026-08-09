@@ -4,14 +4,20 @@ Mimari (rapor Bolum 8): Intent Detection -> Tool Router -> (SQL/Calculator/
 Dictionary/RAG/Fallback) -> Response Generator -> Terminology Check ->
 Verifier -> Provenance.
 
-SPRINT 3 KAPSAMI (bu dosya): Intent Detection + Tool Router + ilk uc arac
-(Hesaplama, Sozluk, Karsilastirma). RAG (embedding/Qdrant) ve LLM tabanli
-serbest metin uretimi Sprint 4'te eklenecek - o zamana kadar "bilgi" turu
-serbest sorular FALLBACK'e duser, bu ACIKCA sebep alaninda belirtilir.
+BU DOSYANIN KAPSAMI: Intent Detection + Tool Router + dort arac
+(Hesaplama, Sozluk, Karsilastirma, RAG) + kademeli geri cekilme.
+
+VERIFIER BU ZINCIRE HENUZ BAGLI DEGIL: validation/verifier.py yazildi ve
+gercek veriyle olculdu (6/6 yanlis pozitif reddedildi, 41 gercek iddianin
+37'si onaylandi) ama su an yalnizca CIKARIM tarafindaki sayisal iddialari
+dogruluyor; ajan yanit yolunda cagrilmiyor. Bunun nedeni bu yolda
+dogrulanacak URETILMIS bir sayi olmamasi: RAG kaynak metnini birebir
+donduruyor, uzerine serbest metin uretilmiyor. LLM ile ozetleme
+eklenirse Verifier bu zincire de ONUNLA BIRLIKTE baglanmalidir.
 
 api/main.py, GERCEK_VERI_AKTIF bayragina gore uygun `kayit_getirici`
 fonksiyonunu bu module verir - boylece bu dosya mock/DB ayrimindan
-tamamen habersiz kalir (Sara'nin Sprint 2'de kurdugu ayrimla tutarli).
+tamamen habersiz kalir.
 """
 
 import time

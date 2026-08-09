@@ -76,6 +76,63 @@ ALAN_ESLEME = {
 TOLERANS = 0.01  # ondalik yuvarlama farkini tolere et (ör. 2.990001 vs 2.99)
 
 
+# ---------------------------------------------------------------------------
+# Alan bazli Precision / Recall / F1
+# ---------------------------------------------------------------------------
+# NEDEN: Iki toplam metrik ("dolu alan dogrulugu" ve "bos alan dogrulugu")
+# sistemin GENEL saglığını gosterir ama HANGI ALANIN zayif oldugunu
+# sayiyla soylemez. Sartnamenin en agir kriteri "Model Basarisi ve
+# Anlamlandirma Yetenegi" (%30) tam da bunu sorar. Alan kirilimi olmadan
+# "kar payi orani mi yoksa odul birimi mi sorunlu?" sorusuna cevap yok.
+#
+# TANIMLAR (slot-filling standardi):
+#   TP  gold'da deger var, motor AYNI degeri buldu
+#   FN  gold'da deger var, motor bulamadi (None)
+#   FP  gold'da alan "kaynakta belirtilmemis", motor bir deger uydurdu
+#   TN  gold'da alan "kaynakta belirtilmemis", motor da bos birakti
+#
+# YANLIS DEGER HEM FP HEM FN SAYILIR (bilincli karar): gold 1.89 derken
+# motor 10.0 bulduysa, hem dogru degeri KACIRMIS (FN) hem de yanlis bir
+# deger IDDIA ETMISTIR (FP). Yalnizca FN saymak, finansal bir uygulamada
+# daha tehlikeli olan "yanlis deger gosterme" hatasini gizlerdi; yalnizca
+# FP saymak ise recall'u oldugundan yuksek gosterirdi.
+_SAYAC_ALANLARI = ("dogru", "yanlis_deger", "kacirilan", "uydurulan", "dogru_bos")
+
+
+def _bos_sayac() -> dict[str, int]:
+    return {a: 0 for a in _SAYAC_ALANLARI}
+
+
+def prf_hesapla(sayac: dict[str, int]) -> dict[str, float | int | None]:
+    """Bir alanin sayaclarindan precision/recall/F1 uretir.
+
+    Olculebilir hicbir ornek yoksa (gold sutunu bos) oranlar None doner -
+    0.0 dondurmek "motor bu alanda basarisiz" gibi YANLIS bir izlenim
+    yaratirdi; dogru ifade "bu alan HENUZ OLCULEMIYOR"dur.
+    """
+    tp = sayac["dogru"]
+    fp = sayac["uydurulan"] + sayac["yanlis_deger"]
+    fn = sayac["kacirilan"] + sayac["yanlis_deger"]
+
+    precision = tp / (tp + fp) if (tp + fp) else None
+    recall = tp / (tp + fn) if (tp + fn) else None
+    f1 = (
+        2 * precision * recall / (precision + recall)
+        if precision and recall
+        else (0.0 if precision is not None and recall is not None else None)
+    )
+    return {
+        "tp": tp,
+        "fp": fp,
+        "fn": fn,
+        "tn": sayac["dogru_bos"],
+        "destek": tp + fn,  # gold'da gercekten deger bulunan ornek sayisi
+        "precision": round(precision * 100, 2) if precision is not None else None,
+        "recall": round(recall * 100, 2) if recall is not None else None,
+        "f1": round(f1 * 100, 2) if f1 is not None else None,
+    }
+
+
 def _degerler_esit_mi(beklenen, bulunan) -> bool:
     if isinstance(beklenen, (int, float)) and isinstance(bulunan, (int, float)):
         return abs(beklenen - bulunan) <= TOLERANS
@@ -109,6 +166,10 @@ def extraction_accuracy_hesapla(cikarim_fonksiyonu=kaydi_cikar) -> dict:
     canli_kayit_sayisi = 0
     bos_alan_olculebilen = 0
     yanlis_pozitifler: list[dict] = []
+    # Alan bazli P/R/F1 AYNI gecişte toplanir - ayri bir fonksiyon olsaydi
+    # cikarim iki kez calisirdi ve hibrit olcumde bu, her kayit icin
+    # ikinci bir LLM cagrisi demekti (olculdu: cagri basina 150-300 sn).
+    sayaclar: dict[str, dict[str, int]] = {a: _bos_sayac() for a in ALAN_ESLEME}
 
     for altin in altin_kayitlari_yukle():
         cikti_json = scraper_kaydini_bul(altin)
@@ -130,6 +191,7 @@ def extraction_accuracy_hesapla(cikarim_fonksiyonu=kaydi_cikar) -> dict:
                 if belirtilmemis.get(gold_alan) is True:
                     bos_alan_olculebilen += 1
                     if bulunan is not None:
+                        sayaclar[extractor_alan]["uydurulan"] += 1
                         yanlis_pozitifler.append(
                             {
                                 "kayit_id": altin["kayit_id"],
@@ -137,12 +199,19 @@ def extraction_accuracy_hesapla(cikarim_fonksiyonu=kaydi_cikar) -> dict:
                                 "uydurulan": bulunan,
                             }
                         )
+                    else:
+                        sayaclar[extractor_alan]["dogru_bos"] += 1
                 continue
 
             toplam_alan += 1
             if _degerler_esit_mi(beklenen, bulunan):
                 dogru_alan += 1
+                sayaclar[extractor_alan]["dogru"] += 1
             else:
+                # Kacirma (None) ile yanlis deger uretme AYRI sayilir -
+                # ikincisi hem precision'i hem recall'u dusurur.
+                anahtar = "kacirilan" if bulunan is None else "yanlis_deger"
+                sayaclar[extractor_alan][anahtar] += 1
                 hatalar.append(
                     {
                         "kayit_id": altin["kayit_id"],
@@ -171,7 +240,60 @@ def extraction_accuracy_hesapla(cikarim_fonksiyonu=kaydi_cikar) -> dict:
         "bos_alan_olculebilen": bos_alan_olculebilen,
         "yanlis_pozitif_sayisi": len(yanlis_pozitifler),
         "yanlis_pozitifler": yanlis_pozitifler,
+        # --- Alan bazli P/R/F1 (sartname %30 kriterinin kirilimi) ---
+        "alan_bazli": {alan: prf_hesapla(s) for alan, s in sayaclar.items()},
+        # Ham sayaclar da doner: P/R/F1'de `fp`, "kaynakta olmayani
+        # uydurma" ile "yanlis deger bulma"yi TEK sayida birlestirir ve
+        # ikisi geri ayrilamaz. Hangi hata turunun bastigini gormek
+        # (ve olcumun kendisini dogrulamak) icin ham dokum korunur.
+        "alan_sayaclari": sayaclar,
     }
+
+
+def alan_bazli_tablo_yazdir(sonuc: dict) -> None:
+    """Alan kirilimli P/R/F1 tablosu - hangi alanin zayif oldugunu gosterir."""
+    alan_bazli = sonuc.get("alan_bazli") or {}
+    if not alan_bazli:
+        return
+
+    print("\n--- Alan bazli Precision / Recall / F1 ---")
+    print(
+        f"{'alan':<26}{'destek':>7}{'TP':>5}{'FP':>5}{'FN':>5}"
+        f"{'P%':>8}{'R%':>8}{'F1%':>8}"
+    )
+    print("-" * 72)
+
+    olculebilenler = []
+    for alan in sorted(alan_bazli, key=lambda a: -(alan_bazli[a]["destek"])):
+        m = alan_bazli[alan]
+        if m["destek"] == 0 and m["tn"] == 0 and m["fp"] == 0:
+            # Gold sutunu hic doldurulmamis - bu alan OLCULEMIYOR.
+            print(f"{alan:<26}{'-':>7}{'-':>5}{'-':>5}{'-':>5}{'olculemiyor':>26}")
+            continue
+        olculebilenler.append(m)
+        bicim = lambda d: f"{d:>8.2f}" if d is not None else f"{'-':>8}"  # noqa: E731
+        print(
+            f"{alan:<26}{m['destek']:>7}{m['tp']:>5}{m['fp']:>5}{m['fn']:>5}"
+            f"{bicim(m['precision'])}{bicim(m['recall'])}{bicim(m['f1'])}"
+        )
+
+    if olculebilenler:
+        # MAKRO ortalama: her alan esit agirlikta. Mikro ortalama buyuk
+        # alanlarin (ör. kar_payi_orani) sonucunu one cikarirdi; makro,
+        # kucuk ama kritik alanlardaki zayifligi gizlemez.
+        for ad, anahtar in (("Makro P", "precision"), ("Makro R", "recall"), ("Makro F1", "f1")):
+            degerler = [m[anahtar] for m in olculebilenler if m[anahtar] is not None]
+            if degerler:
+                print(f"  {ad:<10}: %{sum(degerler) / len(degerler):.2f}  ({len(degerler)} alan)")
+
+    olculemeyen = [a for a, m in alan_bazli.items() if m["destek"] == 0 and m["tn"] == 0 and m["fp"] == 0]
+    if olculemeyen:
+        print(
+            f"\n  OLCULEMEYEN {len(olculemeyen)} alan: {', '.join(sorted(olculemeyen))}\n"
+            "  Altin Veri Seti'nde bu sutunlar henuz etiketlenmedi - motorun\n"
+            "  basarisiz oldugu ANLAMINA GELMEZ, olcum kapsami disindadir.\n"
+            "  Kapatmak icin: python gold_dataset/etiketleme_yardimcisi.py"
+        )
 
 
 def ozet_yazdir(sonuc: dict) -> None:
@@ -188,6 +310,8 @@ def ozet_yazdir(sonuc: dict) -> None:
         f"- {sonuc['yanlis_pozitif_sayisi']} yanlis pozitif"
     )
     print(f"Olcume dahil edilen canli kayit sayisi: {sonuc['canli_kayit_sayisi']}")
+
+    alan_bazli_tablo_yazdir(sonuc)
 
     if sonuc["hatalar"]:
         print(f"\nDolu alan hatalari - kacirilan/yanlis ({len(sonuc['hatalar'])}):")

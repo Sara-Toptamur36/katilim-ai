@@ -74,6 +74,69 @@ için en yüksek öncelikli düzeltmedir.
 
 ---
 
+---
+
+## Alan bazlı P/R/F1 — 9 Ağustos 2026
+
+Toplam iki metrik sistemin genel sağlığını gösterir ama **hangi alanın**
+zayıf olduğunu söylemez. Şartnamenin en ağır kriteri (Model Başarısı, %30)
+tam da bunu sorar. Ölçüm artık alan kırılımı da basıyor.
+
+| Alan | Destek | TP | FP | FN | P% | R% | F1% |
+|---|---|---|---|---|---|---|---|
+| `odul_birimi` | 23 | 23 | 0 | 0 | 100,00 | 100,00 | **100,00** |
+| `odul_miktari` | 23 | 22 | 2 | 1 | 91,67 | 95,65 | **93,62** |
+| `finansman_tutari` | 6 | 4 | 1 | 2 | 80,00 | 66,67 | 72,73 |
+| `kar_payi_orani_percent` | 5 | 5 | 4 | 0 | **55,56** | 100,00 | 71,43 |
+| `vade_ay` | 7 | 1 | 0 | 6 | 100,00 | **14,29** | 25,00 |
+| `taksit_sayisi` | — | — | — | — | — | — | ölçülemiyor |
+| `erteleme_suresi_ay` | — | — | — | — | — | — | ölçülemiyor |
+
+**Makro F1: %72,56** (5 ölçülebilir alan)
+
+**Tanımlar:** TP = gold'da değer var, motor aynısını buldu · FN = kaçırdı ·
+FP = kaynakta belirtilmemiş alana değer uydurdu. **Yanlış değer hem FP hem
+FN sayılır** (bilinçli karar): gold 1,89 derken motor 10,0 bulduysa hem
+doğru değeri kaçırmış hem yanlış bir değer iddia etmiştir. Yalnızca FN
+saymak, finansal bir uygulamada daha tehlikeli olan "yanlış değer
+gösterme" hatasını gizlerdi.
+
+### Tablonun ilk çalıştırmada ortaya çıkardığı veri kalitesi hatası
+
+`vade_ay` recall'ı **%14,29** görünüyor — ama bu bir çıkarım hatası
+**değil**. Kaçırılan 6 kaydın tamamında gold'daki "vade" değeri aslında
+bir **taksit sayısıdır**:
+
+| Kayıt | Gold `vade_ay` | Kampanya başlığı |
+|---|---|---|
+| KT-006 | 5 | "Vade Farksız **5 Aya Varan Taksit**" |
+| AL-001 | 6 | "Seçili sektörlerde vade farksız **6 taksit**" |
+| AL-002 | 3 | "MTV Ödemelerinize Vade Farksız **3 Taksit**" |
+| AL-005 | 6 | "Sağlık Harcamalarına Vade Farksız **6 Taksit**" |
+| AL-006 | 6 | "Eğitim Harcamalarınıza Vade Farksız **6 Taksit**" |
+| TOM-002 | 10 | "Özel Okul Ödemelerinde **10 Taksit**" |
+
+**Sebep:** Altın Veri Seti 28 Temmuz'da etiketlenirken `taksit_sayisi`
+sütunu **yoktu**; etiketleyicinin bu değerleri yazacak başka yeri olmadığı
+için `vade_ay` sütununa girmiş. Motor bu kayıtlarda `vade_ay = None`
+döndürerek **doğru** davranıyor — bu kampanyaların vadesi yok.
+
+Bu, iki toplam metriğin haftalardır gizlediği bir hatadır ve alan
+kırılımının neden gerekli olduğunun somut kanıtıdır. Düzeltme, sütunlar
+etiketlendiğinde (bkz. `gold_dataset/etiketleme_yardimcisi.py`) bu altı
+değerin `taksit_sayisi`'na taşınmasıdır; `vade_ay` recall'ı o zaman
+gerçek değerine yükselecektir.
+
+### Diğer okumalar
+
+- `kar_payi_orani_percent` precision **%55,56** — 4 yanlış pozitifin
+  kaynağı "vade farksız → %0" kuralının kâr payından hiç bahsetmeyen
+  sayfalarda tetiklenmesi (aşağıdaki yanlış pozitif listesiyle tutarlı).
+- `odul_birimi` **%100** — banka-özel birim tanıma (Bankkart Lira /
+  ParafPara / Worldpuan) düzeltmesinden sonra hatasız.
+
+---
+
 ## Geçmiş ölçüm — 1 Ağustos 2026
 
 **%37.5 doğruluk (64 alanın 24'ü doğru), 36 canlı kayıt üzerinden ölçüldü.**

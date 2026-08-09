@@ -75,21 +75,24 @@ INCELENMIS_ALANLAR = (
     "masraf_durumu",
     "kampanya_bitis",
     "hedef_kitle",
+    # 9 Agustos 2026: bos birakilan 42 kaydin tamami kaynak metne karsi
+    # gozden gecirildi (gold_dataset/etiketleme_yardimcisi.py). 26'sinda
+    # finansman baglaminda hicbir tutar gecmiyor, 12'sinin kaynagi
+    # rotasyonla kaybolmus, 4'unde gecen tutarlar ise HARCAMA ESIGI ya da
+    # ODUL ("1.000 TL ve uzeri harcamaniza 10.000 Mil") - finansman
+    # tutari degil. Hicbiri deger almadi.
+    "finansman_tutari",
 )
 
 # Semada/Excel'de VAR ama henuz bir etiketleme oturumundan gecmemis
 # sutunlar. Bos hucreleri "kaynakta yok" SAYILMAZ - olcum disidir.
 # Etiketlemesi biten sutun buradan cikarilip INCELENMIS_ALANLAR'a eklenir.
 #
-# taksit_sayisi / erteleme_suresi_ay : sutunlar 9 Agustos'ta eklendi.
-# odul_birimi / finansman_tutari     : 28 Temmuz oturumunda doldurulmus
-#   ama bos birakilanlar gozden gecirilmemis (30 ve 16 kayitta deger var,
-#   kalanlar icin "bakildi mi" bilinmiyor).
+# taksit_sayisi / erteleme_suresi_ay: sutunlar 9 Agustos'ta eklendi,
+# etiketlenmeyi bekliyor (bkz. gold_dataset/etiketleme_yardimcisi.py).
 INCELENMEMIS_ALANLAR = (
     "taksit_sayisi",
     "erteleme_suresi_ay",
-    "odul_birimi",
-    "finansman_tutari",
 )
 
 
@@ -164,6 +167,15 @@ def _kaydi_dogrula(kayit: dict) -> list[str]:
     if kayit.get("odul_miktari") is not None and not kayit.get("odul_birimi"):
         uyarilar.append(f"[{kid}] odul_miktari var ama odul_birimi bos (Mil/Gram/TL...)")
 
+    # Ters tutarsizlik: birim yazilmis ama miktar "kaynakta yok" sayilmis.
+    # Ikisi birlikte olamaz - turetilmis bayrak (bkz. donustur) bu durumda
+    # devreye GIRMEZ, yani sessiz kalmak yerine etiketleyici uyarilmali.
+    if kayit.get("odul_birimi") and kayit.get("odul_miktari") is None:
+        uyarilar.append(
+            f"[{kid}] odul_birimi ({kayit['odul_birimi']}) yazilmis ama "
+            "odul_miktari bos - miktar gercekten kaynakta yok mu?"
+        )
+
     bas, bit = kayit.get("kampanya_baslangic"), kayit.get("kampanya_bitis")
     if bas and bit and bas > bit:
         uyarilar.append(f"[{kid}] kampanya_baslangic ({bas}) bitisten ({bit}) sonra")
@@ -214,6 +226,18 @@ def donustur(excel_yolu: Path = EXCEL) -> tuple[list[dict], list[str]]:
             a: True for a in INCELENMIS_ALANLAR if kayit.get(a) is None
         }
 
+        # TURETILMIS BAYRAK - odul_birimi, odul_miktari'na BAGLIDIR:
+        # olmayan bir odulun birimi de olamaz. Bu YENI bir etiketleme
+        # karari degil, 28 Temmuz oturumunda zaten verilmis "odul_miktari
+        # kaynakta belirtilmemis" kararinin mantiksal sonucudur.
+        # Dogrulandi (9 Agustos): odul_birimi'nin bos oldugu 28 kayit ile
+        # odul_miktari'nin bayrakli oldugu 28 kayit BIREBIR ayni kume.
+        if (
+            kayit["alan_belirtilmemis"].get("odul_miktari")
+            and kayit.get("odul_birimi") is None
+        ):
+            kayit["alan_belirtilmemis"]["odul_birimi"] = True
+
         tum_uyarilar.extend(_kaydi_dogrula(kayit))
         kayitlar.append(kayit)
 
@@ -257,6 +281,12 @@ def main() -> int:
     for alan in INCELENMIS_ALANLAR:
         bayrakli = sum(1 for k in gercek if k["alan_belirtilmemis"].get(alan) is True)
         print(f"    {alan:20} olculebilir={bayrakli:2}/{len(gercek)}  (incelendi)")
+    turetilmis = sum(1 for k in gercek if k["alan_belirtilmemis"].get("odul_birimi"))
+    if turetilmis:
+        print(
+            f"    {'odul_birimi':20} olculebilir={turetilmis:2}/{len(gercek)}  "
+            "(TURETILDI - odul_miktari bayragindan)"
+        )
     for alan in INCELENMEMIS_ALANLAR:
         dolu = sum(1 for k in gercek if k.get(alan) is not None)
         print(

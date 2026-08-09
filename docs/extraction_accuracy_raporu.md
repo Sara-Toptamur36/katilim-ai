@@ -84,15 +84,21 @@ tam da bunu sorar. Ölçüm artık alan kırılımı da basıyor.
 
 | Alan | Destek | TP | FP | FN | P% | R% | F1% |
 |---|---|---|---|---|---|---|---|
-| `odul_birimi` | 23 | 23 | 0 | 0 | 100,00 | 100,00 | **100,00** |
+| `odul_birimi` | 23 | 23 | 1 | 0 | 95,83 | 100,00 | **97,87** |
 | `odul_miktari` | 23 | 22 | 2 | 1 | 91,67 | 95,65 | **93,62** |
-| `finansman_tutari` | 6 | 4 | 1 | 2 | 80,00 | 66,67 | 72,73 |
 | `kar_payi_orani_percent` | 5 | 5 | 4 | 0 | **55,56** | 100,00 | 71,43 |
+| `finansman_tutari` | 6 | 4 | 4 | 2 | **50,00** | 66,67 | 57,14 |
 | `vade_ay` | 7 | 1 | 0 | 6 | 100,00 | **14,29** | 25,00 |
 | `taksit_sayisi` | — | — | — | — | — | — | ölçülemiyor |
 | `erteleme_suresi_ay` | — | — | — | — | — | — | ölçülemiyor |
 
-**Makro F1: %72,56** (5 ölçülebilir alan)
+**Makro F1: %69,01** (5 ölçülebilir alan)
+
+> Bu sayılar, ölçüm kapsamı `finansman_tutari` ve `odul_birimi` için
+> genişletildikten **sonrakidir** (boş alan kontrolü 73 → 116). Kapsam dar
+> iken makro F1 %72,56 görünüyordu; düşüş motorun bozulmasından değil,
+> daha önce **görünmeyen 4 yanlış pozitifin ölçülebilir hale gelmesinden**
+> kaynaklanıyor.
 
 **Tanımlar:** TP = gold'da değer var, motor aynısını buldu · FN = kaçırdı ·
 FP = kaynakta belirtilmemiş alana değer uydurdu. **Yanlış değer hem FP hem
@@ -145,6 +151,9 @@ gerçek değerine yükselecektir.
 katmanlar tek tek kapatılarak üç varyant aynı Altın Veri Seti'ne karşı
 ölçülür.
 
+Aşağıdaki tablo, ölçüm kapsamı genişletilmeden **önceki** durumu gösterir
+(güncel sonuç için "Ölçüm kapsamı genişletilince ne oldu" bölümüne bakınız):
+
 | Varyant | Dolu% | Boş% | Makro F1 | YP | Süre |
 |---|---|---|---|---|---|
 | regex | 85,94 | 93,15 | 72,56 | 5 | **0,8 sn** |
@@ -184,16 +193,30 @@ kendi 1. bulgusunda zaten belgelenmiş hata:
 > *"400 TL Bankkart Lira" → "finansman tutarı" sandı (0,52), "ödül
 > miktarı" DEĞİL.*
 
-**Sonuç:** NER şu an ölçülebilir bir katkı sağlamıyor, 222 saniye
-maliyeti var ve muhtemelen yanlış veri üretiyor — ama bunların hiçbiri
-mevcut Altın Veri Seti kapsamıyla **kanıtlanamıyor**. `finansman_tutari`
-sütununun `alan_belirtilmemis` bayrakları tamamlanırsa (bkz.
-`gold_dataset/etiketleme_yardimcisi.py`) bu 7 alan ölçülebilir yanlış
-pozitife dönüşür ve NER'in gerçek etkisi ortaya çıkar.
-
 Bu, ablation tablosunun tek başına yeterli olmadığının somut örneğidir:
 F1 farkı 0 olan bir katman "zararsız" değil, "**ölçülemez**" olabilir.
 Betik bu durumu artık otomatik uyarıyor.
+
+### Ölçüm kapsamı genişletilince ne oldu (aynı gün)
+
+`finansman_tutari` ve `odul_birimi` sütunlarının `alan_belirtilmemis`
+bayrakları tamamlandıktan sonra ablation **aynı kodla** tekrar çalıştırıldı:
+
+| | Kapsam dar | Kapsam geniş |
+|---|---|---|
+| NER katkısı | 7 doldurdu → **0 ölçüldü** | 7 doldurdu → **7 ölçüldü** |
+| Makro F1 farkı | **+0,00** | **−3,81** |
+| Yanlış pozitif (regex+NER) | 9 | **16** |
+| `finansman_tutari` F1 | 57,14 | **38,10** |
+
+Tahmin doğrulandı: NER'in 7 dolgusunun tamamı yanlış pozitif. **186
+saniyelik maliyeti karşılığında ölçülebilir katkısı sıfır, zararı 7
+yanlış pozitif.** Önceki "+0,00" bir ölçüm körlüğüydü.
+
+**Karar önerisi:** NER katmanı mevcut haliyle hibrit boru hattından
+çıkarılmalı ya da `finansman_tutari` etiketi devre dışı bırakılmalıdır
+(GLiNER'in ödül/finansman ayrımını yapamadığı, `ner_extractor.py`
+Bulgu 1'de zaten belgeli). Karar Yağmur'a aittir.
 
 > **Ollama kapalıyken üçüncü varyant geçersizdir.** `llm_ile_cikar`
 > erişemediğinde hata fırlatmaz, kademeli fallback gereği `None` döner —

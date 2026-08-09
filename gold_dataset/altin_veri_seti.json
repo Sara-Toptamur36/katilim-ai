@@ -24,7 +24,9 @@
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
     "alan_belirtilmemis": {
-      "odul_miktari": true
+      "odul_miktari": true,
+      "finansman_tutari": true,
+      "odul_birimi": true
     }
   },
   {
@@ -54,7 +56,9 @@
     "alan_belirtilmemis": {
       "odul_miktari": true,
       "kampanya_bitis": true,
-      "hedef_kitle": true
+      "hedef_kitle": true,
+      "finansman_tutari": true,
+      "odul_birimi": true
     }
   },
   {
@@ -83,7 +87,8 @@
     "erteleme_suresi_ay": null,
     "alan_belirtilmemis": {
       "masraf_durumu": true,
-      "kampanya_bitis": true
+      "kampanya_bitis": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -113,7 +118,8 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -142,7 +148,8 @@
     "erteleme_suresi_ay": null,
     "alan_belirtilmemis": {
       "odul_miktari": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "odul_birimi": true
     }
   },
   {
@@ -171,7 +178,8 @@
     "erteleme_suresi_ay": null,
     "alan_belirtilmemis": {
       "odul_miktari": true,
-      "hedef_kitle": true
+      "hedef_kitle": true,
+      "odul_birimi": true
     }
   },
   {
@@ -202,7 +210,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "odul_miktari": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true,
+      "odul_birimi": true
     }
   },
   {
@@ -233,7 +243,9 @@
       "kar_payi_orani": true,
       "odul_miktari": true,
       "masraf_durumu": true,
-      "hedef_kitle": true
+      "hedef_kitle": true,
+      "finansman_tutari": true,
+      "odul_birimi": true
     }
   },
   {
@@ -263,7 +275,8 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -293,7 +306,8 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "odul_miktari": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "odul_birimi": true
     }
   },
   {
@@ -323,7 +337,8 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -352,7 +367,8 @@
     "erteleme_suresi_ay": null,
     "alan_belirtilmemis": {
       "odul_miktari": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "odul_birimi": true
     }
   },
   {
@@ -381,7 +397,9 @@
     "erteleme_suresi_ay": null,
     "alan_belirtilmemis": {
       "odul_miktari": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true,
+      "odul_birimi": true
     }
   },
   {
@@ -411,7 +429,8 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -441,7 +460,8 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -470,7 +490,8 @@
     "erteleme_suresi_ay": null,
     "alan_belirtilmemis": {
       "odul_miktari": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "odul_birimi": true
     }
   },
   {
@@ -499,7 +520,8 @@
     "erteleme_suresi_ay": null,
     "alan_belirtilmemis": {
       "odul_miktari": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "odul_birimi": true
     }
   },
   {
@@ -528,7 +550,8 @@
     "erteleme_suresi_ay": null,
     "alan_belirtilmemis": {
       "odul_miktari": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "odul_birimi": true
     }
   },
   {
@@ -557,7 +580,8 @@
     "erteleme_suresi_ay": null,
     "alan_belirtilmemis": {
       "odul_miktari": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "odul_birimi": true
     }
   },
   {
@@ -586,7 +610,8 @@
     "erteleme_suresi_ay": null,
     "alan_belirtilmemis": {
       "odul_miktari": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "odul_birimi": true
     }
   },
   {
@@ -616,7 +641,8 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -646,7 +672,8 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -675,7 +702,8 @@
     "erteleme_suresi_ay": null,
     "alan_belirtilmemis": {
       "odul_miktari": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "odul_birimi": true
     }
   },
   {
@@ -706,7 +734,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "odul_miktari": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true,
+      "odul_birimi": true
     }
   },
   {
@@ -737,7 +767,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "odul_miktari": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true,
+      "odul_birimi": true
     }
   },
   {
@@ -768,7 +800,8 @@
       "kar_payi_orani": true,
       "odul_miktari": true,
       "masraf_durumu": true,
-      "kampanya_bitis": true
+      "kampanya_bitis": true,
+      "odul_birimi": true
     }
   },
   {
@@ -799,7 +832,8 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "kampanya_bitis": true
+      "kampanya_bitis": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -828,7 +862,8 @@
     "erteleme_suresi_ay": null,
     "alan_belirtilmemis": {
       "odul_miktari": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "odul_birimi": true
     }
   },
   {
@@ -858,7 +893,8 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -889,7 +925,8 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "kampanya_bitis": true
+      "kampanya_bitis": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -919,7 +956,8 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -950,7 +988,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "odul_miktari": true,
-      "kampanya_bitis": true
+      "kampanya_bitis": true,
+      "finansman_tutari": true,
+      "odul_birimi": true
     }
   },
   {
@@ -980,7 +1020,8 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -1010,7 +1051,8 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -1040,7 +1082,9 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "odul_miktari": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true,
+      "odul_birimi": true
     }
   },
   {
@@ -1071,7 +1115,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "odul_miktari": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true,
+      "odul_birimi": true
     }
   },
   {
@@ -1101,7 +1147,8 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -1131,7 +1178,8 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -1161,7 +1209,8 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -1191,7 +1240,8 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -1221,7 +1271,8 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -1251,7 +1302,8 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -1281,7 +1333,8 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -1311,7 +1364,8 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -1341,7 +1395,8 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -1371,7 +1426,8 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -1403,7 +1459,9 @@
       "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
-      "kampanya_bitis": true
+      "kampanya_bitis": true,
+      "finansman_tutari": true,
+      "odul_birimi": true
     }
   },
   {
@@ -1433,7 +1491,8 @@
     "alan_belirtilmemis": {
       "odul_miktari": true,
       "masraf_durumu": true,
-      "kampanya_bitis": true
+      "kampanya_bitis": true,
+      "odul_birimi": true
     }
   },
   {
@@ -1463,7 +1522,8 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -1494,7 +1554,8 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "kampanya_bitis": true
+      "kampanya_bitis": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -1527,7 +1588,9 @@
       "odul_miktari": true,
       "masraf_durumu": true,
       "kampanya_bitis": true,
-      "hedef_kitle": true
+      "hedef_kitle": true,
+      "finansman_tutari": true,
+      "odul_birimi": true
     }
   },
   {
@@ -1557,7 +1620,8 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -1586,7 +1650,8 @@
     "erteleme_suresi_ay": null,
     "alan_belirtilmemis": {
       "odul_miktari": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "odul_birimi": true
     }
   },
   {
@@ -1615,7 +1680,8 @@
     "erteleme_suresi_ay": null,
     "alan_belirtilmemis": {
       "odul_miktari": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "odul_birimi": true
     }
   },
   {
@@ -1645,7 +1711,8 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -1675,7 +1742,8 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -1706,7 +1774,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "odul_miktari": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true,
+      "odul_birimi": true
     }
   },
   {
@@ -1736,7 +1806,8 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -1767,7 +1838,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "odul_miktari": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true,
+      "odul_birimi": true
     }
   },
   {
@@ -1797,7 +1870,8 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true
     }
   },
   {
@@ -1826,7 +1900,8 @@
     "erteleme_suresi_ay": null,
     "alan_belirtilmemis": {
       "odul_miktari": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "odul_birimi": true
     }
   },
   {
@@ -1856,7 +1931,8 @@
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
-      "masraf_durumu": true
+      "masraf_durumu": true,
+      "finansman_tutari": true
     }
   }
 ]

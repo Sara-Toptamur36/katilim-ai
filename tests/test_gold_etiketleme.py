@@ -81,6 +81,40 @@ def test_iki_liste_kesismez():
     assert not set(INCELENMIS_ALANLAR) & set(INCELENMEMIS_ALANLAR)
 
 
+# ---------------------------------------------------------------------------
+# Turetilmis bayrak: odul_birimi <- odul_miktari
+# ---------------------------------------------------------------------------
+
+
+def test_odul_miktari_belirtilmemisse_odul_birimi_de_bayraklanir(tmp_path):
+    """Olmayan bir odulun birimi de olamaz. Bu YENI bir etiketleme karari
+    degil, "odul_miktari kaynakta belirtilmemis" kararinin mantiksal
+    sonucudur - bu yuzden turetilebilir."""
+    yol = _excel_yaz(tmp_path, [_temel_kayit(odul_miktari=None, odul_birimi=None)])
+    kayit = donustur(yol)[0][0]
+    assert kayit["alan_belirtilmemis"]["odul_miktari"] is True
+    assert kayit["alan_belirtilmemis"]["odul_birimi"] is True
+
+
+def test_odul_miktari_varken_odul_birimi_turetilmez(tmp_path):
+    """Odul VAR ama birim bos - bu gercek bir etiketleme eksigidir,
+    'kaynakta yok' diye turetilmemeli (uyari verilir)."""
+    yol = _excel_yaz(tmp_path, [_temel_kayit(odul_miktari=5000, odul_birimi=None)])
+    kayit, uyarilar = donustur(yol)
+    assert "odul_birimi" not in kayit[0]["alan_belirtilmemis"]
+    assert any("odul_birimi bos" in u for u in uyarilar)
+
+
+def test_birim_varken_miktar_bos_ise_uyarilir(tmp_path):
+    """Ters tutarsizlik: birim yazilmis ama miktar 'kaynakta yok'
+    sayilmis. Turetme burada DEVREYE GIRMEZ, sessiz kalmak yerine
+    etiketleyici uyarilir."""
+    yol = _excel_yaz(tmp_path, [_temel_kayit(odul_miktari=None, odul_birimi="Worldpuan")])
+    kayit, uyarilar = donustur(yol)
+    assert "odul_birimi" not in kayit[0]["alan_belirtilmemis"]
+    assert any("odul_birimi (Worldpuan)" in u for u in uyarilar)
+
+
 def test_yok_yazmak_sayisal_alanda_hata_verir(tmp_path):
     """Excel rehberi (1. Nasil Doldurulur, satir 34) '-', 'yok', '0'
     yazmayi ACIKCA yasaklar. Yazilirsa sessizce yutulmamali, etiketleyici

@@ -51,6 +51,10 @@ GOLD = Path(__file__).resolve().parent / "altin_veri_seti.json"
 SAHTE_ONEKLER = ("A-", "B-", "C-", "D-")
 
 # Alan -> (kavrami arayan desen, etiketleyiciye hatirlatma)
+#
+# DESENLER BILEREK GENISTIR: amac karari VERMEK degil, karar icin gereken
+# cumleyi ONUNE GETIRMEK. Fazladan aday gostermek, gercek bir degeri
+# kacirmaktan iyidir - eleme insanin isidir.
 ALANLAR = {
     "taksit_sayisi": (
         re.compile(r"taksit", re.IGNORECASE),
@@ -59,6 +63,25 @@ ALANLAR = {
     "erteleme_suresi_ay": (
         re.compile(r"ertele|öteleme|oteleme|ödemesiz|odemesiz", re.IGNORECASE),
         "Kac AY ertelemeli/odemesiz donem? ('2 ay ertelemeli' -> 2).",
+    ),
+    "finansman_tutari": (
+        # Tutar ile finansman/kredi kelimesi AYNI cumlede olmali - yoksa
+        # her "500 TL" (odul, harcama esigi, ucret) aday olurdu.
+        re.compile(
+            r"(?:finansman|kredi)\w*[^.\n]{0,60}?\d[\d.,]*\s*(?:TL|₺)"
+            r"|\d[\d.,]*\s*(?:TL|₺)[^.\n]{0,60}?(?:finansman|kredi)",
+            re.IGNORECASE,
+        ),
+        "Kullandirilan FINANSMAN tutari (TL). Odul/hediye tutari DEGIL - "
+        "NER bu ikisini karistiriyor, bkz. docs/extraction_accuracy_raporu.md.",
+    ),
+    "odul_birimi": (
+        re.compile(
+            r"worldpuan|bankkart lira|parafpara|\bmil\b|\bgram\b|puan|nakit iade",
+            re.IGNORECASE,
+        ),
+        "Odulun BIRIMI (TL / Mil / Gram / Worldpuan / ParafPara / Bankkart Lira). "
+        "odul_miktari bos ise birim de genelde bostur - ama once metne bak.",
     ),
 }
 

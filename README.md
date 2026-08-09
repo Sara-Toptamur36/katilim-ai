@@ -26,8 +26,8 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 | Altın Veri Seti (elle doğrulanmış referans) | **58** kayıt + ekran görüntüsü kanıtı |
 | Çıkarım — dolu alan doğruluğu | **~%86–89** (hibrit: regex+NER+LLM; aşağıdaki sapma notuna bakınız) |
 | Çıkarım — dolu alan doğruluğu (yalnızca regex, deterministik) | **%84,38** |
-| Çıkarım — boş alan doğruluğu (yanlış pozitif) | **%91,78** — 6 yanlış pozitif |
-| Çıkarım — alan bazlı makro F1 (regex) | **%72,56** (5 ölçülebilir alan; kırılım aşağıda) |
+| Çıkarım — boş alan doğruluğu (yanlış pozitif) | **%92,24** — 9 yanlış pozitif (116 ölçülebilir alan) |
+| Çıkarım — alan bazlı makro F1 (regex) | **%69,01** (5 ölçülebilir alan; kırılım aşağıda) |
 | RAG — indekslenen parça | **734** (234 belgeden, tekilleştirilmiş) |
 | RAG — Recall@5 | **%96,88** (31/32 kampanya) |
 | RAG — abstention doğruluğu | **%100** (5/5 alan dışı soruda cevap üretilmedi) |

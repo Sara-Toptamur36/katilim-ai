@@ -120,9 +120,70 @@ RE_TARIH_ARALIGI = re.compile(
     re.IGNORECASE,
 )
 
+# --- Masraf / ucret -------------------------------------------------------
+# BU DESENLER 234 GERCEK BELGE TARANARAK YAZILDI. Ilk surumde yalnizca
+# asagidaki RE_MASRAFSIZ vardi ve sartnamenin YAPAY ornegindeki cumleden
+# ("dosya masrafi alinmamaktadir") turetilmisti - gercek korpusta
+# "masraf alinm"/"ucret alinm" ifadesi HIC gecmiyor, bu yuzden
+# masraf_durumu 234 belgenin 0'inda doluyordu (olculdu).
+#
+# GURULTU TUZAGI - "ucretsiz" TEK BASINA ASLA TETIKLEMEZ:
+# Korpusta "ucretsiz" 90+ kez geciyor ama neredeyse hepsi kampanyanin
+# masraf durumuyla ILGISIZ:
+#   "Ucretsiz ve ticari kredi kartlarimiz kampanyaya dahil degildir" (50x)
+#   "Katilim SMS'i ucretsiz olup..."                                  (27x)
+#   "...otuz (30) gun icinde ucretsiz olarak sonuclandirilmaktadir"    (10x, KVKK)
+# Bu yuzden desenler, bir MASRAF KELIMESI (masraf/tahsis/komisyon/aidat)
+# gecmesini ZORUNLU kilar. Boylece yukaridaki 87 yanlis pozitifin hicbiri
+# eslesmez.
+#
+# AKSAN TOLERANSI: "ücret" ve "ü/ı/ş" iceren tum masraf kelimeleri
+# aksansiz da yazilabiliyor - PDF/OCR kaynakli metinlerde aksan kaybi
+# bilinen bir sorundur (bkz. ner_extractor.py, Bulgu 4). Desenler bu
+# yuzden hem "ücreti" hem "ucreti" bicimini kabul eder.
 RE_MASRAFSIZ = re.compile(
-    r"(dosya masraf[ıi]|tahsis ücreti|ekspertiz ücreti)[^.]{0,40}?"
-    r"(alınmamaktadır|alınmıyor|karşılanmaktadır|karşılanıyor|ücretsiz|yok)",
+    r"(dosya masraf[ıi]|tahsis [üu]creti|ekspertiz [üu]creti)[^.]{0,40}?"
+    r"(al[ıi]nmamaktad[ıi]r|al[ıi]nm[ıi]yor|al[ıi]nmaz|kar[şs][ıi]lanmaktad[ıi]r"
+    r"|kar[şs][ıi]lan[ıi]yor|[üu]cretsiz|yoktur|yok)",
+    re.IGNORECASE,
+)
+# IKI GUVEN KADEMESI - "cikardik" ile "sifir oldugunu IDDIA ediyoruz" ayri:
+#
+# GUCLU: masrafin gercekten alinmadigini soyleyen, baglamli ifadeler.
+# Yalnizca BUNLAR tahsis_ucreti=0.0 atar, cunku o alan karsilastirmada
+# SIRALAMAYI belirler - yanlis bir 0.0 kampanyayi haksiz yere birinci yapar.
+# Gercek veriden: "yeni musterilere ozel dosya masrafsizlik avantaji"
+# (Turkiye Finans), "Yeni Yatirim Hesabiniza Sifir Komisyon Orani",
+# "aidatsiz Happy Bonus Zero kredi karti" (Altin Veri Seti TF-007).
+RE_MASRAF_SIFIR_GUCLU = re.compile(
+    r"(?:dosya|tahsis|ekspertiz)\s*masrafs[ıi]z\w*"
+    r"|masrafs[ıi]zl[ıi]k\w*"
+    r"|s[ıi]f[ıi]r\s*komisyon\w*"
+    r"|komisyon\s*(?:al[ıi]nmaz|al[ıi]nmamaktad[ıi]r|yoktur)"
+    r"|aidats[ıi]z\b",
+    re.IGNORECASE,
+)
+# ZAYIF: baglamsiz, tek basina gecen "Masrafsiz". Gercek veride bu, iki
+# belgede TEK BASINA BIR SATIRDA duruyor (gezinme menusu/urun etiketi:
+# "Masrafsiz Bankacilik", "Masrafsiz Banka ve Kredi Karti") - kampanyanin
+# masraf durumu hakkinda bir iddia DEGIL. Bu yuzden yalnizca serbest metin
+# alanina (masraf_durumu) yazilir, tahsis_ucreti BOS BIRAKILIR: bilgiyi
+# gizlemeyiz ama uzerine sayisal bir iddia da kurmayiz.
+RE_MASRAF_SIFIR_ZAYIF = re.compile(r"masrafs[ıi]z\w*", re.IGNORECASE)
+# Tahsis ucreti gercek veride TL TUTARI OLARAK DEGIL, ORAN olarak
+# ifade ediliyor: "Tahsis ucreti vergiler haric finansman tutarinin
+# binde 5'i oranindadir" (Turkiye Finans, korpustaki tek gercek ornek).
+# Bu ifade masraf_durumu'na METIN olarak yazilir; tahsis_ucreti (TL)
+# alanina CEVRILMEZ - bkz. kaydi_cikar icindeki gerekce.
+RE_TAHSIS_ORANI = re.compile(
+    r"tahsis [üu]creti[^.\n]{0,80}?(?:binde|y[üu]zde|%)\s*\d{1,3}(?:[.,]\d+)?[^.\n]{0,25}",
+    re.IGNORECASE,
+)
+# Acikca TL tutari verilmis masraf ("dosya masrafi 500 TL") - korpusta
+# henuz gorulmedi ama bankadan bankaya degistigi icin desen hazir tutulur.
+RE_MASRAF_TUTARI = re.compile(
+    r"(?:dosya masraf[ıi]|tahsis [üu]creti|ekspertiz [üu]creti)\s*[:=]?\s*"
+    r"(\d{1,3}(?:\.\d{3})*(?:,\d+)?)\s*(?:TL|₺)",
     re.IGNORECASE,
 )
 
@@ -241,6 +302,94 @@ def _hedef_kitleyi_tespit_et(metin: str) -> Optional[str]:
     return None
 
 
+def _tr_sayi(deger: float) -> str:
+    """5000.0 -> '5.000', 1500.5 -> '1.500,5' (Turkce binlik/ondalik ayirac).
+
+    Ondalik kismi iki basamaga yuvarlandiktan sonra sifira inebilir
+    (ornek: 2.001 -> '2.00'); bu durumda ondalik hic yazilmaz - aksi
+    halde '2,' gibi bozuk bir metin uretilirdi.
+    """
+    if deger == int(deger):
+        return f"{int(deger):,}".replace(",", ".")
+    tam, ondalik = f"{deger:,.2f}".split(".")
+    ondalik = ondalik.rstrip("0")
+    tam = tam.replace(",", ".")
+    return f"{tam},{ondalik}" if ondalik else tam
+
+
+def _sayi_ya_da_none(deger) -> Optional[float]:
+    """Yalnizca GERCEK sayilari kabul eder; digerlerinde None doner.
+
+    NEDEN GEREKLI: avantaj ozeti, uc katmanin (regex/NER/LLM) ortak
+    ciktisi uzerinde calisir ve o alanlarda her zaman sayi bulunacaginin
+    garantisi YOKTUR - llm_extractor.py'nin `_llm_sayisini_dogrula`
+    guard'i tam da bu yuzden var. Tip kontrolu olmadan bir string,
+    bicimlendirme sirasinda ValueError firlatir ve TEK bir kampanyanin
+    bozuk verisi TUM zenginlestirme calistirmasini dusururdu.
+    Bu fonksiyon sessizce atlar: ozet o alani icermez, cikarim devam eder.
+    """
+    if isinstance(deger, bool) or not isinstance(deger, (int, float)):
+        return None
+    return float(deger)
+
+
+def kampanya_avantajini_olustur(alanlar: dict) -> Optional[str]:
+    """Cikarilan yapilandirilmis alanlardan kisa bir avantaj ozeti DERLER.
+
+    BU BIR CIKARIM DEGIL, DERLEMEDIR - ve bu ayrim bilerek yapildi:
+
+    Sartname Md. 5.3'un bekledigi "Kampanya Avantaji" alani, Senaryo-1
+    tablosunda kisa ve yapisal ifadelerle gosteriliyor ("5.000 TL alisveris
+    ceki", "50.000 TL'ye kadar masraf alinmiyor") - yani zaten cikardigimiz
+    alanlarin insan okunur birlesimi.
+
+    NEDEN METINDEN CIKARILMIYOR: Altin Veri Seti'ndeki 58 kaydin
+    kampanya_avantaji sutunu ELLE YAZILMIS ozetlerden olusuyor ve cogu
+    aritmetik/sentez iceriyor (ornek AL-004: "Her davet edilen ... icin
+    500 TL, toplamda 5.000 TL'ye varan Worldpuan"). Boyle bir ozeti ham
+    metinden regex ile uretmek mumkun degil; LLM ile uretmek ise SERBEST
+    METIN uretmek olurdu - Verifier (validation/verifier.py) sayisal
+    iddialari dogruluyor ama uretilmis serbest metnin TAMAMINI
+    dogrulamiyor, bu yuzden ozet uretimi hala bilerek deterministik
+    tutulur.
+
+    Bu yuzden ozet YALNIZCA dogrulanmis alanlardan, sabit bir sablonla
+    kurulur: uydurulacak hicbir yer yoktur, her parcasi bir alana
+    geri izlenebilir. Hicbir alan yoksa None doner.
+    """
+    parcalar: list[str] = []
+
+    oran = _sayi_ya_da_none(alanlar.get("kar_payi_orani_percent"))
+    if oran is not None:
+        parcalar.append(
+            "kâr payı yok (%0)" if oran == 0 else f"%{_tr_sayi(oran)} kâr payı oranı"
+        )
+
+    tutar = _sayi_ya_da_none(alanlar.get("finansman_tutari"))
+    if tutar is not None:
+        parcalar.append(f"{_tr_sayi(tutar)} TL'ye kadar finansman")
+
+    for alan, sablon in (
+        ("vade_ay", "{} ay vade"),
+        ("taksit_sayisi", "{} taksit"),
+        ("erteleme_suresi_ay", "{} ay ödemesiz dönem"),
+    ):
+        sayi = _sayi_ya_da_none(alanlar.get(alan))
+        if sayi is not None:
+            parcalar.append(sablon.format(int(sayi)))
+
+    odul = _sayi_ya_da_none(alanlar.get("odul_miktari"))
+    if odul is not None:
+        birim = alanlar.get("odul_birimi")
+        birim = birim if isinstance(birim, str) and birim.strip() else "TL"
+        parcalar.append(f"{_tr_sayi(odul)} {birim} ödül")
+
+    if _sayi_ya_da_none(alanlar.get("tahsis_ucreti")) == 0.0:
+        parcalar.append("masraf alınmıyor")
+
+    return ", ".join(parcalar) if parcalar else None
+
+
 def kaydi_cikar(ham_metin: str) -> dict:
     """Tek bir kampanya metnini analiz edip api/schemas.py CampaignRecord
     ile UYUMLU alan adlariyla bir sozluk doner.
@@ -259,6 +408,8 @@ def kaydi_cikar(ham_metin: str) -> dict:
         "odul_miktari": None,
         "odul_birimi": None,
         "masraf_durumu": None,
+        "tahsis_ucreti": None,
+        "kampanya_avantaji": None,
         "kampanya_baslangic": None,
         "kampanya_bitis": None,
         "kampanya_turu": None,
@@ -376,11 +527,46 @@ def kaydi_cikar(ham_metin: str) -> dict:
                     alanlar["odul_birimi"] = birim
                     izler["odul_miktari"] = (span, 0.7)
 
-    # --- Masraf bilgisi ---------------------------------------------------
-    span = _ilk_eslesme(RE_MASRAFSIZ, ham_metin)
-    if span:
-        alanlar["masraf_durumu"] = span
-        izler["masraf_durumu"] = (span, 0.75)
+    # --- Masraf bilgisi / tahsis ucreti -----------------------------------
+    # Uc kademe: (1) acik TL tutari, (2) acik "masraf alinmaz" ifadesi,
+    # (3) oran olarak verilmis tahsis ucreti. Ilk eslesen kazanir.
+    m = RE_MASRAF_TUTARI.search(ham_metin)
+    if m:
+        tutar = tutara_cevir(m.group(1))
+        if tutar is not None:
+            alanlar["masraf_durumu"] = m.group(0)
+            alanlar["tahsis_ucreti"] = tutar
+            izler["masraf_durumu"] = (m.group(0), 0.85)
+    else:
+        span = _ilk_eslesme(RE_MASRAFSIZ, ham_metin) or _ilk_eslesme(
+            RE_MASRAF_SIFIR_GUCLU, ham_metin
+        )
+        if span:
+            alanlar["masraf_durumu"] = span
+            # "Masraf alinmaz" = tahsis ucreti 0 TL. Bu, karsilastirmanin
+            # "en_dusuk_masraf" kriterinin (sartname Md. 5.7) siraladigi
+            # alandir - doldurulmazsa o kriter HICBIR ZAMAN sonuc uretemez
+            # (olculdu: tahsis_ucreti 234 belgenin 0'inda doluydu).
+            alanlar["tahsis_ucreti"] = 0.0
+            izler["masraf_durumu"] = (span, 0.8)
+        else:
+            span = _ilk_eslesme(RE_TAHSIS_ORANI, ham_metin)
+            if span:
+                # ORAN, TUTAR DEGIL: "finansman tutarinin binde 5'i" bir
+                # yuzdedir; tahsis_ucreti alani TL bekler. Orani finansman
+                # tutariyla carpip TL uretmek IKI belirsizligi birlestirir
+                # (ikisi de cikarilmis deger) ve birim hatasi riski tasir -
+                # bu yuzden metin olarak saklanir, tahsis_ucreti BOS BIRAKILIR
+                # (rapor Bolum 5.7/15: supheli deger yerine bos birak).
+                alanlar["masraf_durumu"] = span
+                izler["masraf_durumu"] = (span, 0.8)
+            else:
+                # Son kademe: baglamsiz "Masrafsiz". Bilgi kaydedilir ama
+                # tahsis_ucreti'ne DOKUNULMAZ - bkz. RE_MASRAF_SIFIR_ZAYIF.
+                span = _ilk_eslesme(RE_MASRAF_SIFIR_ZAYIF, ham_metin)
+                if span:
+                    alanlar["masraf_durumu"] = span
+                    izler["masraf_durumu"] = (span, 0.5)
 
     # --- Kampanya suresi: once tarih ARALIGI, sonra tek tarih -----------
     m = RE_TARIH_ARALIGI.search(ham_metin)
@@ -402,6 +588,13 @@ def kaydi_cikar(ham_metin: str) -> dict:
     alanlar["hedef_kitle"] = _hedef_kitleyi_tespit_et(ham_metin)
     if alanlar["hedef_kitle"]:
         izler["hedef_kitle"] = (alanlar["hedef_kitle"], 0.7)
+
+    # --- Kampanya avantaji (DERLEME, cikarim degil) -----------------------
+    # Diger alanlarin HEPSI belirlendikten SONRA kurulur; bilerek `izler`e
+    # YAZILMAZ - kendi basina bir kaynak span'i yoktur ve genel_guven_hesapla
+    # ortalamasini suni sekilde sisirmemesi gerekir. Guveni, turetildigi
+    # alanlarin guveni kadardir (bkz. kampanya_avantajini_olustur).
+    alanlar["kampanya_avantaji"] = kampanya_avantajini_olustur(alanlar)
 
     alanlar["_izler"] = izler
     return alanlar

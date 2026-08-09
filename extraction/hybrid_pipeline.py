@@ -41,19 +41,27 @@ genellikle alanlarin coğunu zaten doldurdugu icin (Extraction Accuracy
 guven esikleri (GLiNER: 0.4, LLM'in kar_payi/odul guard'lari) yine de
 supheli sonuclari elemeye devam eder.
 
-KAPSAM DISI ALANLAR: "kampanya_turu" (anahtar-kelime siniflandirmasi,
-span-cikarim gorevine uygun degil) ve "kampanya_baslangic" (NER/LLM
-etiket/alan setine henuz eklenmedi) yalnizca regex tarafindan
-doldurulur - bu iki alan icin regex bulamazsa deger None kalir. Bu,
-hybrid_pipeline.py'nin bilerek biraktigi bir kapsam sinirlamasidir,
-ekiple degerlendirilmesi gereken ayri bir tasarim sorusudur.
+KAPSAM DISI ALANLAR (yalnizca regex doldurur, NER/LLM'e sorulmaz):
+  - "kampanya_turu"      : anahtar-kelime siniflandirmasi, span-cikarim degil
+  - "kampanya_baslangic" : NER/LLM etiket/alan setine henuz eklenmedi
+  - "tahsis_ucreti"      : gercek veride TL tutari olarak neredeyse hic
+                           gecmiyor; regex bunu yalnizca "masraf alinmaz"
+                           ifadesinden 0.0 olarak turetir (bkz.
+                           regex_extractor.py masraf blogu). LLM'e sormak,
+                           olmayan bir tutari uydurmasini davet ederdi.
+  - "kampanya_avantaji"  : cikarilan alanlardan DERLENIR, metinden
+                           cikarilmaz (bkz. regex_extractor.
+                           kampanya_avantajini_olustur) - bu yuzden
+                           katmanlar arasi uzlastirmaya hic girmez.
+Bu alanlar icin regex bulamazsa deger None kalir; bilerek birakilmis
+kapsam sinirlamalaridir.
 """
 
 from __future__ import annotations
 
 from extraction.llm_extractor import llm_ile_cikar
 from extraction.ner_extractor import ner_ile_cikar
-from extraction.regex_extractor import kaydi_cikar
+from extraction.regex_extractor import kampanya_avantajini_olustur, kaydi_cikar
 
 # NER ve LLM'in ortak olarak destekledigi alanlar (bkz. ner_extractor.
 # _ETIKET_ESLEME ve llm_extractor._ALAN_ACIKLAMALARI - ikisi de ayni
@@ -232,6 +240,13 @@ def kaydi_hibrit_cikar(ham_metin: str) -> dict:
         _katman_sonucunu_birlestir(
             alanlar, izler, kaynaklar, llm_sonucu, "llm", adaylar, catismalar
         )
+
+    # Avantaj ozeti TUM katmanlar bittikten SONRA yeniden derlenir.
+    # kaydi_cikar() bunu regex sonuclariyla zaten kurmustu; NER/LLM
+    # arada yeni alanlar doldurmus olabilir (ornegin odul_miktari) ve
+    # ozetin onlari da icermesi gerekir - aksi halde hibrit boru hatti,
+    # regex-only calistirmayla AYNI avantaj metnini uretirdi.
+    alanlar["kampanya_avantaji"] = kampanya_avantajini_olustur(alanlar)
 
     alanlar["_izler"] = izler
     alanlar["_kaynaklar"] = kaynaklar

@@ -36,6 +36,8 @@ CIKARILABILEN_ALANLAR = [
     "odul_miktari",
     "odul_birimi",
     "masraf_durumu",
+    "tahsis_ucreti",
+    "kampanya_avantaji",
     "kampanya_baslangic",
     "kampanya_bitis",
     "kampanya_turu",

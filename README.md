@@ -25,9 +25,9 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 | Toplanan gerçek kampanya kaydı | **234** ham kayıt |
 | Altın Veri Seti (elle doğrulanmış referans) | **58** kayıt + ekran görüntüsü kanıtı |
 | Çıkarım — dolu alan doğruluğu | **~%86–89** (hibrit: regex+NER+LLM; aşağıdaki sapma notuna bakınız) |
-| Çıkarım — dolu alan doğruluğu (yalnızca regex, deterministik) | **%95,31** |
+| Çıkarım — dolu alan doğruluğu (yalnızca regex, deterministik) | **%96,88** |
 | Çıkarım — boş alan doğruluğu (yanlış pozitif) | **%98,36** — 2 yanlış pozitif (122 ölçülebilir alan) |
-| Çıkarım — alan bazlı makro F1 (regex) | **%90,94** (6 ölçülebilir alan; kırılım aşağıda) |
+| Çıkarım — alan bazlı makro F1 (regex) | **%93,72** (6 ölçülebilir alan; kırılım aşağıda) |
 | RAG — indekslenen parça | **734** (234 belgeden, tekilleştirilmiş) |
 | RAG — Recall@5 | **%96,88** (31/32 kampanya) |
 | RAG — abstention doğruluğu | **%100** (5/5 alan dışı soruda cevap üretilmedi) |
@@ -284,7 +284,7 @@ tasarım ilkesi olarak sunulmakla birlikte uçtan uca çalışan bir özellik de
 katilim-ai/
 ├── api/              # FastAPI: uc noktalar, sema, kimlik dogrulama
 ├── scraper/          # Veri toplama (Zeynep)
-├── preprocessing/    # Turkce normalizasyon
+├── preprocessing/    # Turkce normalizasyon + sayfa kapsami ayiklama
 ├── terminology/      # Katilim bankaciligi terminoloji sozlugu (Yagmur)
 ├── extraction/       # Regex + NER + LLM hibrit cikarim (Yagmur)
 ├── validation/       # Verifier - sayisal iddialari kaynak metne karsi dogrular

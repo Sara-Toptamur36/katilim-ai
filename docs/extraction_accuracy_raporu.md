@@ -224,20 +224,44 @@ Desen 4 gerçek kayıtta **doğru** çalışıyor (hepsinde "ödül" /
 `llm_extractor._ODUL_ANAHTAR_KELIMELERI` ile aynı tutuldu — iki motor da
 "ödül" kavramını aynı tanımlamalı.
 
+### Bulgu 6 — Sayfa kapsamı kirlenmesi
+
+AL-001'in kazınan metni, kampanyanın kendi içeriği bittikten sonra
+**başka kampanyaların tanıtım bloğunu** da içeriyordu:
+
+```
+Kredi kartına vade farksız taksit kampanyaları hakkında detaylı bilgi almak için:
+Sağlık Kampanyası | Albaraka Türk
+"… 1.000 TL- 100.000 TL arası sağlık harcamalarınıza …"     ← bu AL-005'in tutarı
+Eğitim Kampanyası | Albaraka Türk
+```
+
+Motor bu bloktaki **100.000 TL**'yi AL-001'in finansman tutarı sanıyordu
+(doğrusu 40.000 TL). `preprocessing/kapsam.py` bu bloğu kırpıyor ve
+`statik_scraper` artık kaydetmeden önce uyguluyor; mevcut kayıtlar için
+tek seferlik `scraper.scripts.kapsam_migrasyonu` çalıştırıldı.
+
+> **Kapsam (dürüstlük notu):** 234 belgenin **yalnızca 1'inde** bu blok
+> var — sistemik bir sorun değil. Kırpma da bilerek dar tutuldu: sadece
+> *"…hakkında detaylı bilgi almak için:"* ifadesinden **sonra çapraz
+> kampanya başlığı gelen** blok kesilir. Bu ifade kampanyanın kendi
+> metninde geçerse (ör. telefon numarasına yönlendirme) metne dokunulmaz.
+> Migrasyon 233 dosyaya hiç dokunmadı.
+
 ### Sonuç
 
 | | Önce | Sonra |
 |---|---|---|
-| Dolu alan doğruluğu | %85,94 | **%95,31** |
+| Dolu alan doğruluğu | %85,94 | **%96,88** |
 | Boş alan doğruluğu | %92,24 | **%98,36** |
-| Kaçırma | 9 | **3** |
+| Kaçırma | 9 | **2** |
 | Yanlış pozitif | 9 | **2** |
-| **Makro F1** | **%69,01** | **%90,94** |
+| **Makro F1** | **%69,01** | **%93,72** |
 | `vade_ay` F1 | 25,00 | **100,00** |
 | `odul_birimi` F1 | 97,87 | **100,00** |
+| `finansman_tutari` F1 | 57,14 | **100,00** |
 | `odul_miktari` F1 | 93,62 | **95,65** |
 | `kar_payi_orani` F1 | 71,43 | **83,33** |
-| `finansman_tutari` F1 | 57,14 | **83,33** |
 | `taksit_sayisi` | ölçülemiyor | **83,33** |
 
 ### Kalan 2 yanlış pozitifin ikisi de Altın Veri Seti kaynaklı

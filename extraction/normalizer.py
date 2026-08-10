@@ -40,12 +40,27 @@ def yuzdeye_cevir(ham: str) -> float | None:
         return None
 
 
-def tutara_cevir(ham: str) -> float | None:
-    """'500 TL' / '500₺' / '50.000 TL' -> 500.0 / 50000.0.
+# Kelime bazli buyukluk ekleri. GERCEK VERI: T.O.M. Katilim sayfalarinda
+# tutarlar binlik ayirac yerine kelimeyle yaziliyor - "250 Bin TL ye kadar"
+# ("250.000 TL" DEGIL). Bu bicim taninmadigi surece tutar hic bulunamiyordu
+# (olculdu: TOM-002'de finansman_tutari None donuyordu).
+# validation/verifier.py ayni bulguyu TERS yonde kullanir: bildigi sayinin
+# "250 bin" varyantini uretip metinde arar.
+_BUYUKLUK_EKLERI = {"bin": 1_000, "milyon": 1_000_000, "milyar": 1_000_000_000}
 
-    Turkce binlik ayiraci (nokta) ve ondalik ayiraci (virgul) dikkate alinir.
+_TUTAR_DESENI = re.compile(
+    r"([\d]{1,3}(?:\.\d{3})*(?:,\d+)?|\d+(?:,\d+)?)\s*(bin|milyon|milyar)?",
+    re.IGNORECASE,
+)
+
+
+def tutara_cevir(ham: str) -> float | None:
+    """'500 TL' / '500₺' / '50.000 TL' / '250 Bin TL' -> 500.0 / 50000.0 / 250000.0.
+
+    Turkce binlik ayiraci (nokta) ve ondalik ayiraci (virgul) dikkate alinir;
+    kelime bazli buyukluk eki (bin/milyon/milyar) varsa carpan uygulanir.
     """
-    m = re.search(r"([\d]{1,3}(?:\.\d{3})*(?:,\d+)?|\d+(?:,\d+)?)", ham)
+    m = _TUTAR_DESENI.search(ham)
     if not m:
         return None
     sayi = m.group(1)
@@ -54,9 +69,12 @@ def tutara_cevir(ham: str) -> float | None:
     else:
         sayi = sayi.replace(".", "")
     try:
-        return float(sayi)
+        deger = float(sayi)
     except ValueError:
         return None
+
+    ek = (m.group(2) or "").lower()
+    return deger * _BUYUKLUK_EKLERI.get(ek, 1)
 
 
 _TR_AYLAR = {

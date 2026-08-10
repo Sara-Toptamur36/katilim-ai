@@ -106,24 +106,42 @@ def test_regex_only_olcumde_katman_katkisi_bostur():
     assert sonuc["katman_katkisi"] == {}
 
 
+def _tamamen_etiketlenmemis_alan() -> str | None:
+    """Gold'da hic degeri ve hic bayragi olmayan bir olcum-disi alan sec.
+
+    ALAN SABIT YAZILMAZ: bu test once `taksit_sayisi`'ni kullaniyordu,
+    sonra o sutun etiketlenince (6 kayda deger girildi) test kirildi -
+    oysa test edilen DAVRANIS degismemisti. Alan artik veriden secilir.
+    """
+    from gold_dataset.excel_to_json import INCELENMEMIS_ALANLAR
+    from scraper.scripts.extraction_accuracy import ALAN_ESLEME, altin_kayitlari_yukle
+
+    kayitlar = altin_kayitlari_yukle()
+    for cikarim_alani, gold_alani in ALAN_ESLEME.items():
+        if gold_alani not in INCELENMEMIS_ALANLAR:
+            continue
+        if any(k.get(gold_alani) is not None for k in kayitlar):
+            continue
+        return cikarim_alani
+    return None
+
+
 def test_katman_katkisi_olcum_disi_ayrimini_yapar():
     """Sahte bir cikarim fonksiyonuyla: bir katman gold'da etiketlenmemis
     bir alani doldurursa 'olcum_disi' sayilmali - F1'e hic yansimadigi
     icin tek basina F1 farkina bakmak yaniltici olur."""
+    alan = _tamamen_etiketlenmemis_alan()
+    if alan is None:
+        pytest.skip("Tum alanlar etiketlenmis - bu senaryo artik uretilemiyor")
 
     def _sahte_hibrit(ham_metin: str) -> dict:
-        # taksit_sayisi gold'da hic etiketlenmemis -> olcum disi
-        return {
-            "taksit_sayisi": 12,
-            "_izler": {},
-            "_kaynaklar": {"taksit_sayisi": "ner"},
-        }
+        return {alan: 12, "_izler": {}, "_kaynaklar": {alan: "ner"}}
 
     sonuc = extraction_accuracy_hesapla(_sahte_hibrit)
     ner = sonuc["katman_katkisi"]["ner"]
     assert ner["toplam"] > 0
     assert ner["olcum_disi"] == ner["toplam"], (
-        "taksit_sayisi gold'da etiketlenmemis; tum katki olcum disi olmali"
+        f"{alan} gold'da etiketlenmemis; tum katki olcum disi olmali"
     )
 
 

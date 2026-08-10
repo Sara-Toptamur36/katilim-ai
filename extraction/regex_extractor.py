@@ -59,6 +59,15 @@ _UCRET_BAGLAM_DISLAMA_KELIMELERI = [
     # "restoran harcamasinda %10 iade" - TOM-002'de bu yuzden kar payi
     # oranina yanlislikla eslesiyordu).
     "iade",
+    # ODUL YUZDESI (olculdu, TEK-001): "odeme tutarinin %10'u oraninda,
+    # en fazla 500 TL odul kazanabilirsiniz" - bu bir kazanim orani,
+    # kar payi orani DEGIL.
+    "ödül", "odul", "kazan", "hediye", "puan",
+    # DAR MAKAS (olculdu, HF-005): "%0,1 dar makastan yararlanabilir" -
+    # doviz/altin alim-satim spreadi. terminology/sozluk.json bunu ZATEN
+    # "kar_payi_orani ILE KARISTIRILMAMALI" diye isaretlemis ama kural
+    # regex'e baglanmamisti.
+    "makas", "kur",
 ]
 
 
@@ -103,13 +112,106 @@ RE_TAKSIT_SAYISI = re.compile(
 
 # Finansman tutari - gercek veride iki ana kalip: tekli ust limit
 # ("100.000 TL'ye kadar") ve aralik ("1.000 TL - 100.000 TL arasi").
+#
+# BUYUKLUK EKI: T.O.M. Katilim tutarlari kelimeyle yaziyor ("250 Bin TL ye
+# kadar"), binlik ayiracli degil. Bu bicim desende yoksa tutar HIC
+# bulunamaz (olculdu: TOM-002 finansman_tutari None donuyordu).
+_TUTAR = r"\d{1,3}(?:\.\d{3})*(?:,\d+)?\s*(?:bin|milyon|milyar)?"
+
 RE_TUTAR_ARALIK = re.compile(
-    r"(\d{1,3}(?:\.\d{3})*(?:,\d+)?)\s*TL\s*[-–]\s*(\d{1,3}(?:\.\d{3})*(?:,\d+)?)\s*TL\s*aras",
-    re.IGNORECASE,
+    rf"({_TUTAR})\s*TL\s*[-–]\s*({_TUTAR})\s*TL\s*aras", re.IGNORECASE
 )
 RE_TUTAR_UST_LIMIT = re.compile(
-    r"\d{1,3}(?:\.\d{3})*(?:,\d+)?\s*TL['’]?(?:ye|ya)?\s*kadar", re.IGNORECASE
+    rf"{_TUTAR}\s*TL['’]?\s*(?:ye|ya)?\s*kadar", re.IGNORECASE
 )
+
+# BAGLAM GUARD - "X TL'ye kadar" TEK BASINA finansman tutari DEGILDIR.
+# Olculdu: 9 yanlis pozitifin 3'u bu desenin baglamsiz eslesmesinden
+# geliyordu ve ucu de tamamen farkli kavramlardi:
+#   "300.000 TL'ye kadar olan musterilere 6.000 Mil"  -> KART LIMITI
+#   "3.500 TL'ye kadar ... restoran harcamalarindan"  -> HARCAMA ESIGI
+#   "1.000 TL'ye kadar iade"                          -> IADE TAVANI
+# Ayrica AL-001'de iki tutar var - "100.000 TL'ye kadar vade farksiz
+# TAKSITLI ALISVERIS" ve "40.000 TL'ye kadar Pratik FINANSMAN Kart";
+# baglam olmadan ilk eslesen aliniyordu (yanlis olan).
+#
+# NEDEN OLUMSUZ LISTE (kar payindaki _ucret_baglaminda_mi ile ayni
+# gerekce): olumlu bir "finansman/kredi gecmeli" kurali kurulamaz -
+# "kredi karti" kart kampanyalarinin HER YERINDE geciyor ve her tutari
+# finansman sanardi. Neyin finansman OLMADIGI daha net tanimlanabilir.
+# Bu liste YALNIZCA ust-limit desenine ("X TL'ye kadar") uygulanir -
+# aralik desenine ("X TL - Y TL arasi") uygulanmaz, gerekcesi asagida.
+#
+# "harcama"/"alisveris" LISTEDE OLMALI (olculdu): cikarilinca AL-001
+# yanlis tutari secti ("100.000 TL'ye kadar taksitli ALISVERIS", dogrusu
+# "40.000 TL'ye kadar Pratik Finansman Kart") ve TOM-001 geri geldi.
+# Makro F1: listeli %89,53 / listesiz %87,20.
+_TUTAR_BAGLAM_DISLAMA_KELIMELERI = [
+    "iade", "harcama", "alışveriş", "alisveris", "kazan", "ödül", "odul",
+    "hediye", "puan", "mil", "gram", "limit",
+    "worldpuan", "parafpara", "bankkart",
+]
+
+
+# CUMLE SINIRI: ". " / "! " / "? " - noktadan SONRA bosluk sart, cunku
+# Turkce binlik ayiraci da noktadir ("100.000") ve onu cumle sonu saymak
+# sayiyi ortadan bolerdi. Satir sonu (\n) SINIR DEGILDIR: scraper ham
+# metinde her HTML blok elemani arasina \n koyuyor, yani AYNI cumle iki
+# satira bolunebiliyor (ayni bulgu validation/verifier.py'de de var).
+_CUMLE_SINIRI = re.compile(r"[.!?]\s")
+
+
+def _cumleye_kirpilmis_baglam(
+    metin: str, baslangic: int, bitis: int, pencere: int
+) -> str:
+    """Eslesmenin cevresindeki metni AYNI CUMLEYE kirpip kucuk harfe cevirir.
+
+    NEDEN CUMLEYE KIRPILIR (olculdu): duz karakter penceresi cumle sinirini
+    asiyor ve komsu cumledeki bir kelime yanlis karar verdiriyordu -
+        "5.000 TL'ye kadar alisveris puani KAZANIN. Ayrica 80.000 TL'ye
+         kadar ihtiyac FINANSMANI kullanabilirsiniz."
+    ikinci tutar, yalnizca ILK cumlede "kazanin" gectigi icin reddediliyordu.
+    """
+    sol_ham = metin[max(0, baslangic - pencere):baslangic]
+    sag_ham = metin[bitis:bitis + pencere]
+
+    sinirlar = list(_CUMLE_SINIRI.finditer(sol_ham))
+    sol = sol_ham[sinirlar[-1].end():] if sinirlar else sol_ham
+    ilk_sag = _CUMLE_SINIRI.search(sag_ham)
+    sag = sag_ham[: ilk_sag.start()] if ilk_sag else sag_ham
+
+    return turkce_kucult(sol + " " + metin[baslangic:bitis] + " " + sag)
+
+
+def _tutar_baglaminda_gecersiz_mi(metin: str, baslangic: int, bitis: int, pencere: int = 60) -> bool:
+    """Tutarin AYNI CUMLESINDE onu finansman disi kilan bir kelime var mi?"""
+    baglam = _cumleye_kirpilmis_baglam(metin, baslangic, bitis, pencere)
+    return any(k in baglam for k in _TUTAR_BAGLAM_DISLAMA_KELIMELERI)
+
+
+# Bir tavan ifadesini ODUL yapan anahtar kelimeler. llm_extractor.py'deki
+# _ODUL_ANAHTAR_KELIMELERI ile ayni kume - iki motor da ayni tanimi
+# kullanmali, yoksa biri odul sayarken digeri saymaz.
+_ODUL_BAGLAM_KELIMELERI = [
+    "ödül", "odul", "hediye", "kazan", "puan", "mil", "gram",
+    "bankkart lira", "parafpara", "worldpuan", "iade",
+    "alışveriş çeki", "hediye çeki", "indirim",
+]
+
+
+def _odul_baglaminda_mi(metin: str, baslangic: int, bitis: int, pencere: int = 80) -> bool:
+    """Tavan/limit ifadesi ("en fazla X TL") gercekten bir ODULU mu sinirliyor?
+
+    OLCULDU (KT-006): RE_ODUL_TAVAN, "Bu harcamaya ait uygulanacak
+    TAKSITLENDIRMEDE maksimum tutar 50.000 TL'dir" cumlesini yakalayip
+    50.000 TL'yi odul sandi - oysa bu bir taksitlendirme tavani.
+    "en fazla/maksimum + tutar" kalibi tek basina odul belirtmez; ayni
+    cumlede bir odul kelimesi de gecmelidir. Desen 4 kayitta DOGRU
+    calisiyor (hepsinde "odul"/"kazanilabilecek"/"iade" ayni cumlede),
+    bu yuzden desen kaldirilmaz, baglam sarti eklenir.
+    """
+    baglam = _cumleye_kirpilmis_baglam(metin, baslangic, bitis, pencere)
+    return any(k in baglam for k in _ODUL_BAGLAM_KELIMELERI)
 
 _TR_AY_ADLARI = r"Ocak|Şubat|Mart|Nisan|Mayıs|Haziran|Temmuz|Ağustos|Eylül|Ekim|Kasım|Aralık"
 RE_TARIH = re.compile(
@@ -446,15 +548,30 @@ def kaydi_cikar(ham_metin: str) -> dict:
                         break
 
     # --- Finansman tutari ----------------------------------------------
+    # ARALIK DESENINE BAGLAM GUARD'I UYGULANMAZ (olculdu): "X TL - Y TL
+    # arasi" kalibi gercek veride yalnizca finansman/taksitlendirme
+    # araliklarinda geciyor, odul tavanlarinda hic gecmiyor - 9 yanlis
+    # pozitifin hicbiri bu desenden gelmedi. Guard uygulanirsa AL-005
+    # ("1.000 TL-100.000 TL arasi saglik HARCAMALARINIZA vade farksiz 6
+    # taksit") ve AL-006 gibi GERCEK finansman araliklari, yalnizca
+    # cumlede "harcama" gectigi icin elenir.
     m = RE_TUTAR_ARALIK.search(ham_metin)
     if m:
         alanlar["finansman_tutari"] = tutara_cevir(m.group(2))
         izler["finansman_tutari"] = (m.group(0), 0.85)
     else:
-        m = RE_TUTAR_UST_LIMIT.search(ham_metin)
-        if m:
-            alanlar["finansman_tutari"] = tutara_cevir(m.group(0))
-            izler["finansman_tutari"] = (m.group(0), 0.75)
+        # ILK eslesme degil, ILK GECERLI eslesme (bkz. baglam guard'i):
+        # ayni sayfada hem "100.000 TL'ye kadar taksitli ALISVERIS" hem
+        # "40.000 TL'ye kadar Pratik FINANSMAN Kart" gecebiliyor.
+        for tm in RE_TUTAR_UST_LIMIT.finditer(ham_metin):
+            if _tutar_baglaminda_gecersiz_mi(ham_metin, tm.start(), tm.end()):
+                continue
+            tutar = tutara_cevir(tm.group(0))
+            if tutar is None:
+                continue
+            alanlar["finansman_tutari"] = tutar
+            izler["finansman_tutari"] = (tm.group(0), 0.75)
+            break
 
     # --- Vade / taksit sayisi / erteleme suresi (UC AYRI kavram) -------
     span = _ilk_eslesme(RE_VADE, ham_metin)
@@ -509,13 +626,19 @@ def kaydi_cikar(ham_metin: str) -> dict:
                 # basamak tavanlari tanim geregi nihai toplamdan KUCUK
                 # olacagi icin, tum adaylar arasindan EN BUYUK degerli
                 # olan secilir - bu iki gercek ornekte de dogru sonucu verir.
+                # BAGLAM SARTI: tavan/limit kalibi tek basina odul
+                # belirtmez - ayni cumlede bir odul kelimesi de gecmeli
+                # (bkz. _odul_baglaminda_mi, KT-006 bulgusu).
                 adaylar: list[tuple[float, str, str]] = []  # (tutar, birim, span)
-                m = RE_ODUL_SINIRLI.search(ham_metin)
-                if m:
+                for m in RE_ODUL_SINIRLI.finditer(ham_metin):
+                    if not _odul_baglaminda_mi(ham_metin, m.start(), m.end()):
+                        continue
                     tutar = tutara_cevir(m.group(1))
                     if tutar is not None:
                         adaylar.append((tutar, "TL", m.group(0)))
                 for tm in RE_ODUL_TAVAN.finditer(ham_metin):
+                    if not _odul_baglaminda_mi(ham_metin, tm.start(), tm.end()):
+                        continue
                     tutar = tutara_cevir(tm.group(1))
                     if tutar is not None:
                         birim_ham = turkce_kucult(tm.group(2))

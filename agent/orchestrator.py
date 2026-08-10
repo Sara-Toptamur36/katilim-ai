@@ -5,7 +5,35 @@ Dictionary/RAG/Fallback) -> Response Generator -> Terminology Check ->
 Verifier -> Provenance.
 
 BU DOSYANIN KAPSAMI: Intent Detection + Tool Router + dort arac
-(Hesaplama, Sozluk, Karsilastirma, RAG) + kademeli geri cekilme.
+(Hesaplama, Sozluk, Karsilastirma, RAG) + kademeli geri cekilme +
+Terminology Check.
+
+TERMINOLOGY CHECK - RAG'DE NEDEN FARKLI DAVRANIR: terminoloji_tutarliligini_
+kontrol_et() kendi docstring'inde "ajanin URETTIGI yanitta" gelenek terim
+sizintisini denetledigini soyluyor. RAG hicbir sey URETMIYOR - kaynak
+metni birebir donduruyor (bkz. docs/rag_tasarim_ve_olcum.md Bolum 7:
+"LLM ile ozetleme yok... halusinasyon yapisal olarak imkansizdir").
+Bu yuzden RAG kaynaginda gecen bir gelenek terim (ornegin Turkiye
+Finans'in kendi sayfasindaki "...bankacilik kanununa gore resmi olarak
+Ihtiyac Kredisi olarak da nitelendirilmektedir" cumlesi - gercek veriyle
+dogrulandi) bir HATA DEGILDIR; bankanin kendi yasal ifadesidir, kaynagi
+"duzeltmek" projenin kendi seffaflik ilkesiyle (rapor Bolum 5.7/15)
+CELISIR. Bu yuzden RAG yanitlarinda kontrol yine calisir (audit icin
+gorunur olsun diye) ama sonucu bir HATA/tutarsizlik olarak degil,
+yalnizca BILGI notu olarak isaretlenir (`terminoloji_tutarli=None`).
+
+SOZLUK ARACI DA AYNI MUAFIYETI ALIR - DENETIM BULGUSU: ilk yazimda
+Sozluk araci "tam kontrole" tabi tutulmustu, ama gercek cagriyla
+denendiginde "Kâr Payı Oranı, geleneksel bankacilikta 'Faiz Orani'
+kavramina karsilik gelir" cevabi kendi kendini "hatali" isaretledi.
+Bu bir kayma DEGIL - terminology/sozluk.json'daki her kavramin
+`gelenek_karsilik` alaninin ve Md. 5.5'in kendisinin amaci tam da
+kullaniciya gelenek karsiligi OGRETMEKTIR. Bu yuzden yalnizca
+Hesaplama ve Karsilastirma (sayisal/yapisal veri ureten, gelenek
+terime hic ihtiyaci olmayan iki arac - dogrulandi: hesaplama cevabi
+"kar payi orani" diyor, "faiz" hic gecmiyor) tam True/False kontrolune
+tabidir. Sozluk ve RAG, ikisi de MESRU sekilde gelenek terim
+icerebilecegi icin bilgi notu (`terminoloji_tutarli=None`) alir.
 
 VERIFIER BU ZINCIRE HENUZ BAGLI DEGIL: validation/verifier.py yazildi ve
 gercek veriyle olculdu (6/6 yanlis pozitif reddedildi, 41 gercek iddianin
@@ -30,8 +58,16 @@ from agent.router import (
     rag_aracini_cagir,
     sozluk_aracini_cagir,
 )
+from terminology.tutarlilik_kontrolu import terminoloji_tutarliligini_kontrol_et
 
 KayitGetirici = Callable[[str], list]
+
+# Bu araclarin yanitinda gecen bir gelenek terim HATA degil, bilgi
+# notudur (bkz. modul docstring'i) - RAG kaynagi birebir aliyor, Sozluk
+# ise gelenek karsiligi ACIKCA ogretmek icin var. Hesaplama/Karsilastirma
+# BURADA YOK - onlarin yaniti sayisal/yapisal veridir, gelenek terime hic
+# ihtiyaci olmaz; oralarda gercek bir True/False kontrolu uygulanir.
+_TERMINOLOJI_BILGI_NOTU_ARACLARI = {"rag", "dictionary"}
 
 
 def soru_isle(soru: str, kayit_getirici: KayitGetirici, rag_araci=None) -> dict:
@@ -94,6 +130,11 @@ def soru_isle(soru: str, kayit_getirici: KayitGetirici, rag_araci=None) -> dict:
     # araclari belge degil yapilandirilmis veri kullanir.
     kaynaklar = sonuc.get("kaynaklar", [])
 
+    # Terminology Check (Md. 5.5) - bkz. modul docstring'i "TERMINOLOGY
+    # CHECK - RAG'DE NEDEN FARKLI DAVRANIR" / "SOZLUK ARACI DA AYNI
+    # MUAFIYETI ALIR" ve _TERMINOLOJI_BILGI_NOTU_ARACLARI.
+    terminoloji_sonucu = terminoloji_tutarliligini_kontrol_et(sonuc["cevap"])
+
     return {
         "cevap": sonuc["cevap"],
         "kaynaklar": kaynaklar,
@@ -120,5 +161,12 @@ def soru_isle(soru: str, kayit_getirici: KayitGetirici, rag_araci=None) -> dict:
                 }
                 for k in kaynaklar
             ],
+            # RAG/Sozluk'te "uygulanamaz" (None) - bkz.
+            # _TERMINOLOJI_BILGI_NOTU_ARACLARI. Hesaplama/Karsilastirma'da
+            # gercek True/False sonucudur.
+            "terminoloji_tutarli": (
+                None if arac in _TERMINOLOJI_BILGI_NOTU_ARACLARI else terminoloji_sonucu["tutarli"]
+            ),
+            "terminoloji_sorunlari": terminoloji_sonucu["bulunan_sorunlar"],
         },
     }

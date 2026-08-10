@@ -80,6 +80,7 @@ def test_audit_ekstra_tum_alanlari_icerir():
     for alan in (
         "intent", "intent_confidence", "cagrilan_arac", "latency_ms", "sebep",
         "extraction_confidence", "regex_basari_orani",
+        "terminoloji_tutarli", "terminoloji_sorunlari",
     ):
         assert alan in sonuc["audit_ekstra"], f"Audit alani eksik: {alan}"
 
@@ -164,3 +165,83 @@ def test_latency_olculur():
 
     sonuc = soru_isle("taksit hesapla", _sahte_getirici, rag_araci=_sahte_rag)
     assert sonuc["audit_ekstra"]["latency_ms"] >= 0
+
+
+# ---------------------------------------------------------------------------
+# Terminology Check (Md. 5.5) - RAG'de bilgi notu, digerlerinde gercek kontrol
+# ---------------------------------------------------------------------------
+
+
+def test_rag_yanitindaki_gelenek_terim_hata_sayilmaz():
+    """DENETIM BULGUSU: RAG kaynagi birebir donduruyor - Turkiye Finans'in
+    kendi sayfasindaki 'resmi olarak Ihtiyac Kredisi olarak da
+    nitelendirilmektedir' gibi bir yasal ifade gercek veride dogrulandi.
+    Bu bir hata DEGIL, bankanin kendi ifadesi - kaynagi 'duzeltmek'
+    seffaflik ilkesiyle celisir. RAG yolunda terminoloji_tutarli=None
+    (uygulanamaz) olmali, hata (False) DEGIL."""
+    from agent.orchestrator import soru_isle
+
+    def gelenek_terimli_rag(soru: str) -> dict:
+        return {
+            "basarili": True,
+            "cevap": "Bankacilik kanununa gore resmi olarak Ihtiyac Kredisi olarak da nitelendirilmektedir.",
+            "kaynaklar": [{"kaynak_url": "https://ornek.com", "similarity_score": 0.9}],
+        }
+
+    sonuc = soru_isle("ihtiyac finansmani nedir", _sahte_getirici, rag_araci=gelenek_terimli_rag)
+    assert sonuc["audit_ekstra"]["cagrilan_arac"] == "rag"
+    assert sonuc["audit_ekstra"]["terminoloji_tutarli"] is None
+    assert sonuc["audit_ekstra"]["terminoloji_sorunlari"]  # bilgi amacli, bos degil
+
+
+def test_karsilastirma_yanitindaki_gelenek_terim_gercek_hata_sayilir(monkeypatch):
+    """Hesaplama/Karsilastirma araclarinin yaniti sayisal/yapisal veridir
+    (bkz. _TERMINOLOJI_BILGI_NOTU_ARACLARI docstring'i) - Sozluk/RAG'den
+    farkli olarak burada bir gelenek terim cikarsa sablonun kendisinde
+    gercek bir hata vardir, gercek True/False sonucu doner."""
+    import agent.orchestrator as orch
+    from agent.router import karsilastirma_aracini_cagir
+
+    def bozuk_karsilastirma_araci(soru: str, kayit_getirici) -> dict:
+        sonuc = karsilastirma_aracini_cagir(soru, kayit_getirici)
+        sonuc["cevap"] = "Kuveyt Türk'ün faiz oranı Albaraka Türk'ten daha düşük."
+        return sonuc
+
+    monkeypatch.setattr(orch, "karsilastirma_aracini_cagir", bozuk_karsilastirma_araci)
+
+    sonuc = orch.soru_isle(
+        "Kuveyt Türk ile Albaraka Türk'ü karsilastir", _sahte_getirici, rag_araci=_sahte_rag
+    )
+    assert sonuc["audit_ekstra"]["cagrilan_arac"] == "sql"
+    assert sonuc["audit_ekstra"]["terminoloji_tutarli"] is False
+    assert sonuc["audit_ekstra"]["terminoloji_sorunlari"]
+
+
+def test_temiz_yanitta_terminoloji_tutarli_true_doner():
+    """Hesaplama araci sayisal veri uretir, gelenek terime hic ihtiyaci
+    yoktur (dogrulandi: cevap 'kar payi orani' diyor, 'faiz' hic gecmiyor)
+    - bu yuzden gercek bir True/False kontrolune tabidir (Sozluk'ten
+    farkli olarak, bkz. test_dictionary_yanitindaki_gelenek_terim..)."""
+    from agent.orchestrator import soru_isle
+
+    sonuc = soru_isle(
+        "500.000 TL, %1,99 oranla 24 ay vadeyle taksitim ne kadar olur?",
+        _sahte_getirici,
+        rag_araci=_sahte_rag,
+    )
+    assert sonuc["audit_ekstra"]["cagrilan_arac"] == "calculator"
+    assert sonuc["audit_ekstra"]["terminoloji_tutarli"] is True
+    assert sonuc["audit_ekstra"]["terminoloji_sorunlari"] == []
+
+
+def test_sozluk_yanitinda_gelenek_karsilik_bilgi_notu_sayilir():
+    """DENETIM BULGUSU: Sozluk aracinin kendi gorevi gelenek karsiligi
+    OGRETMEK (terminology/sozluk.json'daki gelenek_karsilik alani, Md.
+    5.5) - "geleneksel bankacilikta 'Faiz Orani' kavramina karsilik
+    gelir" gibi bir cevap kendi kendini hatali isaretlememeli."""
+    from agent.orchestrator import soru_isle
+
+    sonuc = soru_isle("Kâr payı oranı nedir?", _sahte_getirici, rag_araci=_sahte_rag)
+    assert sonuc["audit_ekstra"]["cagrilan_arac"] == "dictionary"
+    assert sonuc["audit_ekstra"]["terminoloji_tutarli"] is None
+    assert sonuc["audit_ekstra"]["terminoloji_sorunlari"]  # gelenek karsiligi gercekten iceriyor

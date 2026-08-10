@@ -29,7 +29,7 @@
     "standart_terim": "Katılım Fonu",
     "gelenek_karsilik": "Vadeli Mevduat",
     "sema_alani": ["kampanya_turu"],
-    "sema_notu": "kampanya_turu enum'inda (api/schemas.py) 'Katilim Fonu' diye bir deger yok; en yakin aday YATIRIM (Yatirim Urunu Kampanyasi) ama bu dogrulanmamis - Sara ile netlestirilecek.",
+    "sema_notu": "Cozuldu: extraction/regex_extractor.py KAMPANYA_TURU_ANAHTAR_KELIMELERI, 'katilim fonu' ifadesini YATIRIM (Yatirim Urunu Kampanyasi) enum degerine esliyor.",
     "varyantlar": [
       "katilim fonu",
       "kar payi hesabi",
@@ -125,8 +125,8 @@
   "odemesiz_donem": {
     "standart_terim": "Ödemesiz Dönem",
     "gelenek_karsilik": "Grace Period (Ödemesiz Taksit)",
-    "sema_alani": [],
-    "sema_notu": "CampaignRecord semasinda dogrudan karsiligi yok - ne oran, ne vade, ne masraf alanina oturuyor; taksit baslama zamaninin ertelenmesi ayri bir mekanizma. Sara ile sema kapsamı konusulmali.",
+    "sema_alani": ["erteleme_suresi_ay"],
+    "sema_notu": "Cozuldu: api/schemas.py CampaignRecord'a erteleme_suresi_ay alani eklendi (aciklamasi: 'Odemesiz donem'). Uc cikarim motoru da (regex/NER/LLM) bu alani doldurur.",
     "varyantlar": [
       "odemesiz donem",
       "odemesiz taksit",

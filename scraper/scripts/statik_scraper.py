@@ -20,6 +20,7 @@ from urllib.parse import urljoin, urlparse
 
 from bs4 import BeautifulSoup
 
+from preprocessing.kapsam import kampanya_govdesini_ayikla
 from preprocessing.normalizer import metni_normalize_et
 from scraper.scripts import ortak, pdf_isle, tablo_isle
 
@@ -113,6 +114,11 @@ def sayfa_tara(
     icerik_secici = ayar.get("icerik_secici")
     secili = soup.select_one(icerik_secici) if icerik_secici else None
     sayfa_metni = (secili or soup).get_text("\n", strip=True)
+
+    # KAPSAM: icerik secicisi bazen sayfanin sonundaki "ilgili
+    # kampanyalar" tanitim blogunu da aliyor ve o blok BASKA
+    # kampanyalarin tutarlarini iceriyor (bkz. preprocessing/kapsam.py).
+    sayfa_metni = kampanya_govdesini_ayikla(sayfa_metni)
 
     dogrulama = ortak.dogrulama_kontrolu(sayfa_metni)
     if not dogrulama.basarili:

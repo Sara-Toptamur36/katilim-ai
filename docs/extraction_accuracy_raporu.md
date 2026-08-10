@@ -82,6 +82,10 @@ Toplam iki metrik sistemin genel sağlığını gösterir ama **hangi alanın**
 zayıf olduğunu söylemez. Şartnamenin en ağır kriteri (Model Başarısı, %30)
 tam da bunu sorar. Ölçüm artık alan kırılımı da basıyor.
 
+Aşağıdaki tablo, "Kaçırma analizi ve düzeltmeler" bölümündeki
+düzeltmelerden **önceki** durumu gösterir — güncel değerler için o bölüme
+bakınız.
+
 | Alan | Destek | TP | FP | FN | P% | R% | F1% |
 |---|---|---|---|---|---|---|---|
 | `odul_birimi` | 23 | 23 | 1 | 0 | 95,83 | 100,00 | **97,87** |
@@ -140,6 +144,127 @@ gerçek değerine yükselecektir.
   sayfalarda tetiklenmesi (aşağıdaki yanlış pozitif listesiyle tutarlı).
 - `odul_birimi` **%100** — banka-özel birim tanıma (Bankkart Lira /
   ParafPara / Worldpuan) düzeltmesinden sonra hatasız.
+
+---
+
+## Kaçırma analizi ve düzeltmeler — 10 Ağustos 2026
+
+Alan bazlı tablo 9 kaçırma gösteriyordu. Tek tek kaynak metne bakıldığında
+**6'sı motorun hatası değildi.**
+
+### Bulgu 1 — Altın Veri Seti'nde sistematik sütun hatası
+
+`vade_ay` recall'ı %14,29'du. Kaçırılan 6 kaydın gold değeri aslında
+**taksit sayısı**:
+
+| Kayıt | Gold `vade_ay` | Kampanya başlığı | Sayfada gerçek vade ifadesi |
+|---|---|---|---|
+| KT-006 | 5 | "Vade Farksız **5 Aya Varan Taksit**" | yok |
+| AL-001 | 6 | "vade farksız **6 taksit**" | yok |
+| AL-002 | 3 | "MTV Ödemelerinize Vade Farksız **3 Taksit**" | yok |
+| AL-005 | 6 | "Sağlık Harcamalarına Vade Farksız **6 Taksit**" | yok |
+| AL-006 | 6 | "Eğitim Harcamalarınıza Vade Farksız **6 Taksit**" | yok |
+| TOM-002 | 10 | "Özel Okul Ödemelerinde **10 Taksit**" | yok |
+
+Sebep: `taksit_sayisi` sütunu 28 Temmuz'da **yoktu**. Gold'un kendi
+`kampanya_avantaji` metni de altı kayıtta "taksit" diyor. Değerler
+değiştirilmeden doğru sütuna taşındı; `vade_ay` boşaltıldı.
+
+> **Not:** Taşıma sırasında `openpyxl`'in `ws.cell(r, c, None)` çağrısının
+> hücreyi **temizlemediği** görüldü (imza `value=None` olduğu için "değer
+> verilmedi" anlamına geliyor). İlk denemede aynı sayı iki sütunda birden
+> kaldı. Doğrusu `ws.cell(r, c).value = None`.
+
+### Bulgu 2 — "250 Bin TL" biçimi hiç tanınmıyordu
+
+T.O.M. Katılım tutarları binlik ayıraç yerine kelimeyle yazıyor. Bu biçim
+desende olmadığı için `finansman_tutari` bulunamıyordu.
+`normalizer.tutara_cevir` artık bin/milyon/milyar çarpanını uyguluyor.
+
+### Bulgu 3 — "X TL'ye kadar" tek başına finansman tutarı değil
+
+`RE_TUTAR_UST_LIMIT`'te bağlam kontrolü yoktu (kâr payı deseninde vardı).
+9 yanlış pozitifin 3'ü buradan geliyordu: kart limiti, harcama eşiği,
+iade tavanı. Kâr payındaki `_ucret_baglaminda_mi` ile aynı yaklaşımla
+olumsuz bağlam listesi eklendi.
+
+Guard **yalnızca üst-limit desenine** uygulanır; aralık deseni
+("X TL - Y TL arası") gerçek veride sadece finansman aralıklarında geçiyor
+ve hiçbir yanlış pozitif oradan gelmedi.
+
+**Bağlam penceresi cümleye kırpılır** — düz karakter penceresi cümle
+sınırını aşıyor ve önceki cümledeki bir ödül ifadesi sonraki cümledeki
+gerçek finansman tutarını eliyordu. Nokta yalnızca **ardından boşluk
+gelirse** cümle sonu sayılır (Türkçe binlik ayıracı da noktadır);
+satır sonu sınır değildir (scraper her HTML bloğu arasına `\n` koyuyor).
+
+### Bulgu 4 — Ödül yüzdesi ve dar makas, kâr payı sanılıyordu
+
+Genel yüzde fallback'inin dışlama listesinde ücret/masraf terimleri vardı
+ama **ödül/kazanım** ve **dar makas** yoktu:
+
+| Kayıt | Uydurulan | Gerçekte |
+|---|---|---|
+| TEK-001 | %10 | *"ödeme tutarının %10'u oranında… ödül kazanabilir"* |
+| HF-005 | %0,1 | *"%0,1 **dar makas**tan yararlanabilir"* (döviz spreadi) |
+
+`terminology/sozluk.json` dar makası **zaten** *"kâr payı oranı ile
+KARIŞTIRILMAMALI"* diye işaretlemişti — kural sözlükte vardı ama regex'e
+bağlanmamıştı.
+
+### Bulgu 5 — Taksitlendirme tavanı ödül sanılıyordu
+
+`RE_ODUL_TAVAN` ("en fazla / maksimum + tutar") bağlamsız çalışıyordu ve
+KT-006'da *"Bu harcamaya ait uygulanacak **taksitlendirmede** maksimum
+tutar 50.000 TL'dir"* cümlesini ödül olarak okudu.
+
+Desen 4 gerçek kayıtta **doğru** çalışıyor (hepsinde "ödül" /
+"kazanılabilecek" / "iade" aynı cümlede geçiyor), bu yüzden kaldırılmadı;
+**aynı cümlede bir ödül kelimesi bulunması** şartı eklendi. Kelime kümesi
+`llm_extractor._ODUL_ANAHTAR_KELIMELERI` ile aynı tutuldu — iki motor da
+"ödül" kavramını aynı tanımlamalı.
+
+### Sonuç
+
+| | Önce | Sonra |
+|---|---|---|
+| Dolu alan doğruluğu | %85,94 | **%95,31** |
+| Boş alan doğruluğu | %92,24 | **%98,36** |
+| Kaçırma | 9 | **3** |
+| Yanlış pozitif | 9 | **2** |
+| **Makro F1** | **%69,01** | **%90,94** |
+| `vade_ay` F1 | 25,00 | **100,00** |
+| `odul_birimi` F1 | 97,87 | **100,00** |
+| `odul_miktari` F1 | 93,62 | **95,65** |
+| `kar_payi_orani` F1 | 71,43 | **83,33** |
+| `finansman_tutari` F1 | 57,14 | **83,33** |
+| `taksit_sayisi` | ölçülemiyor | **83,33** |
+
+### Kalan 2 yanlış pozitifin ikisi de Altın Veri Seti kaynaklı
+
+- **KT-006** `kar_payi_orani`: kampanya *"Vade Farksız 5 Aya Varan
+  Taksit"*. AL-002, AL-005 ve TOM-002 **birebir aynı yapıda** ve gold'da
+  üçü de `0`; KT-006 ise "belirtilmemiş". Gold tutarsızlığı — etiketleme
+  kararı gerektirir.
+- **TF-001** `kar_payi_orani`: sayfada *"Kâr paysız 2.500 TL'ye kadar"*
+  ifadesi geçiyor, yani motor haklı. Ancak bu, kampanyanın kendisine değil
+  sayfada listelenen **başka bir ürüne** ait — AL-001'le aynı **sayfa
+  kapsamı kirlenmesi**.
+
+### Kalan 3 kaçırma
+
+- **AL-001** `finansman_tutari` (40.000 bekleniyor, 100.000 bulunuyor):
+  desen sorunu **değil**. AL-001'in kazınan metni **AL-005'in kampanya
+  metnini de içeriyor** ("1.000 TL-100.000 TL arası **sağlık**
+  harcamalarınıza"). Albaraka'nın `.searchContent` seçicisi kardeş
+  kampanya bloklarını da alıyor — bu bir **kapsam kirlenmesi** ve tüm
+  Albaraka kayıtlarını etkiliyor olabilir. Scraper tarafında ele alınmalı.
+- **AL-001** `taksit_sayisi` (6 bekleniyor, 4 bulunuyor): kampanya iki
+  bölümlü ("4 taksitli" + "6 taksit"); gold'un kendi notu da bu
+  ikiliği yazıyor. Gerçek belirsizlik — etiketleme kararı gerektirir.
+- **DK-002** `odul_miktari` (0,1 bekleniyor, 1,0 bulunuyor): gold davet
+  başına ödülü (0,1 gram), motor üst sınırı (1 gram) alıyor. KT-007'de
+  gold **toplamı** seçmişti — etiketleme politikası netleştirilmeli.
 
 ---
 

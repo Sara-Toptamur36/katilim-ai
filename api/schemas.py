@@ -213,6 +213,14 @@ class RetrieverSonuc(BaseModel):
     metin_ozeti: str | None = None
 
 
+class TerminolojiSorunu(BaseModel):
+    """agent/orchestrator.py::terminoloji_tutarliligini_kontrol_et'in
+    bulunan_sorunlar cikti sekliyle AYNI (Md. 5.5)."""
+
+    gelenek_terim: str
+    onerilen: str
+
+
 class AuditBilgisi(BaseModel):
     """Juri Audit Paneli'nin (rapor Bolum 10.2) ihtiyac duydugu TUM alanlar.
 
@@ -234,6 +242,12 @@ class AuditBilgisi(BaseModel):
     model: str | None = None
     temperature: float | None = None
     sebep: str | None = Field(None, description="Fallback'e dusuldiyse nedeni")
+    # Md. 5.5 - agent/orchestrator.py::_TERMINOLOJI_BILGI_NOTU_ARACLARI ile
+    # AYNI kural: RAG/Sozluk'te "uygulanamaz" (None, gelenek terim mesru
+    # olabilir - kaynak alintisi/gelenek karsiligi ogretimi), Hesaplama/
+    # Karsilastirma'da gercek True/False.
+    terminoloji_tutarli: bool | None = None
+    terminoloji_sorunlari: list[TerminolojiSorunu] = Field(default_factory=list)
 
 
 class ChatYanit(BaseModel):

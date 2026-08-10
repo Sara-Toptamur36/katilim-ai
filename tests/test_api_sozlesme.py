@@ -189,9 +189,27 @@ def test_chat_audit_blogu_tum_alanlari_icerir():
         "cache_hit",
         "model",
         "temperature",
+        "terminoloji_tutarli",
+        "terminoloji_sorunlari",
     ]
     for alan in beklenen:
         assert alan in audit, f"Audit paneli alani eksik: {alan}"
+
+
+def test_chat_terminoloji_bilgisi_uctan_uca_iletilir():
+    """DENETIM BULGUSU: agent/orchestrator.py::soru_isle terminoloji
+    kontrolunu dogru hesapliyordu ama api/schemas.py::AuditBilgisi'nde
+    karsilik gelen alan hic yoktu - deger sessizce API sinirinda
+    kayboluyordu. Sozluk sorusu, Md. 5.5'in kendi kavramini (Faiz
+    Orani'na karsilik gelir) acikladigi icin gercekten bir gelenek terim
+    icerir - bilgi notu (terminoloji_tutarli=None) API'ye kadar ulasmali."""
+    yanit = client.post(
+        "/chat", json={"soru": "Kâr payı oranı nedir?"}, headers=GECERLI_BASLIK
+    ).json()
+    audit = yanit["audit"]
+    assert audit["cagrilan_arac"] == "dictionary"
+    assert audit["terminoloji_tutarli"] is None
+    assert audit["terminoloji_sorunlari"]
 
 
 def test_chat_yanitinda_kaynak_ve_confidence_alanlari_var():

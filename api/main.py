@@ -377,5 +377,7 @@ def chat(istek: ChatIstek, kullanici: dict = Depends(token_dogrula)):
             response_confidence=sonuc["confidence"],
             latency_ms=ekstra["latency_ms"],
             sebep=ekstra["sebep"],
+            terminoloji_tutarli=ekstra["terminoloji_tutarli"],
+            terminoloji_sorunlari=ekstra["terminoloji_sorunlari"],
         ),
     )

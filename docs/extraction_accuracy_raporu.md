@@ -551,10 +551,14 @@ denk düştü. Yağmur'a durumla birlikte sunuldu, kararlar:
    `taksit_sayisi` ikinci bölümün değerini (6) taşıyordu — alanlar arası
    tutarsızlık. **Karar: `4` yapıldı**, alanlar artık aynı alt kampanyaya
    (Pratik Finansman Kart) işaret ediyor.
-3. **DK-002 `odul_miktari`** — DK-002 kişi/davet başına ödülü (0,1 gram)
-   kaydetmiş, KT-007 ise aynı tip kampanyada toplam/tavan ödülü kaydetmiş;
-   ekip genelinde tutarsız bir politika. **Karar: şimdilik dokunulmadı**,
-   Yağmur ayrıca ele alacak (KT-007'nin de kontrol edilmesi gerekiyor).
+3. **DK-002 `odul_miktari`** — ilk değerlendirmede DK-002'nin (davet başına
+   0,1 gram) KT-007'nin (750 TL toplam) "politikasıyla çelişebileceği"
+   düşünülmüştü. **11 Ağustos'ta yeniden incelendi:** KT-007'nin 750 TL'si
+   aslında TEK bir yeni müşterinin İKİ farklı bileşeninin toplamı (500 TL
+   harcama iadesi + 250 TL anket ödülü) — DK-002'deki gibi "birim ödül ×
+   davet sayısı" çarpımı DEĞİL. Yani gerçek bir politika çelişkisi yoktu,
+   ilk karşılaştırma yanlış eşleştirmeydi. **Karar: DK-002 (0,1 gram)
+   olduğu gibi doğru, dokunulmadı.**
 4. **TF-001 `kar_payi_orani`** — yanlış pozitif (`0.0`), sayfanın ortasında
    geçen tamamen farklı bir ürünün ("Yedek Hesap") "Kâr paysız 2.500 TL'ye
    kadar" ifadesinden geliyor; AL-001'deki sayfa-sonu kirlenmesinden farklı
@@ -564,8 +568,11 @@ denk düştü. Yağmur'a durumla birlikte sunuldu, kararlar:
    tek örnek için yeni bir genel kural yazmak riskli).
 
 **Sonuç:** KT-006 ve AL-001 düzeltmeleri sonrası regex-only Makro F1
-94,62 → **98,28**e çıktı; kalan tek hata (DK-002, henüz karara
-bağlanmadı) ve kalan tek yanlış pozitif (TF-001, bilinen sınırlama).
+94,62 → **98,28**e çıktı. C4'ün 4 kararı da artık kapalı: KT-006/AL-001
+düzeltildi, DK-002 doğru olduğu teyit edildi (dokunulmadı), TF-001
+bilinen sınırlama olarak belgelendi (dokunulmadı). Kalan tek hata (DK-002
+— zaten doğru) ve kalan tek yanlış pozitif (TF-001 — bilinen sınırlama)
+bilinçli olarak böyle bırakıldı, çözülmemiş değil.
 
 ### C1 — Altın Veri Seti tazelik durumu (yeniden ölçüldü)
 

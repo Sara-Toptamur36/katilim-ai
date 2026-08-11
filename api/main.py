@@ -61,6 +61,7 @@ from comparison.compare_engine import (
     karsilastir_bellekte,
     karsilastir_sorgusu,
 )
+from terminology.tutarlilik_kontrolu import terminoloji_tutarliligini_kontrol_et
 
 app = FastAPI(
     title="KatilimAI API",
@@ -305,6 +306,15 @@ def karsilastir(istek: KarsilastirIstek, kullanici: dict = Depends(token_dogrula
         kullanici, "karsilastir", latency, cagrilan_arac="sql", sql_sorgusu=sql
     )
 
+    # Md. 5.5 - Karsilastirma ciktisi tamamen sabit Turkce sablonlardan
+    # uretilir (LLM/kazinmis metin karismaz), ama denetim yine de burada
+    # yapilir: AuditBilgisi'nin kendi tasarim ilkesiyle ayni ("Hesaplama/
+    # Karsilastirma'da gercek True/False", bkz. api/schemas.py) - yalnizca
+    # /chat'in orkestrator yoluna degil, dashboard'un dogrudan cagirdigi
+    # bu uc noktaya da uygulanir.
+    aciklama = aciklama_uret(sonuc)
+    terminoloji_sonucu = terminoloji_tutarliligini_kontrol_et(aciklama)
+
     return KarsilastirYanit(
         kriter=istek.kriter,
         sonuclar=sonuc["sonuclar"],
@@ -313,7 +323,9 @@ def karsilastir(istek: KarsilastirIstek, kullanici: dict = Depends(token_dogrula
             cagrilan_arac="sql",
             latency_ms=latency,
             sql_sorgusu=sql,
-            sebep=aciklama_uret(sonuc),
+            sebep=aciklama,
+            terminoloji_tutarli=terminoloji_sonucu["tutarli"],
+            terminoloji_sorunlari=terminoloji_sonucu["bulunan_sorunlar"],
         ),
     )
 
@@ -364,6 +376,9 @@ def hesapla(istek: HesapIstek, kullanici: dict = Depends(token_dogrula)):
     latency = int((time.time() - baslangic) * 1000)
     _audit_kaydet(kullanici, "hesapla", latency, cagrilan_arac="calculator")
 
+    ozet = sonuc.ozet_metni()
+    terminoloji_sonucu = terminoloji_tutarliligini_kontrol_et(ozet)
+
     return HesapYanit(
         anapara=sonuc.anapara,
         aylik_oran_percent=istek.aylik_oran_percent,
@@ -371,13 +386,15 @@ def hesapla(istek: HesapIstek, kullanici: dict = Depends(token_dogrula)):
         aylik_taksit=sonuc.aylik_taksit,
         toplam_odeme=sonuc.toplam_odeme,
         toplam_kar_payi=sonuc.toplam_kar_payi,
-        ozet=sonuc.ozet_metni(),
+        ozet=ozet,
         odeme_plani=plan,
         audit=_bos_audit(
             cagrilan_arac="calculator",
             latency_ms=latency,
             response_confidence=1.0,  # deterministik hesap - belirsizlik yok
             sebep="Saf Python hesabi, LLM kullanilmadi",
+            terminoloji_tutarli=terminoloji_sonucu["tutarli"],
+            terminoloji_sorunlari=terminoloji_sonucu["bulunan_sorunlar"],
         ),
     )
 

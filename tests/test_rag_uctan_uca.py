@@ -98,6 +98,21 @@ def test_rag_araci_kaynakli_yanit_uretir():
         assert kaynak["similarity_score"] is not None
 
 
+def test_rag_araci_chunk_id_ve_belge_tarihi_doldurur():
+    """DENETIM BULGUSU (11 Agu): Kaynak semasinda chunk_id/belge_tarihi
+    vardi ama rag_aracini_cagir bu iki alani hic set etmiyordu - Pydantic
+    sessizce None birakiyordu (audit panelindeki retriever_sonuclari
+    doluyken ana kaynaklar listesi eksikti). Md. 11 izlenebilirlik icin
+    ikisi de dolu olmali."""
+    from agent.router import rag_aracini_cagir
+
+    sonuc = rag_aracini_cagir("kâr payı oranı ve vade seçenekleri")
+    assert sonuc["basarili"] is True
+    for kaynak in sonuc["kaynaklar"]:
+        assert kaynak["chunk_id"], "chunk_id bos - provenance eksik"
+        assert kaynak["belge_tarihi"], "belge_tarihi bos - provenance eksik"
+
+
 def test_rag_araci_kaynak_yoksa_uydurmaz():
     from agent.router import rag_aracini_cagir
 

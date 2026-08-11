@@ -157,6 +157,35 @@ def test_tek_kampanya_ile_karsilastirma_reddedilir():
     assert yanit.status_code == 422  # Pydantic: min_length=2
 
 
+def test_karsilastirma_terminoloji_kontrolu_uctan_uca_calisir():
+    """DENETIM BULGUSU (11 Agu): terminoloji_tutarli yalnizca /chat'te
+    hesaplaniyordu; AuditBilgisi'nin kendi tasarim ilkesi "Hesaplama/
+    Karsilastirma'da gercek True/False" diyordu ama /karsilastir'in
+    dogrudan cagrisinda (dashboard'un kendi sayfasi, chatbot'tan
+    BAGIMSIZ) alan hep None donuyordu. Karsilastirma metni sabit,
+    katilim-bankaciligi terminolojisine uygun sablonlardan uretildigi
+    icin True donmesi beklenir."""
+    yanit = client.post(
+        "/karsilastir",
+        json={"ids": [1, 3], "kriter": "en_avantajli"},
+        headers=GECERLI_BASLIK,
+    ).json()
+    assert yanit["audit"]["terminoloji_tutarli"] is True
+    assert yanit["audit"]["terminoloji_sorunlari"] == []
+
+
+def test_hesaplama_terminoloji_kontrolu_uctan_uca_calisir():
+    """Ayni bulgu, /hesapla icin - ozet metni katilim terminolojisine
+    (kar payi) uygun oldugundan True donmeli."""
+    yanit = client.post(
+        "/hesapla",
+        json={"anapara": 100000, "aylik_oran_percent": 1.89, "vade_ay": 12},
+        headers=GECERLI_BASLIK,
+    ).json()
+    assert yanit["audit"]["terminoloji_tutarli"] is True
+    assert yanit["audit"]["terminoloji_sorunlari"] == []
+
+
 def test_en_avantajli_kompozit_kriteri_uctan_uca_calisir():
     """D1 bulgusu: Sartname Md. 5.7'nin kompozit kriteri gercek API
     uzerinden de calismali (bkz. comparison/compare_engine.py, A/C

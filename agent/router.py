@@ -11,6 +11,7 @@ bulunamazsa cevap UYDURULMAZ - durum acikca bildirilir (rapor Bolum
 """
 
 import json
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -200,6 +201,18 @@ def karsilastirma_aracini_cagir(soru: str, kayit_getirici) -> dict[str, Any]:
     }
 
 
+def _erisim_zamanini_tarihe_cevir(erisim_zamani: str | None) -> str | None:
+    """Chunk ustverisindeki ISO datetime string'ini ('2026-08-01T13:25:39...')
+    Kaynak.belge_tarihi'nin bekledigi tarihe cevirir. Format bozuksa None
+    doner - uydurma bir tarih GOSTERILMEZ."""
+    if not erisim_zamani:
+        return None
+    try:
+        return datetime.fromisoformat(erisim_zamani).date().isoformat()
+    except ValueError:
+        return None
+
+
 def rag_aracini_cagir(soru: str) -> dict[str, Any]:
     """RAG Tool: soruyu indekslenmis banka belgelerinde arar ve KAYNAKLI
     yanit uretir.
@@ -241,6 +254,15 @@ def rag_aracini_cagir(soru: str) -> dict[str, Any]:
                 "banka": ustveri.get("banka"),
                 "kampanya_adi": ustveri.get("kampanya_adi"),
                 "kaynak_url": ustveri.get("kaynak_url"),
+                # DENETIM BULGUSU (11 Agu): bu iki alan Kaynak semasinda vardi
+                # ama burada hic set edilmiyordu, Pydantic sessizce None
+                # birakiyordu - audit panelindeki retriever_sonuclari (ayni
+                # veriden, agent/orchestrator.py) doluyken ana kaynaklar
+                # listesi bos gorunuyordu. chunk_id icin ayri bir Qdrant point
+                # ID'si tutulmuyor, retriever_sonuclari ile AYNI konvansiyonla
+                # kaynak_url kullanilir (bkz. orchestrator.py).
+                "chunk_id": ustveri.get("kaynak_url"),
+                "belge_tarihi": _erisim_zamanini_tarihe_cevir(ustveri.get("erisim_zamani")),
                 "similarity_score": round(parca.get("skor", 0.0), 4),
                 "metin": ustveri.get("metin", ""),
             }

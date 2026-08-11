@@ -27,6 +27,7 @@ from extraction.llm_extractor import (
     _llm_sayisini_dogrula,
     _odul_ifadesi_gercekten_var_mi,
     _ollama_hazir_mi,
+    _vade_aslinda_taksit_mi,
     llm_ile_cikar,
 )
 
@@ -109,6 +110,38 @@ def test_odul_anahtar_kelimesi_alt_dize_yanlis_eslesme_yok():
     """DENETIM BULGUSU 2: bare 'çeki', 'nakit çekim' (para cekme)
     icindeki alt-dizeyle yanlislikla eslesiyordu."""
     assert _odul_ifadesi_gercekten_var_mi("ATM'lerden nakit çekim yapamazsınız.") is False
+
+
+def test_vade_taksit_karisikligi_deseni_dogrudan():
+    assert _vade_aslinda_taksit_mi("Vade Farksız 5 Aya Varan Taksit fırsatı", 5) is True
+    assert _vade_aslinda_taksit_mi("MTV Ödemelerinize Vade Farksız 3 Taksit", 3) is True
+    assert _vade_aslinda_taksit_mi("120 aya varan vade ile konut finansmanı", 120) is False
+    assert _vade_aslinda_taksit_mi("5 Aya Varan Taksit", 6) is False
+
+
+def test_vade_taksit_karisikligi_guard_gercek_veriyle():
+    """DENETIM BULGUSU (ablation olcumu, docs/extraction_accuracy_raporu.md):
+    'Vade Farksız 5 Aya Varan Taksit' basligi tasiyan gercek bir Kuveyt
+    Turk kampanyasinda, LLM'e vade_ay sorulduğunda metindeki taksit
+    sayisini (5) vade_ay diye yazmisti - Altin Veri Seti'nde bu kayit
+    (KT-006) icin vade_ay bilerek belirtilmemis (regex_extractor.py'nin
+    RE_VADE deseni de ayni nedenle bu baglami dislar). Guard olmadan bu
+    deger kabul edilirdi."""
+    with open(
+        RAW_DATA
+        / "kuveytturk"
+        / "json"
+        / "20260801_kuveytturk_kampanyalar_kendim-icin_kart-kampanyalari_yeni-saglam-kart-troylulara-ozel-vade-farksiz-5-aya-varan-taksit-imkani.json",
+        encoding="utf-8",
+    ) as f:
+        kayit = json.load(f)
+
+    assert _vade_aslinda_taksit_mi(kayit["ham_metin"], 5) is True, (
+        "Bu metin '5 aya varan taksit' diyor - guard True donmeli"
+    )
+
+    sonuc = llm_ile_cikar(kayit["ham_metin"], sadece_bu_alanlar={"vade_ay"})
+    assert sonuc["vade_ay"] is None
 
 
 def test_llm_sayisi_dogrulama_belirsiz_string_reddeder():

@@ -133,18 +133,23 @@ def test_kampanya_turu_ve_baslangic_ner_llme_hic_sorulmaz(monkeypatch):
     assert "kampanya_baslangic" not in sorulan_alanlar[0]
 
 
-def test_finansman_tutari_nere_hic_sorulmaz_ama_llme_sorulur(monkeypatch):
+def test_finansman_tutari_ne_nere_ne_llme_hic_sorulmaz(monkeypatch):
     """DENETIM BULGUSU (ablation olcumu, docs/extraction_accuracy_raporu.md):
-    NER'e finansman_tutari sorulmasi olculebilir hicbir katki saglamadi ve
-    kart kampanyalarinda odul tutarini finansman tutari sanip 7/7 yanlis
-    pozitif uretti (Makro F1 -3,81). Bu alan artik NER'e HIC SORULMAZ -
-    ama LLM icin ayni zarar OLCULMEDIGI icin LLM'e sorulmaya devam eder."""
+    hem NER hem LLM'e finansman_tutari sorulmasi olculebilir hicbir katki
+    saglamadi, ikisi de kart/yeni musteri kampanyalarinda odul tutarini
+    finansman tutari sandi (LLM'de 5 yanlis pozitiften 4'u, o kaydin
+    GERCEK odul_miktari'yla birebir ayniydi - ornek: AL-003, ZK-006,
+    ZK-008, TEK-005). Regex bu alanda zaten %100 F1 oldugu icin (Sara'nin
+    baglam-kontrolu duzeltmesi) bu alan artik NER'E DE LLM'E DE hic
+    sorulmaz - KAPSAM DISI (bkz. modul docstring'i)."""
     ner_sorulan: list[set] = []
     llm_sorulan: list[set] = []
 
     def _sahte_regex(ham_metin):
         alanlar = {alan: None for alan in hp._NER_LLM_DESTEKLI_ALANLAR}
-        alanlar.update({"kampanya_turu": None, "kampanya_baslangic": None})
+        alanlar.update(
+            {"kampanya_turu": None, "kampanya_baslangic": None, "finansman_tutari": None}
+        )
         return alanlar | {"_izler": {}}
 
     def _kaydeden_ner(ham_metin, sadece_bu_alanlar=None):
@@ -159,9 +164,10 @@ def test_finansman_tutari_nere_hic_sorulmaz_ama_llme_sorulur(monkeypatch):
     monkeypatch.setattr(hp, "ner_ile_cikar", _kaydeden_ner)
     monkeypatch.setattr(hp, "llm_ile_cikar", _kaydeden_llm)
 
-    kaydi_hibrit_cikar("herhangi bir metin")
+    sonuc = kaydi_hibrit_cikar("herhangi bir metin")
+    assert sonuc["finansman_tutari"] is None
     assert "finansman_tutari" not in ner_sorulan[0]
-    assert "finansman_tutari" in llm_sorulan[0]
+    assert "finansman_tutari" not in llm_sorulan[0]
 
 
 @pytest.mark.slow

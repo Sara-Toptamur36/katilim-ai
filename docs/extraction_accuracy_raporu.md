@@ -362,14 +362,46 @@ Tahmin doğrulandı: NER'in 7 dolgusunun tamamı yanlış pozitif. **186
 saniyelik maliyeti karşılığında ölçülebilir katkısı sıfır, zararı 7
 yanlış pozitif.** Önceki "+0,00" bir ölçüm körlüğüydü.
 
-**Karar (uygulandı — 11 Ağustos 2026):** NER katmanının tamamı değil,
-yalnızca `finansman_tutari` etiketi hibrit boru hattından çıkarıldı
-(`extraction/hybrid_pipeline.py::_NER_HARIC_ALANLAR`) — NER'in diğer
-alanlardaki (erteleme_suresi_ay, hedef_kitle, masraf_durumu vb.) katkısı
-ölçülü olarak zararlı bulunmadığı için korundu, yalnızca kanıtlanan zarar
-(GLiNER'in ödül/finansman ayrımını yapamadığı, `ner_extractor.py` Bulgu
-1'de zaten belgeli) noktasal olarak kapatıldı. LLM için aynı zarar
-ölçülmediği için `finansman_tutari` LLM'e sorulmaya devam ediyor.
+**Karar (uygulandı — 11 Ağustos 2026, iki aşamalı):** Önce yalnızca NER'den
+`finansman_tutari` çıkarıldı — NER'in diğer alanlardaki katkısı ölçülü
+olarak zararlı bulunmadığı için korundu, yalnızca kanıtlanan zarar
+noktasal olarak kapatıldı. Ardından **regex+NER+LLM** varyantı tekrar
+ölçüldüğünde Makro F1 79,46'ya (**-13,19**) düştüğü görüldü; kök neden
+analizinde LLM'in de **aynı** ödül/finansman karışıklığına düştüğü
+kanıtlandı — 5 yanlış pozitiften 4'ünün değeri, o kaydın gerçek
+`odul_miktari`'yla **birebir aynıydı** (AL-003: 1250=1250, ZK-006:
+1000=1000, ZK-008: 750=750, TEK-005: 500=500 — hepsi "Yeni Müşteri"/"Kart
+Kampanyası" türünde, gerçekte finansman ürünü bile değil). Bu,
+`ner_extractor.py`'nin Bulgu 1'iyle birebir örtüşüyor — iki bağımsız
+model de (GLiNER ve Qwen2.5) bu ayrımı yapamıyor, sistemik bir sınır.
+Regex bu alanda zaten %100 F1 olduğu için (Sara'nın bağlam-kontrolü
+düzeltmesi), `finansman_tutari` artık **hem NER'e hem LLM'e** hiç
+sorulmuyor — `extraction/hybrid_pipeline.py`'nin "KAPSAM DIŞI ALANLAR"
+listesine taşındı (`tahsis_ucreti` ile aynı kategori: regex zaten yeterli,
+fallback yalnızca risk taşıyor).
+
+**İkinci bulgu — vade_ay (aynı gün, ardışık ölçüm):** `finansman_tutari`
+düzeltmesinden sonra Makro F1 79,46'ya çıktı ama hâlâ baz çizginin
+(93,72) altındaydı; `vade_ay` F1'i 33,33'e düşmüştü. Kök neden: LLM'e
+vade_ay sorulunca, "Vade Farksız 5 Aya Varan Taksit" gibi başlıklarda
+taksit sayısını (5, 6, 3) vade_ay diye yazıyordu — Altın Veri Seti'nin
+kendi bilinen kuralıyla çelişen tam olarak KT-006/AL-001/AL-002 ailesi.
+`regex_extractor.py`'nin `RE_VADE` deseni bu bağlamı zaten bilerek
+dışlıyordu (negatif lookahead ile); LLM'in aynı koruması yoktu. Çözüm:
+`extraction/llm_extractor.py::_vade_aslinda_taksit_mi()` eklendi —
+regex'in kendi kanıtlanmış taksit-tanıma deseninin (RE_TAKSIT_SAYISI)
+sayıya ankorlanmış hali, iki motor arasında tutarlılık sağlıyor. Sonuç:
+Makro F1 86,40'a çıktı, `vade_ay` F1'i 66,67'ye yükseldi.
+
+**Kalan tek yanlış pozitif (AL-001) bir LLM hatası değil:** İncelendiğinde,
+metinde gerçekten "Vade:\n6 aya kadar" diye yapılandırılmış bir alan
+olduğu görüldü — ama bu, AL-001'in kendi içeriği değil, daha önce
+belgelenmiş "sayfa kapsamı kirlenmesi" bulgusuyla (Albaraka'nın
+`.searchContent` seçicisinin kardeş kampanya bloklarını da alması) aynı
+kök nedenden, muhtemelen sızan bir kardeş kampanya alanı. Gold kaydının
+kendi notu da ("sayfada vade ifadesi yok") bunu destekliyor. Bu, scraper/
+veri tarafının bilinen bir sorunu — extraction katmanında düzeltilecek
+bir şey yok, AL-001 zaten ekibin karar bekleyen kayıtları arasında.
 
 > **Ollama kapalıyken üçüncü varyant geçersizdir.** `llm_ile_cikar`
 > erişemediğinde hata fırlatmaz, kademeli fallback gereği `None` döner —

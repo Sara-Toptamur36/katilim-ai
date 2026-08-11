@@ -228,6 +228,36 @@ def _odul_ifadesi_gercekten_var_mi(ham_metin: str) -> bool:
     return any(k in metin_l for k in _ODUL_ANAHTAR_KELIMELERI)
 
 
+# DENETIM BULGUSU (ablation olcumu, docs/extraction_accuracy_raporu.md):
+# gercek veriyle olculdu - "Vade Farksiz 5 Aya Varan Taksit" gibi
+# kampanyalarda LLM'e vade_ay sorulunca metindeki taksit sayisini (5, 6,
+# 3 gibi) vade_ay diye yazdi. Bu, Altin Veri Seti'nin kendi bilinen
+# etiketleme kuraliyla CELISIYOR: bu kampanyalarda "vade" kavraminin
+# kendisi yok, sadece taksit sayisi var - regex_extractor.py'nin RE_VADE
+# deseni de AYNI nedenle bilerek "taksit" baglamini negatif-lookahead ile
+# dislar (bkz. o dosyadaki yorum) ve bu kayitlarda vade_ay=None birakir
+# (dogru davranis, KT-006/AL-001/AL-002/AL-005/AL-006/TOM-002 - Altin
+# Veri Seti'nde vade_ay=None/belirtilmemis). LLM'in aym korumasi yoktu.
+# Cozum: LLM'in verdigi vade_ay degeri, metinde AYNI sayinin hemen
+# yaninda "taksit" kelimesi geciyorsa reddedilir - regex_extractor.py'nin
+# kendi kanitlanmis RE_TAKSIT_SAYISI deseninin (ayni 3 alternatif) SAYIYA
+# ANKORLANMIS hali, iki motor arasinda tutarlilik icin.
+def _vade_aslinda_taksit_mi(ham_metin: str, deger) -> bool:
+    """LLM'in vade_ay diye verdigi sayi, metinde aslinda 'taksit' baglaminda
+    mi geciyor? (bkz. yukaridaki DENETIM BULGUSU)."""
+    try:
+        sayi = int(round(float(deger)))
+    except (TypeError, ValueError):
+        return False
+    desen = re.compile(
+        rf"\b{sayi}\s*aya?\s*varan\s*taksit\w*"
+        rf"|\b{sayi}\s*ay\s*taksit\w*"
+        rf"|\b{sayi}\s*taksit(?:li|le)?\b",
+        re.IGNORECASE,
+    )
+    return bool(desen.search(turkce_kucult(ham_metin)))
+
+
 _SAYISAL_ALANLAR = {"vade_ay", "taksit_sayisi", "erteleme_suresi_ay", "finansman_tutari", "odul_miktari"}
 
 
@@ -359,6 +389,10 @@ def llm_ile_cikar(
         if alan in ("odul_miktari", "odul_birimi") and not odul_ifadesi_var:
             # Halusinasyon guard'i - bkz. _odul_ifadesi_gercekten_var_mi
             # docstring'i (gercek Albaraka verisiyle dogrulanan bulgu).
+            continue
+        if alan == "vade_ay" and _vade_aslinda_taksit_mi(ham_metin, deger):
+            # Vade/taksit karisikligi guard'i - bkz. _vade_aslinda_taksit_mi
+            # docstring'i (ablation olcumuyle dogrulanan bulgu).
             continue
         sonuc[alan] = deger
         izler[alan] = (str(veri.get(alan)), 0.6)

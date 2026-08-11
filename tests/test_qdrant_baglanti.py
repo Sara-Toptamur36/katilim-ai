@@ -15,7 +15,7 @@ from chunking.qdrant_baglanti import qdrant_hazir_mi
 
 QDRANT_YOK_MESAJI = "Qdrant calismiyor (docker compose up -d qdrant) - CI'da beklenen durum"
 
-pytestmark = pytest.mark.skipif(not qdrant_hazir_mi(), reason=QDRANT_YOK_MESAJI)
+pytestmark = [pytest.mark.skipif(not qdrant_hazir_mi(), reason=QDRANT_YOK_MESAJI), pytest.mark.slow]
 
 TEST_KOLEKSIYONU = "pytest_gecici_koleksiyon"
 

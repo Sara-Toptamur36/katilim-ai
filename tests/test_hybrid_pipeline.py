@@ -10,6 +10,8 @@ uctan uca calisir (diger test dosyalarindaki AYNI kural).
 import json
 from pathlib import Path
 
+import pytest
+
 import extraction.hybrid_pipeline as hp
 from extraction.hybrid_pipeline import kaydi_hibrit_cikar
 
@@ -131,6 +133,7 @@ def test_kampanya_turu_ve_baslangic_ner_llme_hic_sorulmaz(monkeypatch):
     assert "kampanya_baslangic" not in sorulan_alanlar[0]
 
 
+@pytest.mark.slow
 def test_gercek_veriyle_uctan_uca_calisir():
     """Gercek Albaraka kampanya metniyle GLiNER + Ollama'nin ikisi de
     devrede uctan uca calisir - hicbir hata firlatmadan, tutarli bir

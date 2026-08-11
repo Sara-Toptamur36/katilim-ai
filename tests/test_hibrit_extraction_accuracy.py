@@ -19,7 +19,7 @@ from scraper.scripts.extraction_accuracy import extraction_accuracy_hesapla
 
 OLLAMA_YOK_MESAJI = "Yerel Ollama servisi calismiyor (ollama serve) - CI'da beklenen durum"
 
-pytestmark = pytest.mark.skipif(not _ollama_hazir_mi(), reason=OLLAMA_YOK_MESAJI)
+pytestmark = [pytest.mark.skipif(not _ollama_hazir_mi(), reason=OLLAMA_YOK_MESAJI), pytest.mark.slow]
 
 
 def test_hibrit_dogruluk_regex_only_esiginin_altina_dusmez():

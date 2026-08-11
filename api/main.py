@@ -37,6 +37,7 @@ from api.kampanya_repository import id_ile_getir_db, kampanyalari_getir_db
 from api.kullanici_repository import kullanici_dogrula
 from api.logging_config import log
 from api.mock_data import id_ile_getir, kampanyalari_getir
+from api.models import AuditKayit
 from api.schemas import (
     AuditBilgisi,
     CampaignRecord,
@@ -105,6 +106,57 @@ def _bos_audit(**kwargs) -> AuditBilgisi:
     }
     varsayilan.update(kwargs)
     return AuditBilgisi(**varsayilan)
+
+
+def _audit_kaydet(
+    kullanici: dict,
+    uc_nokta: str,
+    latency_ms: int,
+    soru: str | None = None,
+    intent: str | None = None,
+    intent_confidence: float | None = None,
+    cagrilan_arac: str | None = None,
+    sql_sorgusu: str | None = None,
+    cache_hit: bool = False,
+) -> None:
+    """Md. 11 izlenebilirlik: her istegi audit_kayitlari tablosuna yazar.
+
+    DENETIM BULGUSU (mentor denetimi): AuditKayit tablosu tanimli ve
+    migrate edilmisti ama hicbir yer ona satir yazmiyordu.
+
+    YALNIZCA GERCEK_VERI_AKTIF modunda calisir - mock mod BILEREK
+    Docker/Postgres gerektirmez (bkz. dosya basi aciklamasi, VERI
+    KAYNAGI); audit yazimi bu garantiyi bozarsa mock moddaki her /chat,
+    /karsilastir, /hesapla cagrisi (ve onlara dayanan sozlesme testleri)
+    Postgres calismadan hata verirdi.
+
+    Yazim basarisiz olursa kullanicinin ASIL istegi ETKILENMEZ (loglanir,
+    hata firlatilmaz) - audit ikincil bir kayittir, ana islevi engellemez.
+    """
+    if not GERCEK_VERI_AKTIF:
+        return
+    try:
+        oturum = next(oturum_al())
+        try:
+            oturum.add(
+                AuditKayit(
+                    kullanici=kullanici.get("kullanici"),
+                    rol=kullanici.get("rol"),
+                    uc_nokta=uc_nokta,
+                    soru=soru,
+                    intent=intent,
+                    intent_confidence=intent_confidence,
+                    cagrilan_arac=cagrilan_arac,
+                    sql_sorgusu=sql_sorgusu,
+                    latency_ms=latency_ms,
+                    cache_hit=cache_hit,
+                )
+            )
+            oturum.commit()
+        finally:
+            oturum.close()
+    except Exception:
+        log.warning("Audit kaydi yazilamadi (uc_nokta=%s)", uc_nokta, exc_info=True)
 
 
 @app.get("/", tags=["Sistem"])
@@ -249,6 +301,9 @@ def karsilastir(istek: KarsilastirIstek, kullanici: dict = Depends(token_dogrula
         raise HTTPException(status_code=422, detail=str(e))
 
     latency = int((time.time() - baslangic) * 1000)
+    _audit_kaydet(
+        kullanici, "karsilastir", latency, cagrilan_arac="sql", sql_sorgusu=sql
+    )
 
     return KarsilastirYanit(
         kriter=istek.kriter,
@@ -307,6 +362,7 @@ def hesapla(istek: HesapIstek, kullanici: dict = Depends(token_dogrula)):
         ]
 
     latency = int((time.time() - baslangic) * 1000)
+    _audit_kaydet(kullanici, "hesapla", latency, cagrilan_arac="calculator")
 
     return HesapYanit(
         anapara=sonuc.anapara,
@@ -361,6 +417,15 @@ def chat(istek: ChatIstek, kullanici: dict = Depends(token_dogrula)):
 
     sonuc = soru_isle(istek.soru, _banka_kayitlarini_getir)
     ekstra = sonuc["audit_ekstra"]
+    _audit_kaydet(
+        kullanici,
+        "chat",
+        ekstra["latency_ms"],
+        soru=istek.soru,
+        intent=ekstra["intent"],
+        intent_confidence=ekstra["intent_confidence"],
+        cagrilan_arac=ekstra["cagrilan_arac"],
+    )
 
     return ChatYanit(
         cevap=sonuc["cevap"],

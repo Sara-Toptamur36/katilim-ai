@@ -23,7 +23,7 @@ from scraper.scripts.js_scraper import chromium_hazir_mi, js_sayfa_tara
 
 CHROMIUM_YOK_MESAJI = "playwright install chromium calistirilmamis - CI'da beklenen durum"
 
-pytestmark = pytest.mark.skipif(not chromium_hazir_mi(), reason=CHROMIUM_YOK_MESAJI)
+pytestmark = [pytest.mark.skipif(not chromium_hazir_mi(), reason=CHROMIUM_YOK_MESAJI), pytest.mark.slow]
 
 TEST_URL = "https://quotes.toscrape.com/js/"
 

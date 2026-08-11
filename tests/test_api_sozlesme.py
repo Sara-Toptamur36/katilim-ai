@@ -231,3 +231,38 @@ def test_cok_uzun_soru_reddedilir():
 def test_bos_soru_reddedilir():
     yanit = client.post("/chat", json={"soru": ""}, headers=GECERLI_BASLIK)
     assert yanit.status_code == 422
+
+
+# ---------------------------------------------------------------------------
+# Audit kaydi (Md. 11) - DENETIM BULGUSU: AuditKayit tablosu tanimli ve
+# migrate edilmisti ama hicbir yer ona satir yazmiyordu.
+# ---------------------------------------------------------------------------
+
+
+def test_audit_kaydet_mock_modda_veritabanina_hic_dokunmaz(monkeypatch):
+    """Mock mod BILEREK Docker/Postgres gerektirmez (dosya basi aciklamasi,
+    VERI KAYNAGI) - audit yazimi bu garantiyi bozmamali. oturum_al'i
+    cagrilirsa patlayacak sekilde degistirip, mock modda GERCEKTEN hic
+    cagrilmadigini kanitlar."""
+    import api.main as main_modulu
+
+    def _cagrilirsa_patlat():
+        raise AssertionError("mock modda oturum_al hic cagrilmamali")
+
+    monkeypatch.setattr(main_modulu, "GERCEK_VERI_AKTIF", False)
+    monkeypatch.setattr(main_modulu, "oturum_al", _cagrilirsa_patlat)
+
+    main_modulu._audit_kaydet({"kullanici": "test", "rol": "test"}, "chat", 10)
+
+
+def test_audit_kaydet_gercek_modda_db_hatasi_asil_istegi_bozmaz(monkeypatch):
+    """GERCEK_VERI_AKTIF=true iken audit yazimi denenir, ama Postgres
+    erisilemezse (bu makinede oldugu gibi) sessizce loglanir - kullanicinin
+    asil istegi (chat/hesapla/karsilastir cevabi) BU YUZDEN ASLA
+    basarisiz olmamali; audit ikincil bir kayittir."""
+    import api.main as main_modulu
+
+    monkeypatch.setattr(main_modulu, "GERCEK_VERI_AKTIF", True)
+    # DB gercekten erisilemez oldugu icin (bu test ortaminda) istisna
+    # ATILMAMASI beklenir - _audit_kaydet kendi icinde yakalayip loglar.
+    main_modulu._audit_kaydet({"kullanici": "test", "rol": "test"}, "chat", 10)

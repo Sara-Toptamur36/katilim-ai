@@ -30,7 +30,7 @@ INDEKS_YOK_MESAJI = (
     "'python -m chunking.indeksleyici' calistirin (CI'da beklenen durum)"
 )
 
-pytestmark = pytest.mark.skipif(not _indeks_hazir_mi(), reason=INDEKS_YOK_MESAJI)
+pytestmark = [pytest.mark.skipif(not _indeks_hazir_mi(), reason=INDEKS_YOK_MESAJI), pytest.mark.slow]
 
 
 # ---------------------------------------------------------------------------

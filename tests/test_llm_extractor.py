@@ -34,7 +34,7 @@ RAW_DATA = Path(__file__).parent.parent / "scraper" / "raw_data"
 
 OLLAMA_YOK_MESAJI = "Yerel Ollama servisi calismiyor (ollama serve) - CI'da beklenen durum"
 
-pytestmark = pytest.mark.skipif(not _ollama_hazir_mi(), reason=OLLAMA_YOK_MESAJI)
+pytestmark = [pytest.mark.skipif(not _ollama_hazir_mi(), reason=OLLAMA_YOK_MESAJI), pytest.mark.slow]
 
 
 def test_temel_alanlari_dogru_cikarir():

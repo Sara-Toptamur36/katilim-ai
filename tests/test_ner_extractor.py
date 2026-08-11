@@ -6,7 +6,11 @@ yuklenip cache'lenir (bkz. ner_extractor._model_yukle), bu yuzden ayni
 test oturumu icindeki tum testler tek bir model yuklemesini paylasir.
 """
 
+import pytest
+
 from extraction.ner_extractor import _kar_payi_makul_mu, ner_ile_cikar
+
+pytestmark = pytest.mark.slow
 
 
 def test_kar_payi_orani_percent_ve_decimal_ikisi_de_dolar():

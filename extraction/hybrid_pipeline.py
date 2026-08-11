@@ -74,6 +74,22 @@ _NER_LLM_DESTEKLI_ALANLAR = {
     "masraf_durumu", "hedef_kitle", "kampanya_bitis",
 }
 
+# DENETIM BULGUSU (ablation olcumu, docs/extraction_accuracy_raporu.md
+# "Ablation: katman katkisi" bolumu): NER'e finansman_tutari sorulmasi
+# OLCULEBILIR HICBIR KATKI SAGLAMAZ ve GERCEK ZARAR VERIR. Kart
+# kampanyalarinda ("400 TL Bankkart Lira", "1.250 TL Worldpuan" gibi)
+# GLiNER odul tutarini finansman_tutari sanip 7/7 yanlis pozitif uretti
+# (Makro F1 -3,81, 6 saniyelik model yuklemesi + 186 saniyelik toplu
+# cagri karsiliginda). Bu, ner_extractor.py'nin kendi modul
+# dokumantasyonundaki 1. bulguyla (odul/finansman tutari karisikligi,
+# "400 TL Bankkart Lira" -> "finansman tutari" (0.52) sanmasi) birebir
+# ortusuyor - tesadufi degil, GLiNER'in bu iki kavrami ayirt edemedigi
+# sistemik bir sinirdir. LLM ayni sekilde zarar verdigi OLCULMEDI (LLM'in
+# kendi odul-anahtar-kelime guard'i - llm_extractor.py - zaten bu
+# turden bir karisikliga karsi ayrica korumali), bu yuzden yalnizca NER
+# icin disarida birakilir, LLM icin degil.
+_NER_HARIC_ALANLAR = {"finansman_tutari"}
+
 
 # LLM katmaninin urettigi sabit guven (bkz. llm_extractor.py: izlere
 # her alan icin 0.6 yazilir). Asagida neden onemli oldugu aciklaniyor.
@@ -234,8 +250,10 @@ def kaydi_hibrit_cikar(
     catismalar: list[dict] = []
 
     # NER: bos alanlar + dusuk guvenli alanlar (ucuz, gercekten devralabilir)
+    # EKSI _NER_HARIC_ALANLAR (olculdu: zarar verdigi kanitlanan alanlar,
+    # bkz. modul basi DENETIM BULGUSU).
     if ner_kullan:
-        acik = _adaya_acik_alanlar(alanlar, izler, dusuk_guvenlileri_dahil_et=True)
+        acik = _adaya_acik_alanlar(alanlar, izler, dusuk_guvenlileri_dahil_et=True) - _NER_HARIC_ALANLAR
         if acik:
             ner_sonucu = ner_ile_cikar(ham_metin, sadece_bu_alanlar=acik)
             _katman_sonucunu_birlestir(

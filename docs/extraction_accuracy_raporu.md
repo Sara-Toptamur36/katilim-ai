@@ -362,10 +362,14 @@ Tahmin doğrulandı: NER'in 7 dolgusunun tamamı yanlış pozitif. **186
 saniyelik maliyeti karşılığında ölçülebilir katkısı sıfır, zararı 7
 yanlış pozitif.** Önceki "+0,00" bir ölçüm körlüğüydü.
 
-**Karar önerisi:** NER katmanı mevcut haliyle hibrit boru hattından
-çıkarılmalı ya da `finansman_tutari` etiketi devre dışı bırakılmalıdır
-(GLiNER'in ödül/finansman ayrımını yapamadığı, `ner_extractor.py`
-Bulgu 1'de zaten belgeli). Karar Yağmur'a aittir.
+**Karar (uygulandı — 11 Ağustos 2026):** NER katmanının tamamı değil,
+yalnızca `finansman_tutari` etiketi hibrit boru hattından çıkarıldı
+(`extraction/hybrid_pipeline.py::_NER_HARIC_ALANLAR`) — NER'in diğer
+alanlardaki (erteleme_suresi_ay, hedef_kitle, masraf_durumu vb.) katkısı
+ölçülü olarak zararlı bulunmadığı için korundu, yalnızca kanıtlanan zarar
+(GLiNER'in ödül/finansman ayrımını yapamadığı, `ner_extractor.py` Bulgu
+1'de zaten belgeli) noktasal olarak kapatıldı. LLM için aynı zarar
+ölçülmediği için `finansman_tutari` LLM'e sorulmaya devam ediyor.
 
 > **Ollama kapalıyken üçüncü varyant geçersizdir.** `llm_ile_cikar`
 > erişemediğinde hata fırlatmaz, kademeli fallback gereği `None` döner —

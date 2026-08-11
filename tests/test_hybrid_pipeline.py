@@ -133,6 +133,37 @@ def test_kampanya_turu_ve_baslangic_ner_llme_hic_sorulmaz(monkeypatch):
     assert "kampanya_baslangic" not in sorulan_alanlar[0]
 
 
+def test_finansman_tutari_nere_hic_sorulmaz_ama_llme_sorulur(monkeypatch):
+    """DENETIM BULGUSU (ablation olcumu, docs/extraction_accuracy_raporu.md):
+    NER'e finansman_tutari sorulmasi olculebilir hicbir katki saglamadi ve
+    kart kampanyalarinda odul tutarini finansman tutari sanip 7/7 yanlis
+    pozitif uretti (Makro F1 -3,81). Bu alan artik NER'e HIC SORULMAZ -
+    ama LLM icin ayni zarar OLCULMEDIGI icin LLM'e sorulmaya devam eder."""
+    ner_sorulan: list[set] = []
+    llm_sorulan: list[set] = []
+
+    def _sahte_regex(ham_metin):
+        alanlar = {alan: None for alan in hp._NER_LLM_DESTEKLI_ALANLAR}
+        alanlar.update({"kampanya_turu": None, "kampanya_baslangic": None})
+        return alanlar | {"_izler": {}}
+
+    def _kaydeden_ner(ham_metin, sadece_bu_alanlar=None):
+        ner_sorulan.append(sadece_bu_alanlar)
+        return {alan: None for alan in sadece_bu_alanlar} | {"_izler": {}}
+
+    def _kaydeden_llm(ham_metin, sadece_bu_alanlar=None, model=None):
+        llm_sorulan.append(sadece_bu_alanlar)
+        return {alan: None for alan in sadece_bu_alanlar} | {"_izler": {}}
+
+    monkeypatch.setattr(hp, "kaydi_cikar", _sahte_regex)
+    monkeypatch.setattr(hp, "ner_ile_cikar", _kaydeden_ner)
+    monkeypatch.setattr(hp, "llm_ile_cikar", _kaydeden_llm)
+
+    kaydi_hibrit_cikar("herhangi bir metin")
+    assert "finansman_tutari" not in ner_sorulan[0]
+    assert "finansman_tutari" in llm_sorulan[0]
+
+
 @pytest.mark.slow
 def test_gercek_veriyle_uctan_uca_calisir():
     """Gercek Albaraka kampanya metniyle GLiNER + Ollama'nin ikisi de

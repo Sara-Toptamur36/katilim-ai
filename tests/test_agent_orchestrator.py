@@ -59,6 +59,32 @@ def test_karsilastirma_sorusu_sql_araciyla_cevaplanir():
     assert sonuc["fallback"] is False
 
 
+def test_toplam_maliyet_sorusu_calculator_araciyla_cevaplanir():
+    def getirici(banka: str) -> list[CampaignRecord]:
+        veriler = {
+            "Kuveyt Türk": [CampaignRecord(
+                banka="Kuveyt Türk", kampanya_adi="Ornek", kaynak_url="https://ornek.com",
+                kar_payi_orani_percent=1.99, kar_payi_orani_decimal=0.0199, vade_ay=120,
+            )],
+            "Albaraka Türk": [CampaignRecord(
+                banka="Albaraka Türk", kampanya_adi="Ornek", kaynak_url="https://ornek.com",
+                kar_payi_orani_percent=1.5, kar_payi_orani_decimal=0.015, vade_ay=96,
+            )],
+        }
+        return veriler.get(banka, [])
+
+    from agent.orchestrator import soru_isle
+
+    sonuc = soru_isle(
+        "500.000 TL icin Kuveyt Türk ile Albaraka Türk'ün toplam maliyetini karsilastir",
+        getirici,
+        rag_araci=_sahte_rag,
+    )
+    assert sonuc["audit_ekstra"]["cagrilan_arac"] == "calculator"
+    assert sonuc["audit_ekstra"]["intent"] == "toplam_maliyet"
+    assert sonuc["fallback"] is False
+
+
 def test_kaynak_bulunamayan_soru_fallbacke_duser_ve_sebep_belirtilir():
     """Rapor Bolum 5.7/15: RAG de kaynak bulamazsa sistem ACIKCA
     cekimser kalir - sessizce yanlis/uydurma cevap uretilmez."""

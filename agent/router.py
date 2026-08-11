@@ -17,7 +17,11 @@ from typing import Any
 
 from agent.intent import turkce_ascii_katla
 from agent.parametre_cikar import eksik_parametreler, hesaplama_parametrelerini_cikar
-from calculator.calculator import HesapGirdiHatasi, aylik_taksit_hesapla
+from calculator.calculator import (
+    HesapGirdiHatasi,
+    aylik_taksit_hesapla,
+    toplam_maliyet_karsilastir,
+)
 from comparison.compare_engine import BilinmeyenKriter, aciklama_uret, karsilastir_bellekte
 from terminology.genisletme import benzer_terim_bul
 from terminology.sozluk import gelenek_karsiligi_bul, sozluk_yukle
@@ -197,6 +201,97 @@ def karsilastirma_aracini_cagir(soru: str, kayit_getirici) -> dict[str, Any]:
             "sonuc_sayisi": len(sonuc["sonuclar"]),
             "extraction_confidence": _ortalama_confidence(kayitlar),
             "regex_basari_orani": _regex_basari_orani(kayitlar),
+        },
+    }
+
+
+def toplam_maliyet_aracini_cagir(soru: str, kayit_getirici) -> dict[str, Any]:
+    """Toplam Maliyet Karsilastirma Tool: birden fazla bankanin AYNI anapara
+    icin toplam geri odeme maliyetini karsilastirir (calculator/calculator.py::
+    toplam_maliyet_karsilastir). karsilastirma_aracini_cagir'dan FARKI: o ham
+    alanlari (oran/vade/masraf) tek tek siralar, bu ise GERCEK bir amortisman
+    hesabi yapar - "dusuk oran = ucuz demek degildir" tuzagini somut TL ile
+    gosterir (rapor Bolum 8).
+
+    Her bankanin kar_payi_orani_decimal ve vade_ay'i KENDI kampanya
+    verisinden gelir; kullanicidan yalnizca ortak bir anapara istenir.
+    """
+    s = turkce_ascii_katla(soru)
+    bilinen_bankalar = _bilinen_bankalari_yukle()
+    bulunan_bankalar = [b for b in bilinen_bankalar if turkce_ascii_katla(b) in s]
+
+    if len(bulunan_bankalar) < 2:
+        return {
+            "basarili": False,
+            "cevap": (
+                "Toplam maliyet karsilastirmasi icin en az 2 banka adi gerekiyor. "
+                "Şu an taninan bankalar: " + ", ".join(bilinen_bankalar)
+            ),
+            "sebep": f"Soruda yalnizca {len(bulunan_bankalar)} banka tespit edildi",
+        }
+
+    anapara = hesaplama_parametrelerini_cikar(soru)["anapara"]
+    if anapara is None:
+        return {
+            "basarili": False,
+            "cevap": (
+                "Toplam maliyet karsilastirmasi icin bir anapara tutari belirtmelisiniz "
+                "(ornek: '500.000 TL icin A Bankasi ile C Bankasi'nin toplam maliyetini karsilastir')."
+            ),
+            "sebep": "anapara sorudan cikarilamadi",
+        }
+
+    secenekler = []
+    veri_eksik_bankalar = []
+    for banka in bulunan_bankalar:
+        kayitlar = kayit_getirici(banka)
+        # Bankanin kar_payi_orani_decimal VE vade_ay'i dolu olan ILK kaydi
+        # kullan - amortisman hesabi ikisi de olmadan yapilamaz.
+        uygun = next(
+            (
+                k
+                for k in kayitlar
+                if getattr(k, "kar_payi_orani_decimal", None) is not None
+                and getattr(k, "vade_ay", None) is not None
+            ),
+            None,
+        )
+        if uygun is None:
+            veri_eksik_bankalar.append(banka)
+            continue
+        secenekler.append(
+            {
+                "banka": banka,
+                "kampanya_adi": uygun.kampanya_adi,
+                "anapara": anapara,
+                "aylik_oran": uygun.kar_payi_orani_decimal,
+                "vade_ay": uygun.vade_ay,
+            }
+        )
+
+    if len(secenekler) < 2:
+        return {
+            "basarili": False,
+            "cevap": (
+                "Toplam maliyet hesabi icin gereken kar payi orani/vade bilgisi "
+                f"eksik: {', '.join(veri_eksik_bankalar)}."
+            ),
+            "sebep": "Yeterli sayida bankada kar_payi_orani_decimal/vade_ay dolu degil",
+        }
+
+    try:
+        sonuc = toplam_maliyet_karsilastir(secenekler)
+    except HesapGirdiHatasi as e:
+        return {"basarili": False, "cevap": str(e), "sebep": str(e)}
+
+    return {
+        "basarili": True,
+        "cevap": sonuc.aciklama,
+        "veri": {
+            "anapara": anapara,
+            "secenekler": sonuc.secenekler,
+            "en_dusuk_toplam_maliyet": sonuc.en_dusuk_toplam_maliyet,
+            "veri_eksik_bankalar": veri_eksik_bankalar,
         },
     }
 

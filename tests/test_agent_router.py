@@ -6,11 +6,17 @@ from agent.router import (
     hesaplama_aracini_cagir,
     karsilastirma_aracini_cagir,
     sozluk_aracini_cagir,
+    toplam_maliyet_aracini_cagir,
 )
 from api.schemas import CampaignRecord
 
 
-def _kayit(banka: str, oran_percent: float | None, oran_decimal: float | None = None) -> CampaignRecord:
+def _kayit(
+    banka: str,
+    oran_percent: float | None,
+    oran_decimal: float | None = None,
+    vade_ay: int | None = None,
+) -> CampaignRecord:
     return CampaignRecord(
         banka=banka,
         kampanya_adi=f"{banka} Ornek Kampanya",
@@ -19,6 +25,7 @@ def _kayit(banka: str, oran_percent: float | None, oran_decimal: float | None = 
         kar_payi_orani_decimal=oran_decimal if oran_decimal is not None else (
             oran_percent / 100 if oran_percent is not None else None
         ),
+        vade_ay=vade_ay,
     )
 
 
@@ -159,3 +166,51 @@ def test_karsilastirma_en_dusuk_oran_avantajli_kompozitiyle_karismaz():
     soru = "Kuveyt Türk ile Albaraka Türk'ü karsilastir, en dusuk oran hangisinde?"
     sonuc = karsilastirma_aracini_cagir(soru, sahte_getirici)
     assert sonuc["veri"]["kriter"] == "en_dusuk_kar_payi"
+
+
+# ---------------------------------------------------------------------------
+# Toplam Maliyet Tool
+# ---------------------------------------------------------------------------
+
+
+def _sartname_getirici(banka: str) -> list[CampaignRecord]:
+    """Sartname Md. 5 orneginin A/C Bankasi rakamlari: A dusuk vade/yuksek
+    oran DEGIL - A %1,89/120 ay, C %1,87/96 ay. Toplamda A daha ucuzdur
+    (uzun vade kisa vadeli C'nin dusuk oranini asar) - bu yuzden bu ornek
+    'dusuk oran = ucuz demek degildir' tuzagini gostermek icin secildi."""
+    veriler = {
+        "Kuveyt Türk": [_kayit("Kuveyt Türk", 1.89, vade_ay=120)],
+        "Albaraka Türk": [_kayit("Albaraka Türk", 1.87, vade_ay=96)],
+    }
+    return veriler.get(banka, [])
+
+
+def test_toplam_maliyet_araci_iki_banka_ve_anapara_ile_calisir():
+    soru = "500.000 TL icin Kuveyt Türk ile Albaraka Türk'ün toplam maliyetini karsilastir"
+    sonuc = toplam_maliyet_aracini_cagir(soru, _sartname_getirici)
+    assert sonuc["basarili"] is True
+    assert sonuc["veri"]["anapara"] == 500000.0
+    assert len(sonuc["veri"]["secenekler"]) == 2
+
+
+def test_toplam_maliyet_araci_anapara_eksikse_basarisiz_doner():
+    soru = "Kuveyt Türk ile Albaraka Türk'ün toplam maliyetini karsilastir"
+    sonuc = toplam_maliyet_aracini_cagir(soru, _sartname_getirici)
+    assert sonuc["basarili"] is False
+    assert "anapara" in sonuc["sebep"]
+
+
+def test_toplam_maliyet_araci_tek_banka_tespit_edilirse_basarisiz_doner():
+    soru = "500.000 TL icin Kuveyt Türk'ün toplam maliyeti ne kadar?"
+    sonuc = toplam_maliyet_aracini_cagir(soru, _sartname_getirici)
+    assert sonuc["basarili"] is False
+
+
+def test_toplam_maliyet_araci_vade_veya_oran_eksikse_basarisiz_doner():
+    def eksik_getirici(banka: str) -> list[CampaignRecord]:
+        return [_kayit(banka, 1.99, vade_ay=None)]  # vade eksik
+
+    soru = "500.000 TL icin Kuveyt Türk ile Albaraka Türk'ün toplam maliyetini karsilastir"
+    sonuc = toplam_maliyet_aracini_cagir(soru, eksik_getirici)
+    assert sonuc["basarili"] is False
+    assert "dolu degil" in sonuc["sebep"].lower()

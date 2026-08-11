@@ -4,9 +4,9 @@ Mimari (rapor Bolum 8): Intent Detection -> Tool Router -> (SQL/Calculator/
 Dictionary/RAG/Fallback) -> Response Generator -> Terminology Check ->
 Verifier -> Provenance.
 
-BU DOSYANIN KAPSAMI: Intent Detection + Tool Router + dort arac
-(Hesaplama, Sozluk, Karsilastirma, RAG) + kademeli geri cekilme +
-Terminology Check.
+BU DOSYANIN KAPSAMI: Intent Detection + Tool Router + bes arac
+(Hesaplama, Sozluk, Karsilastirma, Toplam Maliyet, RAG) + kademeli geri
+cekilme + Terminology Check.
 
 TERMINOLOGY CHECK - RAG'DE NEDEN FARKLI DAVRANIR: terminoloji_tutarliligini_
 kontrol_et() kendi docstring'inde "ajanin URETTIGI yanitta" gelenek terim
@@ -57,6 +57,7 @@ from agent.router import (
     karsilastirma_aracini_cagir,
     rag_aracini_cagir,
     sozluk_aracini_cagir,
+    toplam_maliyet_aracini_cagir,
 )
 from terminology.tutarlilik_kontrolu import terminoloji_tutarliligini_kontrol_et
 
@@ -92,6 +93,9 @@ def soru_isle(soru: str, kayit_getirici: KayitGetirici, rag_araci=None) -> dict:
     elif niyet == Niyet.SOZLUK:
         sonuc = sozluk_aracini_cagir(soru)
         arac = "dictionary"
+    elif niyet == Niyet.TOPLAM_MALIYET:
+        sonuc = toplam_maliyet_aracini_cagir(soru, kayit_getirici)
+        arac = "calculator"
     elif niyet == Niyet.KARSILASTIRMA:
         sonuc = karsilastirma_aracini_cagir(soru, kayit_getirici)
         arac = "sql"

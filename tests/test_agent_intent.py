@@ -49,6 +49,22 @@ def test_dogru_turkce_diyakritiklerle_yazilan_soru_da_tespit_edilir():
     assert guven > 0
 
 
+def test_toplam_maliyet_niyeti_tespit_edilir():
+    niyet, guven = niyet_tespit_et(
+        "500.000 TL icin A Bankasi ile C Bankasi'nin toplam maliyetini karsilastir"
+    )
+    assert niyet == Niyet.TOPLAM_MALIYET
+    assert guven > 0
+
+
+def test_toplam_maliyet_hesapla_kelimesiyle_esitlikte_kazanir():
+    """'toplam maliyet' + 'hesapla' ayni soruda 1-1 esitlik yaratir -
+    daha ozgul olan TOPLAM_MALIYET kazanmali, genel HESAPLAMA'ya
+    dusmemeli (bkz. agent/intent.py _NIYET_KELIMELERI sirasi)."""
+    niyet, _ = niyet_tespit_et("A Bankasi ile C Bankasi'nin toplam maliyetini hesapla")
+    assert niyet == Niyet.TOPLAM_MALIYET
+
+
 def test_birden_fazla_anahtar_kelime_guveni_artirir():
     az_kelimeli = niyet_tespit_et("hesapla")
     cok_kelimeli = niyet_tespit_et("taksit hesapla, aylik odeme ne kadar olur")

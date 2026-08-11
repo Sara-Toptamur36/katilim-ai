@@ -14,6 +14,7 @@ from enum import Enum
 class Niyet(str, Enum):
     HESAPLAMA = "hesaplama"
     KARSILASTIRMA = "karsilastirma"
+    TOPLAM_MALIYET = "toplam_maliyet"
     SOZLUK = "sozluk"
     # BILGI: belirli bir araca uymayan ama kaynaklarda aranabilecek
     # serbest bilgi sorusu ("X kampanyasinin sartlari neler?"). Anahtar
@@ -57,12 +58,25 @@ _KARSILASTIRMA_ANAHTAR_KELIMELER = [
     "karsilastir", "hangisi daha", "en dusuk", "en avantajli",
     "en iyi", "hangi banka", "fark ne", " mi yoksa ",
 ]
+# KARSILASTIRMA'dan AYRI: yalnizca alan bazli siralama degil, gercek bir
+# anapara icin AMORTISMAN hesabi gerektirir (calculator/calculator.py::
+# toplam_maliyet_karsilastir) - "dusuk oran = ucuz demek degildir" tuzagini
+# somut TL ile gosterir.
+_TOPLAM_MALIYET_ANAHTAR_KELIMELER = [
+    "toplam maliyet", "toplamda ucuz", "toplamda daha ucuz",
+    "toplam geri odeme", "hangisi toplamda",
+]
 _SOZLUK_ANAHTAR_KELIMELER = [
     "ne demek", "nedir", "anlamina gelir", "aciklar misin",
     "ne anlama", "tanimi ne",
 ]
 
 _NIYET_KELIMELERI = {
+    # TOPLAM_MALIYET EN BASTA: esitlik durumunda max() ilk gordugu anahtari
+    # secer (dict sirasi = oncelik). "toplam maliyet hesapla" gibi bir soru
+    # hem HESAPLAMA'nin "hesapla"si hem TOPLAM_MALIYET'in "toplam maliyet"i
+    # ile 1-1 esleserdi - daha ozgul olan (TOPLAM_MALIYET) kazanmali.
+    Niyet.TOPLAM_MALIYET: _TOPLAM_MALIYET_ANAHTAR_KELIMELER,
     Niyet.HESAPLAMA: _HESAPLAMA_ANAHTAR_KELIMELER,
     Niyet.KARSILASTIRMA: _KARSILASTIRMA_ANAHTAR_KELIMELER,
     Niyet.SOZLUK: _SOZLUK_ANAHTAR_KELIMELER,

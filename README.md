@@ -251,6 +251,8 @@ Karşılaştırma sabit, parametreli SQL şablonlarıyla yapılır (serbest meti
 
 `en_avantajli` tek bir ağırlıklı formül uydurmaz: her alt kriterde hangi kampanyanın öne çıktığı ayrı ayrı belirlenir (`- Kâr payı oranı açısından C Bankası daha avantajlı ...` biçiminde), en çok eksende öne çıkan genel kazanan sayılır; eşitlikte tek bir kazanan uydurulmaz. Ayrıca şartnamenin listesinde olmayan bonus bir kriter de var: `en_yuksek_tutar` (`finansman_tutari`).
 
+**Bonus: Toplam Maliyet Karşılaştırma.** `en_avantajli` ve diğer kriterler ham alanları (oran/vade/masraf) sıralar; ama "düşük oran = ucuz demek değildir" — uzun vadeli düşük oranlı bir kampanya, kısa vadeli yüksek oranlıdan toplamda daha pahalı olabilir. `/chat`'e "500.000 TL için X Bankası ile Y Bankası'nın **toplam maliyetini karşılaştır**" diye sorulduğunda (`agent/router.py::toplam_maliyet_aracini_cagir`, `calculator/calculator.py::toplam_maliyet_karsilastir`), her bankanın kendi oran/vadesiyle gerçek bir amortisman hesabı yapılır — LLM'e bırakılmaz, saf Python.
+
 **3. Her kayıt kaynağını taşır.**
 Her kampanya kaydında kaynak URL ve belge tarihi tutulur; hangi alanı hangi
 çıkarım katmanının (regex/NER/LLM) doldurduğu ve güven skoru izlenir.

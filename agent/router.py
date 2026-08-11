@@ -29,7 +29,18 @@ _KRITER_ANAHTAR_KELIMELERI = {
     "en_yuksek_odul": ["en yuksek odul", "en cok odul", "en yuksek hediye"],
     "en_uzun_vade": ["en uzun vade"],
     "en_dusuk_masraf": ["en dusuk masraf", "en az masraf"],
-    "en_dusuk_kar_payi": ["en dusuk oran", "en dusuk kar payi", "en avantajli oran"],
+    # "avantajli" kelimesi Sartname Md. 5.7'nin KENDI terimi ("En Avantajli
+    # Kampanya") - bu yuzden HER ZAMAN kompozit kritere yonlendirilir, tek bir
+    # alt kritere (ör. en dusuk oran) ozgu sayilmaz. Bu sozluk sirali okundugu
+    # icin en_dusuk_kar_payi'nin "oran" temelli anahtar kelimeleriyle CAKISMAZ.
+    "en_avantajli": [
+        "en avantajli kampanya",
+        "en avantajli",
+        "hangisi daha avantajli",
+        "hangi kampanya daha avantajli",
+        "daha avantajli",
+    ],
+    "en_dusuk_kar_payi": ["en dusuk oran", "en dusuk kar payi"],
 }
 
 

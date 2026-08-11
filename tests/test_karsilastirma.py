@@ -8,6 +8,7 @@ Ozellikle iki seyi kilitler:
 import pytest
 
 from api.mock_data import MOCK_KAMPANYALAR
+from api.schemas import CampaignRecord
 from comparison.compare_engine import (
     KRITERLER,
     BilinmeyenKriter,
@@ -166,3 +167,68 @@ def test_hicbir_veri_yoksa_aciklama_durustce_soyler():
     yalniz_bos = [k for k in MOCK_KAMPANYALAR if k.banka == "D Bankasi"]
     metin = aciklama_uret(karsilastir_bellekte(yalniz_bos, "en_dusuk_kar_payi"))
     assert "yapilamadi" in metin.lower()
+
+
+# ---------------------------------------------------------------------------
+# "en_avantajli" kompozit kriteri (Sartname Md. 5.7 - D1 bulgusu)
+# ---------------------------------------------------------------------------
+
+
+def test_en_avantajli_sartname_senaryo2_ile_uyusuyor():
+    """Sartname Ornek Temsili Senaryo-2: 'A Bankasi mi daha avantajli, C
+    Bankasi mi?' - kar payi acisindan C, vade acisindan A one cikiyor;
+    C'nin ayrica odulu de var (A'da odul belirtilmemis) - C 2 eksende,
+    A 1 eksende one cikiyor, genel kazanan C olmali."""
+    ac = [k for k in MOCK_KAMPANYALAR if k.banka in ("A Bankasi", "C Bankasi")]
+    sonuc = karsilastir_bellekte(ac, "en_avantajli")
+
+    assert sonuc["kazanan"]["banka"] == "C Bankasi"
+    assert sonuc["kazanan"]["deger"] == 2  # kar payi + odul eksenlerinde one cikti
+
+
+def test_en_avantajli_eksen_kirilimi_sartname_metniyle_uyusuyor():
+    ac = [k for k in MOCK_KAMPANYALAR if k.banka in ("A Bankasi", "C Bankasi")]
+    sonuc = karsilastir_bellekte(ac, "en_avantajli")
+    metin = aciklama_uret(sonuc)
+
+    assert "kar payi" in metin.lower() and "c bankasi" in metin.lower()
+    assert "vade" in metin.lower() and "a bankasi" in metin.lower()
+
+
+def test_en_avantajli_esitlikte_tek_kazanan_uydurulmaz():
+    """Iki kayit ayni sayida eksende one cikarsa, sahte bir tek kazanan
+    secilmez - durustluk ilkesi (rapor Bolum 5.7/15) ile ayni gerekce."""
+    esit = [
+        CampaignRecord(banka="X Bankasi", kampanya_adi="X Kampanya", kaynak_url="https://x.com", kar_payi_orani_percent=1.5, vade_ay=60),
+        CampaignRecord(banka="Y Bankasi", kampanya_adi="Y Kampanya", kaynak_url="https://y.com", kar_payi_orani_percent=1.8, vade_ay=96),
+    ]
+    sonuc = karsilastir_bellekte(esit, "en_avantajli")
+    assert sonuc["kazanan"] is None
+    metin = aciklama_uret(sonuc)
+    assert "esit" in metin.lower() or "eşit" in metin.lower()
+
+
+def test_en_avantajli_veri_olmayan_eksen_karsilastirmaya_katilmaz():
+    """MOCK_KAMPANYALAR'da hicbir kayitta tahsis_ucreti sayisal olarak
+    verilmemis - masraf ekseni sessizce degil, acikca 'veri yok' diye
+    bildirilmeli."""
+    ac = [k for k in MOCK_KAMPANYALAR if k.banka in ("A Bankasi", "C Bankasi")]
+    sonuc = karsilastir_bellekte(ac, "en_avantajli")
+    masraf_ekseni = next(e for e in sonuc["eksen_kirilimi"] if e["kriter"] == "en_dusuk_masraf")
+    assert masraf_ekseni["kazananlar"] == []
+
+    metin = aciklama_uret(sonuc)
+    assert "veri yok" in metin.lower()
+
+
+def test_en_avantajli_sql_onizlemesi_order_by_uydurmaz():
+    """Kompozit kriter tek sutuna indirgenemez - SQL onizlemesinde
+    uydurma bir ORDER BY olmamali, ama sorgu yine de gecerli SELECT
+    olarak baslamali (test_tum_kriterler_sql_uretebiliyor ile tutarli)."""
+    sorgu, _ = karsilastir_sorgusu("en_avantajli")
+    assert sorgu.startswith("SELECT")
+    assert "ORDER BY" not in sorgu
+
+
+def test_en_avantajli_kriter_dogrulamadan_geciyor():
+    kriter_dogrula("en_avantajli")  # BilinmeyenKriter firlatmamali

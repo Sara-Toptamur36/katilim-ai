@@ -133,6 +133,29 @@ cd dashboard && npm install && npm run dev
 > **Ekip kuralı:** Şemayı değiştiren kişi migration dosyasını da commit'ler;
 > diğerleri `git pull` sonrası `alembic upgrade head` çalıştırır.
 
+### Tek komutla demo (backend)
+
+Adım 1, 3, 4'ü (Docker + alembic + API, servislerin gerçekten hazır olması
+beklenerek) tek seferde yapar — adım atlama/sıra karıştırma riskini kaldırır.
+Arayüz (adım 5) ayrı kalır, farklı bir terminalde `cd dashboard && npm run dev`
+ile başlatılır.
+
+```bash
+python demo_baslat.py          # gercek veriyle (Docker + PostgreSQL + Qdrant)
+python demo_baslat.py --mock   # mock veriyle, Docker/DB GEREKMEZ
+```
+
+### Çevrimdışı hazırlık kontrolü
+
+Md. 5.9 (on-premise), sistemin internetsiz çalışabilmesini gerektirir; ama
+Ollama modeli, embedding modeli ve Docker imajları **ilk kullanımda**
+internetten iner. Demo günü internet olmayabileceği için, internet varken
+önceden bir kez çalıştırıp hepsi `[OK]` olana kadar eksikleri tamamlayın:
+
+```bash
+python cevrimdisi_hazirlik_kontrolu.py
+```
+
 ### Gerçek veriyi yükle (isteğe bağlı)
 
 ```bash
@@ -215,6 +238,18 @@ Bir alan kaynakta yoksa `null` bırakılır ve `alan_belirtilmemis` içinde bayr
 
 **2. Sayısal işler LLM'e bırakılmaz.**
 Karşılaştırma sabit, parametreli SQL şablonlarıyla yapılır (serbest metinden SQL üretilmez). Taksit/kâr payı hesapları saf Python fonksiyonlarıdır.
+
+Şartname Md. 5.7'nin örnek kriter listesindeki 5 kriter (`comparison/compare_engine.py`):
+
+| Kriter | Alan |
+|---|---|
+| En Düşük Kâr Payı Oranı (`en_dusuk_kar_payi`) | `kar_payi_orani_percent` |
+| En Yüksek Ödül Miktarı (`en_yuksek_odul`) | `odul_miktari` |
+| En Uzun Vade Seçeneği (`en_uzun_vade`) | `vade_ay` |
+| En Düşük Masraf (`en_dusuk_masraf`) | `tahsis_ucreti` |
+| En Avantajlı Kampanya (`en_avantajli`) | kompozit — diğer 4 kriterin eksen eksen karşılaştırması, Örnek Temsili Senaryo-2'deki yöntemle birebir |
+
+`en_avantajli` tek bir ağırlıklı formül uydurmaz: her alt kriterde hangi kampanyanın öne çıktığı ayrı ayrı belirlenir (`- Kâr payı oranı açısından C Bankası daha avantajlı ...` biçiminde), en çok eksende öne çıkan genel kazanan sayılır; eşitlikte tek bir kazanan uydurulmaz. Ayrıca şartnamenin listesinde olmayan bonus bir kriter de var: `en_yuksek_tutar` (`finansman_tutari`).
 
 **3. Her kayıt kaynağını taşır.**
 Her kampanya kaydında kaynak URL ve belge tarihi tutulur; hangi alanı hangi

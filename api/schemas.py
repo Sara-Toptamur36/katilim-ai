@@ -124,7 +124,10 @@ class KarsilastirIstek(BaseModel):
     ids: list[int] = Field(..., min_length=2, description="En az 2 kampanya secilmeli")
     kriter: str = Field(
         "en_dusuk_kar_payi",
-        description="en_dusuk_kar_payi | en_yuksek_odul | en_uzun_vade | en_dusuk_masraf",
+        description=(
+            "en_dusuk_kar_payi | en_yuksek_odul | en_uzun_vade | en_dusuk_masraf | "
+            "en_avantajli (Sartname Md. 5.7 kompozit kriteri) | en_yuksek_tutar (bonus)"
+        ),
     )
 
 

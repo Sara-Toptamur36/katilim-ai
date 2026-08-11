@@ -157,6 +157,23 @@ def test_tek_kampanya_ile_karsilastirma_reddedilir():
     assert yanit.status_code == 422  # Pydantic: min_length=2
 
 
+def test_en_avantajli_kompozit_kriteri_uctan_uca_calisir():
+    """D1 bulgusu: Sartname Md. 5.7'nin kompozit kriteri gercek API
+    uzerinden de calismali (bkz. comparison/compare_engine.py, A/C
+    Bankasi = Ornek Temsili Senaryo-2)."""
+    yanit = client.post(
+        "/karsilastir",
+        json={"ids": [1, 3], "kriter": "en_avantajli"},
+        headers=GECERLI_BASLIK,
+    )
+    assert yanit.status_code == 200
+    govde = yanit.json()
+    assert govde["kriter"] == "en_avantajli"
+    assert govde["calistirilan_sql"] is not None
+    assert "ORDER BY" not in govde["calistirilan_sql"]
+    assert "kar payi" in govde["audit"]["sebep"].lower()
+
+
 # ---------------------------------------------------------------------------
 # /chat  -  audit blogu sozlesmesi
 # ---------------------------------------------------------------------------

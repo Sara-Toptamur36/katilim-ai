@@ -136,3 +136,26 @@ def test_karsilastirma_kriteri_soru_metninden_dogru_tespit_edilir():
     sonuc = karsilastirma_aracini_cagir(soru, sahte_getirici)
     assert sonuc["basarili"] is True
     assert sonuc["veri"]["kriter"] == "en_yuksek_odul"
+
+
+def test_karsilastirma_avantajli_kelimesi_kompozit_kriteri_tetikler():
+    """Sartname Md. 5.7'nin kendi terimi 'En Avantajli Kampanya' - bu
+    kelime hicbir zaman tek bir alt kritere (ör. en dusuk oran) daralmaz."""
+    def sahte_getirici(banka: str) -> list[CampaignRecord]:
+        return [_kayit(banka, 1.99 if banka == "Kuveyt Türk" else 1.5)]
+
+    soru = "Kuveyt Türk mü daha avantajlı, Albaraka Türk mü?"
+    sonuc = karsilastirma_aracini_cagir(soru, sahte_getirici)
+    assert sonuc["basarili"] is True
+    assert sonuc["veri"]["kriter"] == "en_avantajli"
+
+
+def test_karsilastirma_en_dusuk_oran_avantajli_kompozitiyle_karismaz():
+    """'oran' kelimesi acikca gecince hala rate-ozgu kritere gitmeli -
+    'avantajli' anahtar kelimesiyle cakismamali (sozluk sirasi kontrolu)."""
+    def sahte_getirici(banka: str) -> list[CampaignRecord]:
+        return [_kayit(banka, 1.99 if banka == "Kuveyt Türk" else 1.5)]
+
+    soru = "Kuveyt Türk ile Albaraka Türk'ü karsilastir, en dusuk oran hangisinde?"
+    sonuc = karsilastirma_aracini_cagir(soru, sahte_getirici)
+    assert sonuc["veri"]["kriter"] == "en_dusuk_kar_payi"

@@ -403,6 +403,28 @@ kendi notu da ("sayfada vade ifadesi yok") bunu destekliyor. Bu, scraper/
 veri tarafının bilinen bir sorunu — extraction katmanında düzeltilecek
 bir şey yok, AL-001 zaten ekibin karar bekleyen kayıtları arasında.
 
+**Üçüncü bulgu — dar makas (kullanıcının "sonuç eskiden yüksekti" sorusu
+üzerine yapılan takip incelemesi):** `regex+NER` satırının Makro F1'i
+(92,65) hâlâ regex-only'nin (93,72) altındaydı; tek fark `kar_payi_orani_
+percent`'te (83,33→76,92). Regex-only'nin kendi yanlış pozitif listesiyle
+karşılaştırıldığında, bu farkın kaynağı HF-005 kaydıydı — regex-only bu
+kaydı hiç yanlış işaretlemiyordu, yalnızca NER eklenince ortaya çıkıyordu.
+Gerçek metin: "...5.000 USD... hacmine kadar %0,1 dar makastan
+yararlanabilir." GLiNER'in döndürdüğü varlık span'i yalnızca "%0,1" idi
+(start/end konumlarıyla doğrulandı) — "makas" kelimesi span'in birkaç
+karakter dışında kalıyordu, bu yüzden ham_deger üzerinde basit bir metin
+kontrolü yetersizdi. `terminology/sozluk.json`'daki `dar_makas` kavramı
+bunu zaten "kar_payi_orani ile karıştırılmamalı" diye işaretlemişti;
+regex_extractor.py kendi bağlam-dışlama penceresiyle bunu doğru atlıyordu,
+NER'in aynı koruması yoktu. Çözüm: `extraction/ner_extractor.py::
+_dar_makas_baglaminda_mi()` eklendi — GLiNER'in start/end konumlarından
+ham metindeki gerçek bağlam penceresine bakıyor (regex'in
+`_ucret_baglaminda_mi`'siyle aynı ilke). **Sonuç: `regex+NER` artık
+regex-only ile birebir eşit (Makro F1 93,72, 2 yanlış pozitif, +0,00)** —
+NER katmanı ölçülebilir hiçbir net zarar üretmiyor. `regex+NER+LLM`
+87,47'ye çıktı; kalan fark artık tamamen LLM'e ait ve büyük kısmı zaten
+bilinen AL-001 kirlenmesinden geliyor.
+
 > **Ollama kapalıyken üçüncü varyant geçersizdir.** `llm_ile_cikar`
 > erişemediğinde hata fırlatmaz, kademeli fallback gereği `None` döner —
 > tablo "LLM katkı yapmadı" gibi görünür, oysa LLM hiç çalışmamıştır.

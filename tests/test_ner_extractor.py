@@ -6,11 +6,16 @@ yuklenip cache'lenir (bkz. ner_extractor._model_yukle), bu yuzden ayni
 test oturumu icindeki tum testler tek bir model yuklemesini paylasir.
 """
 
+import json
+from pathlib import Path
+
 import pytest
 
-from extraction.ner_extractor import _kar_payi_makul_mu, ner_ile_cikar
+from extraction.ner_extractor import _dar_makas_baglaminda_mi, _kar_payi_makul_mu, ner_ile_cikar
 
 pytestmark = pytest.mark.slow
+
+RAW_DATA = Path(__file__).parent.parent / "scraper" / "raw_data"
 
 
 def test_kar_payi_orani_percent_ve_decimal_ikisi_de_dolar():
@@ -97,6 +102,35 @@ def test_bos_alan_kumesiyle_hicbir_sey_aranmaz():
     izler = sonuc.pop("_izler")
     assert all(v is None for v in sonuc.values())
     assert izler == {}
+
+
+def test_dar_makas_deseni_dogrudan():
+    metin = "5.000 USD hacme kadar %0,1 dar makastan yararlanabilir."
+    assert _dar_makas_baglaminda_mi(metin, metin.index("%0,1"), metin.index("%0,1") + 4) is True
+    assert _dar_makas_baglaminda_mi("Yüzde 1,89 kâr payı oranı", 6, 12) is False
+
+
+def test_dar_makas_guard_gercek_veriyle():
+    """DENETIM BULGUSU (ablation olcumu, docs/extraction_accuracy_raporu.md):
+    gercek bir Hayat Finans kampanyasinda ('...5.000 USD... hacmine kadar
+    %0,1 dar makastan yararlanabilir') GLiNER '%0,1' span'ini kar payi
+    orani sanip yakaliyordu - terminology/sozluk.json'daki dar_makas
+    kavraminin kendi uyarisiyla ('kar_payi_orani ILE KARISTIRILMAMALI')
+    birebir celisen bir hallusinasyon. regex_extractor.py bu baglami
+    kendi baglam-dislama penceresiyle zaten dogru atliyor; NER'in ayni
+    korumasi yoktu."""
+    with open(
+        RAW_DATA / "hayatfinans" / "json" / "20260801_hayatfinans_kampanyalar_avantajli-hesap-musterilerine-ozel-fx-dar-makas-avantaji.json",
+        encoding="utf-8",
+    ) as f:
+        kayit = json.load(f)
+
+    sonuc = ner_ile_cikar(
+        kayit["ham_metin"],
+        sadece_bu_alanlar={"kar_payi_orani_percent", "kar_payi_orani_decimal"},
+    )
+    assert sonuc["kar_payi_orani_percent"] is None
+    assert sonuc["kar_payi_orani_decimal"] is None
 
 
 def test_ilgisiz_metinde_hicbir_alan_bulunmaz():

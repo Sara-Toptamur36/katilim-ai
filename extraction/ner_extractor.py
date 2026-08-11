@@ -62,7 +62,7 @@ from __future__ import annotations
 import re
 from typing import Optional
 
-from extraction.normalizer import aya_cevir, tarihe_cevir, tutara_cevir, yuzdeye_cevir
+from extraction.normalizer import aya_cevir, tarihe_cevir, turkce_kucult, tutara_cevir, yuzdeye_cevir
 
 _MODEL_ADI = "urchade/gliner_multi-v2.1"
 
@@ -82,6 +82,33 @@ def _kar_payi_makul_mu(percent: float) -> bool:
     payi sanmasi ihtimalidir - supheli deger, uydurmaktan iyidir None
     birakmak (rapor Bolum 5.7/15)."""
     return 0.0 <= percent <= 15.0
+
+
+# DENETIM BULGUSU (ablation olcumu, docs/extraction_accuracy_raporu.md):
+# gercek HF-005 verisiyle dogrulandi - "...5.000 USD... hacmine kadar
+# %0,1 dar makastan yararlanabilir" cumlesinde GLiNER, "%0,1" span'ini
+# "kar payi orani" olarak etiketledi (skor 0,54-0,79). Entity span'inin
+# KENDISI yalnizca "%0,1" - "makas" kelimesi span'in DISINDA, birkac
+# kelime sonra geciyor - bu yuzden ham_deger uzerinde basit bir "makas"
+# metin kontrolu YETERSIZ kalir. terminology/sozluk.json'daki dar_makas
+# kavrami zaten bunu bilerek isaretlemisti ("kar_payi_orani ILE
+# KARISTIRILMAMALI"); regex_extractor.py bunu kendi baglam-dislama
+# penceresiyle (_ucret_baglaminda_mi) zaten dogru sekilde atlıyor -
+# regex-only olcumde bu kayit hic yanlis pozitif uretmiyor. NER'in ayni
+# korumasi yoktu. Cozum: GLiNER'in dondurdugu start/end konumlarindan
+# (varlik['start']/['end']) HAM METINDEKI gercek baglam penceresine
+# bakilir - regex'in kendi penceresiyle AYNI mantik, ikisi arasinda
+# tutarlilik icin.
+_DAR_MAKAS_PENCERESI_KARAKTER = 45
+
+
+def _dar_makas_baglaminda_mi(ham_metin: str, baslangic: int, bitis: int) -> bool:
+    """Entity'nin etrafindaki ham metin penceresinde 'makas' kelimesi
+    geciyor mu? (bkz. yukaridaki DENETIM BULGUSU)."""
+    pencere = _DAR_MAKAS_PENCERESI_KARAKTER
+    sol = turkce_kucult(ham_metin[max(0, baslangic - pencere):baslangic])
+    sag = turkce_kucult(ham_metin[bitis:bitis + pencere])
+    return "makas" in sol or "makas" in sag
 
 
 _KESIRLI_ORAN_DESENI = re.compile(r"\d{1,3}\s*/\s*\d{1,3}")
@@ -189,6 +216,10 @@ def ner_ile_cikar(
 
         if varlik["label"] == _KAR_PAYI_ETIKETI:
             if alanlar["kar_payi_orani_percent"] is not None:
+                continue
+            if _dar_makas_baglaminda_mi(ham_metin, varlik["start"], varlik["end"]):
+                # Dar makas guard'i - bkz. _dar_makas_baglaminda_mi
+                # docstring'i (gercek HF-005 verisiyle dogrulanan bulgu).
                 continue
             if _kesirli_oran_mi(ham_deger):
                 # "98/2" gibi kesirli paylasim orani - ASLA duz yuzdeye

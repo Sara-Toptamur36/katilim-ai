@@ -491,3 +491,116 @@ azaltır hem de gerçek sıfır-oran kampanyalarını yakalamaya devam eder.
 etkisi **iki yönlü** görülebilir: dolu alan doğruluğu düşmeden boş alan
 doğruluğunun artması beklenir. Yalnızca birinin iyileşip diğerinin bozulması,
 kuralın fazla dar/geniş ayarlandığının işaretidir.
+
+---
+
+## Güncelleme — 11 Ağustos 2026 (C2/C3/C4: kör alanlar + kalan 4 karar)
+
+Sara'nın durum raporundaki C bloğunun geri kalanı ele alındı: `taksit_sayisi`/
+`erteleme_suresi_ay` alanlarının neredeyse hiç ölçülememesi (C2/C3) ve
+motorun tespit ettiği son 4 tutarsızlığın gold tarafında karara bağlanması
+(C4).
+
+### C2/C3 — kör alanlar dolduruldu
+
+Altın Veri Seti'nin 58 gerçek kaydı tek tek tarandı: `kampanya_avantaji`
+metninde **açıkça bir sayı olarak geçen ama alana işlenmemiş** 10 değer
+bulundu (9 `taksit_sayisi`, 1 `erteleme_suresi_ay`) — hepsi kaydın
+kendi metninden okundu, dışarıdan yeni bilgi eklenmedi:
+
+| Kayıt | Alan | Değer | Kaynak ifade |
+|---|---|---|---|
+| KT-001 | taksit_sayisi | 6 | "6 taksite kadar avantajlı kâr payı oranı" |
+| KT-004 | taksit_sayisi | 3 | "vade farksız 3 taksit" |
+| VK-001 | taksit_sayisi | 3 | "vade farksız 3 taksit" |
+| VK-002 | taksit_sayisi | 3 | "vade farksız 3 taksit" |
+| VK-003 | taksit_sayisi | 5 | "vade farksız 5 taksit" |
+| VK-006 | taksit_sayisi | 5 | "vade farksız 5 taksit" |
+| ZK-003 | taksit_sayisi | 4 | "Bankkart kredi kartıyla 4 taksite bölünüyor" |
+| DK-006 | taksit_sayisi | 9 | kademeli sistem, gold'un kendi kuralıyla ("en üst dilim alındı") tutarlı |
+| DK-007 | taksit_sayisi | 3 | "3 aya varan taksit" (KT-006 emsaliyle aynı "N aya varan" kuralı) |
+| TF-001 | erteleme_suresi_ay | 3 | ham metinde doğrulandı: "ilk taksit için 3 aya varan ödemesiz dönem hakkı tanınacaktır" |
+
+Her satıra `notlar` alanında `[11 Ağu] ... eklendi` şeklinde tarihli bir not
+düşüldü (KT-006'nın 9 Ağustos'taki `vade_ay->taksit_sayisi` notuyla aynı
+konvansiyon). İki kayıt bilerek **dokunulmadan** bırakıldı:
+
+- **KT-003**: "ödemesiz dönem" geçiyor ama süre sayı olarak verilmemiş,
+  üstelik kaynak sayfa artık Kuveyt Türk sitesinde yok (bkz. C1) —
+  doğrulanamaz.
+- **ZK-004**: "2-4 taksitli işlemlerde +8 ek taksit" — kampanya taban
+  taksidi mi (2-4) yoksa kendi sağladığı ek taksidi mi (8) temsil etmeli,
+  gerçek bir belirsizlik; ekiple konuşulmadan doldurulmadı.
+
+**Etki:** `taksit_sayisi` desteği 1'den 6'ya çıktı (regex-only F1
+83,33 → **100,00**), `erteleme_suresi_ay` ilk kez ölçülebilir hale geldi
+(destek 0 → 1, F1 100,00). Regex-only Makro F1: 93,72 → **94,62**.
+
+### C4 — kalan 4 karar
+
+Ölçümde kalan tüm hatalar tam olarak Sara'nın işaret ettiği 4 kayda
+denk düştü. Yağmur'a durumla birlikte sunuldu, kararlar:
+
+1. **KT-006 `kar_payi_orani`** — "Vade Farksız 5 Aya Varan Taksit" aynı
+   yapıdaki AL-002/AL-005/TOM-002'de gold zaten `0`; KT-006 tek başına
+   "belirtilmemiş" idi. **Karar: tutarlılık için `0` yapıldı**, `alan_belirtilmemis`
+   listesinden çıkarıldı.
+2. **AL-001 `taksit_sayisi`** — kampanya iki bölümlü (40.000 TL'lik Pratik
+   Finansman Kart kısmı = 4 taksit, 100.000 TL'lik kredi kartı kısmı = 6
+   taksit); `finansman_tutari` zaten ilk bölümü (40.000) esas alıyordu ama
+   `taksit_sayisi` ikinci bölümün değerini (6) taşıyordu — alanlar arası
+   tutarsızlık. **Karar: `4` yapıldı**, alanlar artık aynı alt kampanyaya
+   (Pratik Finansman Kart) işaret ediyor.
+3. **DK-002 `odul_miktari`** — DK-002 kişi/davet başına ödülü (0,1 gram)
+   kaydetmiş, KT-007 ise aynı tip kampanyada toplam/tavan ödülü kaydetmiş;
+   ekip genelinde tutarsız bir politika. **Karar: şimdilik dokunulmadı**,
+   Yağmur ayrıca ele alacak (KT-007'nin de kontrol edilmesi gerekiyor).
+4. **TF-001 `kar_payi_orani`** — yanlış pozitif (`0.0`), sayfanın ortasında
+   geçen tamamen farklı bir ürünün ("Yedek Hesap") "Kâr paysız 2.500 TL'ye
+   kadar" ifadesinden geliyor; AL-001'deki sayfa-sonu kirlenmesinden farklı
+   bir örüntü, şu an yalnızca bu 1 kayıtta görülüyor. **Karar: kod
+   değiştirilmedi**, bilinen dar kapsamlı bir sınırlama olarak burada
+   belgelendi (`preprocessing/kapsam.py` bilinçli olarak dar tutulmuş —
+   tek örnek için yeni bir genel kural yazmak riskli).
+
+**Sonuç:** KT-006 ve AL-001 düzeltmeleri sonrası regex-only Makro F1
+94,62 → **98,28**e çıktı; kalan tek hata (DK-002, henüz karara
+bağlanmadı) ve kalan tek yanlış pozitif (TF-001, bilinen sınırlama).
+
+### C1 — Altın Veri Seti tazelik durumu (yeniden ölçüldü)
+
+Tüm bankalar canlı sitelerden yeniden tarandı (C5 ile birlikte, delta
+kontrollü — yalnızca değişen/yeni sayfalar işlendi) ve `gold_eslesme.py`
+ile 58 gerçek kayıt karşılaştırıldı:
+
+- **36/58 hâlâ scraper önbelleğinde eşleşiyor** — Sara'nın 28 Temmuz
+  rakamıyla birebir aynı; 11 gün sonra durum kötüleşmemiş.
+- **22/58 artık hiçbir raw_data dosyasıyla eşleşmiyor** (%38 — Sara'nın
+  tahmini %45'e yakın, biraz daha iyi çıktı).
+- Banka bazında en kırılgan: **Vakıf Katılım (1/8 canlı)**, **Türkiye
+  Finans (1/7 canlı)** — kampanyaları hızlı rotasyona giriyor.
+
+**Önemli metodolojik not:** "raw_data'da eşleşiyor" ≠ "şu an sitede
+canlı". Scraper eski dosyaları hiç silmiyor (bilinçli tasarım, delta
+kontrolü için), bu yüzden bir kampanya siteden kalksa bile eski taraması
+diskte kalmaya devam ediyor. Somut örnek: **T.O.M. Katılım** — raw_data'da
+3 dosya var ve `gold_eslesme.py` üçünü de "canlı" sayıyor, ama sitenin
+kendisi (`tombank.com.tr/kampanyalar.html`, doğrudan kontrol edildi,
+11 Ağustos) artık yalnızca **1** kampanya (TOM-002, "Özel Okul
+Ödemelerinde 10 Taksit") gösteriyor — diğer ikisi (Restoran %10 iade,
+Market 1.000 TL iade) siteden kaldırılmış. Yani 36/58 rakamı gerçek
+canlı-kapsamın üst sınırı, tam doğrulaması tek tek canlı kontrol
+gerektirir (bu, ekibin ekran görüntülü manuel doğrulama sürecinin
+konusu).
+
+### C6 — T.O.M. Katılım örneklem yetersizliği: veri kısıtı, motor hatası değil
+
+`scraper/config/bankalar.json` zaten belgeliyordu: T.O.M. Katılım'ın
+kampanya sayfası tek bir HTML sayfasında (accordion panelleri) yayınlanıyor.
+11 Ağustos'ta doğrudan kontrol edildi: sayfada artık yalnızca **1**
+accordion paneli var (`accordion-item` sayısı canlı HTML'de 1). Yani
+"hedef 5-8, mevcut 3" değerlendirmesi bile artık iyimser — banka o an
+için yalnızca 1 kampanya yayınlıyor. Bu, scraper'ın eksikliği değil,
+bankanın kendi sitesinin içerik kısıtı; ek tarama/kod değişikliğiyle
+çözülemez. T.O.M. Katılım örneklemi, yalnızca banka zamanla yeni
+kampanyalar yayınladıkça büyüyecek.

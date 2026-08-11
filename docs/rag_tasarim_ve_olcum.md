@@ -201,6 +201,25 @@ kelimesi eleme eklendi.
 > Bu belge **yöntemi** sabitler; sayılar veri güncellendikçe değişir.
 > Yeniden üretmek için: `python -m scraper.scripts.rag_degerlendirme`
 
+### Yeniden doğrulama — 11 Ağustos 2026
+
+Qdrant indeksi 7 Ağustos'tan beri güncellenmemişti (10 Ağustos'taki 10-banka
+tam taramasından ve AL-001 kapsam kırpma düzeltmesinden sonra bile) — bu
+belgede yayınlanan sayıların hâlâ geçerli olduğu doğrulanmamıştı. İndeks
+`python -m chunking.indeksleyici` ile **sıfırdan yeniden kuruldu**
+(234 belge → 733 parça, 234 belge/183 sn) ve ölçüm tekrarlandı:
+
+| Metrik | 7 Ağustos | 11 Ağustos (tazelenmiş indeks) |
+|---|---|---|
+| Recall@1 | %93,75 | **%93,75** (değişmedi) |
+| Recall@3 | %93,75 | **%93,75** (değişmedi) |
+| Recall@5 | %96,88 | **%96,88** (değişmedi) |
+| Abstention doğruluğu | %100 | **%100** (değişmedi) |
+| Kaçırılan tek kampanya | AL-006 | **AL-006** (aynı) |
+
+Sonuç birebir tekrar üretildi — README'deki rakamlar artık güncel veriyle
+doğrulanmış durumda, bayat değil.
+
 ---
 
 ## 7. Bilinçli sınırlar

@@ -1,41 +1,50 @@
 # Standart Veri Takip Tablosu (Zeynep Veri Toplama Rehberi, Bölüm 4)
 
-> **Not:** Rehber bu tabloyu ortak bir Google Sheets dosyası (`PeacewAI_Sayfa_Takip_Tablosu`)
-> olarak tutmayı öneriyor ki Sara/Yağmur/Havin de canlı görebilsin. Bu oturumda gerçek bir
-> Google Sheets hesabı/paylaşımı oluşturulamadı; bu dosya o tablonun **yerel, geçici bir
-> kopyasıdır** — gerçek verilerle dolu. Zeynep'in yapması gereken tek ek adım: bu satırları
-> gerçek bir Google Sheets dosyasına taşıyıp linkini ekip kanalında paylaşmak.
+> **Güncelleme (11 Ağustos 2026):** Bu dosya artık **tamamlanmış** durumu
+> yansıtıyor — BDDK listesindeki 10 katılım bankasının 9'u tarandı (Adil
+> Katılım hâlâ gerekçeli hariç). Google Sheets'e taşıma bu tarihte
+> yapılıyor; bu dosya taşınana kadarki **son yerel referans kopyadır**.
+> Ham CSV: [`sayfa_takip_tablosu.csv`](sayfa_takip_tablosu.csv).
 
-Kim Aldı sütunu: tüm satırlar bu oturumda dolduruldu → **Zeynep**.
-Son Kontrol: **2026-07-31**.
+Kim Aldı sütunu: tüm satırlar → **Zeynep**.
+Son Kontrol: bankaya göre değişir, en son **2026-08-11** (Ziraat Katılım, Emlak Katılım, Hayat Finans, Kuveyt Türk, Albaraka).
 
-## 3+7 Stratejisi — Sprint 1 hedefi olan 3 banka (kapsandı)
+## Tüm bankalar (9/10 kapsandı, Adil Katılım gerekçeli hariç)
 
-| Banka | Kategori | Sayfa Başlığı | URL | İçerik Yapısı | HTTP Durumu | PDF | Kampanya Sayısı | Not |
-|---|---|---|---|---|---|---|---|---|
-| Kuveyt Türk | Kampanyalar (liste) | Kampanyalar - Kendim İçin | `kuveytturk.com.tr/kampanyalar/kendim-icin` | HTML | 200 | Hayır | 10 | `.campaign-detail` seçicisi temiz metin veriyor, cookie/nav sızıntısı yok |
-| Kuveyt Türk | Kart Kampanyaları | Gelir Vergisi Ödemelerinde 3 Taksit | `.../kart-kampanyalari/gelir-vergisi-odemelerinizde-3-taksit-firsati` | HTML | 200 | Hayır | 1 | Altın Veri Seti'nde yok (yeni kampanya) |
-| Kuveyt Türk | Müşteri Ol (7 sayfa) | — | `.../musteri-ol-kampanyalari/*` | HTML | 200 | Hayır | 7 | Hepsi başarıyla çekildi |
-| Kuveyt Türk | Seyahat | Yurt Dışı Seyahat Ayrıcalıkları | `.../seyahat-kampanyalari/*` | HTML | 200 | Hayır | 1 | — |
-| Albaraka Türk | Kampanyalar (liste) | Kampanyalar | `albaraka.com.tr/tr/kampanyalar` | HTML | 200 | Hayır | 12 link bulundu | **DİKKAT:** liste sayfasındaki Facebook/Twitter paylaşım linkleri gerçek detay URL'sini query string içinde tekrarlıyor — domain filtresi olmadan yanlışlıkla toplanır. `statik_scraper.kampanya_linklerini_topla` bunu otomatik filtreliyor. |
-| Albaraka Türk | Kampanya detayları (11 sayfa) | — | `.../kampanyalar/detay/*` | HTML | 200 | Hayır | 11 başarılı | `.searchContent` seçicisi doğrulandı (rapor Bölüm 3'teki "Kâr payı yok. Beklemek yok." örneği bu sayfada bulundu). **Bunlardan biri** (`dijital-musterilere-ozel-pratik-finansman-kart`) **gerçek bir kâr payı oranı TABLOSU** içeriyor (Finansman Tutarı/Vade/Aylık Kar Oranı) — `tablo_isle.py` ile yapılandırılmış olarak yakalandı, Yağmur'un çıkarımı için hazır. |
-| Albaraka Türk | Kampanya detayı (atlandı) | Albaraka'da Masraflara Son | `.../detay/albarakada-masraflara-son` | HTML | 200 | Hayır | — | Doğrulama BAŞARISIZ: anahtar kelime (kampanya/oran/finansman) yok — sayfa aslında "masrafsız bankacılık" bilgilendirmesi, klasik bir finansman/kart kampanyası değil. Kasıtlı atlandı, veri uydurulmadı. |
-| Vakıf Katılım | Kampanyalar (liste) | Mevcut Kampanyalar | `vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/mevcut-kampanyalar` | HTML | 200 | Hayır | 3 link bulundu | Diğer 2 bankaya göre çok daha az kampanya — sayfa gerçekten içerik-fakir (gözle doğrulandı, seçici sorunu değil) |
-| Vakıf Katılım | Kampanya detayları (2 sayfa) | vclub dünyası, tabii Premium | `.../kampanyalar/detay/*` | HTML | 200 | Hayır | 2 başarılı | `.mask-area` seçicisi doğrulandı |
-| Vakıf Katılım | Kampanya detayı (atlandı) | Tamamla Kazan | `.../detay/tamamla-kazan` | HTML | 200 | Hayır | — | Doğrulama BAŞARISIZ: metin 805 karakter (eşik 1000) — sayfa gerçekten kısa bir sadakat programı açıklaması. Kasıtlı atlandı. |
+| Banka | Kategori | URL | Arşiv Toplamı | Kısa ama Geçerli | Son Kontrol | Not |
+|---|---|---|---|---|---|---|
+| Kuveyt Türk | Kampanyalar (liste) | `kuveytturk.com.tr/kampanyalar/kendim-icin` | 13 | 0 | 2026-08-11 | `.campaign-detail` seçicisi temiz metin veriyor. 4 kez tarandı (delta kontrolü ile) |
+| Albaraka Türk | Kampanyalar (liste) | `albaraka.com.tr/tr/kampanyalar` | 16 | 0 | 2026-08-11 | Facebook/Twitter echo linkleri domain filtresiyle ayıklanıyor. `.searchContent` seçicisi. Bir sayfada gerçek kâr payı oranı tablosu bulundu |
+| Albaraka Türk | Kampanya detayı (hâlâ atlanıyor) | `.../detay/albarakada-masraflara-son` | 0 | — | 2026-08-11 | Doğrulama BAŞARISIZ: anahtar kelime yok, kampanya değil ücret bilgilendirme sayfası. Kasıtlı atlanıyor |
+| Vakıf Katılım | Kampanyalar (liste) | `vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/mevcut-kampanyalar` | 3 | 1 | 2026-08-06 | İçerik-fakir (gözle doğrulandı). `.mask-area` seçicisi |
+| Türkiye Finans | Kampanyalar (liste) | `turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/*.aspx` | 16 | 8 | 2026-08-06 | ASPX/SharePoint, HTML statik. `#content` seçicisi. "Kısa ama geçerli" eşiğiyle kategori/index sayfaları da artık kaydediliyor |
+| Ziraat Katılım | Kampanyalar (liste) | `ziraatkatilim.com.tr/kart-kampanyalari` | 90 | 33 | 2026-08-11 | `/bireysel/kampanyalar` DEĞİL, `/kart-kampanyalari`. `?IsArchived=true` filtrelendi. `.body-content` seçicisi. ~32 kısa "X taksit" kampanyası artık kaydediliyor |
+| Türkiye Emlak Katılım | Kampanyalar (liste) | `emlakkatilim.com.tr/tr/bireysel/kampanyalar` | 100 | 26 | 2026-08-11 | DİKKAT: `turkiyeemlak.com.tr` YANLIŞ domain. `.o-page__content` seçicisi. Altın Veri Seti'nin 7/7 kaydı hâlâ canlı (%100) |
+| Dünya Katılım | Kampanyalar (liste) | `dunyakatilim.com.tr/kampanyalar` | 10 | 0 | 2026-08-06 | `main` seçicisi, küçük banka |
+| Hayat Finans | Kampanyalar (liste) | `hayatfinans.com.tr/kampanyalar` | 12 | 2 | 2026-08-11 | DİKKAT: www'suz domain. Next.js/SSR ama ham HTML'de içerik, Playwright gerekmedi |
+| T.O.M. Katılım | Kampanyalar (tek sayfa, 3 accordion) | `tombank.com.tr/kampanyalar.html` | 3 | 0 | 2026-08-01 | Ayrı detay URL'si yok, `tek_sayfa_coklu_kampanya_tara`. Encoding düzeltmesi (`ortak._encoding_duzelt`) gerekli |
+| Adil Katılım | **Hariç tutuldu** | `adilkatilim.com.tr` | 0 | — | 2026-08-06 | 29 Temmuz VE 6 Ağustos'ta tekrar kontrol edildi: hâlâ yalnızca Hakkımızda + ücret PDF'i, kampanya sayfası yok. Periyodik tekrar kontrol gerekli |
+| **TOPLAM** | | | **263** | **70** | | |
 
 ## robots.txt / Crawl-delay kontrolü
 
-| Banka | robots.txt sonucu | Crawl-delay | Not |
-|---|---|---|---|
-| Kuveyt Türk | `Allow: /`, yalnızca `/blog/etiket/*` disallow | belirtilmemiş | Kampanya sayfaları serbest |
-| Albaraka Türk | otomatik kontrol edildi (kod içinde `robots_kontrol_et`) | belirtilmemiş | Kampanya sayfaları serbest |
-| Vakıf Katılım | otomatik kontrol edildi (kod içinde `robots_kontrol_et`) | belirtilmemiş | Kampanya sayfaları serbest |
+Tüm bankalarda `ortak.robots_kontrol_et()` otomatik çalışır (kod içinde, banka
+başına bir kez önbelleğe alınır) — hiçbiri Crawl-delay belirtmiyor, kampanya
+sayfaları hepsinde serbest (Disallow'da değil).
 
-## Henüz sırada olan bankalar (Sprint 2-3, Bölüm 13.3'teki doğrulanmış harita hazır)
+## Metodolojik notlar (Temmuz-Ağustos boyunca eklendi)
 
-`scraper/config/bddk_bankalar.json` dosyasında BDDK'nin 10 banka listesinin tamamı,
-doğru URL'ler ve banka-özel tuzaklarla birlikte önceden dolduruldu — Sprint 2'de
-manuel keşif tekrarlanmadan doğrudan config'e eklenebilir: Türkiye Finans, Ziraat
-Katılım, Türkiye Emlak Katılım, Dünya Katılım, Hayat Finans, T.O.M. Katılım.
-Adil Katılım gerekçeli olarak hariç tutuldu (henüz ürün/kampanya sayfası yok).
+- **"Kısa ama geçerli" eşiği (6 Ağustos):** Önceden 1000 karakterin altındaki
+  HER metin reddediliyordu. Artık 150-999 karakter arası ("X mağazada Y
+  taksit" tipi kısa kart kampanyaları) `icerik_kalitesi: "kisa"` etiketiyle
+  kaydediliyor — bu tek değişiklik +67 kampanya kazandırdı.
+- **JS scraper doğrulandı (9 Ağustos):** `playwright install chromium`
+  çalıştırıldı, `js_scraper.py` `quotes.toscrape.com/js/` üzerinde uçtan uca
+  test edildi. Hiçbir katılım bankası JS gerektirmedi, kod hazır bekliyor.
+- **OCR kasıtlı kurulmadı:** 14 PDF'in hiçbiri taranmış çıkmadı; tespit
+  mekanizmasının kendisi (`pdf_metne_cevir`) sentetik bir PDF ile test edildi.
+- **`gold_eslesme.py` eşleştirme hatası düzeltildi (9 Ağustos):** T.O.M.'un
+  tek-sayfalı kampanyalarını ayırt eden mantık, yaygın bir kelimenin
+  ("özel") başka bir kampanyanın metninde tesadüfen geçmesi yüzünden yanlış
+  eşleştirme yapıyordu — scraper'ın kendisinde değil, Altın Veri Seti
+  karşılaştırma katmanında bir hataydı.

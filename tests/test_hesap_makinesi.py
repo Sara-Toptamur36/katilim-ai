@@ -16,6 +16,7 @@ from calculator.calculator import (
     maksimum_finansman_hesapla,
     odeme_plani_uret,
     toplam_maliyet_karsilastir,
+    tr_sayi,
 )
 
 # ---------------------------------------------------------------------------
@@ -186,9 +187,30 @@ def test_bos_karsilastirma_cokmez():
 def test_ozet_metni_gercek_sayilari_icerir():
     s = aylik_taksit_hesapla(500_000, 0.0189, 120)
     metin = s.ozet_metni()
-    assert "10,567.32" in metin
+    assert "10.567,32" in metin
     assert "120 ay" in metin
-    assert "1.89" in metin
+    assert "%1,89" in metin
+
+
+def test_ozet_metni_turkce_sayi_bicimi_kullanir():
+    """DENETIM BULGUSU: ozet metni Python'un varsayilan `:,` bicimini
+    kullaniyordu ve INGILIZCE ayiraclar uretiyordu ('500,000 TL',
+    '10,567.32 TL'). Turkce okurda bu sayiyi degistirir - '1,234 TL'
+    Turkcede binlik degil ONDALIK okunur. Hesap dogru olsa bile
+    kullaniciya yanlis sayi gosterilmis olurdu."""
+    metin = aylik_taksit_hesapla(500_000, 0.0189, 120).ozet_metni()
+    assert "500.000 TL tutarinda" in metin
+    # Ingilizce ayiraclarin hicbiri kalmamali
+    assert "500,000" not in metin
+    assert "10,567" not in metin
+
+
+def test_tr_sayi_bicimleri():
+    assert tr_sayi(1234.5) == "1.234,50"
+    assert tr_sayi(500_000, 0) == "500.000"
+    assert tr_sayi(0.5) == "0,50"
+    assert tr_sayi(1_500_000.567) == "1.500.000,57"
+    assert tr_sayi(12, 0) == "12"
 
 
 def test_sonuc_degistirilemez():

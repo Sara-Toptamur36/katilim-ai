@@ -26,6 +26,27 @@ class HesapGirdiHatasi(ValueError):
     """Hesaplama icin gecersiz girdi verildi."""
 
 
+def tr_sayi(deger: float, basamak: int = 2) -> str:
+    """1234.5 -> '1.234,50' (Turkce: nokta binlik, virgul ondalik).
+
+    NEDEN VAR: Python'un `:,` bicimi INGILIZCE ayiraclari uretir
+    ('500,000.00'). Turkce okurda bu SAYIYI DEGISTIRIR - '1,234 TL'
+    Turkcede 'bin iki yuz otuz dort' degil 'bir tam iki yuz otuz dort
+    binde' diye okunur. Finansal bir cikti icin bu kabul edilemez;
+    hesabin kendisi dogru olsa bile kullaniciya yanlis sayi gosterilmis
+    olur (bkz. _girdileri_dogrula docstring'indeki ayni ilke).
+
+    extraction/regex_extractor.py::_tr_sayi ile ayni bicimi uretir ama
+    ondalik SIFIRLARI KIRPMAZ: para tutarinda '1.234,5 TL' degil
+    '1.234,50 TL' beklenir. Oradan import EDILMEZ - calculator bir yaprak
+    modul, extraction katmanina bagimli olmamalidir.
+    """
+    metin = f"{deger:,.{basamak}f}"
+    tam, _, kesir = metin.partition(".")
+    tam = tam.replace(",", ".")
+    return f"{tam},{kesir}" if kesir else tam
+
+
 @dataclass(frozen=True)
 class TaksitSonucu:
     """Bir finansman hesabinin sonucu.
@@ -46,12 +67,12 @@ class TaksitSonucu:
         """Insan okunur ozet. LLM tarafindan degil, dogrudan sayilardan
         uretilir -- bu yuzden halusinasyon icermez."""
         return (
-            f"{self.anapara:,.0f} TL tutarinda finansman, "
-            f"aylik %{self.aylik_oran * 100:.2f} kar payi orani ve "
+            f"{tr_sayi(self.anapara, 0)} TL tutarinda finansman, "
+            f"aylik %{tr_sayi(self.aylik_oran * 100)} kar payi orani ve "
             f"{self.vade_ay} ay vade ile: "
-            f"aylik taksit {self.aylik_taksit:,.2f} TL, "
-            f"toplam geri odeme {self.toplam_odeme:,.2f} TL "
-            f"(toplam kar payi {self.toplam_kar_payi:,.2f} TL)."
+            f"aylik taksit {tr_sayi(self.aylik_taksit)} TL, "
+            f"toplam geri odeme {tr_sayi(self.toplam_odeme)} TL "
+            f"(toplam kar payi {tr_sayi(self.toplam_kar_payi)} TL)."
         )
 
 
@@ -64,7 +85,7 @@ def _girdileri_dogrula(anapara: float, aylik_oran: float, vade_ay: int) -> None:
     if anapara <= 0:
         raise HesapGirdiHatasi("Anapara pozitif olmalidir")
     if anapara > MAKS_ANAPARA:
-        raise HesapGirdiHatasi(f"Anapara cok buyuk (maks {MAKS_ANAPARA:,} TL)")
+        raise HesapGirdiHatasi(f"Anapara cok buyuk (maks {tr_sayi(MAKS_ANAPARA, 0)} TL)")
     if vade_ay <= 0:
         raise HesapGirdiHatasi("Vade pozitif olmalidir")
     if vade_ay > MAKS_VADE_AY:
@@ -239,12 +260,12 @@ def toplam_maliyet_karsilastir(secenekler: list[dict]) -> KarsilastirmaSonucu:
 
     aciklama = (
         f"Toplam maliyet acisindan en avantajli secenek {en_ucuz['banka']} "
-        f"({en_ucuz['toplam_odeme']:,.2f} TL toplam geri odeme)."
+        f"({tr_sayi(en_ucuz['toplam_odeme'])} TL toplam geri odeme)."
     )
     if en_dusuk_taksit["banka"] != en_ucuz["banka"]:
         aciklama += (
             f" Ancak en dusuk AYLIK taksit {en_dusuk_taksit['banka']}'nda "
-            f"({en_dusuk_taksit['aylik_taksit']:,.2f} TL) -- daha uzun vade "
+            f"({tr_sayi(en_dusuk_taksit['aylik_taksit'])} TL) -- daha uzun vade "
             "aylik yuku azaltir ama toplam maliyeti artirir."
         )
 

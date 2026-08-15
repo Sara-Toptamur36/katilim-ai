@@ -12,10 +12,12 @@ katmanidir, kampanya metni islemez.
 import re
 
 
-def _sayiya_cevir(ham: str) -> float | None:
-    """'500.000' / '500000' / '1,99' -> float.
+def _tutari_sayiya_cevir(ham: str) -> float | None:
+    """'500.000' / '500000' / '1.500.000,50' -> float.
 
-    Turkce format: nokta binlik ayiraç, virgul ondalik ayiraç.
+    TUTAR yaziminda Turkce kural gecerlidir: nokta BINLIK ayiraç, virgul
+    ONDALIK ayiraç. (Oran icin bu kural GECERSIZDIR - bkz.
+    _orani_sayiya_cevir.)
     """
     ham = ham.strip()
     if "," in ham:
@@ -28,10 +30,42 @@ def _sayiya_cevir(ham: str) -> float | None:
         return None
 
 
+def _orani_sayiya_cevir(ham: str) -> float | None:
+    """'1,99' / '1.99' / '2' -> float.
+
+    ORANDA BINLIK AYIRAC OLMAZ - hem virgul hem nokta ONDALIK ayiracidir.
+    Bu ayrim bir hatadan dogdu: oran da tutarla ayni cevirimden geciyordu
+    ve '%2.79' ifadesindeki nokta binlik ayiraci sanilip siliniyordu ->
+    279.0. Hesaplanan taksit yuz kat siserken sistem yine 'basarili'
+    diyordu (sessiz yanlis cevap).
+    """
+    try:
+        return float(ham.strip().replace(",", "."))
+    except ValueError:
+        return None
+
+
+# Iki alternatif BILEREK ayri: once binlik-ayiracli tam yazim ('1.250.000'),
+# sonra ayiracsiz duz sayi ('500000').
+#
+# Cevreleyen (?<![\d.,]) ve (?!\d) sinir kontrolleri hatanin can alici
+# noktasiydi: eski desen anchorsuz oldugu ve '(?:\.\d{3})*' sifir tekrara
+# izin verdigi icin '1234 TL' metninde 1. indeksten baslayip '234'u
+# yakaliyordu. Sonuc 1234 degil 234 olarak hesaplaniyor, arac yine
+# basarili donuyordu. Sinir kontrolleri, sayinin ORTASINDAN eslesme
+# baslamasini imkansiz kilar.
 _TUTAR_DESENI = re.compile(
-    r"(\d{1,3}(?:\.\d{3})*(?:,\d+)?)\s*(?:TL|₺|Türk Lirası)", re.IGNORECASE
+    r"(?<![\d.,])"
+    r"(\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:,\d+)?)"
+    r"(?!\d)"
+    r"\s*(?:TL|₺|Türk Lirası)",
+    re.IGNORECASE,
 )
-_ORAN_DESENI = re.compile(r"%\s*(\d{1,2}(?:[.,]\d+)?)")
+
+# "%1,99" kadar "yuzde 2,79" da kabul edilir - kullanicilar yuzde isaretini
+# her zaman yazmaz (gercek /chat denemesinde bulundu).
+_ORAN_DESENI = re.compile(r"(?:%|y[üu]zde\b)\s*(\d{1,2}(?:[.,]\d+)?)", re.IGNORECASE)
+
 _VADE_AY_DESENI = re.compile(r"(\d{1,3})\s*ay\b", re.IGNORECASE)
 _VADE_YIL_DESENI = re.compile(r"(\d{1,2})\s*y[ıi]l\b", re.IGNORECASE)
 
@@ -46,12 +80,12 @@ def hesaplama_parametrelerini_cikar(soru: str) -> dict:
     anapara = None
     m = _TUTAR_DESENI.search(soru)
     if m:
-        anapara = _sayiya_cevir(m.group(1))
+        anapara = _tutari_sayiya_cevir(m.group(1))
 
     aylik_oran_percent = None
     m = _ORAN_DESENI.search(soru)
     if m:
-        aylik_oran_percent = _sayiya_cevir(m.group(1))
+        aylik_oran_percent = _orani_sayiya_cevir(m.group(1))
 
     vade_ay = None
     m = _VADE_AY_DESENI.search(soru)

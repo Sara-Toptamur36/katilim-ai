@@ -294,6 +294,29 @@ yani skor eşiği tek başına yanlış pozitif üretirdi.
 Eşik tahminle değil ölçümle seçildi; yöntem, kalibrasyon ve sonuçlar:
 [`docs/rag_tasarim_ve_olcum.md`](docs/rag_tasarim_ve_olcum.md)
 
+**7. Kapsam dışı veri gizlenmez, ayrıldığı kanıtlanır.**
+Sistemin katılım bankacılığı ile geleneksel bankacılığı ayırt edebildiğini
+*ölçebilmek* için geleneksel bankacılık ifadelerinden bir karşı-örnek seti
+tutulur. Bu ifadeler **yalnızca kapsam sınıflandırması ve Scope Guard ölçümü**
+amacıyla kullanılır; üretim kampanya veritabanına ve RAG indeksine **dâhil
+edilmez**. İfadeler elle yazılmıştır — hiçbiri gerçek bir bankadan
+kopyalanmamış, hiçbiri gerçek bir bankaya atfedilmemiştir
+([`tests/veri/kapsam_disi/`](tests/veri/kapsam_disi/)).
+
+Bu bir iddia olarak bırakılmaz. Ayrımı, her push'ta çalışan bir test
+doğrular — karşı-örnek ifadelerinin `scraper/raw_data` ve `gold_dataset`
+içinde geçmediğini tarar:
+
+```
+tests/test_karsi_ornekler.py::test_karsi_ornekler_veritabanina_girmemis
+```
+
+Set aynı zamanda bir **ölçüm aracıdır**: 24 geleneksel bankacılık ifadesi
+yakalanmalı (hassasiyet), 10 meşru katılım ifadesi yakalanmamalıdır
+(özgüllük). Tek yön ölçülseydi "her cümleyi işaretle" diyen bir kontrol de
+tam not alırdı. Güncel sonuç: **24/24 ve 10/10**, bir bilinen sınırlama
+belgeli. Ayrıntı: [`docs/kapsam_ve_veri_ayrimi.md`](docs/kapsam_ve_veri_ayrimi.md)
+
 ### Henüz kurulmayanlar (dürüstlük notu)
 
 Aşağıdakiler hedef mimaride yer alır ancak **bu depoda henüz tamamlanmamıştır**;

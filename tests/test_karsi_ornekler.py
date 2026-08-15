@@ -30,7 +30,13 @@ from terminology.tutarlilik_kontrolu import (
     terminoloji_tutarliligini_kontrol_et,
 )
 
-VERI_YOLU = Path(__file__).parent / "veri" / "gelenek_bankacilik_karsi_ornekleri.json"
+# Klasor adi bilerek kendini anlatiyor: bu veri URUN verisi DEGILDIR,
+# yalnizca kapsam olcumu icin vardir. Ayrimin kaniti asagidaki
+# test_karsi_ornekler_veritabanina_girmemis testidir (bkz.
+# docs/kapsam_ve_veri_ayrimi.md).
+VERI_YOLU = (
+    Path(__file__).parent / "veri" / "kapsam_disi" / "gelenek_bankacilik_karsi_ornekleri.json"
+)
 
 
 def _veri() -> dict:

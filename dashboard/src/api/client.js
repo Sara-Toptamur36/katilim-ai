@@ -76,6 +76,16 @@ export const chatGonder = async (soru) => {
   return yanit.data;
 };
 
+// GET /rakip-analizi - tum kampanyalari eksen eksen yan yana koyar (Md. 5.7).
+// /karsilastir'dan farki: o TEK kritere gore secilmis id'leri siralar,
+// bu TUM kriterleri tum kampanyalar icin tek tabloda gosterir.
+export const rakipAnaliziGetir = async (kampanyaTuru) => {
+  const yanit = await client.get("/rakip-analizi", {
+    params: kampanyaTuru ? { kampanya_turu: kampanyaTuru } : {},
+  });
+  return yanit.data;
+};
+
 // GET /terminoloji - katilim bankaciligi sozlugu (Md. 5.5).
 // Arayuz eskiden terminolojiMock.js'teki kendi kopyasini kullaniyordu;
 // o kopya gercek sozlukten sapmisti (bkz. api/main.py::terminoloji).

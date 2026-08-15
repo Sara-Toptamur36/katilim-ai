@@ -170,6 +170,47 @@ def test_terminoloji_sozlukle_birebir_ayni_sayida_kavram_doner():
 
 
 # ---------------------------------------------------------------------------
+# /rakip-analizi (Md. 5.7) - tum kriterleri tek tabloda gosterir
+# ---------------------------------------------------------------------------
+
+
+def test_rakip_analizi_kimlik_dogrulama_ister():
+    assert client.get("/rakip-analizi").status_code == 401
+
+
+def test_rakip_analizi_matris_doner():
+    yanit = client.get("/rakip-analizi", headers=GECERLI_BASLIK)
+    assert yanit.status_code == 200
+    veri = yanit.json()
+    for alan in ("eksenler", "satirlar", "kayit_sayisi", "banka_sayisi"):
+        assert alan in veri
+
+
+def test_rakip_analizi_her_satirda_tum_eksenler_var():
+    """Arayuz tabloyu bu anahtarlara gore kuruyor - eksik sutun olmamali."""
+    veri = client.get("/rakip-analizi", headers=GECERLI_BASLIK).json()
+    eksen_adlari = {e["kriter"] for e in veri["eksenler"]}
+    for satir in veri["satirlar"]:
+        assert set(satir["degerler"]) == eksen_adlari
+
+
+def test_rakip_analizi_kaynak_url_tasir():
+    """Her hucre bir kaynaga baglanabilmeli (provenance ilkesi)."""
+    veri = client.get("/rakip-analizi", headers=GECERLI_BASLIK).json()
+    for satir in veri["satirlar"]:
+        assert satir["kaynak_url"]
+
+
+def test_rakip_analizi_tur_suzgeci_calisir():
+    veri = client.get(
+        "/rakip-analizi",
+        params={"kampanya_turu": "Kart Kampanyasi", "yalnizca_aktif": False},
+        headers=GECERLI_BASLIK,
+    ).json()
+    assert veri["kampanya_turu"] == "Kart Kampanyasi"
+
+
+# ---------------------------------------------------------------------------
 # /karsilastir
 # ---------------------------------------------------------------------------
 

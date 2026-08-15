@@ -1,4 +1,4 @@
-"""KatilimAI API - FastAPI uygulamasi.
+﻿"""KatilimAI API - FastAPI uygulamasi.
 
 DURUM: Yedi uc nokta da gercek verilerle calisir. /chat, Ajan
 Orkestratoru uzerinden Intent Detection -> Tool Router -> (SQL /
@@ -48,6 +48,7 @@ from api.schemas import (
     KarsilastirIstek,
     KarsilastirYanit,
     OdemeSatiriYanit,
+    RakipAnaliziYanit,
     TerimKarti,
     TokenYanit,
 )
@@ -61,6 +62,7 @@ from comparison.compare_engine import (
     aciklama_uret,
     karsilastir_bellekte,
     karsilastir_sorgusu,
+    rakip_matrisi,
 )
 from terminology.sozluk import sozluk_yukle
 from terminology.tutarlilik_kontrolu import terminoloji_tutarliligini_kontrol_et
@@ -282,6 +284,45 @@ def terminoloji(kullanici: dict = Depends(token_dogrula)):
         )
         for anahtar, veri in sozluk.items()
     ]
+
+
+@app.get("/rakip-analizi", response_model=RakipAnaliziYanit, tags=["Karsilastirma"])
+def rakip_analizi(
+    kampanya_turu: str | None = Query(
+        None, description="Kampanya turune gore suz (bos birakilirsa tum turler)"
+    ),
+    yalnizca_aktif: bool = Query(True, description="Yalnizca ACTIVE kampanyalar"),
+    kullanici: dict = Depends(token_dogrula),
+):
+    """Bir kampanya turundeki tum kampanyalari eksen eksen yan yana koyar.
+
+    /karsilastir TEK bir kritere gore siralar ve secilmis id'ler ister;
+    bu uc nokta TUM kriterleri tek tabloda, tum kampanyalar icin gosterir
+    (Sartname Md. 5.7 - "farkli katilim bankalarina ait urunlerin
+    karsilastirilabilir hale getirilmesi").
+
+    Kampanyalar tek satira SIKISTIRILMAZ: bir bankanin ayni turde iki
+    kampanyasi varsa iki satir doner. Gerekcesi
+    comparison/compare_engine.py::rakip_matrisi docstring'inde.
+    """
+    baslangic = time.time()
+
+    if GERCEK_VERI_AKTIF:
+        oturum = next(oturum_al())
+        try:
+            kayitlar = kampanyalari_getir_db(oturum, kampanya_turu=kampanya_turu)
+        finally:
+            oturum.close()
+    else:
+        kayitlar = kampanyalari_getir(kampanya_turu=kampanya_turu)
+
+    sonuc = rakip_matrisi(
+        kayitlar, kampanya_turu=kampanya_turu, yalnizca_aktif=yalnizca_aktif
+    )
+
+    latency = int((time.time() - baslangic) * 1000)
+    _audit_kaydet(kullanici, "rakip-analizi", latency, cagrilan_arac="sql")
+    return RakipAnaliziYanit(**sonuc)
 
 
 @app.post("/karsilastir", response_model=KarsilastirYanit, tags=["Karsilastirma"])

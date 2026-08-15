@@ -337,6 +337,152 @@ def _en_avantajli_bellekte(
     }
 
 
+# ---------------------------------------------------------------------------
+# Rakip analizi matrisi (Sartname Md. 5.7 - "farkli katilim bankalarina ait
+# urunlerin karsilastirilabilir hale getirilmesi")
+# ---------------------------------------------------------------------------
+
+# Matriste gosterilen eksenler. en_avantajli (kompozit) BURADA YOK - o bir
+# eksen degil, eksenlerin sonucudur; matriste her eksen ayri sutundur.
+_MATRIS_EKSENLERI = _AVANTAJLI_ALT_KRITERLER + ("en_yuksek_tutar",)
+
+# Odul ekseni ozel: odul_miktari farkli BIRIMLERDE olabilir (TL, Mil, Gram,
+# Worldpuan, ParafPara, Bankkart Lira - altin veri setinde altisi da var).
+# 10.000 Mil ile 5.000 TL'yi tek eksende siralamak anlamsizdir; bu yuzden
+# odul ekseninde lider YALNIZCA tum olculebilir kayitlar ayni birimdeyse
+# secilir (bkz. _odul_birimi_tekil_mi).
+_BIRIM_BAGIMLI_EKSENLER = {"en_yuksek_odul"}
+
+
+def _odul_birimi_tekil_mi(kayitlar: Sequence[CampaignRecord]) -> tuple[bool, set[str]]:
+    """Odul miktari OLAN kayitlarin hepsi ayni birimde mi?
+
+    Doner: (tekil_mi, gorulen_birimler). Birim alani bos olan kayitlar
+    "bilinmeyen birim" sayilir ve tekilligi bozar - cunku 5.000'in TL mi
+    Worldpuan mi oldugunu bilmeden siralamak, bilerek yanlis siralamaktir.
+    """
+    birimler = {
+        (k.odul_birimi or "").strip() or "?"
+        for k in kayitlar
+        if getattr(k, "odul_miktari", None) is not None
+    }
+    return (len(birimler) <= 1, birimler)
+
+
+def rakip_matrisi(
+    kayitlar: Sequence[CampaignRecord],
+    kampanya_turu: str | None = None,
+    yalnizca_aktif: bool = True,
+) -> dict[str, Any]:
+    """Bir kampanya turundeki tum kampanyalari eksen eksen yan yana koyar.
+
+    /karsilastir TEK bir kritere gore siralar; bu fonksiyon TUM kriterleri
+    ayni tabloda gosterir: hangi banka hangi eksende onde, tek bakista
+    gorunur (Sartname Md. 5.7).
+
+    TASARIM KARARI - her kampanya KENDI satirinda kalir, bankalar tek satira
+    SIKISTIRILMAZ. Bir bankanin ayni turde iki kampanyasi varsa iki satir
+    olur. Aksi halde "bu bankanin en dusuk orani X, en uzun vadesi Y" gibi
+    bir satir uretilirdi; X ve Y farkli kampanyalardan geliyorsa ortada
+    OLMAYAN bir urun tarif edilmis olur. Eksik veriyi gizlememe ilkesinin
+    (bkz. modul basligi) ayni mantiktaki uzantisi.
+
+    Doner: {"kampanya_turu", "eksenler", "satirlar", "kayit_sayisi",
+            "banka_sayisi"}
+    """
+    suzulmus = list(kayitlar)
+    if yalnizca_aktif:
+        suzulmus = [k for k in suzulmus if k.durum.value == "ACTIVE"]
+    if kampanya_turu:
+        suzulmus = [k for k in suzulmus if k.kampanya_turu.value == kampanya_turu]
+
+    odul_tekil, odul_birimleri = _odul_birimi_tekil_mi(suzulmus)
+
+    eksenler: list[dict[str, Any]] = []
+    liderler: dict[str, list[int]] = {}
+
+    for eksen_adi in _MATRIS_EKSENLERI:
+        tanim = KRITERLER[eksen_adi]
+        degerliler = [
+            (i, getattr(k, tanim.alan, None)) for i, k in enumerate(suzulmus)
+        ]
+        degerliler = [(i, d) for i, d in degerliler if d is not None]
+
+        eksen: dict[str, Any] = {
+            "kriter": eksen_adi,
+            "alan": tanim.alan,
+            "aciklama": tanim.aciklama,
+            "daha_iyi": tanim.daha_iyi,
+            "olculebilir_kayit": len(degerliler),
+            "lider_deger": None,
+            "durum": "olculdu",
+        }
+
+        if not degerliler:
+            eksen["durum"] = "veri_yok"
+            liderler[eksen_adi] = []
+            eksenler.append(eksen)
+            continue
+
+        if eksen_adi in _BIRIM_BAGIMLI_EKSENLER and not odul_tekil:
+            # Degerler gosterilir ama LIDER SECILMEZ - farkli birimler
+            # arasinda "en yuksek" diye bir sey yoktur.
+            eksen["durum"] = "birim_karisik"
+            eksen["birimler"] = sorted(odul_birimleri)
+            liderler[eksen_adi] = []
+            eksenler.append(eksen)
+            continue
+
+        en_iyi = (
+            min(d for _, d in degerliler)
+            if tanim.yon == "ASC"
+            else max(d for _, d in degerliler)
+        )
+        eksen["lider_deger"] = en_iyi
+        liderler[eksen_adi] = [i for i, d in degerliler if d == en_iyi]
+        eksenler.append(eksen)
+
+    satirlar: list[dict[str, Any]] = []
+    for i, kayit in enumerate(suzulmus):
+        degerler: dict[str, Any] = {}
+        for eksen_adi in _MATRIS_EKSENLERI:
+            tanim = KRITERLER[eksen_adi]
+            deger = getattr(kayit, tanim.alan, None)
+            degerler[eksen_adi] = {
+                "deger": deger,
+                "lider": i in liderler[eksen_adi],
+            }
+        # Odul degerinin birimi olmadan anlami yok - hucreyle birlikte tasinir.
+        degerler["en_yuksek_odul"]["birim"] = kayit.odul_birimi
+
+        satirlar.append(
+            {
+                "id": kayit.id,
+                "banka": kayit.banka,
+                "kampanya_adi": kayit.kampanya_adi,
+                "kaynak_url": kayit.kaynak_url,
+                "confidence": kayit.confidence,
+                "degerler": degerler,
+                "lider_eksen_sayisi": sum(
+                    1 for e in _MATRIS_EKSENLERI if i in liderler[e]
+                ),
+                "eksik_alanlar": eksik_alanlari_isaretle(kayit),
+            }
+        )
+
+    # En cok eksende one cikan ustte; esitlikte banka adina gore - siralama
+    # deterministik olsun diye (ayni girdi hep ayni cikti).
+    satirlar.sort(key=lambda s: (-s["lider_eksen_sayisi"], s["banka"], s["kampanya_adi"]))
+
+    return {
+        "kampanya_turu": kampanya_turu,
+        "eksenler": eksenler,
+        "satirlar": satirlar,
+        "kayit_sayisi": len(satirlar),
+        "banka_sayisi": len({s["banka"] for s in satirlar}),
+    }
+
+
 def _en_avantajli_aciklama_uret(sonuc: dict[str, Any]) -> str:
     """Sartname Ornek Temsili Senaryo-2 formatinda eksen eksen aciklama.
 

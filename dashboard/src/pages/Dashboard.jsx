@@ -5,6 +5,7 @@ import KampanyaTablosu from "../components/KampanyaTablosu";
 import FiltrePaneli from "../components/FiltrePaneli";
 import IstatistikKartlari from "../components/IstatistikKartlari";
 import KarsilastirmaPaneli from "../components/KarsilastirmaPaneli";
+import RakipMatrisi from "../components/RakipMatrisi";
 import TerminolojiSozlugu from "../components/TerminolojiSozlugu";
 
 const { Title } = Typography;
@@ -74,6 +75,10 @@ export default function Dashboard() {
       <Divider />
       <Title level={4}>Kampanya Karsilastir</Title>
       <KarsilastirmaPaneli secilenIdler={secilenIdler} />
+
+      <Divider />
+      <Title level={4}>Rakip Analizi</Title>
+      <RakipMatrisi turler={turler} />
 
       <Divider />
       <Title level={4}>Terminoloji Sozlugu</Title>

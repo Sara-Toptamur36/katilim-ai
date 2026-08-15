@@ -224,6 +224,56 @@ class TerminolojiSorunu(BaseModel):
     onerilen: str
 
 
+class RakipEkseni(BaseModel):
+    """Rakip analizi matrisinin BIR sutunu (Md. 5.7 kriterlerinden biri).
+
+    `durum` uc degerden biri:
+      olculdu       - lider secildi, `lider_deger` dolu
+      veri_yok      - hicbir kampanyada bu alan yok
+      birim_karisik - degerler var ama farkli BIRIMLERDE (yalnizca odul
+                      ekseni; 10.000 Mil ile 5.000 TL siralanamaz), bu
+                      yuzden lider SECILMEZ
+    """
+
+    kriter: str
+    alan: str | None = None
+    aciklama: str
+    daha_iyi: str
+    olculebilir_kayit: int
+    lider_deger: float | None = None
+    durum: str
+    birimler: list[str] | None = None
+
+
+class RakipHucresi(BaseModel):
+    deger: float | None = None
+    lider: bool = False
+    birim: str | None = Field(None, description="Yalnizca odul ekseninde dolu")
+
+
+class RakipSatiri(BaseModel):
+    """Matriste BIR kampanya. Bankalar tek satira sikistirilmaz - bir
+    bankanin ayni turde iki kampanyasi varsa iki satir olur (bkz.
+    comparison/compare_engine.py::rakip_matrisi)."""
+
+    id: int | None = None
+    banka: str
+    kampanya_adi: str
+    kaynak_url: str
+    confidence: float | None = None
+    degerler: dict[str, RakipHucresi]
+    lider_eksen_sayisi: int
+    eksik_alanlar: list[str] = Field(default_factory=list)
+
+
+class RakipAnaliziYanit(BaseModel):
+    kampanya_turu: str | None = None
+    eksenler: list[RakipEkseni]
+    satirlar: list[RakipSatiri]
+    kayit_sayisi: int
+    banka_sayisi: int
+
+
 class TerimKarti(BaseModel):
     """terminology/sozluk.json'daki BIR kavramin arayuze acilan hali
     (Md. 5.5 - katilim bankaciligi terminolojisine uyum).

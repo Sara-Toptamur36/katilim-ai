@@ -122,6 +122,54 @@ def test_olmayan_kampanya_404_doner():
 
 
 # ---------------------------------------------------------------------------
+# /terminoloji (Md. 5.5) - DENETIM BULGUSU: bu uc nokta yokken arayuz
+# terminolojiMock.js'te sozlugun AYRI bir kopyasini tutuyordu ve kopya
+# gercek sozlukten sapmisti. Bu testler tek kaynagi kilitler.
+# ---------------------------------------------------------------------------
+
+
+def test_terminoloji_sozlugu_doner():
+    yanit = client.get("/terminoloji", headers=GECERLI_BASLIK)
+    assert yanit.status_code == 200
+    veri = yanit.json()
+    assert isinstance(veri, list)
+    assert len(veri) > 0
+
+
+def test_terminoloji_kimlik_dogrulama_ister():
+    assert client.get("/terminoloji").status_code == 401
+
+
+def test_terminoloji_kartinda_zorunlu_alanlar_var():
+    """Arayuz (TerminolojiSozlugu.jsx) bu alan adlarina gore kuruldu."""
+    veri = client.get("/terminoloji", headers=GECERLI_BASLIK).json()
+    for kart in veri:
+        for alan in ("anahtar", "standart_terim", "gelenek_karsilik", "aciklama", "kaynak"):
+            assert kart.get(alan), f"{kart.get('anahtar')} kaydinda '{alan}' bos"
+
+
+def test_terminoloji_sartname_kavramlarini_icerir():
+    """Sartname Md. 5.5'in ornek kavram tablosundaki bes kavram."""
+    veri = client.get("/terminoloji", headers=GECERLI_BASLIK).json()
+    anahtarlar = {k["anahtar"] for k in veri}
+    assert {
+        "kar_payi_orani",
+        "finansman_maliyeti",
+        "katilim_fonu",
+        "masrafsiz_finansman",
+        "avantajli_finansman",
+    } <= anahtarlar
+
+
+def test_terminoloji_sozlukle_birebir_ayni_sayida_kavram_doner():
+    """Uc nokta sozlugu SUZMEZ - arayuzde eksik kavram gorunmesin."""
+    from terminology.sozluk import sozluk_yukle
+
+    veri = client.get("/terminoloji", headers=GECERLI_BASLIK).json()
+    assert len(veri) == len(sozluk_yukle())
+
+
+# ---------------------------------------------------------------------------
 # /karsilastir
 # ---------------------------------------------------------------------------
 

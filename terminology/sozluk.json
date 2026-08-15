@@ -2,6 +2,8 @@
   "kar_payi_orani": {
     "standart_terim": "Kâr Payı Oranı",
     "gelenek_karsilik": "Faiz Oranı",
+    "aciklama": "Katılım bankacılığında finansman işlemine konu olan mal veya hizmet üzerinden oluşan kazanç oranı. Faizin aksine bir borç bedeli değil, alım-satım ya da ortaklık işleminden doğan kâr payıdır.",
+    "kaynak": "TEKNOFEST 2026 TYDA Şartnamesi Md. 5.5 — örnek kavram tablosu",
     "sema_alani": ["kar_payi_orani_percent", "kar_payi_orani_decimal"],
     "varyantlar": [
       "kâr payı oranı",
@@ -17,6 +19,8 @@
   "finansman_maliyeti": {
     "standart_terim": "Finansman Maliyeti",
     "gelenek_karsilik": "Kredi Maliyeti (Faiz + Masraflar Toplamı)",
+    "aciklama": "Kullandırılan finansman kapsamında müşterinin katlandığı toplam maliyet: kâr payı ile tahsis ücreti/masrafların toplamı.",
+    "kaynak": "TEKNOFEST 2026 TYDA Şartnamesi Md. 5.5 — örnek kavram tablosu",
     "sema_alani": ["kar_payi_orani_percent", "tahsis_ucreti", "masraf_durumu"],
     "varyantlar": [
       "finansman maliyeti",
@@ -28,6 +32,8 @@
   "katilim_fonu": {
     "standart_terim": "Katılım Fonu",
     "gelenek_karsilik": "Vadeli Mevduat",
+    "aciklama": "Katılım bankacılığı prensiplerine uygun olarak değerlendirilen, fon sahipleri ile banka arasında kâr-zarar paylaşımına dayanan hesap türü. Mevduattan farkı: getirisi önceden taahhüt edilmez.",
+    "kaynak": "TEKNOFEST 2026 TYDA Şartnamesi Md. 5.5 — örnek kavram tablosu",
     "sema_alani": ["kampanya_turu"],
     "sema_notu": "Cozuldu: extraction/regex_extractor.py KAMPANYA_TURU_ANAHTAR_KELIMELERI, 'katilim fonu' ifadesini YATIRIM (Yatirim Urunu Kampanyasi) enum degerine esliyor.",
     "varyantlar": [
@@ -42,6 +48,8 @@
   "masrafsiz_finansman": {
     "standart_terim": "Masrafsız Finansman",
     "gelenek_karsilik": "Masrafsız Kredi",
+    "aciklama": "Finansman işlemi kapsamında tahsis ücreti, dosya masrafı veya benzeri ek maliyetlerin uygulanmadığı finansman türü.",
+    "kaynak": "TEKNOFEST 2026 TYDA Şartnamesi Md. 5.5 — örnek kavram tablosu",
     "sema_alani": ["masraf_durumu"],
     "varyantlar": [
       "masrafsiz finansman",
@@ -58,6 +66,8 @@
   "avantajli_finansman": {
     "standart_terim": "Avantajlı Finansman",
     "gelenek_karsilik": "İndirimli Kredi",
+    "aciklama": "Standart finansman koşullarına göre daha uygun maliyet, kâr payı oranı veya ek fayda sunan kampanyalı finansman ürünü.",
+    "kaynak": "TEKNOFEST 2026 TYDA Şartnamesi Md. 5.5 — örnek kavram tablosu",
     "sema_alani": ["kampanya_avantaji"],
     "varyantlar": [
       "avantajli finansman",
@@ -71,6 +81,8 @@
   "vade_suresi": {
     "standart_terim": "Vade Süresi",
     "gelenek_karsilik": "Kredi Vadesi",
+    "aciklama": "Finansmanın ay cinsinden geri ödeme süresi.",
+    "kaynak": "TEKNOFEST 2026 TYDA Şartnamesi Md. 5.3 — çıkarılması beklenen temel bilgiler",
     "sema_alani": ["vade_ay"],
     "varyantlar": [
       "vade suresi",
@@ -82,6 +94,8 @@
   "odul_miktari": {
     "standart_terim": "Ödül Miktarı",
     "gelenek_karsilik": "Kampanya Hediyesi",
+    "aciklama": "Kampanya kapsamında verilen ödülün miktarı. Birimi TL olabileceği gibi Mil, Gram, Puan gibi para dışı birimler de olabilir — bu yüzden miktar ve birim ayrı alanlarda tutulur.",
+    "kaynak": "TEKNOFEST 2026 TYDA Şartnamesi Md. 5.3 — çıkarılması beklenen temel bilgiler",
     "sema_alani": ["odul_miktari", "odul_birimi"],
     "varyantlar": [
       "odul miktari",
@@ -98,6 +112,8 @@
   "kesirli_kar_paylasimi": {
     "standart_terim": "Kesirli Kâr Paylaşım Oranı",
     "gelenek_karsilik": "— (katılım bankacılığına özgü, doğrudan geleneksel karşılığı yok)",
+    "aciklama": "Kâr payının müşteri ve banka arasında hangi oranda bölüşüleceğini gösteren ifade (örnek: 98/2). Bir getiri oranı DEĞİLDİR; paylaşım anahtarıdır.",
+    "kaynak": "Ön Değerlendirme Raporu Bölüm 3 (Vakıf Katılım örneği)",
     "sema_alani": [],
     "sema_notu": "Ham deger (musteri_payi/banka_payi) standart yuzdeye otomatik cevrilmez - anlami baglama gore degisir, yorumlama Sprint 2'de NER/LLM asamasina birakilir.",
     "varyantlar": [
@@ -110,6 +126,8 @@
   "sifir_oran_ifadesi": {
     "standart_terim": "Niteliksel Sıfır Oran İfadesi",
     "gelenek_karsilik": "Faizsiz Kredi",
+    "aciklama": "Sayı içermeden sıfır maliyeti anlatan ifadeler (\"kâr payı yok\", \"vade farksız\"). Bunlar bilginin EKSİK olduğu anlamına gelmez; oranın sıfır olduğu anlamına gelir.",
+    "kaynak": "Ön Değerlendirme Raporu Bölüm 3 (Albaraka Türk örneği)",
     "sema_alani": ["kar_payi_orani_percent"],
     "sema_notu": "Bulundugunda kar_payi_orani_percent = 0.0 olarak yorumlanir (Md. 5.2 - niteliksel ifade katmani); NULL/bulunamadi ile karistirilmaz.",
     "varyantlar": [
@@ -125,6 +143,8 @@
   "odemesiz_donem": {
     "standart_terim": "Ödemesiz Dönem",
     "gelenek_karsilik": "Grace Period (Ödemesiz Taksit)",
+    "aciklama": "Finansman kullandırıldıktan sonra ilk taksitin ertelendiği süre.",
+    "kaynak": "Altın Veri Seti gözlemi (KT-003, TF-001)",
     "sema_alani": ["erteleme_suresi_ay"],
     "sema_notu": "Cozuldu: api/schemas.py CampaignRecord'a erteleme_suresi_ay alani eklendi (aciklamasi: 'Odemesiz donem'). Uc cikarim motoru da (regex/NER/LLM) bu alani doldurur.",
     "varyantlar": [
@@ -137,6 +157,8 @@
   "dar_makas": {
     "standart_terim": "Dar Makas (Döviz/Emtia Spreadi)",
     "gelenek_karsilik": "— (döviz piyasasında da aynı terim kullanılır, katılım bankacılığına özgü bir çeviri farkı yok)",
+    "aciklama": "Döviz veya kıymetli maden alış-satış fiyatı arasındaki farkın darlığı. Sayısal bir yüzde taşısa da kâr payı oranı değildir.",
+    "kaynak": "Altın Veri Seti gözlemi (HF-003, HF-005)",
     "sema_alani": [],
     "sema_notu": "DIKKAT: bu kavram sayisal bir deger tasiyabilir (ornek: '%0,1 dar makas') ama kar_payi_orani ILE KARISTIRILMAMALI - doviz/altin/gumus alim-satim spreadi, kar payi orani degildir. Regex yazilirken kar_payi_orani_bul'un bu ifadeleri yanlislikla yakalamadigindan emin olunmali.",
     "varyantlar": [
@@ -149,6 +171,8 @@
   "nakit_iade": {
     "standart_terim": "Nakit İade",
     "gelenek_karsilik": "Cashback",
+    "aciklama": "Yapılan harcamanın bir kısmının müşteriye geri ödenmesi. Genelde harcamanın yüzdesi + bir tavan tutar biçiminde ifade edilir.",
+    "kaynak": "Altın Veri Seti gözlemi (TEK-001, HF-002)",
     "sema_alani": ["odul_miktari", "odul_birimi"],
     "sema_notu": "odul_miktari (TL) + odul_birimi='TL' olarak yorumlanabilir, ama hesaplama yontemi farkli: genelde harcamanin yuzdesi + bir tavan tutar seklinde ifade edilir (odul_miktari gibi sabit bir hediye degil).",
     "varyantlar": [
@@ -156,5 +180,243 @@
       "nakit geri odeme"
     ],
     "ornek_kaynak": "Turkiye Emlak Katilim / Hayat Finans (Altin Veri Seti TEK-001, HF-002)"
+  },
+  "murabaha": {
+    "standart_terim": "Murâbaha (Kâr Payı Eklenmiş Vadeli Satış)",
+    "gelenek_karsilik": "Taksitli Nakit Kredi",
+    "aciklama": "Bankanın müşteri adına malı peşin satın alıp, üzerine kâr payı ekleyerek vadeli olarak müşteriye satması. Katılım bankalarında bireysel finansmanın en yaygın yöntemidir. Kredide para ödünç verilir; murâbahada mal alınıp satılır.",
+    "kaynak": "TKBB Faizsiz Bankacılık Standartları — sözleşme türleri",
+    "sema_alani": ["kampanya_turu", "kar_payi_orani_percent"],
+    "sema_notu": "Sozlesme turu su an ayri bir sema alani olarak cikarilmiyor; kampanya metinlerinde nadiren acikca gecer. Sozlukte kavramsal karsilik olarak tutulur.",
+    "varyantlar": [
+      "murabaha",
+      "murabaha finansmani",
+      "vadeli satis finansmani",
+      "pesin alim vadeli satis"
+    ]
+  },
+  "icare": {
+    "standart_terim": "İcâre (Kiralama)",
+    "gelenek_karsilik": "Finansal Kiralama (Leasing)",
+    "aciklama": "Bir varlığın mülkiyeti bankada kalarak kullanım hakkının kira bedeli karşılığında müşteriye devredilmesi. Sonunda mülkiyet devri öngörülüyorsa \"icâre müntehiye bittemlîk\" olarak adlandırılır.",
+    "kaynak": "TKBB Faizsiz Bankacılık Standartları — sözleşme türleri",
+    "sema_alani": ["kampanya_turu"],
+    "varyantlar": [
+      "icare",
+      "icare sozlesmesi",
+      "kiralama finansmani",
+      "finansal kiralama"
+    ]
+  },
+  "musaraka": {
+    "standart_terim": "Müşâreke (Kâr-Zarar Ortaklığı)",
+    "gelenek_karsilik": "— (geleneksel bankacılıkta doğrudan karşılığı yoktur; en yakını ortaklık/sermaye yatırımıdır)",
+    "aciklama": "Banka ile müşterinin bir işe birlikte sermaye koyup kârı önceden belirlenen oranda paylaştığı, zarara ise sermayeleri oranında katlandığı ortaklık. Zararın da paylaşılması, kredi ilişkisinden temel farkıdır.",
+    "kaynak": "TKBB Faizsiz Bankacılık Standartları — sözleşme türleri",
+    "sema_alani": [],
+    "varyantlar": [
+      "musareke",
+      "musaraka",
+      "sermaye ortakligi",
+      "kar zarar ortakligi"
+    ]
+  },
+  "mudaraba": {
+    "standart_terim": "Mudârebe (Emek-Sermaye Ortaklığı)",
+    "gelenek_karsilik": "— (geleneksel bankacılıkta doğrudan karşılığı yoktur)",
+    "aciklama": "Bir tarafın sermaye, diğer tarafın emek/işletmecilik koyduğu ortaklık. Katılım fonu toplama işleyişinin dayandığı esastır: fon sahibi sermayedar, banka işletmecidir.",
+    "kaynak": "TKBB Faizsiz Bankacılık Standartları — sözleşme türleri",
+    "sema_alani": [],
+    "varyantlar": [
+      "mudarebe",
+      "mudaraba",
+      "emek sermaye ortakligi"
+    ]
+  },
+  "selem": {
+    "standart_terim": "Selem (Peşin Ödemeli Vadeli Teslim)",
+    "gelenek_karsilik": "Peşin Ödemeli Ticari Kredi",
+    "aciklama": "Bedelin peşin ödenip malın ileri bir tarihte teslim edildiği satış. Tarım ve üretim finansmanında kullanılır.",
+    "kaynak": "TKBB Faizsiz Bankacılık Standartları — sözleşme türleri",
+    "sema_alani": [],
+    "varyantlar": [
+      "selem",
+      "selem sozlesmesi",
+      "pesin odemeli vadeli teslim"
+    ]
+  },
+  "istisna": {
+    "standart_terim": "İstisnâ (Eser/İmalat Sözleşmesi)",
+    "gelenek_karsilik": "Proje / Yapı Kredisi",
+    "aciklama": "Henüz var olmayan bir şeyin (bina, gemi, makine) belirli özelliklerde imal ettirilmesi sözleşmesi. Konut ve altyapı projelerinin finansmanında kullanılır.",
+    "kaynak": "TKBB Faizsiz Bankacılık Standartları — sözleşme türleri",
+    "sema_alani": [],
+    "varyantlar": [
+      "istisna",
+      "istisna sozlesmesi",
+      "eser sozlesmesi",
+      "imalat finansmani"
+    ]
+  },
+  "karz_i_hasen": {
+    "standart_terim": "Karz-ı Hasen (Güzel Ödünç)",
+    "gelenek_karsilik": "Faizsiz Borç Verme",
+    "aciklama": "Anaparadan fazlası talep edilmeksizin verilen ödünç. Banka hiçbir kâr payı almaz; yalnızca gerçek işlem masrafı yansıtılabilir.",
+    "kaynak": "TKBB Faizsiz Bankacılık Standartları — sözleşme türleri",
+    "sema_alani": [],
+    "varyantlar": [
+      "karz-i hasen",
+      "karz i hasen",
+      "guzel odunc"
+    ]
+  },
+  "tekaful": {
+    "standart_terim": "Tekâfül (Katılım Sigortası)",
+    "gelenek_karsilik": "Sigorta",
+    "aciklama": "Katılımcıların risk paylaşımı esasıyla ortak bir havuza katkı yaptığı sigorta modeli. Prim, sigortacıya satılan bir risk bedeli değil, havuza yapılan bağış niteliğindedir.",
+    "kaynak": "TKBB Faizsiz Bankacılık Standartları — katılım sigortacılığı",
+    "sema_alani": [],
+    "varyantlar": [
+      "tekaful",
+      "katilim sigortasi",
+      "tekafül sigortasi"
+    ]
+  },
+  "kira_sertifikasi": {
+    "standart_terim": "Kira Sertifikası (Sukuk)",
+    "gelenek_karsilik": "Tahvil / Bono",
+    "aciklama": "Bir varlığın mülkiyetine veya gelirine ortaklık veren menkul kıymet. Tahvilden farkı: borç senedi değil, varlığa dayalı ortaklık belgesidir.",
+    "kaynak": "TKBB Faizsiz Bankacılık Standartları; SPK kira sertifikası düzenlemesi",
+    "sema_alani": ["kampanya_turu"],
+    "sema_notu": "Yatirim Urunu Kampanyasi turunde gecebilir; su an ayri bir sema alani yoktur.",
+    "varyantlar": [
+      "kira sertifikasi",
+      "sukuk",
+      "varliga dayali menkul kiymet"
+    ]
+  },
+  "kar_zarar_katilma": {
+    "standart_terim": "Kâr-Zarar Katılma Esası",
+    "gelenek_karsilik": "Garantili Faiz Getirisi",
+    "aciklama": "Hesap sahibinin getirisinin önceden taahhüt edilmediği, bankanın elde ettiği kâra (ve zarara) katılma ilkesi. Katılım fonunun İŞLEYİŞ ESASIDIR; katilim_fonu ise bu esasla çalışan HESAP TÜRÜDÜR.",
+    "kaynak": "TKBB Faizsiz Bankacılık Standartları; BDDK katılım bankacılığı mevzuatı",
+    "sema_alani": [],
+    "sema_notu": "katilim_fonu ile bilerek AYRI tutuldu: biri urun (hesap), digeri o urunun dayandigi ilke. Varyantlarda 'katilma hesabi' KULLANILMADI - o ifade katilim_fonu'na aittir, cakisma yaratmasin diye.",
+    "varyantlar": [
+      "kar zarar katilma",
+      "kar zarara katilim",
+      "getiri taahhut edilmez"
+    ]
+  },
+  "ozel_cari_hesap": {
+    "standart_terim": "Özel Cari Hesap",
+    "gelenek_karsilik": "Vadesiz Mevduat Hesabı",
+    "aciklama": "İstenildiği anda çekilebilen, kâr payı ödenmeyen hesap. Bankaya emanet niteliğindedir, kâr-zarara katılmaz.",
+    "kaynak": "BDDK katılım bankacılığı mevzuatı — hesap türleri",
+    "sema_alani": [],
+    "varyantlar": [
+      "ozel cari hesap",
+      "cari hesap",
+      "vadesiz katilim hesabi"
+    ]
+  },
+  "vade_farki": {
+    "standart_terim": "Vade Farkı",
+    "gelenek_karsilik": "Faiz Tutarı",
+    "aciklama": "Peşin fiyat ile vadeli fiyat arasındaki fark. Kampanyalarda \"vade farksız\" ifadesi bu farkın sıfır olduğunu anlatır.",
+    "kaynak": "TKBB Faizsiz Bankacılık Standartları; Altın Veri Seti gözlemi",
+    "sema_alani": ["kar_payi_orani_percent"],
+    "sema_notu": "'vade farksiz' ifadesi sifir_oran_ifadesi kavramina aittir (kar_payi_orani_percent = 0.0). Bu kavram farkin KENDISINI adlandirir.",
+    "varyantlar": [
+      "vade farki",
+      "vadeli fiyat farki",
+      "pesin vadeli fiyat farki"
+    ]
+  },
+  "pesin_fiyat": {
+    "standart_terim": "Peşin Fiyat (Mal Bedeli)",
+    "gelenek_karsilik": "Anapara",
+    "aciklama": "Finansmana konu malın kâr payı eklenmeden önceki bedeli. Geleneksel bankacılıktaki anaparanın karşılığıdır, ancak burada ödünç verilen para değil satın alınan malın fiyatıdır.",
+    "kaynak": "TKBB Faizsiz Bankacılık Standartları — murâbaha işleyişi",
+    "sema_alani": ["finansman_tutari"],
+    "varyantlar": [
+      "pesin fiyat",
+      "mal bedeli",
+      "pesin bedel"
+    ]
+  },
+  "tahsis_ucreti": {
+    "standart_terim": "Tahsis Ücreti",
+    "gelenek_karsilik": "Kredi Tahsis Ücreti / Dosya Masrafı",
+    "aciklama": "Finansmanın kullandırılması sırasında alınan tek seferlik işlem ücreti. Kâr payından ayrıdır ve finansman maliyetine dahildir.",
+    "kaynak": "BDDK ücret ve masraf düzenlemeleri; Altın Veri Seti gözlemi",
+    "sema_alani": ["tahsis_ucreti", "masraf_durumu"],
+    "varyantlar": [
+      "tahsis ucreti",
+      "tahsis bedeli",
+      "islem ucreti"
+    ]
+  },
+  "erken_odeme_indirimi": {
+    "standart_terim": "Erken Ödeme İndirimi",
+    "gelenek_karsilik": "Erken Kapama Komisyonu",
+    "aciklama": "Borcun vadesinden önce kapatılması hâlinde kalan kâr payından yapılan indirim. Geleneksel bankacılıkta bu durum genellikle müşteriden CEZA alınmasıyla sonuçlanır; katılım bankacılığında ise müşteri lehine indirim uygulanır. Kavramın yönü terstir.",
+    "kaynak": "TKBB Faizsiz Bankacılık Standartları; BDDK tüketici düzenlemeleri",
+    "sema_alani": [],
+    "varyantlar": [
+      "erken odeme indirimi",
+      "erken kapama indirimi",
+      "pesin kapatma indirimi"
+    ]
+  },
+  "gecikme_bedeli": {
+    "standart_terim": "Gecikme Bedeli (Bağış Yükümlülüğü)",
+    "gelenek_karsilik": "Gecikme Faizi",
+    "aciklama": "Taksitin geciktirilmesi hâlinde tahsil edilen tutar. Katılım bankacılığında bu tutar bankaya gelir yazılmaz, hayır kurumlarına aktarılır — geciktirmeyi caydırma amaçlıdır.",
+    "kaynak": "TKBB Faizsiz Bankacılık Standartları — gecikme uygulaması",
+    "sema_alani": [],
+    "varyantlar": [
+      "gecikme bedeli",
+      "gecikme cezasi",
+      "temerrut bedeli"
+    ]
+  },
+  "danisma_kurulu": {
+    "standart_terim": "Danışma Kurulu",
+    "gelenek_karsilik": "— (geleneksel bankacılıkta karşılığı yoktur; en yakını iç denetim/uyum birimidir)",
+    "aciklama": "Ürün ve işlemlerin faizsiz bankacılık standartlarına uygunluğunu denetleyen kurul. Bir ürünün \"katılım bankacılığına uygun\" sayılması bu kurulun onayına bağlıdır.",
+    "kaynak": "TKBB Merkezî Danışma Kurulu; BDDK katılım bankacılığı mevzuatı",
+    "sema_alani": [],
+    "varyantlar": [
+      "danisma kurulu",
+      "merkezi danisma kurulu",
+      "faizsiz bankacilik standartlari"
+    ]
+  },
+  "finansman_tutari": {
+    "standart_terim": "Finansman Tutarı",
+    "gelenek_karsilik": "Kredi Tutarı",
+    "aciklama": "Müşteriye kullandırılan finansmanın tutarı. Kampanya metinlerinde çoğu zaman bir üst limit (\"500.000 TL'ye kadar\") veya aralık (\"100.000 - 750.000 TL arası\") olarak ifade edilir.",
+    "kaynak": "TEKNOFEST 2026 TYDA Şartnamesi Md. 5.3 — çıkarılması beklenen temel bilgiler",
+    "sema_alani": ["finansman_tutari"],
+    "sema_notu": "Kampanya metninde gecen her TL tutari finansman tutari DEGILDIR - ayni cumlede 'harcama', 'iade', 'odul', 'puan' gecen tutarlar bu alana yazilmaz (bkz. extraction/regex_extractor.py bağlam dışlama kelimeleri).",
+    "varyantlar": [
+      "finansman tutari",
+      "finansman limiti",
+      "kullandirilacak tutar"
+    ]
+  },
+  "hedef_kitle": {
+    "standart_terim": "Hedef Kitle",
+    "gelenek_karsilik": "Müşteri Segmenti",
+    "aciklama": "Kampanyanın kimlere açık olduğu (yeni müşteri, emekli, esnaf, KOBİ, çalışan vb.). Kampanya avantajının kime uygulanacağını belirlediği için karşılaştırmada belirleyicidir.",
+    "kaynak": "TEKNOFEST 2026 TYDA Şartnamesi Md. 5.3 — çıkarılması beklenen temel bilgiler",
+    "sema_alani": ["hedef_kitle"],
+    "varyantlar": [
+      "hedef kitle",
+      "musteri segmenti",
+      "yeni musteri",
+      "kime yonelik"
+    ]
   }
 }

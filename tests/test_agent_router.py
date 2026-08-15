@@ -63,6 +63,42 @@ def test_sozluk_araci_alakasiz_terimde_basarisiz_doner():
     assert sonuc["basarili"] is False
 
 
+def test_sozluk_araci_gelenek_terimle_sorulunca_karsiligi_ogretir():
+    """TERS ARAMA (Md. 5.5). Onceden bu soru "'faiz orani' terimini
+    sozlugumde bulamadim" cevabini aliyordu - kullanicinin bildigi terim
+    genelde gelenek terimdir, sistemin susmasi degil ceviriyi ogretmesi
+    beklenir."""
+    sonuc = sozluk_aracini_cagir("Faiz orani nedir?")
+    assert sonuc["basarili"] is True
+    assert sonuc["veri"]["yon"] == "ters"
+    assert "Kâr Payı Oranı" in sonuc["cevap"]
+    assert "geleneksel bankacilik terimidir" in sonuc["cevap"]
+
+
+def test_sozluk_araci_ters_arama_mevduati_katilim_fonuna_cevirir():
+    sonuc = sozluk_aracini_cagir("Vadeli mevduat ne demek?")
+    assert sonuc["basarili"] is True
+    assert sonuc["veri"]["anahtar"] == "katilim_fonu"
+    assert "Katılım Fonu" in sonuc["cevap"]
+
+
+def test_sozluk_araci_ileri_arama_ters_aramaya_gore_onceliklidir():
+    """Katilim terimi dogrudan eslesiyorsa ters aramaya hic bakilmaz -
+    yon 'ileri' kalmali."""
+    sonuc = sozluk_aracini_cagir("Katilim fonu nedir?")
+    assert sonuc["basarili"] is True
+    assert sonuc["veri"]["yon"] == "ileri"
+
+
+def test_sozluk_yaniti_tanim_ve_kaynak_icerir():
+    """Juri 'bu tanim nereden geliyor?' diye sorabilir - kaynak
+    sozlukte zaten var, yanitta gosterilir."""
+    sonuc = sozluk_aracini_cagir("Murabaha nedir?")
+    assert sonuc["basarili"] is True
+    assert "Kaynak:" in sonuc["cevap"]
+    assert "TKBB" in sonuc["cevap"]
+
+
 # ---------------------------------------------------------------------------
 # Comparison (SQL) Tool
 # ---------------------------------------------------------------------------

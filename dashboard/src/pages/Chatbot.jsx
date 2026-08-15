@@ -39,6 +39,14 @@ export default function Chatbot() {
           kaynaklar: yanit.kaynaklar,
           confidence: yanit.confidence,
           fallback: yanit.fallback,
+          // Md. 5.5 - Terminoloji Kontrolu. Bu iki alan backend'de zaten
+          // uretiliyordu ama yalnizca audit blogunda kaliyor, kullaniciya
+          // hic gosterilmiyordu. Uc durumlu okunur (bkz. ChatMesaji.jsx):
+          // true = denetlendi/temiz, false = gelenek terim sizmis,
+          // null = bu arac icin uygulanmaz (RAG/Sozluk).
+          terminolojiTutarli: yanit.audit?.terminoloji_tutarli ?? null,
+          terminolojiSorunlari: yanit.audit?.terminoloji_sorunlari ?? [],
+          cagrilanArac: yanit.audit?.cagrilan_arac,
         },
       ]);
       auditEkle(yanit.audit, soru);

@@ -48,6 +48,7 @@ from api.schemas import (
     KarsilastirIstek,
     KarsilastirYanit,
     OdemeSatiriYanit,
+    TerimKarti,
     TokenYanit,
 )
 from calculator.calculator import (
@@ -61,6 +62,7 @@ from comparison.compare_engine import (
     karsilastir_bellekte,
     karsilastir_sorgusu,
 )
+from terminology.sozluk import sozluk_yukle
 from terminology.tutarlilik_kontrolu import terminoloji_tutarliligini_kontrol_et
 
 app = FastAPI(
@@ -251,6 +253,35 @@ def kampanya_detay(kampanya_id: int, kullanici: dict = Depends(token_dogrula)):
     if kayit is None:
         raise HTTPException(status_code=404, detail="Kampanya bulunamadi")
     return kayit
+
+
+@app.get("/terminoloji", response_model=list[TerimKarti], tags=["Terminoloji"])
+def terminoloji(kullanici: dict = Depends(token_dogrula)):
+    """Katilim bankaciligi terminoloji sozlugu (Sartname Md. 5.5).
+
+    Kaynak terminology/sozluk.json'dir - arayuz artik kendi kopyasini
+    tutmaz. DENETIM BULGUSU: dashboard/src/api/terminolojiMock.js, bu uc
+    nokta olmadigi icin sozlugun AYRI bir kopyasini tasiyordu ve zamanla
+    surukleniyordu (gercek sozlukte 31 kavram varken mock'ta 8 kalmisti,
+    ustelik mock'ta olan `aciklama` alani gercek sozlukte yoktu). Tek
+    kaynak burasidir; mock kaldirildi.
+
+    Kimlik dogrulama, diger okuma uc noktalariyla (bkz. /kampanyalar)
+    tutarli olsun diye istenir - sozluk gizli veri degildir.
+    """
+    sozluk = sozluk_yukle()
+    return [
+        TerimKarti(
+            anahtar=anahtar,
+            standart_terim=veri["standart_terim"],
+            gelenek_karsilik=veri["gelenek_karsilik"],
+            aciklama=veri["aciklama"],
+            kaynak=veri["kaynak"],
+            sema_alani=veri.get("sema_alani", []),
+            ornek_kaynak=veri.get("ornek_kaynak"),
+        )
+        for anahtar, veri in sozluk.items()
+    ]
 
 
 @app.post("/karsilastir", response_model=KarsilastirYanit, tags=["Karsilastirma"])

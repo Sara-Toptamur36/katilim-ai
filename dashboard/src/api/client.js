@@ -76,4 +76,12 @@ export const chatGonder = async (soru) => {
   return yanit.data;
 };
 
+// GET /terminoloji - katilim bankaciligi sozlugu (Md. 5.5).
+// Arayuz eskiden terminolojiMock.js'teki kendi kopyasini kullaniyordu;
+// o kopya gercek sozlukten sapmisti (bkz. api/main.py::terminoloji).
+export const terminolojiGetir = async () => {
+  const yanit = await client.get("/terminoloji");
+  return yanit.data;
+};
+
 export default client;

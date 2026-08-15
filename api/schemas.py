@@ -224,6 +224,25 @@ class TerminolojiSorunu(BaseModel):
     onerilen: str
 
 
+class TerimKarti(BaseModel):
+    """terminology/sozluk.json'daki BIR kavramin arayuze acilan hali
+    (Md. 5.5 - katilim bankaciligi terminolojisine uyum).
+
+    `kaynak` ile `ornek_kaynak` BILEREK ayridir:
+      kaynak       = kavramin TANIM otoritesi (sartname, TKBB, BDDK)
+      ornek_kaynak = bu ifadeyi GERCEK veride nerede gorduğumuz
+    Ikisini tek alanda birlestirmek "tanim" ile "gozlem"i karistirir.
+    """
+
+    anahtar: str
+    standart_terim: str
+    gelenek_karsilik: str
+    aciklama: str
+    kaynak: str
+    sema_alani: list[str] = Field(default_factory=list)
+    ornek_kaynak: str | None = None
+
+
 class AuditBilgisi(BaseModel):
     """Juri Audit Paneli'nin (rapor Bolum 10.2) ihtiyac duydugu TUM alanlar.
 

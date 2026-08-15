@@ -1,0 +1,214 @@
+{
+  "_aciklama": "KARSI-ORNEK (CHALLENGE) SETI - Sartname Md. 5.5 icin olcum verisi. Bu dosya BILEREK tests/veri/ altindadir: icerigi veritabanina, altin veri setine ve RAG indeksine ASLA girmez. Amac, sistemin geleneksel bankacilik ifadelerini katilim urunu gibi ele almadigini ve terimi duzelttigini OLCEBILMEKTIR. Dogrulama icin bkz. tests/test_karsi_ornekler.py.",
+  "_uretim_yontemi": "Ifadeler elle yazildi; hicbiri gercek bir bankanin sayfasindan kopyalanmadi ve hicbiri gercek bir bankaya atfedilmiyor. Bu bilincli bir tercihtir - sartname Md. 5.1 veri setini katilim bankalariyla sinirlar, dolayisiyla geleneksel banka verisi TOPLANMAMISTIR (bkz. Mentor_Bilgilendirme belgesi Bolum 4.3).",
+  "_surum": "1.0 - 14 Agustos 2026",
+
+  "karsi_ornekler": [
+    {
+      "id": "GK-001",
+      "ifade": "Yıllık %4,29 faiz oranıyla 36 ay vadeli ihtiyaç kredisi fırsatı.",
+      "beklenen_kokler": ["faiz", "kredi"],
+      "not": "En temel durum: iki gelenek terim aynı cümlede."
+    },
+    {
+      "id": "GK-002",
+      "ifade": "Vadeli mevduat hesabınıza aylık %3,10 faiz işletilir.",
+      "beklenen_kokler": ["mevduat", "faiz"],
+      "not": "Mevduat + faiz; katılım karşılığı katılım fonu + kâr payı."
+    },
+    {
+      "id": "GK-003",
+      "ifade": "Konut kredisi başvurunuzda dosya masrafı alınmaz.",
+      "beklenen_kokler": ["kredi"],
+      "not": "Masrafsızlık doğru ama ürün adı 'kredi' - finansman olmalı."
+    },
+    {
+      "id": "GK-004",
+      "ifade": "Taşıt kredisinde 48 aya varan vade seçeneği.",
+      "beklenen_kokler": ["kredi"],
+      "not": "Vade ifadesi meşru, ürün adı değil."
+    },
+    {
+      "id": "GK-005",
+      "ifade": "Mevduat faizi oranlarımız her gün güncellenmektedir.",
+      "beklenen_kokler": ["mevduat", "faiz"],
+      "not": "İki terim bitişik."
+    },
+    {
+      "id": "GK-006",
+      "ifade": "Kredi başvurunuz onaylandığında anapara ve faiz tutarı bildirilir.",
+      "beklenen_kokler": ["kredi", "faiz"],
+      "not": "Anapara tek başına flaglenmez; katılımda peşin fiyat/mal bedeli denir ama gelenek terim değildir."
+    },
+    {
+      "id": "GK-007",
+      "ifade": "Erken kapama durumunda faiz iadesi yapılır.",
+      "beklenen_kokler": ["faiz"],
+      "not": "Katılım karşılığı: erken ödeme indirimi."
+    },
+    {
+      "id": "GK-008",
+      "ifade": "Gecikme faizi günlük olarak hesaplanır.",
+      "beklenen_kokler": ["faiz"],
+      "not": "Katılım karşılığı: gecikme bedeli (bağış yükümlülüğü)."
+    },
+    {
+      "id": "GK-009",
+      "ifade": "Esnaf kredisi kampanyamızda faiz oranı sabittir.",
+      "beklenen_kokler": ["kredi", "faiz"],
+      "not": "Hedef kitle ifadesi meşru, ürün ve oran adı değil."
+    },
+    {
+      "id": "GK-010",
+      "ifade": "Birikimlerinizi vadeli mevduatta değerlendirin.",
+      "beklenen_kokler": ["mevduat"],
+      "not": "Tek terim, ek almış hâli ('mevduatta')."
+    },
+    {
+      "id": "GK-012",
+      "ifade": "Faiz getirisi garantili yatırım hesabı açın.",
+      "beklenen_kokler": ["faiz"],
+      "not": "Getiri garantisi katılım bankacılığında kâr-zarar katılma esasına aykırıdır."
+    },
+    {
+      "id": "GK-013",
+      "ifade": "Kredi notunuz yüksekse faiz oranınız düşer.",
+      "beklenen_kokler": ["faiz"],
+      "not": "ONEMLI: 'kredi notu' sektor-standart terimdir ve flaglenmemeli; yalnizca 'faiz' yakalanmali. Istisna listesinin dogru calistiginin kaniti."
+    },
+    {
+      "id": "GK-014",
+      "ifade": "Mevduat sigortası kapsamındaki tutar güncellenmiştir.",
+      "beklenen_kokler": ["mevduat"],
+      "not": "Katılım karşılığı: katılım fonu sigortası."
+    },
+    {
+      "id": "GK-015",
+      "ifade": "Nakit avans faizi ilk günden itibaren işler.",
+      "beklenen_kokler": ["faiz"],
+      "not": "Kart ekosisteminde geçen gelenek terim."
+    },
+    {
+      "id": "GK-016",
+      "ifade": "Bileşik faiz hesaplaması aylık dönemlerde yapılır.",
+      "beklenen_kokler": ["faiz"],
+      "not": "Bileşik faiz katılım bankacılığında hiçbir üründe bulunmaz."
+    },
+    {
+      "id": "GK-017",
+      "ifade": "Kredili mevduat hesabınız otomatik tanımlandı.",
+      "beklenen_kokler": ["kredi", "mevduat"],
+      "not": "Iki gelenek terim tek urun adinda; katilimda karsiligi YOKTUR."
+    },
+    {
+      "id": "GK-018",
+      "ifade": "Tüketici kredisi sözleşmesindeki faiz oranı değişkendir.",
+      "beklenen_kokler": ["kredi", "faiz"],
+      "not": "Değişken oran katılım finansmanında kâr payı olarak sabitlenir."
+    },
+    {
+      "id": "GK-019",
+      "ifade": "Yıllık mevduat faiz oranı %35 seviyesindedir.",
+      "beklenen_kokler": ["mevduat", "faiz"],
+      "not": "Sayısal değerle birlikte; çıkarım motoru bunu kâr payı oranı sanmamalı."
+    },
+    {
+      "id": "GK-020",
+      "ifade": "Kredi tahsis ücreti ve faiz tahakkuku ayrı gösterilir.",
+      "beklenen_kokler": ["kredi", "faiz"],
+      "not": "Tahsis ücreti katılımda da vardır; 'kredi' ön eki ve 'faiz' gelenektir."
+    },
+    {
+      "id": "GK-021",
+      "ifade": "Emeklilere özel düşük faizli kredi kampanyası.",
+      "beklenen_kokler": ["faiz", "kredi"],
+      "not": "DIKKAT: 'faizli' - 'faizsiz' istisnasi yanlislikla bunu da kapsamamali."
+    },
+    {
+      "id": "GK-022",
+      "ifade": "Mevduat müşterilerimize özel altın hesabı avantajı.",
+      "beklenen_kokler": ["mevduat"],
+      "not": "Altın hesabı katılımda da var; 'mevduat müşterisi' ifadesi gelenektir."
+    },
+    {
+      "id": "GK-023",
+      "ifade": "Kredi çekmek için şubemize uğrayın, faiz avantajını kaçırmayın.",
+      "beklenen_kokler": ["kredi", "faiz"],
+      "not": "Konuşma dili; 'kredi çekmek' fiili katılımda 'finansman kullanmak'tır."
+    },
+    {
+      "id": "GK-024",
+      "ifade": "Vadesiz mevduat hesabınıza faiz işletilmez.",
+      "beklenen_kokler": ["mevduat", "faiz"],
+      "not": "Cumle 'faiz yok' dese bile terim gelenektir - katilimda 'ozel cari hesap' denir. Sistemin 'olumsuz cumle = sorun yok' yanilgisina dusmedigini olcer."
+    },
+    {
+      "id": "GK-025",
+      "ifade": "Reeskont faizi oranındaki değişiklik kredi maliyetini etkiler.",
+      "beklenen_kokler": ["faiz", "kredi"],
+      "not": "Makro/teknik terim; yine de gelenek bankacılık dilidir."
+    }
+  ],
+
+  "mesru_kullanimlar": [
+    {
+      "id": "MK-001",
+      "ifade": "Faizsiz finansman fırsatını kaçırmayın.",
+      "not": "'faizsiz' mesru - katilim bankaciligi kendini boyle tanimlar."
+    },
+    {
+      "id": "MK-002",
+      "ifade": "Kredi kartınızla yapacağınız harcamalarda nakit iade kazanın.",
+      "not": "'kredi karti' yerlesik urun adidir; katilim bankalari da kullanir."
+    },
+    {
+      "id": "MK-003",
+      "ifade": "Kredi skorunuz başvurunuzda değerlendirilir.",
+      "not": "'kredi skoru' sektor-standart terimdir (Zeynep'in 129 kayitlik taramasinda gercek katilim bankasi sayfalarinda gorulmustur)."
+    },
+    {
+      "id": "MK-004",
+      "ifade": "Açık kredi limitiniz hesap özetinizde görüntülenir.",
+      "not": "'acik kredi' mesru bilesik terim (T.O.M. Katilim sayfasinda gorulmustur)."
+    },
+    {
+      "id": "MK-005",
+      "ifade": "Kâr payı oranı %2,79'dan başlayan konut finansmanı.",
+      "not": "Tamamen katilim terminolojisi - hicbir sey flaglenmemeli."
+    },
+    {
+      "id": "MK-006",
+      "ifade": "Katılım fonu hesabınızda vade sonunda kâr payı dağıtılır.",
+      "not": "Tamamen katilim terminolojisi."
+    },
+    {
+      "id": "MK-007",
+      "ifade": "Vade farksız 12 taksit imkânı sunulmaktadır.",
+      "not": "'vade farksiz' niteliksel sifir oran ifadesidir, gelenek terim degildir."
+    },
+    {
+      "id": "MK-008",
+      "ifade": "Kredi bakiyenizin tamamını tek seferde kapatabilirsiniz.",
+      "not": "'kredi bakiyesi' kart ekosisteminde yerlesik jargon (Altin Veri Seti TOM-002)."
+    },
+    {
+      "id": "MK-009",
+      "ifade": "Veresiye kredi ile alışverişinizi erteleyin.",
+      "not": "'veresiye kredi' mesru bilesik terim (T.O.M. Katilim)."
+    },
+    {
+      "id": "MK-010",
+      "ifade": "Murâbaha yöntemiyle taşıt finansmanı kullanabilirsiniz.",
+      "not": "Katilim bankaciligina ozgu sozlesme turu - flaglenmemeli."
+    }
+  ],
+
+  "bilinen_sinirlamalar": [
+    {
+      "id": "BS-001",
+      "ifade": "İhtiyaç kredisi limitiniz 200.000 TL'ye kadar yükseltildi.",
+      "kacirilan_kok": "kredi",
+      "not": "Bu bir gelenek bankacilik ifadesidir ama KONTROL YAKALAMIYOR. Sebep: 'limit' kelimesi guvenli_sonraki_kelime_onekleri listesinde ve pencere 30 karakter oldugu icin 'kredisi limitiniz' ifadesi de mesru sayiliyor. O istisna, Altin Veri Seti TOM-002'deki gercek 'kredi bakiyesi/limiti' kullanimindan turetilmisti. Pencereyi daraltmak ya da istisnayi kaldirmak GERCEK veride dogrulanmis mesru kullanimlari bozma riski tasidigi icin BILINCLI OLARAK duzeltilmedi; olculebilir bir sinirlama olarak burada belgelendi (bkz. TF-001 kararinda ayni yaklasim). Test bu davranisi dondurur - biri ileride istisnayi daraltirsa test kirilir ve karar yeniden tartisilir."
+    }
+  ]
+}

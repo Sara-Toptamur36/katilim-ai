@@ -2,7 +2,7 @@
 
 import pytest
 
-from terminology.genisletme import benzer_terim_bul
+from terminology.genisletme import benzer_terim_bul, gelenek_terimden_bul
 from terminology.sozluk import gelenek_karsiligi_bul, sema_alanlarini_bul, sozluk_yukle
 
 # Sartname Bolum 5.5'te gecen zorunlu kavramlar
@@ -145,6 +145,60 @@ def test_dar_makas_kar_payi_orani_ile_karismaz():
     kar payi orani degildir)."""
     anahtar, _ = benzer_terim_bul("dar makas")
     assert anahtar != "kar_payi_orani"
+
+
+# ---------------------------------------------------------------------------
+# TERS ARAMA (gelenek terim -> katilim kavrami) - Md. 5.5
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "gelenek_ifade,beklenen_anahtar",
+    [
+        ("faiz orani", "kar_payi_orani"),
+        ("vadeli mevduat", "katilim_fonu"),
+        ("kredi vadesi", "vade_suresi"),
+        ("kredi tutari", "finansman_tutari"),
+        ("finansal kiralama", "icare"),
+        ("gecikme faizi", "gecikme_bedeli"),
+        ("vadesiz mevduat hesabi", "ozel_cari_hesap"),
+    ],
+)
+def test_gelenek_terimden_katilim_kavrami_bulunur(gelenek_ifade, beklenen_anahtar):
+    anahtar, skor = gelenek_terimden_bul(gelenek_ifade)
+    assert anahtar == beklenen_anahtar, f"{gelenek_ifade!r} -> {anahtar!r} (skor={skor:.2f})"
+    assert skor >= 0.75
+
+
+def test_gelenek_terimden_bul_esik_altinda_none_doner():
+    anahtar, skor = gelenek_terimden_bul("tamamen alakasiz bir ifade burada")
+    assert anahtar is None
+    assert skor < 0.75
+
+
+def test_gelenek_karsiligi_olmayan_kavramlar_ters_aramaya_katilmaz():
+    """musaraka/mudaraba/danisma_kurulu gibi kavramlarin gelenek_karsilik
+    alani '—' ile baslar (karsiligi yok). O aciklama cumlesini bir terim
+    gibi eslestirmek sacma sonuc uretir; ters arama onlari atlamali."""
+    sozluk = sozluk_yukle()
+    karsiliksizlar = {
+        anahtar
+        for anahtar, veri in sozluk.items()
+        if veri["gelenek_karsilik"].startswith("—")
+    }
+    assert karsiliksizlar, "Test anlamsiz - karsiligi olmayan kavram kalmamis"
+
+    for ifade in ["katilim bankaciligina ozgu", "dogrudan karsiligi yok", "geleneksel"]:
+        anahtar, _ = gelenek_terimden_bul(ifade)
+        assert anahtar not in karsiliksizlar, f"{ifade!r} -> {anahtar!r} eslesmemeliydi"
+
+
+def test_ters_arama_parantez_icini_yok_sayar():
+    """gelenek_karsilik 'Kredi Maliyeti (Faiz + Masraflar Toplami)' gibi
+    parantezli olabilir; kullanici parantezsiz yazar."""
+    anahtar, skor = gelenek_terimden_bul("kredi maliyeti")
+    assert anahtar == "finansman_maliyeti"
+    assert skor >= 0.75
 
 
 def test_benzer_terim_bul_turkce_noktali_buyuk_i_dogru_kucultulur():

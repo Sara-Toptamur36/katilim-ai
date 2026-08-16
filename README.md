@@ -16,22 +16,43 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 | | Semantik chunking + embedding + Qdrant indeksleme | ✅ Tamamlandı |
 | **Sprint 4** | Intent tespiti, Jüri Audit Paneli, gerçek JWT kimlik doğrulama | ✅ Tamamlandı |
 | | RAG: hibrit arama + kaynaklı yanıt + abstention | ✅ Tamamlandı |
+| **Sprint 5** | Terminoloji sözlüğü genişletildi + kapsam ölçümü (karşı-örnek seti) | ✅ Tamamlandı |
+| | Rakip analizi matrisi, kampanya etki skoru | ✅ Tamamlandı |
 
 ### Ölçülebilir durum
+
+*Son ölçüm: 15 Ağustos 2026. Tüm sayılar depodaki komutlarla yeniden üretilebilir —
+üretim komutları [Test](#test) bölümünde.*
 
 | Gösterge | Değer |
 |---|---|
 | Kapsanan katılım bankası | **9 / 10** (BDDK listesi; Adil Katılım gerekçeli hariç — ürün/kampanya yayımlamıyor) |
-| Toplanan gerçek kampanya kaydı | **234** ham kayıt |
+| Toplanan gerçek kampanya | **230** tekil kampanya (263 tarihli anlık görüntü) |
 | Altın Veri Seti (elle doğrulanmış referans) | **58** kayıt + ekran görüntüsü kanıtı |
-| Çıkarım — dolu alan doğruluğu | **~%86–89** (hibrit: regex+NER+LLM; aşağıdaki sapma notuna bakınız) |
-| Çıkarım — dolu alan doğruluğu (yalnızca regex, deterministik) | **%96,88** |
-| Çıkarım — boş alan doğruluğu (yanlış pozitif) | **%98,36** — 2 yanlış pozitif (122 ölçülebilir alan) |
-| Çıkarım — alan bazlı makro F1 (regex) | **%93,72** (6 ölçülebilir alan; kırılım aşağıda) |
-| RAG — indekslenen parça | **734** (234 belgeden, tekilleştirilmiş) |
+| Çıkarım — dolu alan doğruluğu | **%98,48** (65/66 alan) |
+| Çıkarım — boş alan doğruluğu (yanlış pozitif) | **%99,17** (120/121 alan) — 1 yanlış pozitif |
+| Çıkarım — alan bazlı makro F1 | **%98,28** (7 ölçülebilir alan; 5'i %100) |
+| Terminoloji sözlüğü | **31** kavram (geleneksel karşılığı + tanım kaynağıyla) |
+| Kapsam ölçümü (Scope Guard) | hassasiyet **24/24**, özgüllük **10/10** |
+| RAG — indekslenen parça | **733** (11 Ağustos'ta 234 belgeden kuruldu) |
 | RAG — Recall@5 | **%96,88** (31/32 kampanya) |
 | RAG — abstention doğruluğu | **%100** (5/5 alan dışı soruda cevap üretilmedi) |
-| Otomatik test | **442** test, CI her push'ta çalışır |
+| Otomatik test | **615** test (+42 `slow`), CI her push'ta çalışır |
+
+**Kayıt sayısı neden iki türlü:** Scraper eski taramaları **silmez** — değişiklik
+takibi (SHA-256 delta) bunu gerektirir. Bu yüzden diskte 263 tarihli dosya var
+ama bunlar 230 tekil kampanya URL'sine karşılık gelir. Ürün tarafında anlamlı
+olan sayı **230**'dur; 263 rakamı toplanan anlık görüntü sayısıdır.
+
+**RAG indeksi tazelenmeli:** İndeks 11 Ağustos'ta kuruldu; o tarihten sonra yeni
+kayıtlar toplandı. Ölçülen Recall değerleri o günkü indekse aittir. Demo öncesi
+`python -m chunking.indeksleyici` ile yeniden kurulmalıdır.
+
+Kalan iki çıkarım hatası bilerek açık bırakıldı ve kök nedenleri belgelendi:
+`DK-002` (ödül miktarı — gold değeri doğrulandı, motor yanılıyor) ve `TF-001`
+(sayfanın ortasındaki farklı bir ürünün ifadesinden gelen yanlış pozitif;
+dar kapsamlı, bilinen sınırlama). Ayrıntı:
+[`docs/extraction_accuracy_raporu.md`](docs/extraction_accuracy_raporu.md)
 
 > Çıkarım kalitesi **tek bir yüzdeyle** değil iki metrikle raporlanır: bir
 > alanı *kaçırmak* ile kaynakta olmayan bir değeri *uydurmak* farklı
@@ -39,13 +60,15 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 > Yöntem ve tespit edilen yanlış pozitifler:
 > [`docs/extraction_accuracy_raporu.md`](docs/extraction_accuracy_raporu.md)
 >
-> **Çalıştırmalar arası sapma:** LLM katmanı `temperature=0` ile çağrılsa da
-> `hibrit_extraction_accuracy.py` her çalıştırmada birebir aynı yüzdeyi
-> vermeyebilir (ölçüldü: aynı veri setinde %89,06 ↔ %87,5 arası oynama) —
-> Ollama'nın kendi çalışma zamanı determinizmi tam garanti etmiyor. Bu bir
-> regresyon değildir; script'i tekrar çalıştırıp farklı bir sayı görmek
-> normaldir, birkaç çalıştırmanın ortalaması tek bir çalıştırmadan daha
-> güvenilir bir gösterge kabul edilmelidir.
+> **Yukarıdaki sayılar deterministik katmanın (regex + doğrulama) sonucudur.**
+> Hibrit boru hattının LLM katmanı `temperature=0` ile çağrılsa bile
+> çalıştırmalar arasında oynayabiliyor (ölçüldü: aynı veri setinde %89,06 ↔
+> %87,5) — Ollama'nın çalışma zamanı determinizmi tam garanti etmiyor. Ayrıca
+> GPU'suz makinede kayıt başına 150–300 sn sürdüğü için 263 kayıtlık tam
+> ablation koşusu henüz yapılamadı; `scraper/scripts/ablation.py` bu durumda
+> LLM varyantını `GEÇERSİZ` olarak işaretler — "katkı yok" diye yanlış bir
+> sonuç raporlamaz. Katman katkısının tam ölçümü GPU'lu bir makinede
+> yapılacaktır.
 
 **Şu an:** Uç noktalar gerçek verilerle çalışır. Veri kaynağı `GERCEK_VERI_AKTIF`
 ortam değişkeniyle seçilir (`false` = mock/sözleşme testi verisi, `true` = PostgreSQL).
@@ -220,7 +243,10 @@ arayüz kodu geçişte değişmez.
 | POST | `/token` | Kullanıcı adı-parola ile JWT (yalnızca `JWT_AKTIF=true`) |
 | GET | `/kampanyalar` | Kampanya listesi (`?banka=` `?kampanya_turu=`) |
 | GET | `/kampanyalar/{id}` | Tek kampanya detayı |
-| POST | `/karsilastir` | Kampanya karşılaştırma |
+| GET | `/kampanyalar/{id}/etki` | Etki skoru — piyasaya göre eksen eksen yüzdelik sıra |
+| GET | `/rakip-analizi` | Rakip matrisi — tüm kriterler tek tabloda (`?kampanya_turu=`) |
+| GET | `/terminoloji` | Katılım bankacılığı sözlüğü (31 kavram, Md. 5.5) |
+| POST | `/karsilastir` | Kampanya karşılaştırma (sabit kriter listesi) |
 | POST | `/hesapla` | Taksit/kâr payı hesabı (saf Python, LLM yok) |
 | POST | `/chat` | Doğal dilde soru-cevap (kaynak + audit bilgisiyle) |
 
@@ -255,9 +281,10 @@ Karşılaştırma sabit, parametreli SQL şablonlarıyla yapılır (serbest meti
 
 **3. Her kayıt kaynağını taşır.**
 Her kampanya kaydında kaynak URL ve belge tarihi tutulur; hangi alanı hangi
-çıkarım katmanının (regex/NER/LLM) doldurduğu ve güven skoru izlenir.
-*(Chunk ID ve benzerlik skoru alanları API sözleşmesinde hazırdır, RAG
-bağlandığında dolacaktır — şu an boş döner.)*
+çıkarım katmanının (regex/NER/LLM) doldurduğu ve güven skoru izlenir. RAG
+yanıtlarında ayrıca chunk ID, benzerlik skoru ve kaynak parçanın **birebir
+metni** döner (`Kaynak.metin`) — "her cümle bir kaynaktan gelir" iddiasının
+kanıtı budur.
 
 **4. Şeffaflık iki kitleye ayrılır.**
 Banka çalışanı iş odaklı dashboard'u görür; jüri/geliştirici, çağrılan aracı,
@@ -335,6 +362,14 @@ tasarım ilkesi olarak sunulmakla birlikte uçtan uca çalışan bir özellik de
 - **LLM ile yanıt özetleme:** RAG şu an bulduğu kaynak parçalarını *birebir*
   döndürür, üzerine serbest metin üretmez — bu, halüsinasyonu yapısal olarak
   imkânsız kılar. Özetleme ancak Verifier ile birlikte güvenli olur.
+- **Müşteri geri bildirim bileşeni:** Etki skorunun ikinci yarısı. Veri kaynağı
+  henüz tanımlı olmadığı için gösterge `veri_yok` döner — **sıfır yazılmaz**,
+  çünkü geri bildirim yokluğu "müşteriler memnun değil" anlamına gelmez.
+  Kaynak eklendiğinde skorun şekli değişmez, yalnızca `durum` alanı dolar.
+- **Hibrit katman katkısının tam ölçümü:** LLM katmanı GPU'suz makinede kayıt
+  başına 150–300 sn sürdüğü için 263 kayıtlık ablation koşusu yapılamadı.
+  `ablation.py` bu durumda LLM varyantını `GEÇERSİZ` işaretler; "katkı yok"
+  diye yanlış bir sonuç raporlamaz.
 
 ---
 
@@ -350,12 +385,13 @@ katilim-ai/
 ├── validation/       # Verifier - sayisal iddialari kaynak metne karsi dogrular
 ├── chunking/         # RAG: parcalayici, embedding, seyrek vektor, retriever, indeksleyici
 ├── storage/          # PostgreSQL + Qdrant erisimi
-├── comparison/       # Karsilastirma motoru - SQL Tool (Sara)
+├── comparison/       # Karsilastirma motoru + rakip matrisi + etki skoru (Sara)
 ├── calculator/       # Hesap makinesi araci (Sara)
 ├── agent/            # Ajan orkestrator + tool router (Sara)
 ├── dashboard/        # React + Ant Design arayuz (Havin)
 ├── gold_dataset/     # Altin Veri Seti (dogrulama referansi)
 ├── tests/            # Sozlesme, cikarim, regresyon ve entegrasyon testleri
+│   └── veri/kapsam_disi/   # Kapsam olcumu icin karsi-ornek seti (URUN VERISI DEGIL)
 ├── docs/             # Proje dokumantasyonu + olcum raporlari
 ├── donanim.py        # Donanim profili (GPU/VRAM tespiti + ayarlar)
 └── donanim_testi.py  # Tanilama + hiz olcumu (baska makinede calistirilir)
@@ -409,7 +445,8 @@ makinede aynı sürümlerle kurulur.
 ## Test
 
 ```bash
-pytest tests/ -v
+pytest tests/ -v                  # tumu
+pytest tests/ -m "not slow"       # LLM gerektiren yavas testler haric
 ```
 
 CI, `main` dalına her push'ta testleri ve sızmış sır taramasını otomatik çalıştırır.
@@ -425,13 +462,18 @@ Bazı testler dış servis gerektirir ve servis yoksa **hata vermez, atlanır**:
 Bu yüzden CI'da (dış servis yok) test sayısı yerelden düşük görünür — bu bir
 regresyon değil, beklenen durumdur.
 
-Çıkarım doğruluğunu Altın Veri Seti'ne karşı ölçmek için:
+Yukarıdaki [ölçülebilir durum](#ölçülebilir-durum) tablosundaki her sayı bu
+komutlarla yeniden üretilir:
 
 ```bash
-python -m scraper.scripts.extraction_accuracy         # yalnizca regex
+python -m scraper.scripts.extraction_accuracy         # dolu/bos alan dogrulugu + alan bazli F1
 python -m scraper.scripts.hibrit_extraction_accuracy  # regex + NER + LLM
 python -m scraper.scripts.ablation                    # katman katkisi tablosu
+pytest tests/test_karsi_ornekler.py -s                # kapsam olcumu (hassasiyet/ozgulluk)
 ```
+
+RAG ölçümünün yöntemi ve sonuçları ayrı belgede:
+[`docs/rag_tasarim_ve_olcum.md`](docs/rag_tasarim_ve_olcum.md)
 
 Ölçüm çıktısı **alan bazlı precision/recall/F1** de basar; `ablation`
 ise üç varyantı (regex / +NER / +NER+LLM) karşılaştırıp her katmanın

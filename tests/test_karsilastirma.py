@@ -208,6 +208,70 @@ def test_en_avantajli_esitlikte_tek_kazanan_uydurulmaz():
     assert "esit" in metin.lower() or "eşit" in metin.lower()
 
 
+def _odullu(banka: str, miktar: float, birim: str | None) -> CampaignRecord:
+    return CampaignRecord(
+        banka=banka,
+        kampanya_adi=f"{banka} Kampanya",
+        kaynak_url=f"https://ornek.test/{banka}",
+        odul_miktari=miktar,
+        odul_birimi=birim,
+    )
+
+
+def test_en_avantajli_farkli_odul_birimlerinde_kazanan_uydurmaz():
+    """DENETIM BULGUSU: odul ekseni birimi yok sayarak max(odul_miktari)
+    aliyordu - 10.000 Mil, 5.000 TL'yi 'yeniyordu'. Iki birim arasinda
+    'daha yuksek' diye bir sey yoktur; esitlikte tek kazanan uydurmama
+    ilkesiyle ayni gerekce."""
+    kayitlar = [_odullu("Mil Bankasi", 10000, "Mil"), _odullu("TL Bankasi", 5000, "TL")]
+    sonuc = karsilastir_bellekte(kayitlar, "en_avantajli")
+
+    odul_ekseni = next(
+        e for e in sonuc["eksen_kirilimi"] if e["kriter"] == "en_yuksek_odul"
+    )
+    assert odul_ekseni["durum"] == "birim_karisik"
+    assert odul_ekseni["kazananlar"] == []
+    assert sorted(odul_ekseni["birimler"]) == ["Mil", "TL"]
+    # Hicbir eksende one cikma olmadigi icin genel kazanan da yok
+    assert sonuc["kazanan"] is None
+
+
+def test_en_avantajli_ayni_birimde_odul_kazanani_secilir():
+    """Koruma kor degil: birimler tekilse eksen normal calisir."""
+    kayitlar = [_odullu("A", 5000, "TL"), _odullu("B", 7500, "TL")]
+    sonuc = karsilastir_bellekte(kayitlar, "en_avantajli")
+
+    odul_ekseni = next(
+        e for e in sonuc["eksen_kirilimi"] if e["kriter"] == "en_yuksek_odul"
+    )
+    assert odul_ekseni["durum"] == "olculdu"
+    assert [k["banka"] for k in odul_ekseni["kazananlar"]] == ["B"]
+    assert sonuc["kazanan"]["banka"] == "B"
+
+
+def test_en_avantajli_odul_birimi_bos_olan_kayit_tekilligi_bozar():
+    kayitlar = [_odullu("A", 5000, "TL"), _odullu("B", 7500, None)]
+    odul_ekseni = next(
+        e
+        for e in karsilastir_bellekte(kayitlar, "en_avantajli")["eksen_kirilimi"]
+        if e["kriter"] == "en_yuksek_odul"
+    )
+    assert odul_ekseni["durum"] == "birim_karisik"
+
+
+def test_birim_karisik_aciklamasi_veri_yoktan_ayrilir():
+    """'Veri yok' ile 'karsilastirilamaz' ayni sey degil - kullaniciya
+    dogru sebep gosterilmeli."""
+    kayitlar = [_odullu("Mil Bankasi", 10000, "Mil"), _odullu("TL Bankasi", 5000, "TL")]
+    metin = aciklama_uret(karsilastir_bellekte(kayitlar, "en_avantajli")).lower()
+
+    assert "farkli birimlerde" in metin
+    assert "mil" in metin and "tl" in metin
+    # Odul icin "veri yok" DENMEMELI - veri var, karsilastirilamiyor
+    odul_satiri = next(s for s in metin.split("\n") if "odul" in s and "birim" in s)
+    assert "veri yok" not in odul_satiri
+
+
 def test_en_avantajli_veri_olmayan_eksen_karsilastirmaya_katilmaz():
     """MOCK_KAMPANYALAR'da hicbir kayitta tahsis_ucreti sayisal olarak
     verilmemis - masraf ekseni sessizce degil, acikca 'veri yok' diye

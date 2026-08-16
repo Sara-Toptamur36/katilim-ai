@@ -76,6 +76,13 @@ export const chatGonder = async (soru) => {
   return yanit.data;
 };
 
+// GET /kampanyalar/{id}/etki - "bu kampanya IYI bir kampanya mi?"
+// Kume kucukse skor GELMEZ; durum/sebep alanlari doldurulur.
+export const etkiSkoruGetir = async (id) => {
+  const yanit = await client.get(`/kampanyalar/${id}/etki`);
+  return yanit.data;
+};
+
 // GET /rakip-analizi - tum kampanyalari eksen eksen yan yana koyar (Md. 5.7).
 // /karsilastir'dan farki: o TEK kritere gore secilmis id'leri siralar,
 // bu TUM kriterleri tum kampanyalar icin tek tabloda gosterir.

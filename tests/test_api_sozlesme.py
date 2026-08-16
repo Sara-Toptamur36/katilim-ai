@@ -170,6 +170,47 @@ def test_terminoloji_sozlukle_birebir_ayni_sayida_kavram_doner():
 
 
 # ---------------------------------------------------------------------------
+# /kampanyalar/{id}/etki - "bu kampanya IYI bir kampanya mi?"
+# ---------------------------------------------------------------------------
+
+
+def test_etki_skoru_kimlik_dogrulama_ister():
+    assert client.get("/kampanyalar/1/etki").status_code == 401
+
+
+def test_olmayan_kampanyanin_etki_skoru_404_doner():
+    assert client.get("/kampanyalar/9999/etki", headers=GECERLI_BASLIK).status_code == 404
+
+
+def test_etki_skoru_finansal_ve_geri_bildirim_bilesenlerini_doner():
+    veri = client.get("/kampanyalar/1/etki", headers=GECERLI_BASLIK).json()
+    assert "finansal" in veri and "musteri_geri_bildirim" in veri
+    assert veri["durum"] in ("kismi", "hesaplanamadi")
+
+
+def test_etki_skoru_musteri_bilesenini_sifir_yazmaz():
+    """Geri bildirim yoklugu "musteriler memnun degil" DEMEK DEGILDIR."""
+    veri = client.get("/kampanyalar/1/etki", headers=GECERLI_BASLIK).json()
+    assert veri["musteri_geri_bildirim"]["skor"] is None
+    assert veri["musteri_geri_bildirim"]["durum"] == "veri_yok"
+
+
+def test_etki_skoru_kirilimsiz_skor_dondurmez():
+    """Skor tek basina anlamli degil - eksen kirilimi hep yaninda."""
+    veri = client.get("/kampanyalar/1/etki", headers=GECERLI_BASLIK).json()
+    assert veri["finansal"]["eksen_kirilimi"]
+    for eksen in veri["finansal"]["eksen_kirilimi"]:
+        assert eksen["durum"]
+
+
+def test_etki_skoru_hesaplanamadiginda_sebep_yazar():
+    """Cekimser kalinan durumda kullanici NEDEN oldugunu gormeli."""
+    veri = client.get("/kampanyalar/1/etki", headers=GECERLI_BASLIK).json()
+    if veri["finansal"]["durum"] != "olculdu":
+        assert veri["finansal"]["sebep"]
+
+
+# ---------------------------------------------------------------------------
 # /rakip-analizi (Md. 5.7) - tum kriterleri tek tabloda gosterir
 # ---------------------------------------------------------------------------
 

@@ -1,4 +1,4 @@
-"""Karsilastirma motoru (SQL Tool).
+﻿"""Karsilastirma motoru (SQL Tool).
 
 GUVENLIK ILKESI (rapor Bolum 5.3 / 8): Serbest metinden SQL URETILMEZ.
 Kullanicinin yazdigi metin hicbir zaman dogrudan SQL'e girmez. Kriter adi
@@ -94,17 +94,17 @@ KRITERLER: dict[str, Kriter] = {
 # Senaryo-2'sinde gosterdigi gibi ("Kar payi acisindan C Bankasi, vade
 # acisindan A Bankasi daha avantajlidir...") eksen eksen kazanan belirlenir,
 # en cok eksende one cikan kayit genel kazanan sayilir.
-_AVANTAJLI_ALT_KRITERLER = ("en_dusuk_kar_payi", "en_yuksek_odul", "en_uzun_vade", "en_dusuk_masraf")
+AVANTAJLI_ALT_KRITERLER = ("en_dusuk_kar_payi", "en_yuksek_odul", "en_uzun_vade", "en_dusuk_masraf")
 
 # Odul miktari farkli BIRIMLERDE olabilir - altin veri setinde alti ayri
 # birim var (TL, Mil, Gram, Worldpuan, ParafPara, Bankkart Lira). 10.000 Mil
 # ile 5.000 TL'yi tek eksende siralamak anlamsizdir. Bu yuzden odul ekseninde
 # kazanan YALNIZCA tum olculebilir kayitlar ayni birimdeyse secilir.
 # Hem en_avantajli hem rakip_matrisi ayni korumayi kullanir.
-_BIRIM_BAGIMLI_EKSENLER = {"en_yuksek_odul"}
+BIRIM_BAGIMLI_EKSENLER = {"en_yuksek_odul"}
 
 
-def _odul_birimi_tekil_mi(kayitlar: Sequence[CampaignRecord]) -> tuple[bool, set[str]]:
+def odul_birimi_tekil_mi(kayitlar: Sequence[CampaignRecord]) -> tuple[bool, set[str]]:
     """Odul miktari OLAN kayitlarin hepsi ayni birimde mi?
 
     Doner: (tekil_mi, gorulen_birimler). Birim alani bos olan kayitlar
@@ -117,6 +117,7 @@ def _odul_birimi_tekil_mi(kayitlar: Sequence[CampaignRecord]) -> tuple[bool, set
         if getattr(k, "odul_miktari", None) is not None
     }
     return (len(birimler) <= 1, birimler)
+
 
 # SELECT'te donen sabit sutun listesi (kullanici girdisinden gelmez)
 _SECILEN_SUTUNLAR = (
@@ -302,9 +303,9 @@ def _en_avantajli_bellekte(
 
     # Odul ekseni farkli BIRIMLER tasiyabilir (TL, Mil, Gram, Worldpuan...).
     # Ayni koruma rakip_matrisi'nde de var - ikisi ayni yardimciyi kullanir.
-    odul_tekil, odul_birimleri = _odul_birimi_tekil_mi(kayitlar)
+    odul_tekil, odul_birimleri = odul_birimi_tekil_mi(kayitlar)
 
-    for alt_kriter in _AVANTAJLI_ALT_KRITERLER:
+    for alt_kriter in AVANTAJLI_ALT_KRITERLER:
         alt_tanim = KRITERLER[alt_kriter]
         degerliler = [
             (i, getattr(k, alt_tanim.alan, None)) for i, k in enumerate(kayitlar)
@@ -317,7 +318,7 @@ def _en_avantajli_bellekte(
             )
             continue
 
-        if alt_kriter in _BIRIM_BAGIMLI_EKSENLER and not odul_tekil:
+        if alt_kriter in BIRIM_BAGIMLI_EKSENLER and not odul_tekil:
             # Bu eksen SAYILMAZ: 10.000 Mil ile 5.000 TL arasinda "daha
             # avantajli" diye bir sey yoktur. Sessizce Mil'i kazanan ilan
             # etmek, uydurma bir kazanan uretmek olurdu - esitlikte tek
@@ -387,9 +388,9 @@ def _en_avantajli_bellekte(
 
 # Matriste gosterilen eksenler. en_avantajli (kompozit) BURADA YOK - o bir
 # eksen degil, eksenlerin sonucudur; matriste her eksen ayri sutundur.
-# Odul ekseninin birim korumasi icin bkz. _odul_birimi_tekil_mi (yukarida,
+# Odul ekseninin birim korumasi icin bkz. odul_birimi_tekil_mi (yukarida,
 # en_avantajli ile ortak).
-_MATRIS_EKSENLERI = _AVANTAJLI_ALT_KRITERLER + ("en_yuksek_tutar",)
+_MATRIS_EKSENLERI = AVANTAJLI_ALT_KRITERLER + ("en_yuksek_tutar",)
 
 
 def rakip_matrisi(
@@ -419,7 +420,7 @@ def rakip_matrisi(
     if kampanya_turu:
         suzulmus = [k for k in suzulmus if k.kampanya_turu.value == kampanya_turu]
 
-    odul_tekil, odul_birimleri = _odul_birimi_tekil_mi(suzulmus)
+    odul_tekil, odul_birimleri = odul_birimi_tekil_mi(suzulmus)
 
     eksenler: list[dict[str, Any]] = []
     liderler: dict[str, list[int]] = {}
@@ -447,7 +448,7 @@ def rakip_matrisi(
             eksenler.append(eksen)
             continue
 
-        if eksen_adi in _BIRIM_BAGIMLI_EKSENLER and not odul_tekil:
+        if eksen_adi in BIRIM_BAGIMLI_EKSENLER and not odul_tekil:
             # Degerler gosterilir ama LIDER SECILMEZ - farkli birimler
             # arasinda "en yuksek" diye bir sey yoktur.
             eksen["durum"] = "birim_karisik"

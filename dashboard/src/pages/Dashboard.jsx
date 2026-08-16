@@ -4,6 +4,7 @@ import { kampanyalariGetir } from "../api/client";
 import KampanyaTablosu from "../components/KampanyaTablosu";
 import FiltrePaneli from "../components/FiltrePaneli";
 import IstatistikKartlari from "../components/IstatistikKartlari";
+import EtkiSkoruKarti from "../components/EtkiSkoruKarti";
 import KarsilastirmaPaneli from "../components/KarsilastirmaPaneli";
 import RakipMatrisi from "../components/RakipMatrisi";
 import TerminolojiSozlugu from "../components/TerminolojiSozlugu";
@@ -71,6 +72,16 @@ export default function Dashboard() {
         yukleniyor={yukleniyor}
         rowSelection={rowSelection}
       />
+
+      {/* Tek kampanya secildiginde "bu iyi bir kampanya mi?" sorusu;
+          iki ve uzeri secildiginde karsilastirma paneli devreye girer. */}
+      {secilenIdler.length === 1 && (
+        <>
+          <Divider />
+          <Title level={4}>Etki Skoru</Title>
+          <EtkiSkoruKarti kampanyaId={secilenIdler[0]} />
+        </>
+      )}
 
       <Divider />
       <Title level={4}>Kampanya Karsilastir</Title>

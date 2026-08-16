@@ -47,6 +47,7 @@ from api.schemas import (
     HesapYanit,
     KarsilastirIstek,
     KarsilastirYanit,
+    EtkiSkoruYanit,
     OdemeSatiriYanit,
     RakipAnaliziYanit,
     TerimKarti,
@@ -64,6 +65,7 @@ from comparison.compare_engine import (
     karsilastir_sorgusu,
     rakip_matrisi,
 )
+from comparison.etki_skoru import etki_skoru
 from terminology.sozluk import sozluk_yukle
 from terminology.tutarlilik_kontrolu import terminoloji_tutarliligini_kontrol_et
 
@@ -284,6 +286,43 @@ def terminoloji(kullanici: dict = Depends(token_dogrula)):
         )
         for anahtar, veri in sozluk.items()
     ]
+
+
+@app.get(
+    "/kampanyalar/{kampanya_id}/etki",
+    response_model=EtkiSkoruYanit,
+    tags=["Karsilastirma"],
+)
+def kampanya_etki_skoru(kampanya_id: int, kullanici: dict = Depends(token_dogrula)):
+    """Kampanyanin etki skoru: piyasaya gore nerede duruyor?
+
+    /karsilastir "hangisi daha ucuz?" sorusunu cevaplar; bu uc nokta
+    "bu kampanya IYI bir kampanya mi?" sorusunu cevaplar - ayni turdeki
+    aktif kampanyalar arasinda eksen eksen yuzdelik sira.
+
+    Agirlikli formul KULLANILMAZ, kume kucukse skor URETILMEZ; gerekceler
+    comparison/etki_skoru.py modul basliginda.
+    """
+    baslangic = time.time()
+
+    if GERCEK_VERI_AKTIF:
+        oturum = next(oturum_al())
+        try:
+            kayit = id_ile_getir_db(oturum, kampanya_id)
+            tum_kayitlar = kampanyalari_getir_db(oturum) if kayit else []
+        finally:
+            oturum.close()
+    else:
+        kayit = id_ile_getir(kampanya_id)
+        tum_kayitlar = kampanyalari_getir() if kayit else []
+
+    if kayit is None:
+        raise HTTPException(status_code=404, detail="Kampanya bulunamadi")
+
+    sonuc = etki_skoru(kayit, tum_kayitlar)
+    latency = int((time.time() - baslangic) * 1000)
+    _audit_kaydet(kullanici, "etki-skoru", latency, cagrilan_arac="sql")
+    return EtkiSkoruYanit(**sonuc)
 
 
 @app.get("/rakip-analizi", response_model=RakipAnaliziYanit, tags=["Karsilastirma"])

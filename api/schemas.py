@@ -224,6 +224,57 @@ class TerminolojiSorunu(BaseModel):
     onerilen: str
 
 
+class EtkiEkseni(BaseModel):
+    """Etki skorunun BIR ekseni. `durum`:
+      olculdu             - yuzdelik hesaplandi
+      deger_yok           - bu kampanyada alan kaynakta belirtilmemis
+      birim_karisik       - odul farkli birimlerde, siralanamaz
+      yetersiz_eksen_kume - kumede tek olculebilir deger var, siralama tanimsiz
+    """
+
+    eksen: str
+    aciklama: str
+    deger: float | None = None
+    yuzdelik: float | None = None
+    olculebilir_kayit: int = 0
+    durum: str
+    birim: str | None = None
+    birimler: list[str] | None = None
+
+
+class FinansalSkor(BaseModel):
+    """`skor` TEK BASINA anlamli degildir - `eksen_kirilimi` hep yanindadir."""
+
+    skor: float | None = None
+    durum: str
+    sebep: str | None = None
+    eksen_kirilimi: list[EtkiEkseni] = Field(default_factory=list)
+    kullanilan_eksen: int = 0
+    karsilastirma_kumesi: int = 0
+    kampanya_turu: str | None = None
+
+
+class GeriBildirimBileseni(BaseModel):
+    """Musteri geri bildirim bileseni. Su an kaynak tanimli degil; `skor`
+    None kalir. SIFIR YAZILMAZ - geri bildirim yoklugu "musteriler memnun
+    degil" anlamina gelmez."""
+
+    skor: float | None = None
+    durum: str
+    ornek_sayisi: int = 0
+    sebep: str | None = None
+
+
+class EtkiSkoruYanit(BaseModel):
+    kampanya_id: int | None = None
+    banka: str
+    kampanya_adi: str
+    finansal: FinansalSkor
+    musteri_geri_bildirim: GeriBildirimBileseni
+    durum: str = Field(..., description="kismi | hesaplanamadi")
+    aciklama: str | None = None
+
+
 class RakipEkseni(BaseModel):
     """Rakip analizi matrisinin BIR sutunu (Md. 5.7 kriterlerinden biri).
 

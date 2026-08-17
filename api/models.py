@@ -63,6 +63,13 @@ class Kampanya(Base):
     # Seffaflik bayragi: {"odul_miktari": true} gibi
     alan_belirtilmemis = Column(JSON, default=dict)
 
+    # Verifier sonucu (validation/verifier.py): {"kar_payi_orani_percent": true}
+    # gibi - o alanin kaynak metinde (deger + baglam) dogrulanip dogrulanmadigi.
+    # ONCEDEN yalnizca log dosyasina yaziliyordu (goruntulenemez, sorgulanamaz);
+    # artik kalici - dashboard/API bir alanin "kaynakta dogrulandi mi" bilgisini
+    # gosterebilsin diye (bkz. extraction/regex_ile_zenginlestir.py).
+    dogrulanan_alanlar = Column(JSON, default=dict)
+
     # Kayit izleri
     olusturulma = Column(DateTime(timezone=True), server_default=func.now())
     guncellenme = Column(DateTime(timezone=True), onupdate=func.now())

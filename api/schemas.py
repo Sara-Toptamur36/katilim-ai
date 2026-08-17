@@ -114,6 +114,18 @@ class CampaignRecord(BaseModel):
         description="Ornek: {'odul_miktari': True} - eksik veri gizlenmez, isaretlenir",
     )
 
+    # --- Verifier sonucu (validation/verifier.py) ---
+    dogrulanan_alanlar: dict[str, bool] = Field(
+        default_factory=dict,
+        description=(
+            "Ornek: {'kar_payi_orani_percent': True} - o alanin kaynak metinde "
+            "(deger + baglam) Verifier tarafindan dogrulanip dogrulanmadigi. "
+            "Alan burada YOKSA o alan icin Verifier hic calistirilmamis demektir "
+            "(ör. deger zaten onceden doluydu, uzerine yazilmadi) - False ile "
+            "karistirilmamalidir."
+        ),
+    )
+
 
 # ---------------------------------------------------------------------------
 # Istek semalari

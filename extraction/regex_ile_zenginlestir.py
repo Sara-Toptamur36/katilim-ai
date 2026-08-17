@@ -145,11 +145,21 @@ def zenginlestir() -> dict:
                 # (bilinen sinir: "vade farksiz" gibi literal "0" icermeyen
                 # ifadeler) yanlislikla dogrulayamiyor - otomatik silmek
                 # DOGRU veriyi de kaybettirirdi. Amac gorunurluk/denetim izidir
-                # (rapor Bolum 5.7/15/9), veri BUDANMAZ.
+                # (rapor Bolum 5.7/15/9), veri BUDANMAZ. Sonuc `dogrulanan_
+                # alanlar` sutununda KALICI olarak saklanir (onceden yalnizca
+                # log dosyasina yaziliyordu, API/dashboard'dan hic erisilemezdi).
                 dogrulama = kaydi_dogrula(
                     {a: getattr(satir, a) for a in guncellenen_alanlar}, ham_metin
                 )
+                # DENETIM BULGUSU: Verifier sonucu ONCEDEN yalnizca log
+                # dosyasina yaziliyordu - goruntulenemez, API'den donmez,
+                # dashboard hicbir zaman "bu deger dogrulandi mi" gosteremezdi.
+                # Artik kalici (dogrulanan_alanlar sutunu) - mevcut satirdaki
+                # ONCEKI calistirmalardan kalan degerler KORUNUR (yalnizca bu
+                # calistirmada guncellenen alanlar icin anahtar eklenir/degisir).
+                dogrulanan_alanlar = dict(satir.dogrulanan_alanlar or {})
                 for alan, sonuc in dogrulama.items():
+                    dogrulanan_alanlar[alan] = sonuc.dogrulandi
                     if not sonuc.dogrulandi:
                         ozet["dogrulanamayan"] += 1
                         log.warning(
@@ -158,6 +168,7 @@ def zenginlestir() -> dict:
                             satir.id, satir.kaynak_url, alan, sonuc.deger,
                             sonuc.sayi_metinde_bulundu_mu,
                         )
+                satir.dogrulanan_alanlar = dogrulanan_alanlar
             else:
                 ozet["atlandi"] += 1
 

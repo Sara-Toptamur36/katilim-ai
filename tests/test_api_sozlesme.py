@@ -92,6 +92,7 @@ def test_kampanya_kaydinda_zorunlu_alanlar_var():
         "kaynak_url",
         "confidence",
         "alan_belirtilmemis",
+        "dogrulanan_alanlar",
     ]
     for alan in zorunlu:
         assert alan in kayit, f"Sozlesme alani eksik: {alan}"

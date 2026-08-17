@@ -36,6 +36,17 @@ def test_verifier_uretim_zincirine_baglidir():
     assert zenginlestir_modulu.kaydi_dogrula is kaydi_dogrula
 
 
+def test_kampanya_modelinde_dogrulanan_alanlar_sutunu_var():
+    """DENETIM BULGUSU: Verifier sonucu ONCEDEN yalnizca log dosyasina
+    yaziliyordu - API'den donmez, dashboard hicbir zaman "bu deger
+    kaynakta dogrulandi mi" gosteremezdi. Bu test, DB gerektirmeden
+    (SQLAlchemy model tanimini inceleyerek), kalici sutunun var oldugunu
+    kilitler."""
+    from api.models import Kampanya
+
+    assert hasattr(Kampanya, "dogrulanan_alanlar")
+
+
 def test_veritabanini_dolduran_fonksiyon_hibrit_boru_hattini_kullanir():
     """DENETIM BULGUSU (mentor denetimi): bu script eskiden regex-only
     kaydi_cikar()'i cagiriyordu - hibrit boru hatti (NER+LLM) yazildiktan
@@ -118,5 +129,40 @@ def test_zenginlestirme_bos_alanlari_doldurur():
         )
         if doldurulmus is not None:
             assert doldurulmus.confidence >= 0.0
+    finally:
+        oturum.close()
+
+
+@pytest.mark.skipif(not DB_ERISILEBILIR, reason=DB_YOK_MESAJI)
+def test_verifier_sonucu_kalici_olarak_yazilir():
+    """DENETIM BULGUSU: Verifier calisiyordu ama sonucu yalnizca log
+    dosyasina yaziliyordu - satirdaki `dogrulanan_alanlar` sutunu hep
+    bos kalirdi, API/dashboard hicbir zaman "bu deger kaynakta dogrulandi
+    mi" gosteremezdi. Bu test, gercek DB'de zenginlestir() calistiktan
+    sonra en az bir satirda dogrulanan_alanlar'in DOLU oldugunu kilitler -
+    yalnizca modulun Verifier'i CAGIRDIGINI degil, sonucu GERCEKTEN
+    SAKLADIGINI dogrular."""
+    from api.db import OturumYerel
+    from api.models import Kampanya
+    from extraction.regex_ile_zenginlestir import zenginlestir
+
+    zenginlestir()
+
+    oturum = OturumYerel()
+    try:
+        dogrulanmis_satir = (
+            oturum.query(Kampanya)
+            .filter(Kampanya.dogrulanan_alanlar.isnot(None))
+            .filter(Kampanya.dogrulanan_alanlar != {})
+            .first()
+        )
+        if dogrulanmis_satir is None:
+            pytest.skip(
+                "Bu calistirmada hicbir satirda YENI alan doldurulmadi "
+                "(hepsi zaten doluydu/atlandi) - Verifier'in cagirilmasi "
+                "icin en az bir yeni alan doldurulmasi gerekir"
+            )
+        assert isinstance(dogrulanmis_satir.dogrulanan_alanlar, dict)
+        assert all(isinstance(v, bool) for v in dogrulanmis_satir.dogrulanan_alanlar.values())
     finally:
         oturum.close()

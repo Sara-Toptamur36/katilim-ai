@@ -41,3 +41,33 @@ jobs:
             exit 1
           fi
           echo "Temiz."
+
+  # Arayuz Python testlerinden bagimsiz bozulabiliyordu: bir bilesen
+  # derlenmese bile CI yesil kaliyordu. Bu job, demo videosunun cekilecegi
+  # dashboard'un her push'ta gercekten derlendigini garanti eder.
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Node kurulumu
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: dashboard/package-lock.json
+
+      # `npm ci` kullaniliyor: package-lock.json'a birebir sadik kurulum
+      # yapar, `npm install` gibi kilit dosyasini sessizce guncellemez.
+      - name: Bagimliliklari kur
+        run: npm ci --prefix dashboard
+
+      # oxlint uyarilarda cikis kodu 0 dondurur; bu adim bugun yalnizca
+      # HATA seviyesini durdurur. Uyarilari da kapiya cevirmek istersek
+      # `-- --deny-warnings` eklenir (su an 2 acik uyari var, once onlar
+      # temizlenmeli).
+      - name: Lint
+        run: npm run lint --prefix dashboard
+
+      - name: Derleme
+        run: npm run build --prefix dashboard

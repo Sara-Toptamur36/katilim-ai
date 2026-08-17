@@ -18,6 +18,7 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 | | RAG: hibrit arama + kaynaklı yanıt + abstention | ✅ Tamamlandı |
 | **Sprint 5** | Terminoloji sözlüğü genişletildi + kapsam ölçümü (karşı-örnek seti) | ✅ Tamamlandı |
 | | Rakip analizi matrisi, kampanya etki skoru | ✅ Tamamlandı |
+| | Kampanya değişim tarihçesi, Verifier sonucunun kalıcılaştırılması | ✅ Tamamlandı |
 
 ### Ölçülebilir durum
 
@@ -28,6 +29,7 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 |---|---|
 | Kapsanan katılım bankası | **9 / 10** (BDDK listesi; Adil Katılım gerekçeli hariç — ürün/kampanya yayımlamıyor) |
 | Toplanan gerçek kampanya | **230** tekil kampanya (263 tarihli anlık görüntü) |
+| Değişimi yakalanan kampanya | **33 / 230** içerik güncellemesi; **23**'ünde izlenen alan değişti |
 | Altın Veri Seti (elle doğrulanmış referans) | **58** kayıt + ekran görüntüsü kanıtı |
 | Çıkarım — dolu alan doğruluğu | **%98,48** (65/66 alan) |
 | Çıkarım — boş alan doğruluğu (yanlış pozitif) | **%99,17** (120/121 alan) — 1 yanlış pozitif |
@@ -37,12 +39,27 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 | RAG — indekslenen parça | **733** (11 Ağustos'ta 234 belgeden kuruldu) |
 | RAG — Recall@5 | **%96,88** (31/32 kampanya) |
 | RAG — abstention doğruluğu | **%100** (5/5 alan dışı soruda cevap üretilmedi) |
-| Otomatik test | **615** test (+42 `slow`), CI her push'ta çalışır |
+| Otomatik test | **622** test (+42 `slow`), CI her push'ta çalışır |
 
 **Kayıt sayısı neden iki türlü:** Scraper eski taramaları **silmez** — değişiklik
 takibi (SHA-256 delta) bunu gerektirir. Bu yüzden diskte 263 tarihli dosya var
 ama bunlar 230 tekil kampanya URL'sine karşılık gelir. Ürün tarafında anlamlı
 olan sayı **230**'dur; 263 rakamı toplanan anlık görüntü sayısıdır.
+
+Bu fazlalık bir artık değil, bir **özelliğin girdisi**: delta kontrolü yalnızca
+içerik gerçekten değiştiğinde yeni dosya yazdığı için, aynı URL'nin birden fazla
+tarihli kaydı olması o kampanyanın **gerçekten güncellendiği** anlamına gelir.
+`scraper/scripts/kampanya_tarihcesi.py` bu dosyaları zaman sırasına dizip neyin
+değiştiğini çıkarır — **ek veri toplamadan**.
+
+Burada da iki sayı ayrı tutulur: 230 kampanyanın **33**'ünde içerik değişmiş,
+ama bunların **23**'ünde izlenen bir alan (oran, vade, tutar, ödül, tarih)
+gerçekten farklılaşmış. Kalan 10'u yalnızca metin düzeltmesi — hash değişmiş
+ama finansal bilgi aynı. Kullanıcıya "değişti" denecekse, *neyin* değiştiği
+gösterilebilmelidir; kozmetik değişiklik bildirimi gürültüdür.
+
+Ölçülen örnek: Dünya Katılım'ın "avantajlı kurlar" kampanyasının bitiş tarihi
+`2026-07-30 → 2026-08-06` olmuş — kampanya süresi uzatılmış.
 
 **RAG indeksi tazelenmeli:** İndeks 11 Ağustos'ta kuruldu; o tarihten sonra yeni
 kayıtlar toplandı. Ölçülen Recall değerleri o günkü indekse aittir. Demo öncesi
@@ -281,10 +298,16 @@ Karşılaştırma sabit, parametreli SQL şablonlarıyla yapılır (serbest meti
 
 **3. Her kayıt kaynağını taşır.**
 Her kampanya kaydında kaynak URL ve belge tarihi tutulur; hangi alanı hangi
-çıkarım katmanının (regex/NER/LLM) doldurduğu ve güven skoru izlenir. RAG
-yanıtlarında ayrıca chunk ID, benzerlik skoru ve kaynak parçanın **birebir
-metni** döner (`Kaynak.metin`) — "her cümle bir kaynaktan gelir" iddiasının
-kanıtı budur.
+çıkarım katmanının (regex/NER/LLM) doldurduğu ve güven skoru izlenir. Ayrıca
+her sayısal alanın kaynak metinde (değer + bağlam) **doğrulanıp doğrulanmadığı**
+`dogrulanan_alanlar` sütununda saklanır — Verifier'ın kararı artık log'da kalmaz,
+API sözleşmesinden döner. RAG yanıtlarında ayrıca chunk ID, benzerlik skoru ve
+kaynak parçanın **birebir metni** döner (`Kaynak.metin`) — "her cümle bir
+kaynaktan gelir" iddiasının kanıtı budur.
+
+Kampanyanın zaman içindeki değişimi de izlenir: aynı URL'nin farklı tarihli
+taramaları karşılaştırılarak hangi alanın ne zaman değiştiği çıkarılabilir
+(`scraper/scripts/kampanya_tarihcesi.py`).
 
 **4. Şeffaflık iki kitleye ayrılır.**
 Banka çalışanı iş odaklı dashboard'u görür; jüri/geliştirici, çağrılan aracı,
@@ -382,7 +405,7 @@ tasarım ilkesi olarak sunulmakla birlikte uçtan uca çalışan bir özellik de
 ```
 katilim-ai/
 ├── api/              # FastAPI: uc noktalar, sema, kimlik dogrulama
-├── scraper/          # Veri toplama (Zeynep)
+├── scraper/          # Veri toplama + kampanya degisim tarihcesi (Zeynep)
 ├── preprocessing/    # Turkce normalizasyon + sayfa kapsami ayiklama
 ├── terminology/      # Katilim bankaciligi terminoloji sozlugu (Yagmur)
 ├── extraction/       # Regex + NER + LLM hibrit cikarim (Yagmur)
@@ -474,6 +497,17 @@ python -m scraper.scripts.extraction_accuracy         # dolu/bos alan dogrulugu 
 python -m scraper.scripts.hibrit_extraction_accuracy  # regex + NER + LLM
 python -m scraper.scripts.ablation                    # katman katkisi tablosu
 pytest tests/test_karsi_ornekler.py -s                # kapsam olcumu (hassasiyet/ozgulluk)
+```
+
+Bir kampanyanın zaman içinde ne değiştirdiğini görmek için
+(`scraper/scripts/kampanya_tarihcesi.py`, ek veri toplamaz):
+
+```python
+from scraper.scripts.kampanya_tarihcesi import tarihce_getir, degisen_alanlari_bul
+
+tarihce = tarihce_getir("https://www.dunyakatilim.com.tr/kampanyalar/avantajli-kurlar")
+degisen_alanlari_bul(tarihce)
+# {'kampanya_bitis': {'eski': '2026-07-30', 'yeni': '2026-08-06'}}
 ```
 
 RAG ölçümünün yöntemi ve sonuçları ayrı belgede:

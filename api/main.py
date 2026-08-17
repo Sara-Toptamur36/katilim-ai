@@ -23,8 +23,12 @@ Swagger:
     http://localhost:8000/docs
 """
 
+import json
 import os
 import time
+from contextlib import asynccontextmanager
+from datetime import datetime, timezone
+from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -54,9 +58,11 @@ from api.schemas import (
     EtkiSkoruYanit,
     OdemeSatiriYanit,
     RakipAnaliziYanit,
+    TazelikYanit,
     TerimKarti,
     TokenYanit,
 )
+from chunking.indeks_durumu import indeks_durumu_oku
 from calculator.calculator import (
     HesapGirdiHatasi,
     aylik_taksit_hesapla,
@@ -76,7 +82,40 @@ from validation.verifier import kaydi_dogrula
 from terminology.sozluk import sozluk_yukle
 from terminology.tutarlilik_kontrolu import terminoloji_tutarliligini_kontrol_et
 
+# Gomme modeli normalde ILK /chat sorusunda yuklenir (chunking/embedding.py,
+# tembel yukleme). Olculdu (17 Agu): sicak sorgu ~5-9 sn, ilk sorgu 54,9 sn -
+# bellek sikisikken cok daha uzun. Yani DEMODA ILK SORUYU SORAN JURI UYESI
+# en kotu deneyimi yasar; sonraki herkes hizli cevap alir.
+#
+# ISITMA bu maliyeti sunucu acilisina tasir: uygulama hazir dedigi anda model
+# de hazirdir. VARSAYILAN KAPALI, cunku testler ve CI api.main'i sik sik
+# import eder ve orada 1 GB'lik modeli yuklemek olcumsuz bir yavaslama olur.
+# Demo/sunum oncesi acilir:  KATILIMAI_MODEL_ISIT=true uvicorn api.main:app
+MODEL_ISITMA_AKTIF = os.environ.get("KATILIMAI_MODEL_ISIT", "false").lower() == "true"
+
+
+@asynccontextmanager
+async def yasam_dongusu(_app: FastAPI):
+    if MODEL_ISITMA_AKTIF:
+        from chunking.embedding import model_hazir_mi
+
+        baslangic = time.time()
+        hata = model_hazir_mi()
+        sure = round(time.time() - baslangic, 1)
+        if hata:
+            # Isitma basarisiz olsa bile API AYAGA KALKAR: embedding'e
+            # dokunmayan uc noktalar (/kampanyalar, /hesapla, /karsilastir)
+            # calismaya devam etmeli. Sessizce yutulmaz, log'a yazilir.
+            log.warning("model isitma basarisiz | sure=%ss | hata=%s", sure, hata)
+        else:
+            log.info("gomme modeli isitildi | sure=%ss", sure)
+    else:
+        log.info("model isitma kapali - ilk /chat sorusu yavas olacak")
+    yield
+
+
 app = FastAPI(
+    lifespan=yasam_dongusu,
     title="KatilimAI API",
     description=(
         "Katilim bankaciligi kampanya metinlerinden bilgi cikarimi, "
@@ -195,6 +234,75 @@ def kok():
 def saglik():
     """Health check - CI ve docker-compose icin."""
     return {"durum": "saglikli"}
+
+
+def _ham_veri_tazeligi() -> tuple[str | None, int, int]:
+    """(en yeni erisim_zamani, tekil kampanya sayisi, anlik goruntu sayisi).
+
+    Ham veri toplam ~1,4 MB oldugu icin tamamini okumak ucuz; dosya
+    adindaki tarihe guvenmek yerine kaydin KENDI erisim zamani kullanilir.
+    """
+    kok = Path(__file__).resolve().parent.parent / "scraper" / "raw_data"
+    en_yeni: str | None = None
+    urller: set[str] = set()
+    anlik = 0
+    for dosya in kok.glob("*/json/*.json"):
+        try:
+            with open(dosya, encoding="utf-8") as f:
+                kayit = json.load(f)
+        except (OSError, json.JSONDecodeError):
+            continue
+        anlik += 1
+        if kayit.get("url"):
+            urller.add(kayit["url"])
+        zaman = kayit.get("erisim_zamani")
+        if zaman and (en_yeni is None or zaman > en_yeni):
+            en_yeni = zaman
+    return en_yeni, len(urller), anlik
+
+
+def _gun_farki(zaman_metni: str | None) -> int | None:
+    if not zaman_metni:
+        return None
+    try:
+        an = datetime.fromisoformat(zaman_metni)
+    except ValueError:
+        return None
+    if an.tzinfo is None:
+        an = an.replace(tzinfo=timezone.utc)
+    return max(0, (datetime.now(timezone.utc) - an).days)
+
+
+@app.get("/sistem/tazelik", response_model=TazelikYanit, tags=["Sistem"])
+def tazelik(kullanici: dict = Depends(token_dogrula)):
+    """Veri ve RAG indeksi ne kadar guncel? (Mentor raporu II, P0 #1)
+
+    Dashboard bunu ust seritte gosterir. Bilinmeyen deger TAHMIN EDILMEZ:
+    indeks durum dosyasi yoksa alanlar None doner ve arayuz "bilinmiyor"
+    yazar - "indeks eski" ile "indeks durumu bilinmiyor" farkli seylerdir.
+    """
+    son_tarama, tekil, anlik = _ham_veri_tazeligi()
+    durum = indeks_durumu_oku() or {}
+    kuruldu = durum.get("kuruldu")
+
+    # Indeks kurulduktan SONRA yeni veri toplandiysa RAG bayat demektir.
+    # Iki taraf da bilinmiyorsa karar da bilinmiyordur (None) - False
+    # dondurmek "guncel" gibi okunurdu.
+    eski_mi = None
+    if kuruldu and son_tarama:
+        eski_mi = son_tarama > kuruldu
+
+    return TazelikYanit(
+        son_tarama=son_tarama,
+        tarama_gun_once=_gun_farki(son_tarama),
+        rag_indeks_kuruldu=kuruldu,
+        rag_indeks_gun_once=_gun_farki(kuruldu),
+        rag_parca_sayisi=durum.get("parca_sayisi"),
+        rag_belge_sayisi=durum.get("belge_sayisi"),
+        indeks_ham_veriden_eski_mi=eski_mi,
+        tekil_kampanya=tekil,
+        anlik_goruntu=anlik,
+    )
 
 
 @app.post("/token", response_model=TokenYanit, tags=["Kimlik Dogrulama"])

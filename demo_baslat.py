@@ -83,7 +83,16 @@ def _sema_guncelle() -> bool:
 
 
 def _api_baslat() -> None:
+    # Gomme modelini acilista yukle (api/main.py::yasam_dongusu). Olculdu
+    # (17 Agu): isitma olmadan surecin ILK /chat sorusu modeli yuklemek icin
+    # 81 sn bekliyor ve arayuz zaman asimina ugruyordu - yani demoda ilk
+    # soruyu soran juri uyesi hata goruyordu. Isitma bu bekleyisi buraya,
+    # kimsenin beklemedigi acilisa tasir.
+    os.environ["KATILIMAI_MODEL_ISIT"] = "true"
+
     _adim("API baslatiliyor -> http://localhost:8000/docs")
+    print("Gomme modeli acilista yukleniyor (~1-1,5 dk); 'Application startup")
+    print("complete' YAZANA KADAR soru sormayin.")
     print("(Durdurmak icin Ctrl+C. Arayuz icin AYRI bir terminalde: cd dashboard && npm run dev)\n")
     subprocess.run([sys.executable, "-m", "uvicorn", "api.main:app", "--reload"])
 

@@ -236,6 +236,33 @@ class TerminolojiSorunu(BaseModel):
     onerilen: str
 
 
+class TazelikYanit(BaseModel):
+    """Dashboard'un "bu veri ne kadar guncel?" sorusunun cevabi.
+
+    Mentor raporu II, P0 #1: "freshness metrigini dashboard'da gorunur yapin."
+    Bilinmeyen degerler TAHMIN EDILMEZ, None doner - "eski indeks" ile
+    "indeks durumu bilinmiyor" ayri seylerdir (bkz. README ilke 1).
+    """
+
+    son_tarama: str | None = Field(None, description="En yeni ham kaydin erisim zamani")
+    tarama_gun_once: int | None = None
+    rag_indeks_kuruldu: str | None = Field(
+        None, description="None = indeks durumu bilinmiyor (henuz hic kurulmamis olabilir)"
+    )
+    rag_indeks_gun_once: int | None = None
+    rag_parca_sayisi: int | None = None
+    rag_belge_sayisi: int | None = None
+    indeks_ham_veriden_eski_mi: bool | None = Field(
+        None,
+        description=(
+            "True ise indeks kurulduktan SONRA yeni veri toplanmis demektir - "
+            "RAG cevaplari en guncel kampanyalari icermeyebilir."
+        ),
+    )
+    tekil_kampanya: int | None = None
+    anlik_goruntu: int | None = None
+
+
 class CikarimIstek(BaseModel):
     """Serbest kampanya metninden yapilandirilmis alan cikarimi istegi
     (Sartname Md. 6 - demo videosunda "metin girdisi verilmesi, modelin

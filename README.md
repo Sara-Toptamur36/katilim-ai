@@ -36,8 +36,9 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 | Çıkarım — alan bazlı makro F1 | **%98,28** (7 ölçülebilir alan; 5'i %100) |
 | Terminoloji sözlüğü | **31** kavram (geleneksel karşılığı + tanım kaynağıyla) |
 | Kapsam ölçümü (Scope Guard) | hassasiyet **24/24**, özgüllük **10/10** |
-| RAG — indekslenen parça | **733** (11 Ağustos'ta 234 belgeden kuruldu) |
-| RAG — Recall@5 | **%96,88** (31/32 kampanya) |
+| RAG — indekslenen parça | **817** (263 belgeden, 17 Ağustos'ta yeniden kuruldu) |
+| RAG — Recall@3 / @5 | **%93,75 / %93,75** (30 / 30 — 32 kampanya) |
+| RAG — Recall@1 | **%87,5 – %93,75** (28–30/32) — koşular arası oynuyor, aşağıya bakınız |
 | RAG — abstention doğruluğu | **%100** (5/5 alan dışı soruda cevap üretilmedi) |
 | Otomatik test | **622** test (+42 `slow`), CI her push'ta çalışır |
 
@@ -61,9 +62,20 @@ gösterilebilmelidir; kozmetik değişiklik bildirimi gürültüdür.
 Ölçülen örnek: Dünya Katılım'ın "avantajlı kurlar" kampanyasının bitiş tarihi
 `2026-07-30 → 2026-08-06` olmuş — kampanya süresi uzatılmış.
 
-**RAG indeksi tazelenmeli:** İndeks 11 Ağustos'ta kuruldu; o tarihten sonra yeni
-kayıtlar toplandı. Ölçülen Recall değerleri o günkü indekse aittir. Demo öncesi
-`python -m chunking.indeksleyici` ile yeniden kurulmalıdır.
+**RAG indeksi 17 Ağustos'ta yeniden kuruldu** (263 belge → 817 parça) ve ölçüm
+tekrarlandı. İki bulgu çıktı, ikisi de raporlanıyor:
+
+1. **Recall@1 tek bir sayı olarak verilemiyor.** Aynı süreçte üç kez ölçüldüğünde
+   29 / 30 / 29 çıktı. Sebep: Qdrant'ın varsayılan **HNSW yaklaşık araması**
+   (`exact=True` verilmiyor) — skorları çok yakın adaylarda 1. sıra koşudan
+   koşuya değişebiliyor. Recall@3 ve @5 kararlı.
+2. **Recall@5 bir kampanya geriledi** (31/32 → 30/32). Yeni kaçırılan `AL-005`,
+   adı `AL-006` ile neredeyse aynı ("…Vade Farksız 6 Taksit Kampanyası").
+   İndeks %11 büyüyünce bu ikisi ayrışamaz oldu. Kod gerilemesi değil, korpus
+   büyümesinin sonucu — ama gerçek bir kalite kaybı.
+
+Yöntem, tekrar üretim çıktıları ve önerilen düzeltme (*ölçümü `exact=True` ile
+koşturmak*): [`docs/rag_tasarim_ve_olcum.md`](docs/rag_tasarim_ve_olcum.md)
 
 Kalan iki çıkarım hatası bilerek açık bırakıldı ve kök nedenleri belgelendi:
 `DK-002` (ödül miktarı — gold değeri doğrulandı, motor yanılıyor) ve `TF-001`
@@ -165,6 +177,11 @@ alembic upgrade head
 
 # 4) API  →  http://localhost:8000/docs (Swagger)
 uvicorn api.main:app --reload
+
+#    Demo/sunum öncesi: gömme modelini açılışta yükle. Isıtma olmadan
+#    sürecin ilk /chat sorusu modeli beklemek zorunda kalır (ölçüldü: 81 sn)
+#    ve arayüz zaman aşımına uğrar. `demo_baslat.py` bunu zaten açar.
+KATILIMAI_MODEL_ISIT=true uvicorn api.main:app
 
 # 5) Dashboard
 cd dashboard && npm install && npm run dev

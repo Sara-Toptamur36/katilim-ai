@@ -7,6 +7,7 @@ import IstatistikKartlari from "../components/IstatistikKartlari";
 import EtkiSkoruKarti from "../components/EtkiSkoruKarti";
 import KarsilastirmaPaneli from "../components/KarsilastirmaPaneli";
 import RakipMatrisi from "../components/RakipMatrisi";
+import TazelikSeridi from "../components/TazelikSeridi";
 import TerminolojiSozlugu from "../components/TerminolojiSozlugu";
 
 const { Title } = Typography;
@@ -47,6 +48,8 @@ export default function Dashboard() {
   return (
     <div>
       <Title level={3}>Kampanya Karsilastirma Panosu</Title>
+
+      <TazelikSeridi />
 
       <IstatistikKartlari kampanyalar={kampanyalar} />
 

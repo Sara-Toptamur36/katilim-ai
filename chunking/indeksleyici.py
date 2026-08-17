@@ -23,9 +23,11 @@ from __future__ import annotations
 
 import json
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 from chunking.embedding import VEKTOR_BOYUTU, belgeleri_vektore_cevir
+from chunking.indeks_durumu import indeks_durumu_yaz
 from chunking.parcalayici import kayitlari_parcala
 from chunking.qdrant_baglanti import (
     QDRANT_URL,
@@ -97,7 +99,7 @@ def indeksle(
 
     indeksleme_sn = time.monotonic() - t1
 
-    return {
+    ozet = {
         "belge_sayisi": len(kayitlar),
         "parca_sayisi": len(parcalar),
         "yazilan": yazilan,
@@ -107,6 +109,12 @@ def indeksle(
             "indeksleme": round(indeksleme_sn, 2),
         },
     }
+    # Dashboard'un "bu indeks guncel mi?" sorusunu cevaplayabilmesi icin
+    # (bkz. chunking/indeks_durumu.py - Qdrant olusturulma zamani tutmuyor).
+    indeks_durumu_yaz(
+        {**ozet, "kuruldu": datetime.now(timezone.utc).isoformat(), "koleksiyon": koleksiyon}
+    )
+    return ozet
 
 
 if __name__ == "__main__":

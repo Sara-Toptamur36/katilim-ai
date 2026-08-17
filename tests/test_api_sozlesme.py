@@ -171,6 +171,54 @@ def test_terminoloji_sozlukle_birebir_ayni_sayida_kavram_doner():
 
 
 # ---------------------------------------------------------------------------
+# /sistem/tazelik - "bu veri ne kadar guncel?" (Mentor raporu II, P0 #1)
+# ---------------------------------------------------------------------------
+
+
+def test_tazelik_kimlik_dogrulama_ister():
+    assert client.get("/sistem/tazelik").status_code == 401
+
+
+def test_tazelik_sozlesme_alanlarini_doner():
+    yanit = client.get("/sistem/tazelik", headers=GECERLI_BASLIK)
+    assert yanit.status_code == 200
+    veri = yanit.json()
+    for alan in (
+        "son_tarama",
+        "rag_indeks_kuruldu",
+        "rag_parca_sayisi",
+        "indeks_ham_veriden_eski_mi",
+        "tekil_kampanya",
+        "anlik_goruntu",
+    ):
+        assert alan in veri
+
+
+def test_tazelik_tekil_kampanya_anlik_goruntuden_az_ya_da_esit():
+    """Scraper eski taramalari silmez; ayni URL'nin birden fazla tarihli
+    kaydi olabilir - tekil sayi her zaman <= anlik goruntu sayisi."""
+    veri = client.get("/sistem/tazelik", headers=GECERLI_BASLIK).json()
+    if veri["tekil_kampanya"] is not None and veri["anlik_goruntu"] is not None:
+        assert veri["tekil_kampanya"] <= veri["anlik_goruntu"]
+
+
+def test_tazelik_bilinmeyen_deger_tahmin_edilmez():
+    """Indeks durumu bilinmiyorsa None doner - "eski" DEMEK DEGILDIR.
+    False dondurmek "guncel" gibi okunurdu (README ilke 1)."""
+    veri = client.get("/sistem/tazelik", headers=GECERLI_BASLIK).json()
+    if veri["rag_indeks_kuruldu"] is None:
+        assert veri["indeks_ham_veriden_eski_mi"] is None
+        assert veri["rag_parca_sayisi"] is None
+
+
+def test_tazelik_gun_farki_negatif_olmaz():
+    veri = client.get("/sistem/tazelik", headers=GECERLI_BASLIK).json()
+    for alan in ("tarama_gun_once", "rag_indeks_gun_once"):
+        if veri[alan] is not None:
+            assert veri[alan] >= 0
+
+
+# ---------------------------------------------------------------------------
 # /kampanyalar/{id}/etki - "bu kampanya IYI bir kampanya mi?"
 # ---------------------------------------------------------------------------
 
@@ -443,3 +491,64 @@ def test_audit_kaydet_gercek_modda_db_hatasi_asil_istegi_bozmaz(monkeypatch):
     # DB gercekten erisilemez oldugu icin (bu test ortaminda) istisna
     # ATILMAMASI beklenir - _audit_kaydet kendi icinde yakalayip loglar.
     main_modulu._audit_kaydet({"kullanici": "test", "rol": "test"}, "chat", 10)
+
+
+# ---------------------------------------------------------------------------
+# Model isitma (api/main.py::yasam_dongusu)
+# ---------------------------------------------------------------------------
+
+
+def test_model_isitma_varsayilan_kapali():
+    """Isitma VARSAYILAN KAPALI olmali: testler ve CI api.main'i sik sik
+    import eder, orada 1 GB'lik gomme modelini yuklemek her kosuyu
+    olcumsuz sekilde yavaslatirdi (bkz. api/main.py aciklamasi)."""
+    import api.main as main_modulu
+
+    assert main_modulu.MODEL_ISITMA_AKTIF is False
+
+
+def test_isitma_kapaliyken_model_yuklenmez(monkeypatch):
+    """Kapaliyken yasam dongusu embedding'e HIC dokunmamali."""
+    import api.main as main_modulu
+
+    monkeypatch.setattr(main_modulu, "MODEL_ISITMA_AKTIF", False)
+
+    def _cagrilirsa_patlat():
+        raise AssertionError("isitma kapaliyken model yuklenmemeli")
+
+    monkeypatch.setattr("chunking.embedding.model_hazir_mi", _cagrilirsa_patlat)
+
+    with TestClient(main_modulu.app):
+        pass
+
+
+def test_isitma_acikken_model_yuklenir(monkeypatch):
+    """Acikken model bir kez hazirlanir - demo yolunun (demo_baslat.py)
+    dayandigi davranis budur."""
+    import api.main as main_modulu
+
+    monkeypatch.setattr(main_modulu, "MODEL_ISITMA_AKTIF", True)
+    cagrildi = []
+    monkeypatch.setattr(
+        "chunking.embedding.model_hazir_mi", lambda: cagrildi.append(True) or None
+    )
+
+    with TestClient(main_modulu.app):
+        pass
+
+    assert cagrildi == [True]
+
+
+def test_isitma_basarisizsa_api_yine_de_ayaga_kalkar(monkeypatch):
+    """Isitma hatasi API'yi DUSURMEMELI: embedding'e dokunmayan uc
+    noktalar (/kampanyalar, /hesapla) calismaya devam etmeli. Hata
+    sessizce yutulmaz, log'a yazilir."""
+    import api.main as main_modulu
+
+    monkeypatch.setattr(main_modulu, "MODEL_ISITMA_AKTIF", True)
+    monkeypatch.setattr(
+        "chunking.embedding.model_hazir_mi", lambda: "OSError: model bulunamadi"
+    )
+
+    with TestClient(main_modulu.app) as istemci:
+        assert istemci.get("/saglik").status_code == 200

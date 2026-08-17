@@ -71,8 +71,24 @@ export const hesapla = async (girdi) => {
 };
 
 // POST /chat  { soru }
+// Zaman asimi BILEREK ayri: ortak 10 sn RAG icin yetmiyor. Olculdu (17 Agu,
+// 5,9 GB RAM'li gelistirme makinesi): sicak sorgu ~5-9 sn, sogugu 18,9 sn.
+// 10 sn'de arayuz vazgecip "Baglanti sorunu" basiyordu - oysa API dogru
+// cevabi uretmisti. Yani bir ag hatasi degil, YANLIS HATA MESAJIYDI.
+//
+// DIKKAT - bu deger tek basina yetmez: bellek sikisikken surecin ilk
+// sorgusu gomme modelini yuklemek icin 81 sn harcadi ve 90 sn'lik bu sinir
+// bile asildi (olculdu: istek ERR_ABORTED). Asil cozum sunucu tarafinda
+// ISITMA'dir (api/main.py::yasam_dongusu, KATILIMAI_MODEL_ISIT=true);
+// buradaki 90 sn onun emniyet payidir, yerine gecmez.
 export const chatGonder = async (soru) => {
-  const yanit = await client.post("/chat", { soru });
+  const yanit = await client.post("/chat", { soru }, { timeout: 90000 });
+  return yanit.data;
+};
+
+// GET /sistem/tazelik - veri ve RAG indeksi ne kadar guncel?
+export const tazelikGetir = async () => {
+  const yanit = await client.get("/sistem/tazelik");
   return yanit.data;
 };
 

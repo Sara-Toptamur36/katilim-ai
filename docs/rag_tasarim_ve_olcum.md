@@ -220,6 +220,97 @@ belgede yayınlanan sayıların hâlâ geçerli olduğu doğrulanmamıştı. İn
 Sonuç birebir tekrar üretildi — README'deki rakamlar artık güncel veriyle
 doğrulanmış durumda, bayat değil.
 
+### Yeniden doğrulama — 17 Ağustos 2026 (ve bir ölçüm bulgusu)
+
+İndeks yeniden kuruldu: **263 belge → 817 parça** (11 Ağustos'ta 234 → 733).
+Ölçüm kapsamı **değişmedi**: 58 altın kayıttan 32'sinin belgesi hâlâ indekste,
+26'sı kampanya rotasyonu nedeniyle kapsam dışı. Yani payda aynı, karşılaştırma temiz.
+
+| Metrik | 11 Ağustos | 17 Ağustos |
+|---|---|---|
+| İndeks | 234 belge / 733 parça | **263 belge / 817 parça** |
+| Recall@1 | %93,75 (30/32) | **%87,5 – %93,75** (28–30/32, *oynak*) |
+| Recall@3 | %93,75 (30/32) | **%93,75** (30/32) |
+| Recall@5 | %96,88 (31/32) | **%93,75** (30/32) ⬇ |
+| Abstention doğruluğu | %100 (5/5) | **%100** (5/5) |
+| Ölçüm kapsamı | 32 | 32 (değişmedi) |
+
+**İki ayrı bulgu var; ikisi de gizlenmiyor.**
+
+#### Bulgu 1 — Ölçüm deterministik değil
+
+Aynı süreç içinde ölçüm üç kez tekrarlandığında Recall@1 farklı çıktı:
+
+```
+Recall@1: [29, 30, 29]  -> OYNAK
+    koşu 1 kaçıranlar: AL-005, AL-006, ZK-004
+    koşu 2 kaçıranlar: AL-005, AL-006
+    koşu 3 kaçıranlar: AL-005, AL-006, ZK-004
+Recall@3: [30, 30, 30]  -> KARARLI
+Recall@5: [30, 30, 30]  -> KARARLI
+```
+
+**Sebep:** `chunking/qdrant_baglanti.py::hibrit_ara` Qdrant'ın varsayılan
+**HNSW yaklaşık (ANN)** aramasını kullanıyor; `SearchParams(exact=True)`
+verilmiyor. Yaklaşık arama, skorları birbirine çok yakın adaylarda koşudan
+koşuya farklı sıra üretebilir. Oynaklık yalnızca **1. sırada** görülüyor —
+beklenen davranış, çünkü rank-1 en küçük skor farkına duyarlı olan yerdir.
+
+**Sonuç olarak Recall@1 tek bir sayı olarak raporlanamaz.** Gözlenen aralık
+28–30/32 (dört ayrı koşu: 29, 28, 29, 30).
+
+> **Öneri (henüz uygulanmadı):** Ölçüm koşusu `exact=True` ile yapılmalı —
+> üretimde ANN kalabilir, ama *benchmark* tekrar üretilebilir olmalı. Aksi
+> hâlde bir iyileştirmenin gerçek mi gürültü mü olduğunu ayırt edemeyiz.
+> Bu, LLM katmanı için zaten uyguladığımız "birden çok koşunun ortalaması"
+> disiplininin retrieval karşılığıdır.
+
+#### Bulgu 2 — Recall@5 bir kampanya geriledi
+
+31/32 → 30/32. Yeni kaçırılan: **AL-005** (*Sağlık Harcamalarına Vade Farksız
+6 Taksit Kampanyası*). Eskiden beri kaçırılan **AL-006** (*Eğitim Harcamalarınıza
+Vade Farksız 6 Taksit Kampanyası*).
+
+İki kampanyanın adı neredeyse aynı — yalnızca "Sağlık" / "Eğitim" kelimesinde
+ayrışıyorlar. İndeks %11 büyüyünce (733 → 817 parça) bu ikisini birbirinden
+ayırmak zorlaştı.
+
+**Bu bir kod gerilemesi değil**, korpus büyümesinin doğal sonucu: aynı kalıpla
+adlandırılmış kampanya sayısı arttıkça ayırt edicilik düşer. Ama **gerçek bir
+kalite kaybı** ve öyle raporlanıyor.
+
+**Doğru müdahale ne olurdu:** Bu tam olarak bir **reranker** vakası — hibrit
+arama doğru belgeyi ilk 5'e getiriyor ama sıralayamıyor. Mentör raporu II
+(Bölüm 6.2) da bunu öneriyor. Reranker'ın ölçülebilir kazanç tavanı artık
+**2 kayıt** (@5'te kaçan AL-005 + AL-006) ve ayrıca @1 oynaklığı — 11
+Ağustos'taki 1 kayıtlık tavandan daha büyük.
+
+#### Bulgu 3 — İlk sorunun gecikmesi bir doğruluk sorunu değil, demo sorunuydu
+
+Recall/abstention ölçümleri script içinden yapıldığı için gömme modeli zaten
+yüklüydü; **arayüzden** ölçünce farklı bir tablo çıktı:
+
+| Durum | Süre |
+|---|---|
+| Sıcak sorgu | ~5–9 sn |
+| Soğuk sorgu (model yüklü, süreç yeni) | 18,9 sn |
+| Sürecin **ilk** sorgusu (model yükleniyor) | 54,9 sn — bellek sıkışıkken 81 sn |
+
+Arayüzün sohbet zaman aşımı 10 sn'ydi; API doğru cevabı üretmiş olmasına
+rağmen ekranda **"Bağlantı sorunu"** yazıyordu. Yani bu bir ağ hatası değil,
+**yanlış hata mesajıydı** ve demoda ilk soruyu soran jüri üyesini vururdu.
+
+İki müdahale yapıldı:
+
+1. **Sunucu tarafı (asıl çözüm):** gömme modeli açılışta yükleniyor
+   (`api/main.py::yasam_dongusu`, `KATILIMAI_MODEL_ISIT=true`). Bekleyiş
+   kimsenin beklemediği açılışa taşınıyor; `demo_baslat.py` bunu otomatik açar.
+   Varsayılan kapalı — testler/CI `api.main`'i sık import eder.
+2. **İstemci tarafı (emniyet payı):** sohbet zaman aşımı 90 sn.
+
+Tek başına (2) yetmiyor: ısıtmasız denemede 90 sn bile aşıldı ve istek
+`ERR_ABORTED` ile düştü. Isıtma açıkken aynı soru ilk denemede `200 OK` döndü.
+
 ---
 
 ## 7. Bilinçli sınırlar

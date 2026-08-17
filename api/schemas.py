@@ -236,6 +236,89 @@ class TerminolojiSorunu(BaseModel):
     onerilen: str
 
 
+class CikarimIstek(BaseModel):
+    """Serbest kampanya metninden yapilandirilmis alan cikarimi istegi
+    (Sartname Md. 6 - demo videosunda "metin girdisi verilmesi, modelin
+    urettigi yapilandirilmis cikti" gosterilmesi zorunlu)."""
+
+    metin: str = Field(..., min_length=20, max_length=20000)
+    hibrit: bool = Field(
+        False,
+        description=(
+            "True ise NER+LLM katmanlari da calisir. VARSAYILAN FALSE: LLM "
+            "GPU'suz makinede kayit basina 150-300 sn suruyor, canli demo "
+            "bunu bekleyemez (bkz. extraction/llm_extractor.py)."
+        ),
+    )
+
+
+class CikarimAdayi(BaseModel):
+    """Bir alan icin BIR katmanin onerdigi deger. Ayni alanda birden fazla
+    aday olabilir - hangisinin neden secildigi `catismalar`da yazar."""
+
+    katman: str
+    deger: Any = None
+    guven: float | None = None
+
+
+class CikarimIzi(BaseModel):
+    """Alanin metindeki KANITI: hangi parcadan, hangi guvenle cikarildi."""
+
+    alan: str
+    kaynak_span: str | None = None
+    kanit_turu: str = Field(
+        "span",
+        description=(
+            "span            = kaynak_span metinden BIREBIR alintidir\n"
+            "siniflandirma   = kaynak_span bir ETIKETTIR, metinde aynen gecmez "
+            "(ör. kampanya_turu anahtar kelimeyle siniflandirilir, span "
+            "cikarilmaz). Arayuz bunu 'metindeki kanit' gibi gostermemelidir."
+        ),
+    )
+    guven: float | None = None
+    katman: str
+    dogrulandi: bool | None = Field(
+        None,
+        description=(
+            "Verifier sonucu: deger kaynak metinde (deger + baglam) "
+            "gercekten geciyor mu? None = bu alan icin dogrulama yapilmadi "
+            "(sayisal olmayan alanlar)."
+        ),
+    )
+    adaylar: list[CikarimAdayi] = Field(default_factory=list)
+
+
+class CikarimYanit(BaseModel):
+    """Cikarim sonucu + TAM denetim izi.
+
+    `alanlar` tek basina dondurulmez: her alanin yaninda hangi katmanin
+    doldurdugu, metindeki kaniti ve dogrulanip dogrulanmadigi gider -
+    "eksik veri gizlenmez" ilkesinin cikarim tarafindaki karsiligi.
+    """
+
+    alanlar: dict[str, Any]
+    izler: list[CikarimIzi]
+    catismalar: list[dict[str, Any]] = Field(default_factory=list)
+    bos_alanlar: list[str] = Field(
+        default_factory=list, description="Metinde bulunamayan alanlar - sifir DEGIL, bilinmiyor"
+    )
+    turetilmis_alanlar: list[str] = Field(
+        default_factory=list,
+        description=(
+            "Degeri OLAN ama metinden cikarilMAyan alanlar - diger alanlardan "
+            "hesaplanir/derlenir (ör. kampanya_avantaji ozeti, "
+            "kar_payi_orani_decimal). Kanit izleri yoktur; arayuz bunlari "
+            "'metinde bulundu' gibi gostermemelidir."
+        ),
+    )
+    genel_guven: float = 0.0
+    hibrit_kullanildi: bool = False
+    sure_ms: int = 0
+    not_: str | None = Field(None, alias="not")
+
+    model_config = {"populate_by_name": True}
+
+
 class EtkiEkseni(BaseModel):
     """Etki skorunun BIR ekseni. `durum`:
       olculdu             - yuzdelik hesaplandi

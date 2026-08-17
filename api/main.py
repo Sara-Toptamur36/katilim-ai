@@ -47,6 +47,10 @@ from api.schemas import (
     HesapYanit,
     KarsilastirIstek,
     KarsilastirYanit,
+    CikarimAdayi,
+    CikarimIstek,
+    CikarimIzi,
+    CikarimYanit,
     EtkiSkoruYanit,
     OdemeSatiriYanit,
     RakipAnaliziYanit,
@@ -66,6 +70,9 @@ from comparison.compare_engine import (
     rakip_matrisi,
 )
 from comparison.etki_skoru import etki_skoru
+from extraction.hybrid_pipeline import kaydi_hibrit_cikar
+from extraction.regex_extractor import genel_guven_hesapla
+from validation.verifier import kaydi_dogrula
 from terminology.sozluk import sozluk_yukle
 from terminology.tutarlilik_kontrolu import terminoloji_tutarliligini_kontrol_et
 
@@ -286,6 +293,102 @@ def terminoloji(kullanici: dict = Depends(token_dogrula)):
         )
         for anahtar, veri in sozluk.items()
     ]
+
+
+# Bu alanlar metinden SPAN olarak cikarilmaz, anahtar kelimeyle
+# SINIFLANDIRILIR; izlerindeki "kaynak_span" bir etikettir, metinde aynen
+# gecmez (bkz. extraction/hybrid_pipeline.py "KAPSAM DISI ALANLAR").
+_SINIFLANDIRMA_ALANLARI = {"kampanya_turu"}
+
+
+@app.post("/cikar", response_model=CikarimYanit, tags=["Cikarim"])
+def cikar(istek: CikarimIstek, kullanici: dict = Depends(token_dogrula)):
+    """Serbest kampanya metninden yapilandirilmis alanlari cikarir.
+
+    NEDEN VAR (Sartname Md. 6): demo videosunda "metin girdisi verilmesi,
+    modelin urettigi yapilandirilmis cikti" gosterilmesi ZORUNLU. Cikarim
+    motoru bugune kadar yalnizca toplu zenginlestirme script'inden
+    (extraction/regex_ile_zenginlestir.py) erisilebiliyordu; bu uc nokta
+    ayni motoru tek bir metin icin acar.
+
+    SONUC TEK BASINA DONMEZ: her alanin yaninda hangi katmanin doldurdugu,
+    metindeki kaniti (kaynak_span), guveni, Verifier'in dogrulayip
+    dogrulamadigi ve varsa diger katmanlarin adaylari gider. Bulunamayan
+    alanlar `bos_alanlar` icinde ADIYLA listelenir - sifir yazilmaz,
+    "kaynakta belirtilmemis" demektir.
+
+    HIBRIT VARSAYILAN OLARAK KAPALI: `hibrit=true` NER+LLM katmanlarini da
+    acar ama LLM GPU'suz makinede kayit basina 150-300 sn surer. Canli
+    demoda kullanilmamalidir.
+    """
+    baslangic = time.time()
+
+    cikan = kaydi_hibrit_cikar(
+        istek.metin, ner_kullan=istek.hibrit, llm_kullan=istek.hibrit
+    )
+    izler_ham = cikan.pop("_izler")
+    kaynaklar = cikan.pop("_kaynaklar")
+    adaylar = cikan.pop("_adaylar", {})
+    catismalar = cikan.pop("_catismalar", [])
+
+    # Verifier: yazilan sayisal degerler kaynak metinde (deger + baglam)
+    # gercekten geciyor mu? Sonuc GORUNURLUK icindir, deger BUDANMAZ -
+    # extraction/regex_ile_zenginlestir.py'deki ayni ilke.
+    dogrulama = kaydi_dogrula(
+        {alan: cikan.get(alan) for alan in izler_ham}, istek.metin
+    )
+
+    izler = [
+        CikarimIzi(
+            alan=alan,
+            kaynak_span=span,
+            # kampanya_turu anahtar kelimeyle SINIFLANDIRILIR, span
+            # cikarilmaz - "kanit" olarak gosterilirse kullanici metinde
+            # o ifadeyi arar ve bulamaz.
+            kanit_turu="siniflandirma" if alan in _SINIFLANDIRMA_ALANLARI else "span",
+            guven=guven,
+            katman=kaynaklar.get(alan, "regex"),
+            dogrulandi=(
+                dogrulama[alan].dogrulandi if alan in dogrulama else None
+            ),
+            adaylar=[CikarimAdayi(**a) for a in adaylar.get(alan, [])],
+        )
+        for alan, (span, guven) in izler_ham.items()
+    ]
+
+    bos_alanlar = sorted(a for a, d in cikan.items() if d is None)
+    # Degeri var ama izi yok => metinden cikarilmadi, TURETILDI (ör.
+    # kampanya_avantaji ozeti, kar_payi_orani_decimal). Sabit liste yerine
+    # izlerin yoklugundan hesaplaniyor - yeni turetilmis alan eklenirse
+    # burasi kendiliginden dogru kalir.
+    turetilmis_alanlar = sorted(
+        a for a, d in cikan.items() if d is not None and a not in izler_ham
+    )
+
+    # Ollama kapaliyken hibrit istenirse sessizce regex sonucu donerdi -
+    # kullanici "hibrit calisti" saniyordu. Durumu acikca bildiriyoruz.
+    not_metni = None
+    if istek.hibrit and not any(k in ("ner", "llm") for k in kaynaklar.values()):
+        not_metni = (
+            "Hibrit istendi ancak NER/LLM katmanlarindan hicbir alan gelmedi. "
+            "Ollama kapali olabilir ya da regex tum alanlari zaten doldurmus "
+            "olabilir; sonuc deterministik katmanindir."
+        )
+
+    sure_ms = int((time.time() - baslangic) * 1000)
+    _audit_kaydet(kullanici, "cikar", sure_ms, cagrilan_arac="extraction")
+
+    return CikarimYanit(
+        alanlar=cikan,
+        izler=izler,
+        catismalar=catismalar,
+        bos_alanlar=bos_alanlar,
+        turetilmis_alanlar=turetilmis_alanlar,
+        genel_guven=genel_guven_hesapla(izler_ham),
+        hibrit_kullanildi=istek.hibrit,
+        sure_ms=sure_ms,
+        **{"not": not_metni},
+    )
 
 
 @app.get(

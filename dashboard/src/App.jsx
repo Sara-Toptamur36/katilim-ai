@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom";
 import { Menu, Layout } from "antd";
 import Dashboard from "./pages/Dashboard";
+import MetinAnalizi from "./pages/MetinAnalizi";
 import Chatbot from "./pages/Chatbot";
 import AuditPanel from "./pages/AuditPanel";
 import { AuditProvider } from "./context/AuditContext";
@@ -16,6 +17,7 @@ function Gezinme() {
       selectedKeys={[pathname]}
       items={[
         { key: "/", label: <Link to="/">Dashboard</Link> },
+        { key: "/analiz", label: <Link to="/analiz">Metin Analizi</Link> },
         { key: "/chatbot", label: <Link to="/chatbot">Chatbot</Link> },
         { key: "/audit", label: <Link to="/audit">Juri Audit Paneli</Link> },
       ]}
@@ -34,6 +36,7 @@ function App() {
           <Content style={{ padding: 24 }}>
             <Routes>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/analiz" element={<MetinAnalizi />} />
               <Route path="/chatbot" element={<Chatbot />} />
               <Route path="/audit" element={<AuditPanel />} />
             </Routes>

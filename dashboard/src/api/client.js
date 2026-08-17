@@ -76,6 +76,18 @@ export const chatGonder = async (soru) => {
   return yanit.data;
 };
 
+// POST /cikar - serbest kampanya metninden yapilandirilmis alanlar (Md. 6).
+// `hibrit` VARSAYILAN FALSE: LLM GPU'suz makinede kayit basina 150-300 sn
+// surer, canli demo bunu bekleyemez.
+export const metinCikar = async (metin, hibrit = false) => {
+  const yanit = await client.post("/cikar", { metin, hibrit }, {
+    // Hibrit istenirse GLiNER modeli yuklenir + Ollama cagrilir; varsayilan
+    // 10 sn'lik zaman asimi yetmez.
+    timeout: hibrit ? 600000 : 20000,
+  });
+  return yanit.data;
+};
+
 // GET /kampanyalar/{id}/etki - "bu kampanya IYI bir kampanya mi?"
 // Kume kucukse skor GELMEZ; durum/sebep alanlari doldurulur.
 export const etkiSkoruGetir = async (id) => {

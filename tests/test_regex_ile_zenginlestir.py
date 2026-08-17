@@ -150,11 +150,18 @@ def test_verifier_sonucu_kalici_olarak_yazilir():
 
     oturum = OturumYerel()
     try:
-        dogrulanmis_satir = (
-            oturum.query(Kampanya)
-            .filter(Kampanya.dogrulanan_alanlar.isnot(None))
-            .filter(Kampanya.dogrulanan_alanlar != {})
-            .first()
+        # NOT: dogrulanan_alanlar != {} SQL'de FILTRELENEMEZ - Postgres'in
+        # duz JSON tipi (JSONB degil) != operatorunu desteklemiyor
+        # (psycopg.errors.UndefinedFunction: operator does not exist:
+        # json <> json). Bu yuzden bos olmayanlik kontrolu Python
+        # tarafinda yapilir.
+        dogrulanmis_satir = next(
+            (
+                satir
+                for satir in oturum.query(Kampanya).filter(Kampanya.dogrulanan_alanlar.isnot(None))
+                if satir.dogrulanan_alanlar
+            ),
+            None,
         )
         if dogrulanmis_satir is None:
             pytest.skip(

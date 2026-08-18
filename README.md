@@ -384,6 +384,23 @@ yakalanmalı (hassasiyet), 10 meşru katılım ifadesi yakalanmamalıdır
 tam not alırdı. Güncel sonuç: **24/24 ve 10/10**, bir bilinen sınırlama
 belgeli. Ayrıntı: [`docs/kapsam_ve_veri_ayrimi.md`](docs/kapsam_ve_veri_ayrimi.md)
 
+### Sistemi nasıl anlatıyoruz
+
+Video, sunum ve proje dokümanı yazılırken kullanılacak ortak metin:
+[`docs/nasil_anlatiyoruz.md`](docs/nasil_anlatiyoruz.md)
+
+Kısaca: bu bir **hibrit çıkarım mimarisidir** (regex → GLiNER → Qwen2.5).
+Kullanılan üç model de açık kaynak ve **olduğu gibi**, sürümü sabitlenmiş
+biçimde çalışır — **fine-tuning yoktur**, dolayısıyla iddia da edilmez.
+Yeniliğimiz modeli eğitmek değil, hangi katmanın ne kadar katkı verdiğini
+(ve nerede zarar verdiğini) **ölçmüş olmak**.
+
+Bu kural `tests/test_iddia_durustlugu.py` ile korunur: bir belgeye
+yanlışlıkla eğitim iddiası yazılırsa CI kırmızı verir ve dosya:satır
+gösterir. Test kelimeyi değil **olumlu iddia kalıbını** arar; "fine-tuning
+yapılmadı" gibi doğruyu söyleyen cümleler serbesttir. Yasak/doğru ifade
+eşleşmelerinin tam listesi belgenin 4. bölümündedir.
+
 ### Henüz kurulmayanlar (dürüstlük notu)
 
 Aşağıdakiler hedef mimaride yer alır ancak **bu depoda henüz tamamlanmamıştır**;

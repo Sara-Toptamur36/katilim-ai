@@ -1,0 +1,294 @@
+/* ==========================================================
+   KatılımAI — Zümrüt Yeşili Tema Değişkenleri ve Kabuk Stilleri
+   ========================================================== */
+
+/* ---------- Açık Tema (varsayılan) ---------- */
+:root {
+  /* Marka renk skalası */
+  --marka-950: #082f29;
+  --marka-900: #0b4037;
+  --marka-800: #0c5144;
+  --marka-700: #0c6653;
+  --marka-600: #0c765f;
+  --marka-500: #169276;
+  --marka-400: #3fb296;
+  --marka-300: #7bcbb6;
+  --marka-200: #b9e4d8;
+  --marka-100: #ddf2ec;
+  --marka-50: #eff9f6;
+
+  /* Yardımcı renkler */
+  --altin-500: #c28e28;
+  --altin-100: #f8edcf;
+  --mavi-600: #297f96;
+  --mor-600: #7159a6;
+  --kirmizi-600: #c94f4f;
+  --turuncu-600: #b96f25;
+
+  /* Yüzey renkleri */
+  --zemin: #f2f6f4;
+  --kart: #ffffff;
+  --kenarlik: #e1e9e5;
+
+  /* Yazı renkleri */
+  --yazi-koyu: #192b27;
+  --yazi-normal: #4f625c;
+  --yazi-soluk: #7b8c86;
+
+  /* Kenar çubuğu arka planı */
+  --kenar-cubugu: #0d3f36;
+}
+
+/* ---------- Koyu Tema ---------- */
+html[data-tema="koyu"] {
+  --zemin: #0d1613;
+  --kart: #14211d;
+  --kenarlik: #263832;
+  --yazi-koyu: #edf5f2;
+  --yazi-normal: #bdcbc6;
+  --yazi-soluk: #8fa29b;
+  --kenar-cubugu: #0b342d;
+}
+
+/* ==========================================================
+   Sol Kenar Çubuğu (Sider)
+   ========================================================== */
+.kenar-cubugu {
+  background: var(--kenar-cubugu) !important;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Logo + marka bloğu */
+.marka-blogu {
+  padding: 28px 22px 12px;
+}
+
+.marka-ust {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.marka-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--marka-500);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  color: #ffffff;
+  flex-shrink: 0;
+  letter-spacing: 0.5px;
+}
+
+.marka-yazi {
+  display: flex;
+  flex-direction: column;
+}
+
+.marka-baslik {
+  font-size: 17px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.2px;
+  line-height: 1.2;
+}
+
+.marka-alt-baslik {
+  font-size: 11px;
+  color: var(--yazi-soluk);
+  margin-top: 2px;
+  letter-spacing: 0.2px;
+}
+
+/* Çalışma alanı bilgi kartı */
+.calisma-alani-karti {
+  margin: 16px 16px 8px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.calisma-alani-baslik {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1.3;
+}
+
+.calisma-alani-aciklama {
+  font-size: 11px;
+  color: var(--yazi-soluk);
+  margin-top: 3px;
+}
+
+/* Menü bölüm başlıkları */
+.menu-bolum-baslik {
+  padding: 20px 22px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* Menü öğesi */
+.menu-ogesi {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 22px;
+  margin: 2px 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  border: none;
+  background: none;
+  width: calc(100% - 20px);
+  text-align: left;
+}
+
+.menu-ogesi:hover {
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* Aktif menü öğesi */
+.menu-ogesi.aktif {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  font-weight: 500;
+}
+
+.menu-ogesi.aktif::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--marka-400);
+}
+
+.menu-ogesi-ikon {
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  width: 20px;
+  justify-content: center;
+}
+
+/* ==========================================================
+   Üst Bar (Header)
+   ========================================================== */
+.ust-bar {
+  height: 72px;
+  background: var(--kart) !important;
+  border-bottom: 1px solid var(--kenarlik);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px !important;
+}
+
+/* Yol göstergesi (breadcrumb) */
+.yol-gostergesi {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.yol-marka {
+  color: var(--marka-600);
+  font-weight: 600;
+}
+
+.yol-ayirici {
+  color: var(--yazi-soluk);
+  font-size: 13px;
+}
+
+.yol-aktif {
+  color: var(--yazi-koyu);
+  font-weight: 500;
+}
+
+/* Kullanıcı profil bloğu */
+.profil-blogu {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.profil-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--marka-100);
+  color: var(--marka-700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.profil-bilgi {
+  display: flex;
+  flex-direction: column;
+}
+
+.profil-isim {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--yazi-koyu);
+  line-height: 1.3;
+}
+
+.profil-rol {
+  font-size: 11px;
+  color: var(--yazi-soluk);
+}
+
+/* ==========================================================
+   İçerik Alanı
+   ========================================================== */
+.icerik-alani {
+  background: var(--zemin) !important;
+  padding: 28px !important;
+  min-height: calc(100vh - 72px);
+  overflow-y: auto;
+}
+
+/* ==========================================================
+   Ant Design Geçersiz Kılmalar
+   ========================================================== */
+
+/* Sider genişlik zorlaması */
+.ant-layout-sider {
+  min-width: 272px !important;
+  max-width: 272px !important;
+  width: 272px !important;
+  flex: 0 0 272px !important;
+}
+
+/* Layout varsayılan arka planlarını temizle */
+.ant-layout {
+  background: var(--zemin) !important;
+}

@@ -1,10 +1,14 @@
+import { useState, useEffect, useCallback } from "react";
 import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom";
-import { Layout, ConfigProvider } from "antd";
+import { Layout, ConfigProvider, Drawer, theme as antTema } from "antd";
 import {
   DashboardOutlined,
   RobotOutlined,
   FileSearchOutlined,
   AuditOutlined,
+  MoonOutlined,
+  SunOutlined,
+  MenuOutlined,
 } from "@ant-design/icons";
 
 /* Sayfa bileşenleri */
@@ -17,6 +21,9 @@ import AuditPanel from "./pages/AuditPanel";
 import { AuditProvider } from "./context/AuditContext";
 
 const { Sider, Header, Content } = Layout;
+
+/* localStorage anahtarı */
+const TEMA_ANAHTAR = "katilimai-tema";
 
 /* -------------------------------------------------------
    Menü öğeleri tanımı
@@ -40,9 +47,9 @@ const SAYFA_ADLARI = {
 };
 
 /* -------------------------------------------------------
-   Sol Kenar Çubuğu bileşeni
+   Menü İçeriği — hem Sider hem Drawer'da kullanılır
    ------------------------------------------------------- */
-function SolMenu() {
+function MenuIcerigi({ tiklaCalistir }) {
   const { pathname } = useLocation();
 
   /* Tek bir menü öğesini oluşturur */
@@ -53,6 +60,7 @@ function SolMenu() {
         key={oge.yol}
         to={oge.yol}
         className={`menu-ogesi ${aktifMi ? "aktif" : ""}`}
+        onClick={tiklaCalistir}
       >
         <span className="menu-ogesi-ikon">{oge.ikon}</span>
         <span>{oge.etiket}</span>
@@ -61,7 +69,7 @@ function SolMenu() {
   };
 
   return (
-    <Sider width={272} className="kenar-cubugu">
+    <>
       {/* Marka bloğu */}
       <div className="marka-blogu">
         <div className="marka-ust">
@@ -86,6 +94,17 @@ function SolMenu() {
       {/* Güven ve izleme menüsü */}
       <div className="menu-bolum-baslik">Güven ve İzleme</div>
       {GUVEN_MENUSU.map(menuOgesiOlustur)}
+    </>
+  );
+}
+
+/* -------------------------------------------------------
+   Sol Kenar Çubuğu — sadece masaüstünde görünür
+   ------------------------------------------------------- */
+function SolMenu() {
+  return (
+    <Sider width={272} className="kenar-cubugu masaustu-sider">
+      <MenuIcerigi />
     </Sider>
   );
 }
@@ -93,26 +112,50 @@ function SolMenu() {
 /* -------------------------------------------------------
    Üst Bar bileşeni
    ------------------------------------------------------- */
-function UstBar() {
+function UstBar({ koyuMu, temaToggle, cekmeceyiAc }) {
   const { pathname } = useLocation();
   const sayfaAdi = SAYFA_ADLARI[pathname] || "Sayfa";
 
   return (
     <Header className="ust-bar">
-      {/* Yol göstergesi */}
-      <div className="yol-gostergesi">
-        <span className="yol-marka">KatılımAI</span>
-        <span className="yol-ayirici">/</span>
-        <span className="yol-aktif">{sayfaAdi}</span>
+      {/* Sol taraf: hamburger (mobilde) + yol göstergesi */}
+      <div className="ust-bar-sol">
+        {/* Hamburger düğmesi — sadece mobilde görünür */}
+        <button
+          className="hamburger-dugme"
+          onClick={cekmeceyiAc}
+          aria-label="Menüyü aç"
+        >
+          <MenuOutlined />
+        </button>
+
+        <div className="yol-gostergesi">
+          <span className="yol-marka">KatılımAI</span>
+          <span className="yol-ayirici">/</span>
+          <span className="yol-aktif">{sayfaAdi}</span>
+        </div>
       </div>
 
-      {/* Kullanıcı profili */}
-      <div className="profil-blogu">
-        <div className="profil-bilgi">
-          <span className="profil-isim">PeacewAI Takımı</span>
-          <span className="profil-rol">Proje yöneticisi</span>
+      {/* Sağ taraf: tema düğmesi + profil */}
+      <div className="ust-bar-sag">
+        {/* Koyu tema düğmesi */}
+        <button
+          className="tema-dugme"
+          onClick={temaToggle}
+          aria-label={koyuMu ? "Açık temaya geç" : "Koyu temaya geç"}
+          title={koyuMu ? "Açık temaya geç" : "Koyu temaya geç"}
+        >
+          {koyuMu ? <SunOutlined /> : <MoonOutlined />}
+        </button>
+
+        {/* Kullanıcı profili */}
+        <div className="profil-blogu">
+          <div className="profil-bilgi">
+            <span className="profil-isim">PeacewAI Takımı</span>
+            <span className="profil-rol">Proje yöneticisi</span>
+          </div>
+          <div className="profil-avatar">PT</div>
         </div>
-        <div className="profil-avatar">PT</div>
       </div>
     </Header>
   );
@@ -122,9 +165,50 @@ function UstBar() {
    Ana Uygulama bileşeni
    ------------------------------------------------------- */
 function App() {
+  /* ---------- Koyu tema durumu ---------- */
+  const [koyuMu, setKoyuMu] = useState(() => {
+    /* Sayfa yüklenirken localStorage'dan oku */
+    try {
+      return localStorage.getItem(TEMA_ANAHTAR) === "koyu";
+    } catch {
+      return false;
+    }
+  });
+
+  /* html etiketine data-tema niteliğini yansıt */
+  useEffect(() => {
+    const html = document.documentElement;
+    if (koyuMu) {
+      html.setAttribute("data-tema", "koyu");
+    } else {
+      html.removeAttribute("data-tema");
+    }
+  }, [koyuMu]);
+
+  /* Tema değiştirme fonksiyonu */
+  const temaToggle = useCallback(() => {
+    setKoyuMu((onceki) => {
+      const yeni = !onceki;
+      try {
+        localStorage.setItem(TEMA_ANAHTAR, yeni ? "koyu" : "acik");
+      } catch {
+        /* localStorage erişim hatası — sessizce geç */
+      }
+      return yeni;
+    });
+  }, []);
+
+  /* ---------- Mobil çekmece durumu ---------- */
+  const [cekmeceAcik, setCekmeceAcik] = useState(false);
+
+  const cekmeceyiAc = useCallback(() => setCekmeceAcik(true), []);
+  const cekmeceyiKapat = useCallback(() => setCekmeceAcik(false), []);
+
   return (
     <ConfigProvider
       theme={{
+        /* Koyu tema aktifken darkAlgorithm kullan */
+        algorithm: koyuMu ? antTema.darkAlgorithm : antTema.defaultAlgorithm,
         token: {
           colorPrimary: "#169276",
           borderRadius: 8,
@@ -136,12 +220,31 @@ function App() {
       <BrowserRouter>
         <AuditProvider>
           <Layout style={{ minHeight: "100vh" }}>
-            {/* Sol dikey menü */}
+            {/* Sol dikey menü — masaüstünde görünür */}
             <SolMenu />
+
+            {/* Mobil çekmece menüsü */}
+            <Drawer
+              placement="left"
+              onClose={cekmeceyiKapat}
+              open={cekmeceAcik}
+              width={272}
+              styles={{
+                body: { padding: 0, background: "var(--kenar-cubugu)" },
+                header: { display: "none" },
+              }}
+              className="mobil-cekmece"
+            >
+              <MenuIcerigi tiklaCalistir={cekmeceyiKapat} />
+            </Drawer>
 
             {/* Sağ taraf: üst bar + içerik */}
             <Layout>
-              <UstBar />
+              <UstBar
+                koyuMu={koyuMu}
+                temaToggle={temaToggle}
+                cekmeceyiAc={cekmeceyiAc}
+              />
               <Content className="icerik-alani">
                 <Routes>
                   <Route path="/" element={<Dashboard />} />

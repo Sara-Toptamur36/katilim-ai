@@ -64,23 +64,47 @@ function MenuIcerigi({ tiklaCalistir }) {
   const { pathname } = useLocation();
 
   /* ---------- Veri modu göstergesi ---------- */
-  /* "kontrol" = sayfa açılışında API'ye bağlanıyor
-     "canli"   = API yanıt verdi
-     "demo"    = API'ye ulaşılamadı */
+  /* "kontrol"      = sayfa açılışında API'ye bağlanıyor
+     "canli"        = API yanıt verdi
+     "baglanti_yok" = API'ye ulaşılamadı */
   const [veriModu, setVeriModu] = useState("kontrol");
+  const [sonKontrol, setSonKontrol] = useState("");
 
-  useEffect(() => {
-    /* Sayfa açılışında bir kez kontrol et */
+  const formatSaat = () => {
+    const simdi = new Date();
+    const saat = String(simdi.getHours()).padStart(2, "0");
+    const dakika = String(simdi.getMinutes()).padStart(2, "0");
+    return `${saat}:${dakika}`;
+  };
+
+  const kontrolEt = () => {
+    setVeriModu("kontrol");
     client
       .get("/")
-      .then(() => setVeriModu("canli"))
-      .catch(() => setVeriModu("demo"));
+      .then(() => {
+        setVeriModu("canli");
+        setSonKontrol(formatSaat());
+      })
+      .catch(() => {
+        setVeriModu("baglanti_yok");
+        setSonKontrol(formatSaat());
+      });
+  };
+
+  useEffect(() => {
+    kontrolEt();
   }, []);
 
   const VERI_MODU_METINLERI = {
     kontrol: "Kontrol ediliyor",
     canli: "Canlı veri",
-    demo: "Demo veri",
+    baglanti_yok: "Bağlantı yok",
+  };
+
+  const NOKTA_RENKLERI = {
+    kontrol: "rgba(255, 255, 255, 0.4)",
+    canli: "#3fb296",
+    baglanti_yok: "#c94f4f",
   };
 
   /* Tek bir menü öğesini oluşturur */
@@ -112,10 +136,63 @@ function MenuIcerigi({ tiklaCalistir }) {
         </div>
       </div>
 
-      {/* Veri modu göstergesi */}
-      <div className="veri-modu-gostergesi">
-        <span className={`veri-modu-nokta ${veriModu}`} />
-        <span className="veri-modu-yazi">{VERI_MODU_METINLERI[veriModu]}</span>
+      {/* Veri modu durum kutusu */}
+      <div
+        onClick={kontrolEt}
+        style={{
+          margin: "16px 16px 8px",
+          padding: "10px 14px",
+          borderRadius: 10,
+          background: "rgba(255, 255, 255, 0.06)",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+          cursor: "pointer",
+          display: "flex",
+          flexDirection: "column",
+          gap: 3,
+          transition: "background 0.2s ease",
+          boxSizing: "border-box",
+        }}
+        title="Yeniden kontrol etmek için tıklayın"
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              background: NOKTA_RENKLERI[veriModu],
+              boxShadow:
+                veriModu === "canli"
+                  ? "0 0 6px rgba(63, 178, 150, 0.6)"
+                  : veriModu === "baglanti_yok"
+                  ? "0 0 6px rgba(201, 79, 79, 0.6)"
+                  : "none",
+              flexShrink: 0,
+            }}
+          />
+          <span
+            style={{
+              fontSize: 13,
+              color: "#ffffff",
+              fontWeight: 600,
+              lineHeight: 1.2,
+            }}
+          >
+            {VERI_MODU_METINLERI[veriModu]}
+          </span>
+        </div>
+        {sonKontrol && (
+          <span
+            style={{
+              fontSize: 11,
+              color: "rgba(255, 255, 255, 0.45)",
+              paddingLeft: 16,
+              lineHeight: 1.2,
+            }}
+          >
+            son kontrol {sonKontrol}
+          </span>
+        )}
       </div>
 
       {/* Kontrol merkezi menüsü */}

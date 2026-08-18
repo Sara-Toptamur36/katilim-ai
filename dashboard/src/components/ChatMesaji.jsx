@@ -53,7 +53,7 @@ export default function ChatMesaji({ mesaj }) {
   return (
     <div style={{ marginBottom: 16 }}>
       <div>
-        <strong>{kullaniciMi ? "Siz:" : "KatilimAI:"}</strong>{" "}
+        <strong>{kullaniciMi ? "Siz:" : "KatılımAI:"}</strong>{" "}
         {mesaj.metin}
         {mesaj.streaming && <span>▍</span>}
       </div>
@@ -61,8 +61,8 @@ export default function ChatMesaji({ mesaj }) {
       {mesaj.fallback && (
         <Alert
           type="info"
-          title="Bu soruyu tam olarak anlayamadim"
-          description="Kampanya karsilastirmasi, kar payi oranlari veya vade sureleri hakkinda soru sorabilirsiniz."
+          title="Bu soruyu tam olarak anlayamadım"
+          description="Kampanya karşılaştırması, kâr payı oranları veya vade süreleri hakkında soru sorabilirsiniz."
           showIcon
           style={{ marginTop: 8, maxWidth: 480 }}
         />
@@ -71,7 +71,7 @@ export default function ChatMesaji({ mesaj }) {
       {mesaj.hata && (
         <Alert
           type="error"
-          title="Baglanti sorunu"
+          title="Bağlantı sorunu"
           description={mesaj.metin}
           showIcon
           style={{ marginTop: 8, maxWidth: 480 }}
@@ -80,7 +80,7 @@ export default function ChatMesaji({ mesaj }) {
 
       {!kullaniciMi && mesaj.confidence != null && !mesaj.streaming && !mesaj.hata && (
         <div style={{ marginTop: 4 }}>
-          <span>Yanit guven skoru: </span>
+          <span>Yanıt güven skoru: </span>
           <Progress
             percent={Math.round(mesaj.confidence * 100)}
             size="small"

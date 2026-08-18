@@ -55,7 +55,7 @@ export default function Chatbot() {
         ...onceki,
         {
           rol: "bot",
-          metin: "Uzgunum, su anda yanit veremiyorum. Lutfen tekrar deneyin.",
+          metin: "Üzgünüm, şu anda yanıt veremiyorum. Lütfen tekrar deneyin.",
           hata: true,
         },
       ]);
@@ -114,7 +114,7 @@ export default function Chatbot() {
         ...onceki,
         {
           rol: "bot",
-          metin: "Baglanti sirasinda bir sorun olustu. Lutfen tekrar deneyin.",
+          metin: "Bağlantı sırasında bir sorun oluştu. Lütfen tekrar deneyin.",
           hata: true,
         },
       ]);
@@ -129,13 +129,13 @@ export default function Chatbot() {
           <ChatMesaji key={i} mesaj={m} />
         ))}
       </div>
-      {bekleniyor && <Spin description="Yanit hazirlaniyor..." />}
+      {bekleniyor && <Spin description="Yanıt hazırlanıyor..." />}
       <Input.Search
         value={girdi}
         onChange={(e) => setGirdi(e.target.value)}
         onSearch={gonder}
-        enterButton="Gonder"
-        placeholder="Orn: A Bankasi'nin konut finansmani orani ne?"
+        enterButton="Gönder"
+        placeholder="Örn: A Bankası'nın konut finansmanı oranı ne?"
         disabled={bekleniyor}
       />
     </div>

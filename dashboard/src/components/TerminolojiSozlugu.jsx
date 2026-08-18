@@ -57,7 +57,7 @@ export default function TerminolojiSozlugu() {
     return (
       <Alert
         type="error"
-        title="Terminoloji sozlugu alinamadi"
+        title="Terminoloji sözlüğü alınamadı"
         description={hata}
         showIcon
       />
@@ -69,14 +69,14 @@ export default function TerminolojiSozlugu() {
       <Input.Search
         value={arama}
         onChange={(e) => setArama(e.target.value)}
-        placeholder="Kavram ara: kar payi, murabaha, mevduat..."
+        placeholder="Kavram ara: kâr payı, murabaha, mevduat..."
         allowClear
         style={{ maxWidth: 420, marginBottom: 12 }}
       />
 
       <Typography.Paragraph type="secondary" style={{ marginBottom: 12 }}>
-        {suzulmus.length} / {terimler.length} kavram. Her kavramin geleneksel
-        bankacilik karsiligi ve tanim kaynagi birlikte gosterilir (Sartname Md. 5.5).
+        {suzulmus.length} / {terimler.length} kavram. Her kavramın geleneksel
+        bankacılık karşılığı ve tanım kaynağı birlikte gösterilir (Şartname Md. 5.5).
       </Typography.Paragraph>
 
       {suzulmus.length === 0 ? (
@@ -94,23 +94,23 @@ export default function TerminolojiSozlugu() {
             children: (
               <>
                 <p>
-                  <strong>Geleneksel bankaciliktaki karsiligi:</strong>{" "}
+                  <strong>Geleneksel bankacılıktaki karşılığı:</strong>{" "}
                   {t.gelenek_karsilik}
                 </p>
                 <p>
-                  <strong>Aciklama:</strong> {t.aciklama}
+                  <strong>Açıklama:</strong> {t.aciklama}
                 </p>
                 <p>
-                  <strong>Tanim kaynagi:</strong> {t.kaynak}
+                  <strong>Tanım kaynağı:</strong> {t.kaynak}
                 </p>
                 {t.ornek_kaynak && (
                   <p>
-                    <strong>Gercek veride gorulduğu yer:</strong> {t.ornek_kaynak}
+                    <strong>Gerçek veride görüldüğü yer:</strong> {t.ornek_kaynak}
                   </p>
                 )}
                 {t.sema_alani.length > 0 && (
                   <p>
-                    <strong>Karsilik geldigi veri alani:</strong>{" "}
+                    <strong>Karşılık geldiği veri alanı:</strong>{" "}
                     {t.sema_alani.map((alan) => (
                       <Tag key={alan}>{alan}</Tag>
                     ))}

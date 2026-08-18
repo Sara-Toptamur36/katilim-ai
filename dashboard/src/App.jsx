@@ -20,6 +20,9 @@ import AuditPanel from "./pages/AuditPanel";
 /* Bağlam sağlayıcıları */
 import { AuditProvider } from "./context/AuditContext";
 
+/* API istemcisi — veri modu kontrolü için */
+import client from "./api/client";
+
 const { Sider, Header, Content } = Layout;
 
 /* localStorage anahtarı */
@@ -52,6 +55,26 @@ const SAYFA_ADLARI = {
 function MenuIcerigi({ tiklaCalistir }) {
   const { pathname } = useLocation();
 
+  /* ---------- Veri modu göstergesi ---------- */
+  /* "kontrol" = sayfa açılışında API'ye bağlanıyor
+     "canli"   = API yanıt verdi
+     "demo"    = API'ye ulaşılamadı */
+  const [veriModu, setVeriModu] = useState("kontrol");
+
+  useEffect(() => {
+    /* Sayfa açılışında bir kez kontrol et */
+    client
+      .get("/")
+      .then(() => setVeriModu("canli"))
+      .catch(() => setVeriModu("demo"));
+  }, []);
+
+  const VERI_MODU_METINLERI = {
+    kontrol: "Kontrol ediliyor",
+    canli: "Canlı veri",
+    demo: "Demo veri",
+  };
+
   /* Tek bir menü öğesini oluşturur */
   const menuOgesiOlustur = (oge) => {
     const aktifMi = pathname === oge.yol;
@@ -81,10 +104,10 @@ function MenuIcerigi({ tiklaCalistir }) {
         </div>
       </div>
 
-      {/* Çalışma alanı kartı */}
-      <div className="calisma-alani-karti">
-        <div className="calisma-alani-baslik">Bilişim Vadisi 2026</div>
-        <div className="calisma-alani-aciklama">Mentörlük çalışma alanı</div>
+      {/* Veri modu göstergesi */}
+      <div className="veri-modu-gostergesi">
+        <span className={`veri-modu-nokta ${veriModu}`} />
+        <span className="veri-modu-yazi">{VERI_MODU_METINLERI[veriModu]}</span>
       </div>
 
       {/* Kontrol merkezi menüsü */}
@@ -213,7 +236,7 @@ function App() {
           colorPrimary: "#169276",
           borderRadius: 8,
           fontFamily:
-            '"Inter", "Segoe UI", Roboto, -apple-system, BlinkMacSystemFont, sans-serif',
+            '-apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
         },
       }}
     >

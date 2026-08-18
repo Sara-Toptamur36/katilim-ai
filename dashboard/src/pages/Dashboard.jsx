@@ -47,7 +47,7 @@ export default function Dashboard() {
 
   return (
     <div>
-      <Title level={3}>Kampanya Karsilastirma Panosu</Title>
+      <Title level={3}>Kampanya Karşılaştırma Panosu</Title>
 
       <TazelikSeridi />
 
@@ -63,7 +63,7 @@ export default function Dashboard() {
       {hata && (
         <Alert
           type="error"
-          title="Veri alinamadi"
+          title="Veri alınamadı"
           description={hata}
           style={{ marginBottom: 16 }}
           showIcon
@@ -87,7 +87,7 @@ export default function Dashboard() {
       )}
 
       <Divider />
-      <Title level={4}>Kampanya Karsilastir</Title>
+      <Title level={4}>Kampanya Karşılaştır</Title>
       <KarsilastirmaPaneli secilenIdler={secilenIdler} />
 
       <Divider />
@@ -95,7 +95,7 @@ export default function Dashboard() {
       <RakipMatrisi turler={turler} />
 
       <Divider />
-      <Title level={4}>Terminoloji Sozlugu</Title>
+      <Title level={4}>Terminoloji Sözlüğü</Title>
       <TerminolojiSozlugu />
     </div>
   );

@@ -17,7 +17,7 @@ export default function IstatistikKartlari({ kampanyalar }) {
       <Col span={8}>
         <Card>
           <Statistic
-            title="Aktif Banka Sayisi"
+            title="Aktif Banka Sayısı"
             value={new Set(kampanyalar.map((k) => k.banka)).size}
           />
         </Card>
@@ -25,8 +25,8 @@ export default function IstatistikKartlari({ kampanyalar }) {
       <Col span={8}>
         <Card>
           <Statistic
-            title="En Dusuk Kar Payi"
-            value={enDusukKarPayi != null ? enDusukKarPayi : "Belirtilmemis"}
+            title="En Düşük Kâr Payı"
+            value={enDusukKarPayi != null ? enDusukKarPayi : "Belirtilmemiş"}
             suffix={enDusukKarPayi != null ? "%" : ""}
           />
         </Card>

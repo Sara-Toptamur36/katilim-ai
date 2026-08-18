@@ -4,7 +4,7 @@ export default function FiltrePaneli({ bankalar, turler, filtreler, onDegistir }
   return (
     <Space wrap style={{ marginBottom: 16 }}>
       <Select
-        placeholder="Banka secin"
+        placeholder="Banka seçin"
         style={{ width: 200 }}
         allowClear
         value={filtreler.banka}
@@ -12,7 +12,7 @@ export default function FiltrePaneli({ bankalar, turler, filtreler, onDegistir }
         options={bankalar.map((b) => ({ value: b, label: b }))}
       />
       <Select
-        placeholder="Kampanya turu"
+        placeholder="Kampanya türü"
         style={{ width: 240 }}
         allowClear
         value={filtreler.kampanya_turu}

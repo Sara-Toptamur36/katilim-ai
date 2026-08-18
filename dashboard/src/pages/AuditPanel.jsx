@@ -5,10 +5,10 @@ import KopyalaButonu from "../components/KopyalaButonu";
 const { Title } = Typography;
 
 const gecmisKolonlari = [
-  { title: "Zaman", dataIndex: "zaman", key: "zaman", render: (z) => new Date(z).toLocaleTimeString() },
+  { title: "Zaman", dataIndex: "zaman", key: "zaman", render: (z) => new Date(z).toLocaleTimeString("tr-TR") },
   { title: "Soru", dataIndex: "soru", key: "soru", ellipsis: true },
   { title: "Niyet", dataIndex: "intent", key: "intent" },
-  { title: "Arac", dataIndex: "cagrilan_arac", key: "cagrilan_arac" },
+  { title: "Araç", dataIndex: "cagrilan_arac", key: "cagrilan_arac" },
   { title: "Gecikme (ms)", dataIndex: "latency_ms", key: "latency_ms" },
   {
     title: "Cache",
@@ -24,15 +24,15 @@ const retrieverKolonlari = [
     title: "Benzerlik",
     dataIndex: "similarity_score",
     key: "similarity_score",
-    render: (v) => (v != null ? v.toFixed(3) : "Belirtilmemis"),
+    render: (v) => (v != null ? v.toFixed(3) : "Belirtilmemiş"),
   },
   {
     title: "Rerank Skoru",
     dataIndex: "rerank_score",
     key: "rerank_score",
-    render: (v) => (v != null ? v.toFixed(3) : "Belirtilmemis"),
+    render: (v) => (v != null ? v.toFixed(3) : "Belirtilmemiş"),
   },
-  { title: "Metin (kisa)", dataIndex: "metin_ozeti", key: "metin_ozeti", ellipsis: true },
+  { title: "Metin (kısa)", dataIndex: "metin_ozeti", key: "metin_ozeti", ellipsis: true },
 ];
 
 export default function AuditPanel() {
@@ -41,45 +41,45 @@ export default function AuditPanel() {
   if (!sonAudit) {
     return (
       <div>
-        <Title level={3}>Juri Audit Paneli</Title>
-        <Empty description="Henuz sorgu yok. Once Chatbot ekranindan bir soru sorun." />
+        <Title level={3}>Jüri Audit Paneli</Title>
+        <Empty description="Henüz sorgu yok. Önce Chatbot ekranından bir soru sorun." />
       </div>
     );
   }
 
   return (
     <div>
-      <Title level={3}>Juri Audit Paneli</Title>
+      <Title level={3}>Jüri Audit Paneli</Title>
 
       <Descriptions title="Son Sorgu Denetim Bilgisi" bordered column={2} style={{ marginBottom: 24 }}>
-        <Descriptions.Item label="Algilanan Niyet">
-          {sonAudit.intent ?? "Belirtilmemis"}{" "}
+        <Descriptions.Item label="Algılanan Niyet">
+          {sonAudit.intent ?? "Belirtilmemiş"}{" "}
           {sonAudit.intent_confidence != null && (
             <Tag color="blue">{(sonAudit.intent_confidence * 100).toFixed(0)}%</Tag>
           )}
         </Descriptions.Item>
-        <Descriptions.Item label="Cagrilan Arac">
-          <Tag color="purple">{sonAudit.cagrilan_arac ?? "Belirtilmemis"}</Tag>
+        <Descriptions.Item label="Çağrılan Araç">
+          <Tag color="purple">{sonAudit.cagrilan_arac ?? "Belirtilmemiş"}</Tag>
         </Descriptions.Item>
-        <Descriptions.Item label="Yanit Suresi">
-          {sonAudit.latency_ms != null ? `${sonAudit.latency_ms} ms` : "Belirtilmemis"}
+        <Descriptions.Item label="Yanıt Süresi">
+          {sonAudit.latency_ms != null ? `${sonAudit.latency_ms} ms` : "Belirtilmemiş"}
         </Descriptions.Item>
         <Descriptions.Item label="Cache">
           <Tag color={sonAudit.cache_hit ? "green" : "default"}>
             {sonAudit.cache_hit ? "HIT" : "MISS"}
           </Tag>
         </Descriptions.Item>
-        <Descriptions.Item label="Model">{sonAudit.model ?? "Belirtilmemis"}</Descriptions.Item>
+        <Descriptions.Item label="Model">{sonAudit.model ?? "Belirtilmemiş"}</Descriptions.Item>
         <Descriptions.Item label="Temperature">
-          {sonAudit.temperature ?? "Belirtilmemis"}
+          {sonAudit.temperature ?? "Belirtilmemiş"}
         </Descriptions.Item>
         {sonAudit.regex_basari_orani != null && (
-          <Descriptions.Item label="Regex/Model Basari Orani" span={2}>
+          <Descriptions.Item label="Regex/Model Başarı Oranı" span={2}>
             {(sonAudit.regex_basari_orani * 100).toFixed(1)}%
           </Descriptions.Item>
         )}
         {sonAudit.sebep && (
-          <Descriptions.Item label="Sebep / Aciklama" span={2}>
+          <Descriptions.Item label="Sebep / Açıklama" span={2}>
             {sonAudit.sebep}
           </Descriptions.Item>
         )}
@@ -110,7 +110,7 @@ export default function AuditPanel() {
 
       {sonAudit.sql_sorgusu && (
         <Card
-          title="Calistirilan SQL Sorgusu"
+          title="Çalıştırılan SQL Sorgusu"
           size="small"
           extra={<KopyalaButonu metin={sonAudit.sql_sorgusu} />}
           style={{ marginBottom: 24 }}
@@ -134,7 +134,7 @@ export default function AuditPanel() {
 
       {sonAudit.retriever_sonuclari && sonAudit.retriever_sonuclari.length > 0 && (
         <Table
-          title={() => "Retriever Sonuclari"}
+          title={() => "Retriever Sonuçları"}
           size="small"
           dataSource={sonAudit.retriever_sonuclari}
           rowKey="chunk_id"
@@ -145,7 +145,7 @@ export default function AuditPanel() {
       )}
 
       <Table
-        title={() => "Sorgu Gecmisi (son 20)"}
+        title={() => "Sorgu Geçmişi (son 20)"}
         size="small"
         dataSource={auditGecmisi}
         rowKey="zaman"

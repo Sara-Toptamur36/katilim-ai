@@ -5,11 +5,11 @@ import { karsilastir } from "../api/client";
 // api/comparison/compare_engine.py'daki KRITERLER sozlugu ile BIREBIR ayni
 // olmali - sunucu, bu listenin disindaki bir kriteri 422 ile reddeder.
 const KRITERLER = [
-  { value: "en_dusuk_kar_payi", label: "En dusuk kar payi orani" },
-  { value: "en_yuksek_odul", label: "En yuksek odul miktari" },
-  { value: "en_uzun_vade", label: "En uzun vade secenegi" },
-  { value: "en_dusuk_masraf", label: "En dusuk masraf/tahsis ucreti" },
-  { value: "en_yuksek_tutar", label: "En yuksek finansman tutari" },
+  { value: "en_dusuk_kar_payi", label: "En düşük kâr payı oranı" },
+  { value: "en_yuksek_odul", label: "En yüksek ödül miktarı" },
+  { value: "en_uzun_vade", label: "En uzun vade seçeneği" },
+  { value: "en_dusuk_masraf", label: "En düşük masraf/tahsis ücreti" },
+  { value: "en_yuksek_tutar", label: "En yüksek finansman tutarı" },
 ];
 
 const sonucKolonlari = [
@@ -17,10 +17,10 @@ const sonucKolonlari = [
   { title: "Banka", dataIndex: "banka", key: "banka" },
   { title: "Kampanya", dataIndex: "kampanya_adi", key: "kampanya_adi" },
   {
-    title: "Kriter Degeri",
+    title: "Kriter Değeri",
     dataIndex: "kriter_degeri",
     key: "kriter_degeri",
-    render: (deger) => (deger != null ? deger : "Belirtilmemis"),
+    render: (deger) => (deger != null ? deger : "Belirtilmemiş"),
   },
   {
     title: "Eksik Alanlar",
@@ -74,18 +74,18 @@ export default function KarsilastirmaPaneli({ secilenIdler }) {
           disabled={secilenIdler.length < 2}
           loading={yukleniyor}
         >
-          Karsilastir ({secilenIdler.length} secili)
+          Karşılaştır ({secilenIdler.length} seçili)
         </Button>
       </Space>
 
       {secilenIdler.length < 2 && (
         <p style={{ color: "#888" }}>
-          Karsilastirmak icin tablodan en az 2 kampanya secin.
+          Karşılaştırmak için tablodan en az 2 kampanya seçin.
         </p>
       )}
 
       {hata && (
-        <Alert type="error" title="Karsilastirma basarisiz" description={hata} showIcon />
+         <Alert type="error" title="Karşılaştırma başarısız" description={hata} showIcon />
       )}
 
       {sonuc && (

@@ -15,7 +15,7 @@
 }
 
 html {
-  font-size: 16px;
+  font-size: 14px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -23,11 +23,11 @@ html {
 
 body {
   margin: 0;
-  font-family: "Inter", "Segoe UI", Roboto, -apple-system, BlinkMacSystemFont,
-    sans-serif;
+  font-family: var(--yazi-tipi);
   color: var(--yazi-normal);
   background: var(--zemin);
-  line-height: 1.5;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 /* ---------- Kök Element ---------- */
@@ -47,28 +47,47 @@ h3,
 h4,
 h5,
 h6 {
+  font-family: var(--yazi-tipi);
   color: var(--yazi-koyu);
-  font-weight: 600;
-  line-height: 1.3;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
 }
 
+/* Sayfa başlığı */
 h1 {
   font-size: 28px;
-  letter-spacing: -0.5px;
+  font-weight: 650;
+  line-height: 1.25;
+  margin-bottom: 20px;
 }
 
+/* Bölüm başlığı */
 h2 {
-  font-size: 22px;
-  letter-spacing: -0.3px;
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 12px;
 }
 
 h3 {
-  font-size: 18px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* Ant Design Title bileşeni h1-h5 oluşturur — onları da yakala */
+.ant-typography h1,
+.ant-typography h2,
+.ant-typography h3,
+.ant-typography h4,
+.ant-typography h5 {
+  font-family: var(--yazi-tipi);
+  letter-spacing: -0.01em;
 }
 
 p {
   margin: 0;
   color: var(--yazi-normal);
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 a {
@@ -101,7 +120,7 @@ a:hover {
 
 /* ---------- Kod Blokları ---------- */
 code {
-  font-family: "Fira Code", ui-monospace, Consolas, monospace;
+  font-family: ui-monospace, Consolas, monospace;
   font-size: 13px;
   padding: 2px 6px;
   border-radius: 4px;

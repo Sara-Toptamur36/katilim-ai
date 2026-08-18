@@ -51,12 +51,12 @@ function DogrulamaOzeti({ dogrulananAlanlar }) {
 const kolonlar = [
   { title: "Banka", dataIndex: "banka", key: "banka" },
   { title: "Kampanya", dataIndex: "kampanya_adi", key: "kampanya_adi" },
-  { title: "Tur", dataIndex: "kampanya_turu", key: "kampanya_turu" },
+  { title: "Tür", dataIndex: "kampanya_turu", key: "kampanya_turu" },
   {
-    title: "Kar Payi Orani",
+    title: "Kâr Payı Oranı",
     dataIndex: "kar_payi_orani_percent",
     key: "kar_payi",
-    render: (deger) => (deger != null ? `%${deger}` : "Belirtilmemis"),
+    render: (deger) => (deger != null ? `%${deger}` : "Belirtilmemiş"),
     sorter: (a, b) =>
       (a.kar_payi_orani_percent ?? 999) - (b.kar_payi_orani_percent ?? 999),
   },
@@ -64,16 +64,16 @@ const kolonlar = [
     title: "Vade (ay)",
     dataIndex: "vade_ay",
     key: "vade",
-    render: (deger) => (deger != null ? deger : "Belirtilmemis"),
+    render: (deger) => (deger != null ? deger : "Belirtilmemiş"),
     sorter: (a, b) => (a.vade_ay ?? 999) - (b.vade_ay ?? 999),
   },
   {
-    title: "Odul",
+    title: "Ödül",
     key: "odul",
     render: (_, kayit) =>
       kayit.odul_miktari != null
         ? `${kayit.odul_miktari} ${kayit.odul_birimi ?? ""}`
-        : "Belirtilmemis",
+        : "Belirtilmemiş",
   },
   {
     title: (
@@ -92,7 +92,7 @@ const kolonlar = [
     key: "durum",
     render: (durum) => (
       <Tag color={durum === "ACTIVE" ? "green" : "default"}>
-        {durum === "ACTIVE" ? "Aktif" : durum === "EXPIRED" ? "Suresi Dolmus" : "Bilinmiyor"}
+        {durum === "ACTIVE" ? "Aktif" : durum === "EXPIRED" ? "Süresi Dolmuş" : "Bilinmiyor"}
       </Tag>
     ),
   },

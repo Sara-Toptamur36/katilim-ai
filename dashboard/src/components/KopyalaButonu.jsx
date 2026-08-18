@@ -5,9 +5,9 @@ export default function KopyalaButonu({ metin }) {
   const kopyala = async () => {
     try {
       await navigator.clipboard.writeText(metin);
-      message.success("Panoya kopyalandi");
+      message.success("Panoya kopyalandı");
     } catch {
-      message.error("Kopyalanamadi");
+      message.error("Kopyalanamadı");
     }
   };
 

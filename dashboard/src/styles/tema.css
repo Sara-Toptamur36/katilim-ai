@@ -37,38 +37,132 @@
 
   /* Kenar çubuğu arka planı */
   --kenar-cubugu: #0d3f36;
+
+  /* Yazı tipi ailesi */
+  --yazi-tipi: -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+               Arial, sans-serif;
 }
 
 /* ---------- Koyu Tema ---------- */
+/* Katman sırası (koyudan açığa):
+   sol menü (#061a16) < zemin (#080f0d) < kart (#16251f) < kart-üstü (#1d3029) */
 html[data-tema="koyu"] {
-  --zemin: #0d1613;
-  --kart: #14211d;
-  --kenarlik: #263832;
-  --yazi-koyu: #edf5f2;
-  --yazi-normal: #bdcbc6;
-  --yazi-soluk: #8fa29b;
-  --kenar-cubugu: #0b342d;
+  --zemin: #080f0d;
+  --kart: #16251f;
+  --kart-ustu: #1d3029;
+  --kenarlik: #2c4038;
+  --yazi-koyu: #eef6f3;
+  --yazi-normal: #c3d1cc;
+  --yazi-soluk: #93a59e;
+  --kenar-cubugu: #061a16;
 }
 
-/* Koyu temada Ant Design bileşen arka planları */
+/* ---------- Koyu Tema — Ant Design Geçersiz Kılmaları ---------- */
+
+/* Kartlar: gölge ve kenar çizgisiyle zeminden ayrılsın */
+html[data-tema="koyu"] .ant-card {
+  background: var(--kart);
+  border: 1px solid var(--kenarlik);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Modal */
+html[data-tema="koyu"] .ant-modal-content {
+  background: var(--kart);
+  border: 1px solid var(--kenarlik);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+/* Form girdileri */
+html[data-tema="koyu"] .ant-input,
+html[data-tema="koyu"] .ant-select-selector,
+html[data-tema="koyu"] .ant-picker {
+  background: var(--kart-ustu) !important;
+  border-color: var(--kenarlik) !important;
+}
+
+/* ---------- Koyu Tema — Tablo ---------- */
 html[data-tema="koyu"] .ant-table {
   background: var(--kart);
 }
 
-html[data-tema="koyu"] .ant-card {
-  background: var(--kart);
-  border-color: var(--kenarlik);
+/* Tablo başlık satırı */
+html[data-tema="koyu"] .ant-table-thead > tr > th,
+html[data-tema="koyu"] .ant-table-thead > tr > td {
+  background: var(--kart-ustu) !important;
+  border-bottom: 1px solid var(--kenarlik) !important;
+  color: var(--yazi-koyu);
 }
 
-html[data-tema="koyu"] .ant-modal-content {
+/* Tablo gövde satırları */
+html[data-tema="koyu"] .ant-table-tbody > tr > td {
   background: var(--kart);
+  border-bottom: 1px solid var(--kenarlik) !important;
+  color: var(--yazi-normal);
 }
 
-html[data-tema="koyu"] .ant-input,
-html[data-tema="koyu"] .ant-select-selector,
-html[data-tema="koyu"] .ant-picker {
-  background: var(--zemin) !important;
-  border-color: var(--kenarlik) !important;
+/* Tablo satır hover efekti */
+html[data-tema="koyu"] .ant-table-tbody > tr:hover > td {
+  background: var(--kart-ustu) !important;
+}
+
+/* Tablo çizgili (striped) satırlar — varsa */
+html[data-tema="koyu"] .ant-table-tbody > tr.ant-table-row:nth-child(even) > td {
+  background: rgba(29, 48, 41, 0.4);
+}
+
+html[data-tema="koyu"] .ant-table-tbody > tr.ant-table-row:nth-child(even):hover > td {
+  background: var(--kart-ustu) !important;
+}
+
+/* ---------- Koyu Tema — Uyarı Kutuları (Alert) ---------- */
+
+/* Uyarı (warning) */
+html[data-tema="koyu"] .ant-alert-warning {
+  background: #2e2410;
+  border-color: #6b5518;
+}
+
+html[data-tema="koyu"] .ant-alert-warning .ant-alert-icon,
+html[data-tema="koyu"] .ant-alert-warning .ant-alert-message,
+html[data-tema="koyu"] .ant-alert-warning .ant-alert-description {
+  color: #e7c978;
+}
+
+/* Hata (error) */
+html[data-tema="koyu"] .ant-alert-error {
+  background: #2e1616;
+  border-color: #6b2626;
+}
+
+html[data-tema="koyu"] .ant-alert-error .ant-alert-icon,
+html[data-tema="koyu"] .ant-alert-error .ant-alert-message,
+html[data-tema="koyu"] .ant-alert-error .ant-alert-description {
+  color: #f0a0a0;
+}
+
+/* Bilgi (info) */
+html[data-tema="koyu"] .ant-alert-info {
+  background: #10262e;
+  border-color: #1d5064;
+}
+
+html[data-tema="koyu"] .ant-alert-info .ant-alert-icon,
+html[data-tema="koyu"] .ant-alert-info .ant-alert-message,
+html[data-tema="koyu"] .ant-alert-info .ant-alert-description {
+  color: #8fcadb;
+}
+
+/* Başarı (success) */
+html[data-tema="koyu"] .ant-alert-success {
+  background: #0e2620;
+  border-color: #1a5344;
+}
+
+html[data-tema="koyu"] .ant-alert-success .ant-alert-icon,
+html[data-tema="koyu"] .ant-alert-success .ant-alert-message,
+html[data-tema="koyu"] .ant-alert-success .ant-alert-description {
+  color: #7bcbb6;
 }
 
 /* ==========================================================
@@ -436,4 +530,49 @@ html[data-tema="koyu"] .tema-dugme:hover {
   .profil-bilgi {
     display: none;
   }
+}
+
+/* ==========================================================
+   Veri Modu Göstergesi
+   ========================================================== */
+.veri-modu-gostergesi {
+  margin: 16px 16px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.veri-modu-nokta {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Yeşil nokta — canlı veri */
+.veri-modu-nokta.canli {
+  background: #3fb296;
+  box-shadow: 0 0 6px rgba(63, 178, 150, 0.5);
+}
+
+/* Amber nokta — demo veri */
+.veri-modu-nokta.demo {
+  background: #c28e28;
+  box-shadow: 0 0 6px rgba(194, 142, 40, 0.5);
+}
+
+/* Gri nokta — kontrol ediliyor */
+.veri-modu-nokta.kontrol {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.veri-modu-yazi {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+  letter-spacing: 0.2px;
 }

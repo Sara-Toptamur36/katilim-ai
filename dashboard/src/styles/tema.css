@@ -20,6 +20,8 @@
   /* Yardımcı renkler */
   --altin-500: #c28e28;
   --altin-100: #f8edcf;
+  --pirinc-300: #d8c48c;
+  --pirinc-500: #b89a5c;
   --mavi-600: #297f96;
   --mor-600: #7159a6;
   --kirmizi-600: #c94f4f;
@@ -179,7 +181,7 @@ html[data-tema="koyu"] .ant-alert-success .ant-alert-description {
 
 /* Logo + marka bloğu */
 .marka-blogu {
-  padding: 28px 22px 12px;
+  padding: 28px 22px 20px;
 }
 
 .marka-ust {
@@ -218,7 +220,7 @@ html[data-tema="koyu"] .ant-alert-success .ant-alert-description {
 
 .marka-alt-baslik {
   font-size: 11px;
-  color: var(--yazi-soluk);
+  color: rgba(255, 255, 255, 0.5);
   margin-top: 2px;
   letter-spacing: 0.2px;
 }
@@ -247,12 +249,20 @@ html[data-tema="koyu"] .ant-alert-success .ant-alert-description {
 
 /* Menü bölüm başlıkları */
 .menu-bolum-baslik {
-  padding: 20px 22px 8px;
-  font-size: 10px;
+  padding: 0 22px;
+  margin-top: 24px;
+  margin-bottom: 10px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 1.2px;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--pirinc-300);
+}
+
+/* Her bölüm başlığının ÜSTÜNE ince ayırıcı çizgi (ilk bölüm hariç) */
+.menu-bolum-baslik ~ .menu-bolum-baslik {
+  border-top: 1px solid rgba(216, 196, 140, 0.18);
+  padding-top: 14px;
 }
 
 /* Menü öğesi */
@@ -260,42 +270,21 @@ html[data-tema="koyu"] .ant-alert-success .ant-alert-description {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 22px;
-  margin: 2px 10px;
-  border-radius: 8px;
+  height: 42px;
+  padding: 0 22px;
+  margin: 2px 10px 2px 0;
+  border-radius: 0 8px 8px 0;
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.72);
   text-decoration: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 150ms ease;
   position: relative;
   border: none;
   background: none;
-  width: calc(100% - 20px);
+  width: calc(100% - 10px);
   text-align: left;
-}
-
-.menu-ogesi:hover {
-  color: rgba(255, 255, 255, 0.85);
-  background: rgba(255, 255, 255, 0.06);
-}
-
-/* Aktif menü öğesi */
-.menu-ogesi.aktif {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.1);
-  font-weight: 500;
-}
-
-.menu-ogesi.aktif::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 6px;
-  bottom: 6px;
-  width: 3px;
-  border-radius: 0 3px 3px 0;
-  background: var(--marka-400);
+  box-sizing: border-box;
 }
 
 .menu-ogesi-ikon {
@@ -305,6 +294,39 @@ html[data-tema="koyu"] .ant-alert-success .ant-alert-description {
   flex-shrink: 0;
   width: 20px;
   justify-content: center;
+  color: rgba(255, 255, 255, 0.45);
+  transition: color 150ms ease;
+}
+
+.menu-ogesi:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.menu-ogesi:hover .menu-ogesi-ikon {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Aktif menü öğesi */
+.menu-ogesi.aktif {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.09);
+  font-weight: 600;
+  border-radius: 0 8px 8px 0;
+}
+
+.menu-ogesi.aktif::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--pirinc-300);
+}
+
+.menu-ogesi.aktif .menu-ogesi-ikon {
+  color: var(--pirinc-300);
 }
 
 /* ==========================================================

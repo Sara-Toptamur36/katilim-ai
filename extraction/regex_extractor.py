@@ -20,7 +20,62 @@ taksit sayisidir") ayri ayri gercek banka sayfalari uzerinden dogrulandi.
 import re
 from typing import Optional
 
-from extraction.normalizer import aya_cevir, tarihe_cevir, tutara_cevir, turkce_kucult, yuzdeye_cevir
+from extraction.normalizer import (
+    aya_cevir,
+    tarihe_cevir,
+    turkce_ascii_katla,
+    turkce_ascii_kucult,
+    tutara_cevir,
+    yuzdeye_cevir,
+)
+
+# --- Diyakritik katlama ----------------------------------------------------
+# BULGU (olculdu, 17 Agustos): asagidaki desenler ve anahtar kelime
+# listeleri Turkce diyakritiklerle yazilmis - "3 ay ödemesiz dönem" bulunuyor
+# ama ayni cumlenin diyakritiksiz yazimi ("3 ay odemesiz donem") SESSIZCE
+# bos donuyordu. POST /cikar ucu ve MetinAnalizi ekrani kullaniciyi serbest
+# metin yapistirmaya davet ettigi icin bu, kullanicinin goremeyecegi bir
+# alan kaybiydi (bkz. normalizer.turkce_ascii_katla docstring'i).
+#
+# COZUM - HER IKI TARAFI DA KATLA: metin de desen de ayni haritadan gecirilir,
+# boylece desenler DOGAL TURKCE yazimiyla okunabilir kalir ama eslesme
+# yazimdan bagimsiz olur. Katlama uzunluk KORUDUGU icin (str.translate 1:1)
+# katlanmis metindeki offset'ler ham metinde ayni yeri gosterir - kanit izi
+# (`izler`) ve masraf_durumu bu sayede KULLANICININ KENDI YAZIMIYLA saklanir.
+#
+# NOT: bazi desenlerde zaten elle yazilmis [ıi] / [şs] / [üu] / [aâ] gibi
+# karakter siniflari var (aksan toleransi icin tek tek eklenmislerdi).
+# Katlamadan sonra bunlar [ii] / [ss] / [uu] / [aa] haline gelir - zararsiz,
+# yalnizca gereksizdir. Bilerek KALDIRILMADILAR: her biri gercek bir banka
+# metnindeki bulguyu belgeliyor ve kaldirmak bu diffi gereksiz genisletirdi.
+
+
+def _katlanmis_derle(desen: str, bayraklar: int = re.IGNORECASE) -> re.Pattern:
+    """Deseni ASCII'ye katlayarak derler - `kaydi_cikar` da metni ayni
+    sekilde katladigi icin iki taraf her zaman ayni alfabede karsilasir."""
+    return re.compile(turkce_ascii_katla(desen), bayraklar)
+
+
+def _katla_hepsi(kelimeler: list[str]) -> list[str]:
+    """Anahtar kelime listesini katlar. Karsilastirilacak metin de
+    `turkce_ascii_kucult`ten gectigi icin iki taraf ayni alfabede olur.
+
+    Modul yuklenirken BIR KEZ calisir - katlamayi her `in` kontrolunde
+    tekrarlamak, uzun banka metinlerinde bosuna is olurdu.
+    """
+    return [turkce_ascii_kucult(k) for k in kelimeler]
+
+
+def _ham_span(ham_metin: str, m: re.Match, grup: int = 0) -> str:
+    """Katlanmis metinde bulunan eslesmenin HAM metindeki karsiligi.
+
+    Katlama uzunluk korudugu icin offset'ler birebir ortusur; boylece
+    kanit izinde kullaniciya kendi yazdigi metin gosterilir (ör. metinde
+    "Dosya masrafı alınmaz" yaziyorsa iz de oyle olur, "masrafi alinmaz" degil).
+    """
+    baslangic, bitis = m.span(grup)
+    return ham_metin[baslangic:bitis]
+
 
 # --- Kalip kutuphanesi -----------------------------------------------------
 # Her kalip, gercek banka kampanya metinlerinden turetildi (bkz. dosya basi
@@ -34,25 +89,25 @@ from extraction.normalizer import aya_cevir, tarihe_cevir, tutara_cevir, turkce_
 # gibi; "kar paysiz" kampanyalarda oran gercekten 0 olabiliyor).
 # NOT: gercek banka metinlerinde "kar payi" kadar sik "kar orani" da
 # geciyor (ör. Kuveyt Turk: "Aylik kar orani %1,99") - ikisi de kapsanir.
-RE_KAR_PAYI_SAYI_ONCE = re.compile(
+RE_KAR_PAYI_SAYI_ONCE = _katlanmis_derle(
     r"%\s*\d{1,2}(?:[.,]\d{1,4})?(?=[^%\n]{0,25}k[aâ]r\s*(?:pay\w*|oran\w*))", re.IGNORECASE
 )
-RE_KAR_PAYI_BAGLAM_ONCE = re.compile(
+RE_KAR_PAYI_BAGLAM_ONCE = _katlanmis_derle(
     r"k[aâ]r\s*(?:pay\w*|oran\w*)[^%\n]{0,25}%\s*\d{1,2}(?:[.,]\d{1,4})?", re.IGNORECASE
 )
-RE_KAR_PAYSIZ = re.compile(r"k[aâ]r\s*pays[ıi]z", re.IGNORECASE)
+RE_KAR_PAYSIZ = _katlanmis_derle(r"k[aâ]r\s*pays[ıi]z", re.IGNORECASE)
 # "0 kar payli" gibi yuzde isareti OLMADAN sifir oran ifadeleri de var.
-RE_KAR_PAYI_SIFIR = re.compile(r"\b0\s*k[aâ]r\s*pay\w*", re.IGNORECASE)
+RE_KAR_PAYI_SIFIR = _katlanmis_derle(r"\b0\s*k[aâ]r\s*pay\w*", re.IGNORECASE)
 # "Vade farksiz" (katilim bankaciliginda "vade farki" gelenek faiz kavramina
 # karsilik gelir - farksiz olmasi kar payi oraninin o islem icin 0 oldugu
 # anlamina gelir). Gercek veride en yaygin sifir-oran ifadesi budur (62
 # Altin Veri Seti kaydindan 13'unde gorulmustur).
-RE_VADE_FARKSIZ = re.compile(r"vade\s*farks[ıi]z", re.IGNORECASE)
+RE_VADE_FARKSIZ = _katlanmis_derle(r"vade\s*farks[ıi]z", re.IGNORECASE)
 # Dusuk guvenli fallback: kisa kampanya basliklarinda "kar payi" kelimesi
 # hic gecmeden sadece "%X oranla" denebiliyor. Bu durumda, yakininda ucret/
 # masraf/maliyet baglami YOKSA genel yuzdeyi kar payi say (dusuk guven).
-RE_KAR_PAYI_GENEL = re.compile(r"%\s*\d{1,2}(?:[.,]\d{1,4})?", re.IGNORECASE)
-_UCRET_BAGLAM_DISLAMA_KELIMELERI = [
+RE_KAR_PAYI_GENEL = _katlanmis_derle(r"%\s*\d{1,2}(?:[.,]\d{1,4})?", re.IGNORECASE)
+_UCRET_BAGLAM_DISLAMA_KELIMELERI = _katla_hepsi([
     "ücret", "masraf", "komisyon", "vergi", "bsmv", "kkdf",
     "peşinat", "ekspertiz", "tahsis", "indirim", "stopaj", "maliyet",
     # "iade": nakit iade/cashback yuzdesi kar payi orani DEGILDIR (ör.
@@ -68,12 +123,12 @@ _UCRET_BAGLAM_DISLAMA_KELIMELERI = [
     # "kar_payi_orani ILE KARISTIRILMAMALI" diye isaretlemis ama kural
     # regex'e baglanmamisti.
     "makas", "kur",
-]
+])
 
 
 def _ucret_baglaminda_mi(metin: str, baslangic: int, bitis: int, pencere: int = 45) -> bool:
-    sol = turkce_kucult(metin[max(0, baslangic - pencere):baslangic])
-    sag = turkce_kucult(metin[bitis:bitis + pencere])
+    sol = turkce_ascii_kucult(metin[max(0, baslangic - pencere):baslangic])
+    sag = turkce_ascii_kucult(metin[bitis:bitis + pencere])
     return any(k in sol or k in sag for k in _UCRET_BAGLAM_DISLAMA_KELIMELERI)
 
 
@@ -81,7 +136,7 @@ def _ucret_baglaminda_mi(metin: str, baslangic: int, bitis: int, pencere: int = 
 # taksit" bir TAKSIT SAYISIdir, vade DEGIL; "2 ay ertelemeli" ise bambaska
 # bir kavramdir - erteleme suresi). Bu yuzden vade kalibi, taksit/erteleme
 # baglamiyla catismayacak sekilde "kadar"/"vade(li)" ifadelerine baglandi.
-RE_VADE = re.compile(
+RE_VADE = _katlanmis_derle(
     r"\d{1,3}\s*ay(?:a)?\s*kadar(?!\s*(?:taksit|varan taksit))(?:\s*vade(?:ye kadar)?)?\s*(?:konut|araç|taşıt|ihtiyaç)?\s*finansman\w*"
     r"|\d{1,3}\s*ay\s*vade(?:ye kadar|li)?"
     r"|\d{1,3}\s*aya?\s*varan\s*vade\w*"
@@ -98,12 +153,12 @@ RE_VADE = re.compile(
 
 # "ertelemeli", "oteleme" ve "odemesiz donem" es anlamli - vade DEGIL,
 # ayri bir kavram. Baglac kelimesi banka bazinda degisiyor.
-RE_ERTELEME = re.compile(
+RE_ERTELEME = _katlanmis_derle(
     r"\d{1,2}\s*ay\w*\s*(?:kadar|varan)?\s*(?:ertelemeli|öteleme\w*|ödemesiz\s*dönem)",
     re.IGNORECASE,
 )
 
-RE_TAKSIT_SAYISI = re.compile(
+RE_TAKSIT_SAYISI = _katlanmis_derle(
     r"\d{1,3}\s*aya?\s*varan\s*taksit\w*"
     r"|\d{1,3}\s*ay\s*taksit\w*"
     r"|\d{1,3}\s*taksit(?:li|le)?\b",
@@ -118,10 +173,10 @@ RE_TAKSIT_SAYISI = re.compile(
 # bulunamaz (olculdu: TOM-002 finansman_tutari None donuyordu).
 _TUTAR = r"\d{1,3}(?:\.\d{3})*(?:,\d+)?\s*(?:bin|milyon|milyar)?"
 
-RE_TUTAR_ARALIK = re.compile(
+RE_TUTAR_ARALIK = _katlanmis_derle(
     rf"({_TUTAR})\s*TL\s*[-–]\s*({_TUTAR})\s*TL\s*aras", re.IGNORECASE
 )
-RE_TUTAR_UST_LIMIT = re.compile(
+RE_TUTAR_UST_LIMIT = _katlanmis_derle(
     rf"{_TUTAR}\s*TL['’]?\s*(?:ye|ya)?\s*kadar", re.IGNORECASE
 )
 
@@ -146,11 +201,11 @@ RE_TUTAR_UST_LIMIT = re.compile(
 # yanlis tutari secti ("100.000 TL'ye kadar taksitli ALISVERIS", dogrusu
 # "40.000 TL'ye kadar Pratik Finansman Kart") ve TOM-001 geri geldi.
 # Makro F1: listeli %89,53 / listesiz %87,20.
-_TUTAR_BAGLAM_DISLAMA_KELIMELERI = [
+_TUTAR_BAGLAM_DISLAMA_KELIMELERI = _katla_hepsi([
     "iade", "harcama", "alışveriş", "alisveris", "kazan", "ödül", "odul",
     "hediye", "puan", "mil", "gram", "limit",
     "worldpuan", "parafpara", "bankkart",
-]
+])
 
 
 # CUMLE SINIRI: ". " / "! " / "? " - noktadan SONRA bosluk sart, cunku
@@ -158,6 +213,7 @@ _TUTAR_BAGLAM_DISLAMA_KELIMELERI = [
 # sayiyi ortadan bolerdi. Satir sonu (\n) SINIR DEGILDIR: scraper ham
 # metinde her HTML blok elemani arasina \n koyuyor, yani AYNI cumle iki
 # satira bolunebiliyor (ayni bulgu validation/verifier.py'de de var).
+# Katlamaya girmez (harf icermez) - dogrudan derlenir.
 _CUMLE_SINIRI = re.compile(r"[.!?]\s")
 
 
@@ -180,7 +236,7 @@ def _cumleye_kirpilmis_baglam(
     ilk_sag = _CUMLE_SINIRI.search(sag_ham)
     sag = sag_ham[: ilk_sag.start()] if ilk_sag else sag_ham
 
-    return turkce_kucult(sol + " " + metin[baslangic:bitis] + " " + sag)
+    return turkce_ascii_kucult(sol + " " + metin[baslangic:bitis] + " " + sag)
 
 
 def _tutar_baglaminda_gecersiz_mi(metin: str, baslangic: int, bitis: int, pencere: int = 60) -> bool:
@@ -192,11 +248,11 @@ def _tutar_baglaminda_gecersiz_mi(metin: str, baslangic: int, bitis: int, pencer
 # Bir tavan ifadesini ODUL yapan anahtar kelimeler. llm_extractor.py'deki
 # _ODUL_ANAHTAR_KELIMELERI ile ayni kume - iki motor da ayni tanimi
 # kullanmali, yoksa biri odul sayarken digeri saymaz.
-_ODUL_BAGLAM_KELIMELERI = [
+_ODUL_BAGLAM_KELIMELERI = _katla_hepsi([
     "ödül", "odul", "hediye", "kazan", "puan", "mil", "gram",
     "bankkart lira", "parafpara", "worldpuan", "iade",
     "alışveriş çeki", "hediye çeki", "indirim",
-]
+])
 
 
 def _odul_baglaminda_mi(metin: str, baslangic: int, bitis: int, pencere: int = 80) -> bool:
@@ -214,10 +270,10 @@ def _odul_baglaminda_mi(metin: str, baslangic: int, bitis: int, pencere: int = 8
     return any(k in baglam for k in _ODUL_BAGLAM_KELIMELERI)
 
 _TR_AY_ADLARI = r"Ocak|Şubat|Mart|Nisan|Mayıs|Haziran|Temmuz|Ağustos|Eylül|Ekim|Kasım|Aralık"
-RE_TARIH = re.compile(
+RE_TARIH = _katlanmis_derle(
     rf"\d{{1,2}}[./]\d{{1,2}}[./]\d{{4}}|\d{{1,2}}\s+(?:{_TR_AY_ADLARI})\s+\d{{4}}", re.IGNORECASE
 )
-RE_TARIH_ARALIGI = re.compile(
+RE_TARIH_ARALIGI = _katlanmis_derle(
     rf"(\d{{1,2}}\s+(?:{_TR_AY_ADLARI})\s+\d{{4}})\s*[-–]\s*(\d{{1,2}}\s+(?:{_TR_AY_ADLARI})\s+\d{{4}})",
     re.IGNORECASE,
 )
@@ -243,7 +299,7 @@ RE_TARIH_ARALIGI = re.compile(
 # aksansiz da yazilabiliyor - PDF/OCR kaynakli metinlerde aksan kaybi
 # bilinen bir sorundur (bkz. ner_extractor.py, Bulgu 4). Desenler bu
 # yuzden hem "ücreti" hem "ucreti" bicimini kabul eder.
-RE_MASRAFSIZ = re.compile(
+RE_MASRAFSIZ = _katlanmis_derle(
     r"(dosya masraf[ıi]|tahsis [üu]creti|ekspertiz [üu]creti)[^.]{0,40}?"
     r"(al[ıi]nmamaktad[ıi]r|al[ıi]nm[ıi]yor|al[ıi]nmaz|kar[şs][ıi]lanmaktad[ıi]r"
     r"|kar[şs][ıi]lan[ıi]yor|[üu]cretsiz|yoktur|yok)",
@@ -257,7 +313,7 @@ RE_MASRAFSIZ = re.compile(
 # Gercek veriden: "yeni musterilere ozel dosya masrafsizlik avantaji"
 # (Turkiye Finans), "Yeni Yatirim Hesabiniza Sifir Komisyon Orani",
 # "aidatsiz Happy Bonus Zero kredi karti" (Altin Veri Seti TF-007).
-RE_MASRAF_SIFIR_GUCLU = re.compile(
+RE_MASRAF_SIFIR_GUCLU = _katlanmis_derle(
     r"(?:dosya|tahsis|ekspertiz)\s*masrafs[ıi]z\w*"
     r"|masrafs[ıi]zl[ıi]k\w*"
     r"|s[ıi]f[ıi]r\s*komisyon\w*"
@@ -271,19 +327,19 @@ RE_MASRAF_SIFIR_GUCLU = re.compile(
 # masraf durumu hakkinda bir iddia DEGIL. Bu yuzden yalnizca serbest metin
 # alanina (masraf_durumu) yazilir, tahsis_ucreti BOS BIRAKILIR: bilgiyi
 # gizlemeyiz ama uzerine sayisal bir iddia da kurmayiz.
-RE_MASRAF_SIFIR_ZAYIF = re.compile(r"masrafs[ıi]z\w*", re.IGNORECASE)
+RE_MASRAF_SIFIR_ZAYIF = _katlanmis_derle(r"masrafs[ıi]z\w*", re.IGNORECASE)
 # Tahsis ucreti gercek veride TL TUTARI OLARAK DEGIL, ORAN olarak
 # ifade ediliyor: "Tahsis ucreti vergiler haric finansman tutarinin
 # binde 5'i oranindadir" (Turkiye Finans, korpustaki tek gercek ornek).
 # Bu ifade masraf_durumu'na METIN olarak yazilir; tahsis_ucreti (TL)
 # alanina CEVRILMEZ - bkz. kaydi_cikar icindeki gerekce.
-RE_TAHSIS_ORANI = re.compile(
+RE_TAHSIS_ORANI = _katlanmis_derle(
     r"tahsis [üu]creti[^.\n]{0,80}?(?:binde|y[üu]zde|%)\s*\d{1,3}(?:[.,]\d+)?[^.\n]{0,25}",
     re.IGNORECASE,
 )
 # Acikca TL tutari verilmis masraf ("dosya masrafi 500 TL") - korpusta
 # henuz gorulmedi ama bankadan bankaya degistigi icin desen hazir tutulur.
-RE_MASRAF_TUTARI = re.compile(
+RE_MASRAF_TUTARI = _katlanmis_derle(
     r"(?:dosya masraf[ıi]|tahsis [üu]creti|ekspertiz [üu]creti)\s*[:=]?\s*"
     r"(\d{1,3}(?:\.\d{3})*(?:,\d+)?)\s*(?:TL|₺)",
     re.IGNORECASE,
@@ -298,7 +354,7 @@ RE_MASRAF_TUTARI = re.compile(
 # maksimum 10.000 TL"), .search() ILK eslesmeyi aldigi icin erken/yanlis
 # (kisi basi) tutari yakalardi. Bu durumlar asagidaki RE_ODUL_TAVAN
 # ("en fazla"/"maksimum" tetikleyicili) desenine birakildi.
-RE_ODUL = re.compile(
+RE_ODUL = _katlanmis_derle(
     r"\d{1,3}(?:\.\d{3})*(?:,\d+)?\s*(?:TL|₺)"
     r"(?:['’](?:ye|ya|e|a))?\s*"
     r"(?:değerinde\s*|varan\s*|kadar\s*)?"
@@ -309,22 +365,22 @@ RE_ODUL = re.compile(
 # Banka-ozel sadakat birimleri (Mil, Gram) TL disinda oldugu icin ayri
 # desenler gerekir. NOT: gercek metinlerde egik/tipografik apostrof (’,
 # U+2019) kullanilir, duz apostrof (') degil - ikisi de kapsanmali.
-RE_ODUL_MIL = re.compile(r"\d{1,3}(?:\.\d{3})*(?:,\d+)?\s*Mil['’]?[ea]?\s*varan\s*hediye", re.IGNORECASE)
+RE_ODUL_MIL = _katlanmis_derle(r"\d{1,3}(?:\.\d{3})*(?:,\d+)?\s*Mil['’]?[ea]?\s*varan\s*hediye", re.IGNORECASE)
 # Tavan/limit ifadeleri: "en fazla 5 gram", "maksimum 10.000 TL", "kişi
 # başı maksimum 2.000 TL, toplamda ... maksimum 10.000 TL nakit ödül" gibi
 # cok sayida aday oldugunda SONUNCUSU (genelde "toplamda" olan) tercih
 # edilir - finditer + son eslesme.
-RE_ODUL_TAVAN = re.compile(
+RE_ODUL_TAVAN = _katlanmis_derle(
     r"(?:en fazla|maksimum)\s+(?:\S+\s+){0,4}?"
     r"(\d{1,3}(?:\.\d{3})*(?:,\d+)?)\s*(TL|₺|gram\w*|gr\b)",
     re.IGNORECASE,
 )
 # "2.500 TL ile sınırlıdır" gibi "sinirli/sinirlidir" ile biten tavan ifadesi.
-RE_ODUL_SINIRLI = re.compile(
+RE_ODUL_SINIRLI = _katlanmis_derle(
     r"(\d{1,3}(?:\.\d{3})*(?:,\d+)?)\s*(TL|₺)['’]?\s*(?:ile\s+)?s[ıi]n[ıi]rl[ıi]",
     re.IGNORECASE,
 )
-RE_ODUL_GRAM = re.compile(
+RE_ODUL_GRAM = _katlanmis_derle(
     r"\d{1,3}(?:,\d+)?\s*gram\w*\s*(?:['’]?[ea]?\s*kadar\s*)?(?:hediye|kazan\w*)", re.IGNORECASE
 )
 
@@ -347,6 +403,19 @@ HEDEF_KITLE_ANAHTAR_KELIMELERI = {
     "Maaş müşterisi": ["maaş müşteri", "maaş getiren"],
 }
 
+# YALNIZCA DEGERLER (aranacak kelimeler) katlanir - ANAHTARLAR katlanmaz:
+# onlar cikti etiketidir ve api/schemas.py'deki enum degerleriyle BIREBIR
+# ayni kalmalidir ("Yeni müşteri" etiketi "Yeni musteri"ye donusmemeli,
+# yoksa Havin/Sara'nin sozlesmesi bozulur).
+_KAMPANYA_TURU_KATLANMIS = {
+    etiket: _katla_hepsi(kelimeler)
+    for etiket, kelimeler in KAMPANYA_TURU_ANAHTAR_KELIMELERI.items()
+}
+_HEDEF_KITLE_KATLANMIS = {
+    etiket: _katla_hepsi(kelimeler)
+    for etiket, kelimeler in HEDEF_KITLE_ANAHTAR_KELIMELERI.items()
+}
+
 
 def _kar_payi_makul_mu(percent: float) -> bool:
     """Aylik kar payi oranlari gercek veride %0-%10 araliginda gozlemlendi
@@ -367,9 +436,12 @@ def _kar_payi_ata(alanlar: dict, izler: dict, span: str, guven: float) -> bool:
     return True
 
 
-def _ilk_eslesme(desen: re.Pattern, metin: str) -> Optional[str]:
-    m = desen.search(metin)
-    return m.group(0) if m else None
+def _ilk_eslesme(desen: re.Pattern, katlanmis: str, ham_metin: str) -> Optional[str]:
+    """Deseni KATLANMIS metinde arar, bulunani HAM metinden keserek doner -
+    boylece eslesme yazimdan bagimsizdir ama kanit izi kullanicinin kendi
+    yazimini korur (bkz. _ham_span)."""
+    m = desen.search(katlanmis)
+    return _ham_span(ham_metin, m) if m else None
 
 
 def _odul_birimini_tespit_et(eslesen_metin: str) -> str:
@@ -378,7 +450,7 @@ def _odul_birimini_tespit_et(eslesen_metin: str) -> str:
     surece odul_birimi kosulsuz "TL" atanirdi - bu yuzden Bankkart Lira/
     ParafPara/Worldpuan gibi TL-disi birimler bile yanlislikla "TL" olarak
     kaydediliyordu (Extraction Accuracy raporu, 18/40 hata)."""
-    metin_l = turkce_kucult(eslesen_metin)
+    metin_l = turkce_ascii_kucult(eslesen_metin)
     if "bankkart lira" in metin_l:
         return "Bankkart Lira"
     if "parafpara" in metin_l:
@@ -389,16 +461,16 @@ def _odul_birimini_tespit_et(eslesen_metin: str) -> str:
 
 
 def _kampanya_turunu_tespit_et(metin: str) -> Optional[str]:
-    metin_l = turkce_kucult(metin)
-    for etiket, kelimeler in KAMPANYA_TURU_ANAHTAR_KELIMELERI.items():
+    metin_l = turkce_ascii_kucult(metin)
+    for etiket, kelimeler in _KAMPANYA_TURU_KATLANMIS.items():
         if any(k in metin_l for k in kelimeler):
             return etiket
     return None
 
 
 def _hedef_kitleyi_tespit_et(metin: str) -> Optional[str]:
-    metin_l = turkce_kucult(metin)
-    for etiket, kelimeler in HEDEF_KITLE_ANAHTAR_KELIMELERI.items():
+    metin_l = turkce_ascii_kucult(metin)
+    for etiket, kelimeler in _HEDEF_KITLE_KATLANMIS.items():
         if any(k in metin_l for k in kelimeler):
             return etiket
     return None
@@ -519,20 +591,28 @@ def kaydi_cikar(ham_metin: str) -> dict:
     }
     izler: dict[str, tuple[str, float]] = {}  # alan -> (kaynak_span, guven)
 
+    # TUM desen aramalari KATLANMIS metinde yapilir (diyakritiksiz yazilmis
+    # metin de eslessin diye - bkz. dosya basindaki "Diyakritik katlama").
+    # Katlama uzunlugu korudugu icin eslesme offset'leri ham metinde ayni
+    # yeri gosterir; kanit izleri `_ham_span` ile HAM metinden kesilir.
+    # Baglam yardimcilari (_ucret_baglaminda_mi vb.) ham metni alir - onlar
+    # kendi icinde `turkce_ascii_kucult` uyguluyor.
+    katlanmis = turkce_ascii_katla(ham_metin)
+
     # --- Kar payi orani -----------------------------------------------
-    m = RE_KAR_PAYI_SAYI_ONCE.search(ham_metin)
-    if m and _kar_payi_ata(alanlar, izler, m.group(0), 0.9):
+    m = RE_KAR_PAYI_SAYI_ONCE.search(katlanmis)
+    if m and _kar_payi_ata(alanlar, izler, _ham_span(ham_metin, m), 0.9):
         pass
     else:
-        m = RE_KAR_PAYI_BAGLAM_ONCE.search(ham_metin)
-        sayi_m = re.search(r"%\s*\d{1,2}(?:[.,]\d{1,4})?", m.group(0)) if m else None
+        m = RE_KAR_PAYI_BAGLAM_ONCE.search(katlanmis)
+        sayi_m = re.search(r"%\s*\d{1,2}(?:[.,]\d{1,4})?", _ham_span(ham_metin, m)) if m else None
         if sayi_m and _kar_payi_ata(alanlar, izler, sayi_m.group(0), 0.9):
             pass
-        elif RE_KAR_PAYSIZ.search(ham_metin) or RE_KAR_PAYI_SIFIR.search(ham_metin):
+        elif RE_KAR_PAYSIZ.search(katlanmis) or RE_KAR_PAYI_SIFIR.search(katlanmis):
             alanlar["kar_payi_orani_decimal"] = 0.0
             alanlar["kar_payi_orani_percent"] = 0.0
             izler["kar_payi_orani_percent"] = ("kâr paysız / 0 kâr paylı", 0.85)
-        elif RE_VADE_FARKSIZ.search(ham_metin):
+        elif RE_VADE_FARKSIZ.search(katlanmis):
             # "Vade farksiz" katilim bankaciliginda o islem icin kar payi
             # oraninin 0 oldugu anlamina gelir (Extraction Accuracy raporu +
             # terminology/sozluk.json'daki sifir_oran_ifadesi kavramiyla
@@ -542,9 +622,9 @@ def kaydi_cikar(ham_metin: str) -> dict:
             alanlar["kar_payi_orani_percent"] = 0.0
             izler["kar_payi_orani_percent"] = ("vade farksız", 0.8)
         else:
-            for gm in RE_KAR_PAYI_GENEL.finditer(ham_metin):
+            for gm in RE_KAR_PAYI_GENEL.finditer(katlanmis):
                 if not _ucret_baglaminda_mi(ham_metin, gm.start(), gm.end()):
-                    if _kar_payi_ata(alanlar, izler, gm.group(0), 0.6):
+                    if _kar_payi_ata(alanlar, izler, _ham_span(ham_metin, gm), 0.6):
                         break
 
     # --- Finansman tutari ----------------------------------------------
@@ -555,61 +635,61 @@ def kaydi_cikar(ham_metin: str) -> dict:
     # ("1.000 TL-100.000 TL arasi saglik HARCAMALARINIZA vade farksiz 6
     # taksit") ve AL-006 gibi GERCEK finansman araliklari, yalnizca
     # cumlede "harcama" gectigi icin elenir.
-    m = RE_TUTAR_ARALIK.search(ham_metin)
+    m = RE_TUTAR_ARALIK.search(katlanmis)
     if m:
-        alanlar["finansman_tutari"] = tutara_cevir(m.group(2))
-        izler["finansman_tutari"] = (m.group(0), 0.85)
+        alanlar["finansman_tutari"] = tutara_cevir(_ham_span(ham_metin, m, 2))
+        izler["finansman_tutari"] = (_ham_span(ham_metin, m), 0.85)
     else:
         # ILK eslesme degil, ILK GECERLI eslesme (bkz. baglam guard'i):
         # ayni sayfada hem "100.000 TL'ye kadar taksitli ALISVERIS" hem
         # "40.000 TL'ye kadar Pratik FINANSMAN Kart" gecebiliyor.
-        for tm in RE_TUTAR_UST_LIMIT.finditer(ham_metin):
+        for tm in RE_TUTAR_UST_LIMIT.finditer(katlanmis):
             if _tutar_baglaminda_gecersiz_mi(ham_metin, tm.start(), tm.end()):
                 continue
-            tutar = tutara_cevir(tm.group(0))
+            tutar = tutara_cevir(_ham_span(ham_metin, tm))
             if tutar is None:
                 continue
             alanlar["finansman_tutari"] = tutar
-            izler["finansman_tutari"] = (tm.group(0), 0.75)
+            izler["finansman_tutari"] = (_ham_span(ham_metin, tm), 0.75)
             break
 
     # --- Vade / taksit sayisi / erteleme suresi (UC AYRI kavram) -------
-    span = _ilk_eslesme(RE_VADE, ham_metin)
+    span = _ilk_eslesme(RE_VADE, katlanmis, ham_metin)
     if span:
         alanlar["vade_ay"] = aya_cevir(span)
         izler["vade_ay"] = (span, 0.85)
 
-    span = _ilk_eslesme(RE_ERTELEME, ham_metin)
+    span = _ilk_eslesme(RE_ERTELEME, katlanmis, ham_metin)
     if span:
         alanlar["erteleme_suresi_ay"] = aya_cevir(span)
         izler["erteleme_suresi_ay"] = (span, 0.85)
 
-    span = _ilk_eslesme(RE_TAKSIT_SAYISI, ham_metin)
+    span = _ilk_eslesme(RE_TAKSIT_SAYISI, katlanmis, ham_metin)
     if span:
         sayi_m = re.search(r"\d+", span)
         alanlar["taksit_sayisi"] = int(sayi_m.group(0)) if sayi_m else None
         izler["taksit_sayisi"] = (span, 0.85)
 
     # --- Odul miktari/birimi -------------------------------------------
-    m = RE_ODUL_MIL.search(ham_metin)
+    m = RE_ODUL_MIL.search(katlanmis)
     if m:
-        alanlar["odul_miktari"] = tutara_cevir(m.group(0))
+        alanlar["odul_miktari"] = tutara_cevir(_ham_span(ham_metin, m))
         alanlar["odul_birimi"] = "Mil"
-        izler["odul_miktari"] = (m.group(0), 0.8)
+        izler["odul_miktari"] = (_ham_span(ham_metin, m), 0.8)
     else:
-        m = RE_ODUL_GRAM.search(ham_metin)
+        m = RE_ODUL_GRAM.search(katlanmis)
         if m:
-            alanlar["odul_miktari"] = tutara_cevir(m.group(0))
+            alanlar["odul_miktari"] = tutara_cevir(_ham_span(ham_metin, m))
             alanlar["odul_birimi"] = "Gram"
-            izler["odul_miktari"] = (m.group(0), 0.8)
+            izler["odul_miktari"] = (_ham_span(ham_metin, m), 0.8)
         else:
-            m = RE_ODUL.search(ham_metin)
+            m = RE_ODUL.search(katlanmis)
             if m:
-                alanlar["odul_miktari"] = tutara_cevir(m.group(0))
+                alanlar["odul_miktari"] = tutara_cevir(_ham_span(ham_metin, m))
                 # ONCEDEN: kosulsuz "TL" atanirdi - Bankkart Lira/ParafPara/
                 # Worldpuan gibi TL-disi birimler yanlis kaydediliyordu.
-                alanlar["odul_birimi"] = _odul_birimini_tespit_et(m.group(0))
-                izler["odul_miktari"] = (m.group(0), 0.8)
+                alanlar["odul_birimi"] = _odul_birimini_tespit_et(_ham_span(ham_metin, m))
+                izler["odul_miktari"] = (_ham_span(ham_metin, m), 0.8)
             else:
                 # Yukaridaki "varan/kadar/degerinde + anahtar kelime"
                 # kaliplarinin hicbiri eslesmediyse, tavan/limit ifadelerini
@@ -630,20 +710,20 @@ def kaydi_cikar(ham_metin: str) -> dict:
                 # belirtmez - ayni cumlede bir odul kelimesi de gecmeli
                 # (bkz. _odul_baglaminda_mi, KT-006 bulgusu).
                 adaylar: list[tuple[float, str, str]] = []  # (tutar, birim, span)
-                for m in RE_ODUL_SINIRLI.finditer(ham_metin):
+                for m in RE_ODUL_SINIRLI.finditer(katlanmis):
                     if not _odul_baglaminda_mi(ham_metin, m.start(), m.end()):
                         continue
-                    tutar = tutara_cevir(m.group(1))
+                    tutar = tutara_cevir(_ham_span(ham_metin, m, 1))
                     if tutar is not None:
-                        adaylar.append((tutar, "TL", m.group(0)))
-                for tm in RE_ODUL_TAVAN.finditer(ham_metin):
+                        adaylar.append((tutar, "TL", _ham_span(ham_metin, m)))
+                for tm in RE_ODUL_TAVAN.finditer(katlanmis):
                     if not _odul_baglaminda_mi(ham_metin, tm.start(), tm.end()):
                         continue
-                    tutar = tutara_cevir(tm.group(1))
+                    tutar = tutara_cevir(_ham_span(ham_metin, tm, 1))
                     if tutar is not None:
-                        birim_ham = turkce_kucult(tm.group(2))
+                        birim_ham = turkce_ascii_kucult(_ham_span(ham_metin, tm, 2))
                         birim = "Gram" if birim_ham.startswith("gr") else "TL"
-                        adaylar.append((tutar, birim, tm.group(0)))
+                        adaylar.append((tutar, birim, _ham_span(ham_metin, tm)))
                 if adaylar:
                     tutar, birim, span = max(adaylar, key=lambda a: a[0])
                     alanlar["odul_miktari"] = tutar
@@ -653,16 +733,16 @@ def kaydi_cikar(ham_metin: str) -> dict:
     # --- Masraf bilgisi / tahsis ucreti -----------------------------------
     # Uc kademe: (1) acik TL tutari, (2) acik "masraf alinmaz" ifadesi,
     # (3) oran olarak verilmis tahsis ucreti. Ilk eslesen kazanir.
-    m = RE_MASRAF_TUTARI.search(ham_metin)
+    m = RE_MASRAF_TUTARI.search(katlanmis)
     if m:
-        tutar = tutara_cevir(m.group(1))
+        tutar = tutara_cevir(_ham_span(ham_metin, m, 1))
         if tutar is not None:
-            alanlar["masraf_durumu"] = m.group(0)
+            alanlar["masraf_durumu"] = _ham_span(ham_metin, m)
             alanlar["tahsis_ucreti"] = tutar
-            izler["masraf_durumu"] = (m.group(0), 0.85)
+            izler["masraf_durumu"] = (_ham_span(ham_metin, m), 0.85)
     else:
-        span = _ilk_eslesme(RE_MASRAFSIZ, ham_metin) or _ilk_eslesme(
-            RE_MASRAF_SIFIR_GUCLU, ham_metin
+        span = _ilk_eslesme(RE_MASRAFSIZ, katlanmis, ham_metin) or _ilk_eslesme(
+            RE_MASRAF_SIFIR_GUCLU, katlanmis, ham_metin
         )
         if span:
             alanlar["masraf_durumu"] = span
@@ -673,7 +753,7 @@ def kaydi_cikar(ham_metin: str) -> dict:
             alanlar["tahsis_ucreti"] = 0.0
             izler["masraf_durumu"] = (span, 0.8)
         else:
-            span = _ilk_eslesme(RE_TAHSIS_ORANI, ham_metin)
+            span = _ilk_eslesme(RE_TAHSIS_ORANI, katlanmis, ham_metin)
             if span:
                 # ORAN, TUTAR DEGIL: "finansman tutarinin binde 5'i" bir
                 # yuzdedir; tahsis_ucreti alani TL bekler. Orani finansman
@@ -686,19 +766,19 @@ def kaydi_cikar(ham_metin: str) -> dict:
             else:
                 # Son kademe: baglamsiz "Masrafsiz". Bilgi kaydedilir ama
                 # tahsis_ucreti'ne DOKUNULMAZ - bkz. RE_MASRAF_SIFIR_ZAYIF.
-                span = _ilk_eslesme(RE_MASRAF_SIFIR_ZAYIF, ham_metin)
+                span = _ilk_eslesme(RE_MASRAF_SIFIR_ZAYIF, katlanmis, ham_metin)
                 if span:
                     alanlar["masraf_durumu"] = span
                     izler["masraf_durumu"] = (span, 0.5)
 
     # --- Kampanya suresi: once tarih ARALIGI, sonra tek tarih -----------
-    m = RE_TARIH_ARALIGI.search(ham_metin)
+    m = RE_TARIH_ARALIGI.search(katlanmis)
     if m:
-        alanlar["kampanya_baslangic"] = tarihe_cevir(m.group(1))
-        alanlar["kampanya_bitis"] = tarihe_cevir(m.group(2))
-        izler["kampanya_bitis"] = (m.group(0), 0.9)
+        alanlar["kampanya_baslangic"] = tarihe_cevir(_ham_span(ham_metin, m, 1))
+        alanlar["kampanya_bitis"] = tarihe_cevir(_ham_span(ham_metin, m, 2))
+        izler["kampanya_bitis"] = (_ham_span(ham_metin, m), 0.9)
     else:
-        span = _ilk_eslesme(RE_TARIH, ham_metin)
+        span = _ilk_eslesme(RE_TARIH, katlanmis, ham_metin)
         if span:
             alanlar["kampanya_bitis"] = tarihe_cevir(span)
             izler["kampanya_bitis"] = (span, 0.85)

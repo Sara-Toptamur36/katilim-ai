@@ -102,11 +102,17 @@ def test_span_kaniti_metinde_gercekten_gecer():
         )
 
 
-def test_siniflandirma_alani_span_diye_isaretlenmez():
+# hedef_kitle de kampanya_turu gibi anahtar kelimeyle ETIKETE
+# siniflandirilir ("Yeni müşteri"), metinden span kesilmez. 17 Agustos'a
+# kadar bu gozden kacmisti: regex_extractor diyakritiksiz metinde
+# hedef_kitle'yi hic bulamadigi icin (katlama hatasi) ORNEK_METIN uzerinde
+# alan bos donuyor, dolayisiyla yanlis isaretleme de hic gorunmuyordu.
+@pytest.mark.parametrize("alan", ["kampanya_turu", "hedef_kitle"])
+def test_siniflandirma_alani_span_diye_isaretlenmez(alan):
     veri = _cikar().json()
-    tur = next((i for i in veri["izler"] if i["alan"] == "kampanya_turu"), None)
-    if tur is not None:
-        assert tur["kanit_turu"] == "siniflandirma"
+    iz = next((i for i in veri["izler"] if i["alan"] == alan), None)
+    if iz is not None:
+        assert iz["kanit_turu"] == "siniflandirma"
 
 
 def test_turetilmis_alanlar_ayrica_isaretlenir():

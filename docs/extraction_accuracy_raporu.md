@@ -611,3 +611,88 @@ için yalnızca 1 kampanya yayınlıyor. Bu, scraper'ın eksikliği değil,
 bankanın kendi sitesinin içerik kısıtı; ek tarama/kod değişikliğiyle
 çözülemez. T.O.M. Katılım örneklemi, yalnızca banka zamanla yeni
 kampanyalar yayınladıkça büyüyecek.
+
+---
+
+## Güncelleme — 17 Ağustos 2026 (diyakritiksiz yazım: sessiz alan kaybı)
+
+`POST /cikar` ucundan uca denenirken bulundu: `regex_extractor.py`'nin
+**kelime tabanlı** alanları, Türkçe diyakritik kullanılmadan yazılmış
+metinde **sessizce boş dönüyordu**. Sayısal alanlar (rakam/sembol
+eşleşmesi) etkilenmiyordu. Aynı cümlenin iki yazımı:
+
+| alan | `...kar payi orani... 3 ay odemesiz donem` | `...kâr payı oranı... 3 ay ödemesiz dönem` |
+|---|---|---|
+| `erteleme_suresi_ay` | **None** | 3 |
+| `hedef_kitle` | **None** | Yeni müşteri |
+| `kampanya_turu` | **None** | Yeni Musteri Kampanyasi |
+| `kampanya_avantaji` | eksik | tam |
+
+### Önce ölçüldü: üretim verisi temiz, risk yapıştırma yolunda
+
+`scraper/raw_data` altındaki **263 ham metnin tamamı** tarandı:
+
+- **0/263 belgede** diyakritik yoğunluğu %1'in altında — yani korpusta
+  kodlama kaynaklı ASCII'ye katlanmış (mojibake) tek bir belge **yok**.
+- Anahtar kelimelerin ASCII varyantları için bulunan az sayıdaki eşleşme
+  (`arac` 35, `katilim` 13, `ihtiyac` 4) tek tek incelendi: hepsi
+  **doğru yazılmış kelimelerin alt dizgesi** (`aracılığıyla`,
+  `ihtiyacınız`) ya da e-posta adresi. Gerçek diyakritiksiz yazım değil.
+
+**Sonuç:** üretim verisinde şu an alan kaybetmiyoruz. Açık olan yüzey,
+kullanıcıyı serbest metin **yapıştırmaya** davet eden yeni `POST /cikar`
+ucu ve MetinAnalizi ekranı — Türkçe karakter kullanmadan yazan biri
+alanların kaybolduğunu göremezdi. (Ayrıca taranan PDF/OCR metinlerinde
+aksan kaybı bilinen bir sorundur, bkz. `ner_extractor.py` Bulgu 4.)
+
+### Çarpma yarıçapı büyük
+
+Aynı 263 belgenin her biri ASCII'ye katlanıp yeniden çıkarım yapıldı;
+**87 belge (%33) en az bir alanını kaybediyor**:
+
+| alan | kaybeden belge |
+|---|---|
+| `kampanya_bitis` | 60 |
+| `hedef_kitle` | 15 |
+| `kampanya_baslangic` | 13 |
+| `erteleme_suresi_ay` | 4 |
+| `kampanya_turu` | 4 |
+| `odul_miktari` / `odul_birimi` | 1 |
+
+Yani en büyük yüzey, ilk raporlanan dört alan **değil**, **tarih
+alanları**: `RE_TARIH`'in ay adları (Şubat/Mayıs/Ağustos/Eylül/Kasım/
+Aralık) diyakritikli yazılmıştı.
+
+### Çözüm
+
+Depoda bu desen zaten çözülmüştü (`agent/intent.py::turkce_ascii_katla`,
+`terminology/genisletme.py::_turkce_kucult`, `TerminolojiSozlugu.jsx`);
+aynısı çıkarım katmanına taşındı — `extraction/normalizer.py`'ye
+`turkce_ascii_katla` / `turkce_ascii_kucult` eklendi.
+
+`regex_extractor.py`'de **hem metin hem desen** aynı haritadan geçirilir
+(`_katlanmis_derle`, `_katla_hepsi`), böylece desenler doğal Türkçe
+yazımıyla okunabilir kalır ama eşleşme yazımdan bağımsız olur.
+
+Katlama **uzunluk korur** (`str.translate` 1:1 — bu yüzden `str.lower()`
+kullanılmaz, `'İ'.lower()` iki karakter üretip offset kaydırırdı). Bu
+sayede eşleşme offset'leri ham metinde aynı yeri gösterir ve **kanıt izi
+(`_izler`) ham metinden kesilir** — kullanıcıya kendi yazdığı metin
+gösterilir (`"Dosya masrafı alınmaz"`, `"masrafi alinmaz"` değil).
+Düz ASCII `I` harfine dokunulmaz (hem `I` hem `ı` olabilir).
+
+### Regresyon: makro F1 değişmedi
+
+Katlamanın yeni yanlış pozitif üretme riski vardı (ör. "kâr" ile "kar"
+karışması). `python -m scraper.scripts.extraction_accuracy` öncesi/sonrası:
+
+| | önce | sonra |
+|---|---|---|
+| Makro P | %97,34 | %97,34 |
+| Makro R | %99,38 | %99,38 |
+| **Makro F1** | **%98,28** | **%98,28** |
+
+Alan bazlı P/R/F1 tablosunun tamamı ve bilinen iki hata (DK-002 ödül
+miktarı, TF-001 yanlış pozitif) **birebir aynı** kaldı. "kâr" çakışması
+gerçekleşmedi, çünkü `RE_KAR_PAYI_*` desenleri zaten `k[aâ]r` yazıp
+ayrıca `pay`/`oran` bağlam kelimesini zorunlu kılıyordu.

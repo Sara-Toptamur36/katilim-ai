@@ -1,64 +1,31 @@
 import { useEffect, useState } from "react";
-import { Alert, Divider, Typography } from "antd";
+import { Alert, Spin, Typography } from "antd";
 import { kampanyalariGetir } from "../api/client";
-import KampanyaTablosu from "../components/KampanyaTablosu";
-import FiltrePaneli from "../components/FiltrePaneli";
-import IstatistikKartlari from "../components/IstatistikKartlari";
-import EtkiSkoruKarti from "../components/EtkiSkoruKarti";
-import KarsilastirmaPaneli from "../components/KarsilastirmaPaneli";
-import RakipMatrisi from "../components/RakipMatrisi";
 import TazelikSeridi from "../components/TazelikSeridi";
-import TerminolojiSozlugu from "../components/TerminolojiSozlugu";
+import IstatistikKartlari from "../components/IstatistikKartlari";
 
 const { Title } = Typography;
 
 export default function Dashboard() {
   const [kampanyalar, setKampanyalar] = useState([]);
-  const [tumKampanyalar, setTumKampanyalar] = useState([]); // filtre secenekleri icin
   const [yukleniyor, setYukleniyor] = useState(true);
   const [hata, setHata] = useState(null);
-  const [filtreler, setFiltreler] = useState({});
-  const [secilenIdler, setSecilenIdler] = useState([]);
 
-  // Filtre secenekleri icin bir kez, hic filtresiz veri cekilir
-  useEffect(() => {
-    kampanyalariGetir()
-      .then((veri) => setTumKampanyalar(veri))
-      .catch(() => {});
-  }, []);
-
-  // Filtreler degistikce, sunucu tarafinda filtrelenmis veri cekilir
+  // İstatistik kartları için tüm kampanyaları çek
   useEffect(() => {
     setYukleniyor(true);
     setHata(null);
-    kampanyalariGetir(filtreler)
+    kampanyalariGetir()
       .then((veri) => setKampanyalar(veri))
       .catch((e) => setHata(e.message))
       .finally(() => setYukleniyor(false));
-  }, [filtreler]);
-
-  const bankalar = [...new Set(tumKampanyalar.map((k) => k.banka))];
-  const turler = [...new Set(tumKampanyalar.map((k) => k.kampanya_turu))];
-
-  const rowSelection = {
-    selectedRowKeys: secilenIdler,
-    onChange: setSecilenIdler,
-  };
+  }, []);
 
   return (
     <div>
-      <Title level={3}>Kampanya Karşılaştırma Panosu</Title>
+      <Title level={3}>Genel Bakış</Title>
 
       <TazelikSeridi />
-
-      <IstatistikKartlari kampanyalar={kampanyalar} />
-
-      <FiltrePaneli
-        bankalar={bankalar}
-        turler={turler}
-        filtreler={filtreler}
-        onDegistir={setFiltreler}
-      />
 
       {hata && (
         <Alert
@@ -70,33 +37,11 @@ export default function Dashboard() {
         />
       )}
 
-      <KampanyaTablosu
-        kampanyalar={kampanyalar}
-        yukleniyor={yukleniyor}
-        rowSelection={rowSelection}
-      />
-
-      {/* Tek kampanya secildiginde "bu iyi bir kampanya mi?" sorusu;
-          iki ve uzeri secildiginde karsilastirma paneli devreye girer. */}
-      {secilenIdler.length === 1 && (
-        <>
-          <Divider />
-          <Title level={4}>Etki Skoru</Title>
-          <EtkiSkoruKarti kampanyaId={secilenIdler[0]} />
-        </>
+      {yukleniyor ? (
+        <Spin description="İstatistikler yükleniyor..." />
+      ) : (
+        <IstatistikKartlari kampanyalar={kampanyalar} />
       )}
-
-      <Divider />
-      <Title level={4}>Kampanya Karşılaştır</Title>
-      <KarsilastirmaPaneli secilenIdler={secilenIdler} />
-
-      <Divider />
-      <Title level={4}>Rakip Analizi</Title>
-      <RakipMatrisi turler={turler} />
-
-      <Divider />
-      <Title level={4}>Terminoloji Sözlüğü</Title>
-      <TerminolojiSozlugu />
     </div>
   );
 }

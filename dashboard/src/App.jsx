@@ -4,6 +4,8 @@ import { Layout, ConfigProvider, Drawer, theme as antTema } from "antd";
 import {
   DashboardOutlined,
   RobotOutlined,
+  TagsOutlined,
+  SwapOutlined,
   FileSearchOutlined,
   AuditOutlined,
   MoonOutlined,
@@ -13,6 +15,8 @@ import {
 
 /* Sayfa bileşenleri */
 import Dashboard from "./pages/Dashboard";
+import Kampanyalar from "./pages/Kampanyalar";
+import Karsilastirma from "./pages/Karsilastirma";
 import MetinAnalizi from "./pages/MetinAnalizi";
 import Chatbot from "./pages/Chatbot";
 import AuditPanel from "./pages/AuditPanel";
@@ -34,10 +38,12 @@ const TEMA_ANAHTAR = "katilimai-tema";
 const KONTROL_MENUSU = [
   { yol: "/", etiket: "Genel Bakış", ikon: <DashboardOutlined /> },
   { yol: "/chatbot", etiket: "AI Asistan", ikon: <RobotOutlined /> },
-  { yol: "/analiz", etiket: "Metin Analizi", ikon: <FileSearchOutlined /> },
+  { yol: "/kampanyalar", etiket: "Kampanyalar", ikon: <TagsOutlined /> },
+  { yol: "/karsilastirma", etiket: "Karşılaştırma", ikon: <SwapOutlined /> },
 ];
 
 const GUVEN_MENUSU = [
+  { yol: "/analiz", etiket: "Metin Analizi", ikon: <FileSearchOutlined /> },
   { yol: "/audit", etiket: "Jüri Audit Paneli", ikon: <AuditOutlined /> },
 ];
 
@@ -45,6 +51,8 @@ const GUVEN_MENUSU = [
 const SAYFA_ADLARI = {
   "/": "Genel Bakış",
   "/chatbot": "AI Asistan",
+  "/kampanyalar": "Kampanyalar",
+  "/karsilastirma": "Karşılaştırma",
   "/analiz": "Metin Analizi",
   "/audit": "Jüri Audit Paneli",
 };
@@ -271,6 +279,8 @@ function App() {
               <Content className="icerik-alani">
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
+                  <Route path="/kampanyalar" element={<Kampanyalar />} />
+                  <Route path="/karsilastirma" element={<Karsilastirma />} />
                   <Route path="/analiz" element={<MetinAnalizi />} />
                   <Route path="/chatbot" element={<Chatbot />} />
                   <Route path="/audit" element={<AuditPanel />} />

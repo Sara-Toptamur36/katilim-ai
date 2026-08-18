@@ -406,7 +406,17 @@ def terminoloji(kullanici: dict = Depends(token_dogrula)):
 # Bu alanlar metinden SPAN olarak cikarilmaz, anahtar kelimeyle
 # SINIFLANDIRILIR; izlerindeki "kaynak_span" bir etikettir, metinde aynen
 # gecmez (bkz. extraction/hybrid_pipeline.py "KAPSAM DISI ALANLAR").
-_SINIFLANDIRMA_ALANLARI = {"kampanya_turu"}
+#
+# "hedef_kitle" DE BURAYA AIT (17 Agustos'ta eklendi): o da kampanya_turu
+# ile BIREBIR ayni sekilde, anahtar kelime listesiyle bir ETIKETE
+# ("Yeni müşteri" / "Mevcut müşteri" / "Maaş müşterisi") siniflandirilir -
+# izindeki deger metinden kesilmis bir alinti degil, o etiketin kendisidir.
+# Eksikligi simdiye kadar GORUNMUYORDU: regex_extractor diyakritiksiz
+# yazilmis metinde hedef_kitle'yi hic bulamadigi icin (bkz. ayni tarihli
+# katlama duzeltmesi) test metninde alan bos donuyor, dolayisiyla iz de
+# uretilmiyordu. Katlama duzeltilince alan doldu ve "Yeni müşteri" etiketi
+# span diye isaretlenip metinde ARANMAYA calisildi.
+_SINIFLANDIRMA_ALANLARI = {"kampanya_turu", "hedef_kitle"}
 
 
 @app.post("/cikar", response_model=CikarimYanit, tags=["Cikarim"])

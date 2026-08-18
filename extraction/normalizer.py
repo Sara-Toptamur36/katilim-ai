@@ -24,6 +24,52 @@ def turkce_kucult(metin: str) -> str:
     return metin.replace("İ", "i").lower()
 
 
+# Diyakritik katlama haritasi. Sapkali harfler (â î û) de katlanir -
+# dashboard/src/components/TerminolojiSozlugu.jsx ayni sekilde davranir
+# ("kâr" ile "kar" ayni terimdir).
+#
+# DUZ ASCII 'I' HARITADA YOK (bilerek): o hem 'I' hem 'ı' anlamina
+# gelebilir - bkz. turkce_kucult docstring'i. Katlama yalnizca TERS yonde
+# calisir ('ı' -> 'i', 'İ' -> 'I'); buyuk/kucuk harf farki cagri yerinde
+# re.IGNORECASE ya da turkce_kucult ile ele alinir.
+_TR_ASCII_HARITASI = str.maketrans("şŞıİğĞüÜöÖçÇâÂîÎûÛ", "sSiIgGuUoOcCaAiIuU")
+
+
+def turkce_ascii_katla(metin: str) -> str:
+    """Turkce diyakritikleri ASCII'ye katlar (şığüöç -> siguoc, âîû -> aiu).
+
+    NEDEN GEREKLI (olculdu, 17 Agustos - POST /cikar ucundan uca denemesi):
+    regex_extractor'in kelime tabanli alanlari, Turkce karakter kullanmadan
+    yazilmis metinde SESSIZCE bos donuyordu - "3 ay odemesiz donem" bir
+    erteleme suresi, "Yeni musteri" bir hedef kitle olarak taninmiyordu.
+    POST /cikar ucu ve MetinAnalizi ekrani kullaniciyi serbest metin
+    YAPISTIRMAYA davet ettigi icin bu, kullanicinin goremeyecegi bir
+    veri kaybiydi. Ayrica PDF/OCR kaynakli metinlerde aksan kaybi bilinen
+    bir sorundur (bkz. ner_extractor.py, Bulgu 4).
+    Ayni katlama agent/intent.py::turkce_ascii_katla'da niyet tespiti icin
+    zaten yapiliyordu; bu, ayni cozumun cikarim katmanindaki karsiligidir.
+
+    UZUNLUK KORUNUR - bu bir tasarim sartidir, tesaduf degil: str.translate
+    her karakteri BIR karakterle degistirir, dolayisiyla katlanmis metindeki
+    eslesme offset'leri HAM metinde birebir ayni yeri gosterir. regex_extractor
+    bu sayede aramayi katlanmis metinde yapip KANIT IZINI ham metinden
+    kesebiliyor - yani kullaniciya kendi yazdigi metin gosterilir.
+    (Bu yuzden burada str.lower() KULLANILMAZ: 'İ'.lower() iki karakter
+    uretip offset'leri kaydirirdi.)
+    """
+    return metin.translate(_TR_ASCII_HARITASI)
+
+
+def turkce_ascii_kucult(metin: str) -> str:
+    """Kucuk harfe cevirip diyakritikleri katlar - anahtar kelime
+    karsilastirmalari icin ('Müşteri' ve 'musteri' ayni sayilir).
+
+    Offset korunmaz (turkce_kucult icindeki 'İ' -> 'i' donusumu nedeniyle);
+    yalnizca `in` tarzi karsilastirmalarda kullanilmalidir.
+    """
+    return turkce_ascii_katla(turkce_kucult(metin))
+
+
 def yuzdeye_cevir(ham: str) -> float | None:
     """'%2,05' / '% 2.05' / '2.05 %' -> 0.0205 (ondalik oran).
 

@@ -14,6 +14,8 @@ Iki katman:
 import json
 from pathlib import Path
 
+import pytest
+
 from extraction.regex_extractor import genel_guven_hesapla, kaydi_cikar
 
 RAW_DATA = Path(__file__).parent.parent / "scraper" / "raw_data"
@@ -95,6 +97,90 @@ def test_kampanya_baslangic_bitis_tarih_araligindan_cikarilir():
     r = kaydi_cikar("Kampanya 1 Ocak 2026 - 31 Aralik 2026 tarihleri arasinda gecerlidir.")
     assert r["kampanya_baslangic"] == "2026-01-01"
     assert r["kampanya_bitis"] == "2026-12-31"
+
+
+# ---------------------------------------------------------------------------
+# Diyakritiksiz (aksansiz) yazim - POST /cikar'a YAPISTIRILAN metin
+# ---------------------------------------------------------------------------
+# BULGU (17 Agustos, POST /cikar ucundan uca denemesi): kelime tabanli
+# alanlar, Turkce diyakritik olmadan yazilmis metinde SESSIZCE bos donuyordu
+# (erteleme_suresi_ay, hedef_kitle, kampanya_turu None; kampanya_avantaji
+# eksik). Sayisal alanlar (rakam/sembol eslesmesi) etkilenmiyordu.
+#
+# NEDEN ONEMLI: POST /cikar ucu ve MetinAnalizi ekrani kullaniciyi serbest
+# metin YAPISTIRMAYA davet ediyor - Turkce karakter kullanmadan yazan biri
+# alanlarin kayboldugunu GORMEZ. Ayrica PDF/OCR kaynakli metinlerde aksan
+# kaybi bilinen bir sorundur (bkz. ner_extractor.py Bulgu 4).
+#
+# Depoda ayni desen baska katmanlarda zaten cozulmus: agent/intent.py::
+# turkce_ascii_katla, terminology/genisletme.py::_turkce_kucult,
+# dashboard/.../TerminolojiSozlugu.jsx.
+
+_TURKCE_YAZIM = (
+    "Aylık %1,89 kâr payı oranı, 120 aya varan vade. Dosya masrafı alınmaz. "
+    "Yeni müşterilerimize özeldir. 6 taksit imkânı. 3 ay ödemesiz dönem."
+)
+_ASCII_YAZIM = (
+    "Aylik %1,89 kar payi orani, 120 aya varan vade. Dosya masrafi alinmaz. "
+    "Yeni musterilerimize ozeldir. 6 taksit imkani. 3 ay odemesiz donem."
+)
+
+# masraf_durumu KASITLI OLARAK DISARIDA: o alan eslesen HAM METIN parcasini
+# (kanit izini) tasir, dolayisiyla kullanicinin kendi yazimini yansitmasi
+# DOGRUDUR - "Dosya masrafı alınmaz" ile "Dosya masrafi alinmaz" ayni olmak
+# zorunda degil. Yalnizca ikisinde de BULUNMUS olmasi gerekir (asagidaki
+# ayri test). Geri kalan alanlar ya sayisal ya da sabit etiket/sablon
+# uretir - yazimdan BAGIMSIZ olarak birebir ayni olmalidir.
+_YAZIMDAN_BAGIMSIZ_ALANLAR = [
+    "kar_payi_orani_percent",
+    "kar_payi_orani_decimal",
+    "finansman_tutari",
+    "vade_ay",
+    "taksit_sayisi",
+    "erteleme_suresi_ay",
+    "odul_miktari",
+    "odul_birimi",
+    "tahsis_ucreti",
+    "kampanya_avantaji",
+    "kampanya_baslangic",
+    "kampanya_bitis",
+    "kampanya_turu",
+    "hedef_kitle",
+]
+
+
+@pytest.mark.parametrize("alan", _YAZIMDAN_BAGIMSIZ_ALANLAR)
+def test_diyakritiksiz_yazim_ayni_sonucu_verir(alan):
+    turkce = kaydi_cikar(_TURKCE_YAZIM)
+    ascii_yazim = kaydi_cikar(_ASCII_YAZIM)
+    assert ascii_yazim[alan] == turkce[alan], (
+        f"'{alan}' alani yazima gore degisiyor: "
+        f"ASCII={ascii_yazim[alan]!r} vs Turkce={turkce[alan]!r}"
+    )
+
+
+def test_diyakritiksiz_yazimda_da_masraf_durumu_bulunur():
+    """masraf_durumu'nun METNI iki yazimda farkli olabilir (kanit izi ham
+    metinden alinir) ama alan ikisinde de DOLU olmalidir."""
+    assert kaydi_cikar(_ASCII_YAZIM)["masraf_durumu"] is not None
+    assert kaydi_cikar(_TURKCE_YAZIM)["masraf_durumu"] is not None
+
+
+def test_diyakritiksiz_ay_adiyla_yazilan_tarih_de_cikarilir():
+    """Tarih alani, olculdu (raw_data taramasi): ASCII'ye katlanmis metinde
+    kampanya_bitis 60 belgede, kampanya_baslangic 13 belgede kayboluyordu -
+    RE_TARIH'in ay adlari (Şubat/Mayıs/Ağustos/Eylül/Kasım/Aralık)
+    diyakritikli yazilmis oldugu icin. Bu, hata raporundaki dort alandan
+    daha genis bir yuzey."""
+    r = kaydi_cikar("Kampanya 1 Subat 2026 - 31 Aralik 2026 tarihleri arasinda gecerlidir.")
+    assert r["kampanya_baslangic"] == "2026-02-01"
+    assert r["kampanya_bitis"] == "2026-12-31"
+
+
+def test_diyakritiksiz_odul_ifadesi_de_cikarilir():
+    r = kaydi_cikar("5.000 TL degerinde alisveris ceki kazanin.")
+    assert r["odul_miktari"] == 5000.0
+    assert r["odul_birimi"] == "TL"
 
 
 # ---------------------------------------------------------------------------

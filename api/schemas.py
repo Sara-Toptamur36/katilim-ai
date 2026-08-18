@@ -47,6 +47,12 @@ class CikarimYontemi(str, Enum):
     LLM = "llm"
     TABLO = "tablo"
     MANUEL = "manuel"
+    # Birden fazla katmanin (regex + NER/LLM) katkisiyla doldurulmus kayit.
+    # extraction/regex_ile_zenginlestir.py bu degeri BILEREK yaziyordu ama
+    # enum'da karsiligi yoktu: GERCEK_VERI_AKTIF=true iken /kampanyalar,
+    # boyle 16 kaydin bulundugu veritabaninda ValidationError ile
+    # patliyordu. Yazan taraf dogruydu - eksik olan buydu.
+    HIBRIT = "hibrit"
 
 
 class CampaignRecord(BaseModel):

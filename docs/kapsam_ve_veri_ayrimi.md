@@ -18,17 +18,22 @@ iddiaları testlere bağlar.
 | **Terminoloji sözlüğü** | `terminology/sozluk.json` | 31 katılım bankacılığı kavramı, geleneksel karşılığı ve tanım kaynağı | ✅ Evet — Sözlük aracı ve terminoloji kontrolü |
 | **Kapsam dışı karşı-örnekler** | `tests/veri/kapsam_disi/` | 24 geleneksel bankacılık ifadesi + 10 meşru katılım ifadesi + 1 bilinen sınırlama | ❌ **Hayır** — yalnızca ölçüm |
 
-### Ham veri dağılımı (263 kayıt / 9 banka)
+### Ham veri dağılımı (300 kayıt / 9 banka)
+
+Güncel banka bazlı dağılım (tekil kampanya + snapshot ayrımıyla) için bkz.
+[md6_veri_bolumu.md § 1.3](md6_veri_bolumu.md#13-banka-bazlı-dağılım) veya
+`docs/veri_coverage.md` (`python -m scraper.scripts.coverage_raporu` ile
+yeniden üretilebilir).
 
 | Banka | Kayıt |
 |---|---|
-| Türkiye Emlak Katılım | 100 |
-| Ziraat Katılım | 90 |
+| Ziraat Katılım | 111 |
+| Türkiye Emlak Katılım | 103 |
 | Albaraka Türk | 16 |
 | Türkiye Finans | 16 |
-| Kuveyt Türk | 13 |
-| Hayat Finans | 12 |
-| Dünya Katılım | 10 |
+| Hayat Finans | 18 |
+| Kuveyt Türk | 15 |
+| Dünya Katılım | 15 |
 | T.O.M. Katılım | 3 |
 | Vakıf Katılım | 3 |
 

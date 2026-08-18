@@ -22,14 +22,15 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 
 ### Ölçülebilir durum
 
-*Son ölçüm: 15 Ağustos 2026. Tüm sayılar depodaki komutlarla yeniden üretilebilir —
-üretim komutları [Test](#test) bölümünde.*
+*Son ölçüm: 18 Ağustos 2026 (veri toplama satırları; diğerleri kendi ölçüm
+tarihinde sabittir, aşağıda belirtilmiştir). Tüm sayılar depodaki komutlarla
+yeniden üretilebilir — üretim komutları [Test](#test) bölümünde.*
 
 | Gösterge | Değer |
 |---|---|
 | Kapsanan katılım bankası | **9 / 10** (BDDK listesi; Adil Katılım gerekçeli hariç — ürün/kampanya yayımlamıyor) |
-| Toplanan gerçek kampanya | **230** tekil kampanya (263 tarihli anlık görüntü) |
-| Değişimi yakalanan kampanya | **33 / 230** içerik güncellemesi; **23**'ünde izlenen alan değişti |
+| Toplanan gerçek kampanya | **251** tekil kampanya (300 tarihli anlık görüntü) |
+| Değişimi yakalanan kampanya | **40 / 251** içerik güncellemesi; **25**'inde izlenen alan değişti |
 | Altın Veri Seti (elle doğrulanmış referans) | **58** kayıt + ekran görüntüsü kanıtı |
 | Çıkarım — dolu alan doğruluğu | **%98,48** (65/66 alan) |
 | Çıkarım — boş alan doğruluğu (yanlış pozitif) | **%99,17** (120/121 alan) — 1 yanlış pozitif |
@@ -40,12 +41,12 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 | RAG — Recall@3 / @5 | **%93,75 / %93,75** (30 / 30 — 32 kampanya) |
 | RAG — Recall@1 | **%87,5 – %93,75** (28–30/32) — koşular arası oynuyor, aşağıya bakınız |
 | RAG — abstention doğruluğu | **%100** (5/5 alan dışı soruda cevap üretilmedi) |
-| Otomatik test | **622** test (+42 `slow`), CI her push'ta çalışır |
+| Otomatik test | **723** test (+44 `slow`), CI her push'ta çalışır |
 
 **Kayıt sayısı neden iki türlü:** Scraper eski taramaları **silmez** — değişiklik
-takibi (SHA-256 delta) bunu gerektirir. Bu yüzden diskte 263 tarihli dosya var
-ama bunlar 230 tekil kampanya URL'sine karşılık gelir. Ürün tarafında anlamlı
-olan sayı **230**'dur; 263 rakamı toplanan anlık görüntü sayısıdır.
+takibi (SHA-256 delta) bunu gerektirir. Bu yüzden diskte 300 tarihli dosya var
+ama bunlar 251 tekil kampanya URL'sine karşılık gelir. Ürün tarafında anlamlı
+olan sayı **251**'dur; 300 rakamı toplanan anlık görüntü sayısıdır.
 
 Bu fazlalık bir artık değil, bir **özelliğin girdisi**: delta kontrolü yalnızca
 içerik gerçekten değiştiğinde yeni dosya yazdığı için, aynı URL'nin birden fazla
@@ -53,14 +54,18 @@ tarihli kaydı olması o kampanyanın **gerçekten güncellendiği** anlamına g
 `scraper/scripts/kampanya_tarihcesi.py` bu dosyaları zaman sırasına dizip neyin
 değiştiğini çıkarır — **ek veri toplamadan**.
 
-Burada da iki sayı ayrı tutulur: 230 kampanyanın **33**'ünde içerik değişmiş,
-ama bunların **23**'ünde izlenen bir alan (oran, vade, tutar, ödül, tarih)
-gerçekten farklılaşmış. Kalan 10'u yalnızca metin düzeltmesi — hash değişmiş
+Burada da iki sayı ayrı tutulur: 251 kampanyanın **40**'ında içerik değişmiş,
+ama bunların **25**'inde izlenen bir alan (oran, vade, tutar, ödül, tarih)
+gerçekten farklılaşmış. Kalan 15'i yalnızca metin düzeltmesi — hash değişmiş
 ama finansal bilgi aynı. Kullanıcıya "değişti" denecekse, *neyin* değiştiği
 gösterilebilmelidir; kozmetik değişiklik bildirimi gürültüdür.
 
 Ölçülen örnek: Dünya Katılım'ın "avantajlı kurlar" kampanyasının bitiş tarihi
-`2026-07-30 → 2026-08-06` olmuş — kampanya süresi uzatılmış.
+`2026-07-30 → 2026-08-06` olmuş — kampanya süresi uzatılmış. İkinci bir örnek,
+kampanyanın tamamen kaldırılması: T.O.M. Katılım'ın 3 kampanyasından 2'si
+(restoran ve market iade kampanyaları) 18 Ağustos taramasında artık sitede
+bulunamadı — canlı sayfa doğrudan kontrol edilerek scraper hatası olmadığı
+doğrulandı (bkz. [md6_veri_bolumu.md](docs/md6_veri_bolumu.md#33-somut-örnek)).
 
 **RAG indeksi 17 Ağustos'ta yeniden kuruldu** (263 belge → 817 parça) ve ölçüm
 tekrarlandı. İki bulgu çıktı, ikisi de raporlanıyor:

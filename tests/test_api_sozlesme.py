@@ -552,3 +552,23 @@ def test_isitma_basarisizsa_api_yine_de_ayaga_kalkar(monkeypatch):
 
     with TestClient(main_modulu.app) as istemci:
         assert istemci.get("/saglik").status_code == 200
+
+
+# ---------------------------------------------------------------------------
+# CikarimYontemi enum'u ile yazan taraf arasindaki sozlesme
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("deger", ["regex", "hibrit"])
+def test_zenginlestiricinin_yazdigi_yontem_degerleri_semada_gecerli(deger):
+    """extraction/regex_ile_zenginlestir.py `cikarim_yontemi` alanina
+    "regex" ya da "hibrit" yazar. "hibrit" enum'da YOKTU: GERCEK_VERI_AKTIF
+    ile calisan /kampanyalar, boyle kayitlarin bulundugu veritabaninda
+    ValidationError ile patliyordu (olculdu: 16 kayit).
+
+    Bu tesbit DB'li testlerle yakalanmiyordu - onlar Postgres yoksa
+    komple SKIP ediyor, yani CI'da hic calismiyorlar. Bu test DB
+    GEREKTIRMEZ, boylece ayni kopukluk sessizce geri gelemez."""
+    from api.schemas import CikarimYontemi
+
+    assert CikarimYontemi(deger).value == deger

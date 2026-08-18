@@ -11,14 +11,14 @@ Mentorluk raporu II (Bolum 6.3): "veri eksikligi yalnizca toplam kampanya sayisi
 | Banka | Tekil kampanya | Snapshot (raw_data) | Gold kayit |
 |---|---|---|---|
 | Albaraka Türk | 14 | 16 | 6 |
-| Dünya Katılım | 5 | 10 | 7 |
-| Hayat Finans | 10 | 12 | 5 |
-| Kuveyt Türk | 13 | 13 | 7 |
+| Dünya Katılım | 5 | 15 | 7 |
+| Hayat Finans | 10 | 18 | 5 |
+| Kuveyt Türk | 13 | 15 | 7 |
 | T.O.M. Katılım | 3 | 3 | 3 |
-| Türkiye Emlak Katılım | 80 | 100 | 7 |
+| Türkiye Emlak Katılım | 81 | 103 | 7 |
 | Türkiye Finans | 13 | 16 | 7 |
 | Vakıf Katılım | 3 | 3 | 8 |
-| Ziraat Katılım | 89 | 90 | 8 |
+| Ziraat Katılım | 109 | 111 | 8 |
 
 ## 2. Urun ailesi ekseni
 
@@ -26,9 +26,9 @@ En son gorulen versiyon uzerinden hesaplanir (ayni kampanyanin eski snapshot'lar
 
 | Urun ailesi (kampanya_turu) | Sayi | Alan doluluk % |
 |---|---|---|
-| Kart Kampanyasi | 133 | %21.4 |
+| Kart Kampanyasi | 153 | %21.2 |
 | Belirtilmemis | 38 | %16.8 |
-| Alisveris Puani Kampanyasi | 36 | %20.0 |
+| Alisveris Puani Kampanyasi | 37 | %20.0 |
 | Konut Finansmani Kampanyasi | 7 | %31.4 |
 | Ihtiyac Finansmani Kampanyasi | 6 | %40.0 |
 | Yatirim Urunu Kampanyasi | 4 | %0.0 |
@@ -39,10 +39,10 @@ En son gorulen versiyon uzerinden hesaplanir (ayni kampanyanin eski snapshot'lar
 ## 3. Zaman ekseni
 
 - Ilk gorulme: 2026-07-31
-- Son gorulme: 2026-08-11
-- Kampanya basina ortalama versiyon sayisi: 1.14
-- Coklu versiyonlu (gercekten degismis) kampanya sayisi: 33
-- Bayatlik (son taramadan bu yana gecen gun): 7
+- Son gorulme: 2026-08-18
+- Kampanya basina ortalama versiyon sayisi: 1.2
+- Coklu versiyonlu (gercekten degismis) kampanya sayisi: 40
+- Bayatlik (son taramadan bu yana gecen gun): 0
 
 ## 4. Alan ekseni
 
@@ -50,8 +50,8 @@ Kar payi / vade / taksit / odul / masraf alanlarinin en son versiyonda ne siklik
 
 | Alan | Dolu | Toplam | Doluluk % |
 |---|---|---|---|
-| kar_payi_orani_percent | 37 | 230 | %16.1 |
-| vade_ay | 5 | 230 | %2.2 |
-| taksit_sayisi | 111 | 230 | %48.3 |
-| odul_miktari | 83 | 230 | %36.1 |
-| masraf_durumu | 5 | 230 | %2.2 |
+| kar_payi_orani_percent | 37 | 251 | %14.7 |
+| vade_ay | 5 | 251 | %2.0 |
+| taksit_sayisi | 130 | 251 | %51.8 |
+| odul_miktari | 85 | 251 | %33.9 |
+| masraf_durumu | 5 | 251 | %2.0 |

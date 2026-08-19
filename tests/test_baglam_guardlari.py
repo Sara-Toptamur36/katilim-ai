@@ -55,6 +55,29 @@ def test_vade_farksiz_sifir_orani_KORUNUR():
     assert r["kar_payi_orani_percent"] == 0.0
 
 
+def test_ikincil_urundeki_kar_paysiz_ifadesi_ANA_orani_SIFIRLAMAZ():
+    """OLCULDU (kar_payi_tablosu zenginlestirme calistirmasi, id=155/158/
+    165): Turkiye Finans'in Ihtiyac Finansmani sayfalarinda "Kâr paysız
+    2.500 TL'ye kadar Yedek Hesap finansman desteğinden yararlanabilirsiniz"
+    cumlesi var - bu ANA kampanyadan AYRI, kucuk tutarli bir ek urunu
+    (Yedek Hesap) anlatiyor, guard olmadan sayfanin gercek (tabloda duran,
+    vadeye gore degisen) oranini yanlislikla 0.0 yapiyordu."""
+    r = kaydi_cikar(
+        "Ihtiyac finansmani basvurunuzu hemen yapin. "
+        "Kâr paysız 2.500 TL'ye kadar Yedek Hesap finansman desteğinden "
+        "yararlanabilirsiniz."
+    )
+    assert r["kar_payi_orani_percent"] is None
+
+
+def test_dogrudan_kar_paysiz_ifadesi_HALA_calisir():
+    """Guard cok DAR olmamali - ana urunu anlatan dogrudan 'kar paysiz'
+    ifadeleri (Yedek Hesap gibi bilinen ikincil urun adi GECMEDEN) hala
+    sifir oran olarak isaretlenmeli."""
+    r = kaydi_cikar("Bu urun tamamen kar paysizdir.")
+    assert r["kar_payi_orani_percent"] == 0.0
+
+
 def test_komsu_cumledeki_odul_kelimesi_kar_payini_ELEMEZ():
     """Baglam penceresi cumleye kirpilir - onceki cumledeki 'kazanin'
     sonraki cumledeki gercek orani reddetmemeli."""

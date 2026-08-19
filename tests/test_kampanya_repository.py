@@ -106,6 +106,26 @@ def test_dogrulanan_alanlar_api_sinirinda_kaybolmaz(dolu_oturum):
     assert tekil.dogrulanan_alanlar == {"kar_payi_orani_percent": True, "vade_ay": False}
 
 
+def test_kar_payi_tablosu_api_sinirinda_kaybolmaz(dolu_oturum):
+    """Ayni API-siniri hata sinifi (bkz. test_dogrulanan_alanlar_api_
+    sinirinda_kaybolmaz) - yeni bir DB sutunu eklerken _kayda_cevir()'e
+    eklemeyi unutmak kolay, bu yuzden her yeni JSON sutunu icin regresyon
+    kilidi yaziliyor."""
+    from api.kampanya_repository import id_ile_getir_db, kampanyalari_getir_db
+    from api.models import Kampanya
+
+    ilk = kampanyalari_getir_db(dolu_oturum)[0]
+    satir = dolu_oturum.get(Kampanya, ilk.id)
+    ornek_tablo = [
+        {"tablo_index": 0, "sutunlar": ["Vade", "Kar Orani"], "satirlar": [{"Vade": 3, "Kar Orani": "4,20%"}]}
+    ]
+    satir.kar_payi_tablosu = ornek_tablo
+    dolu_oturum.commit()
+
+    tekil = id_ile_getir_db(dolu_oturum, ilk.id)
+    assert tekil.kar_payi_tablosu == ornek_tablo
+
+
 def test_karsilastirma_motoruyla_uyumlu(dolu_oturum):
     """Gercek entegrasyon: DB'den gelen kayitlar comparison/compare_engine.py
     icinden gecebilmeli (attribute erisimi kirilmamali)."""

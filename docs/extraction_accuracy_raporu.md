@@ -696,3 +696,85 @@ Alan bazlı P/R/F1 tablosunun tamamı ve bilinen iki hata (DK-002 ödül
 miktarı, TF-001 yanlış pozitif) **birebir aynı** kaldı. "kâr" çakışması
 gerçekleşmedi, çünkü `RE_KAR_PAYI_*` desenleri zaten `k[aâ]r` yazıp
 ayrıca `pay`/`oran` bağlam kelimesini zorunlu kılıyordu.
+
+## Güncelleme — 20 Ağustos 2026 (kâr payı oranı tabloları: TF-001 yeniden açıldı)
+
+Teknik toplantıda gelen soru üzerine ("kâr payı oranı çoğu kampanya
+sayfasında yok, bankaların kendi hesaplama araçlarında/tablolarında var —
+buradan çekmek meşru mu?"): `scraper/scripts/tablo_isle.py` (HTML
+`<table>` → yapılandırılmış JSON, Rehber Bölüm 18) **zaten yazılmıştı**
+ama hiçbir extraction dosyası `tablolar` alanını okumuyordu — klasik
+"yazıldı ama bağlanmadı" örüntüsü. 300 ham kayıt tarandı: **15 kayıtta**
+dolu bir `tablolar` alanı var, bunlardan yalnızca **3 sayfada** (Albaraka
+`dijital-musterilere-ozel-pratik-finansman-kart`, Türkiye Finans
+`banka-calisanlarina-` ve `kamu-calisanlarina-ozel-ihtiyac-finansmani`)
+gerçekten VADE+ORAN sütunlu bir "Kâr Payı Oranları" tablosu var — geri
+kalan 12'si ödül/referans kademe tabloları (kâr payı oranıyla ilgisi yok).
+
+**Neden tek sayıya indirgenmedi:** ölçüldü — Albaraka'nın tablosunda AYNI
+vade diliminde FARKLI tutar dilimine göre farklı oran var (`%0` ve `%3,95`
+ikisi de "1-6 ay vade"); Türkiye Finans'ın sayfasında AYNI sayfada
+"sigortalı"/"sigortasız" için TAMAMEN AYRI iki oran seti var. Herhangi bir
+otomatik "en düşük"/"ilk satır" seçimi UYDURMA bir karar olurdu (rapor
+Bölüm 5.7/15). Bu yüzden `extraction/tablo_extractor.py::
+oran_tablolarini_sec()` tabloyu OLDUĞU GİBİ (satır/sütun korunarak) yeni
+bir `kar_payi_tablosu` sütununa taşır (bkz. `alembic/versions/
+f5f4763fa380_...py`), `kar_payi_orani_percent`'e HİÇ dokunmaz. API'de
+(`CampaignRecord.kar_payi_tablosu`) ve dashboard'da
+(`KarPayiTablosuKarti.jsx`) kaynak tablosu şeffafça gösterilir.
+
+### TF-001 yanlış pozitifi yeniden açıldı — artık 1 değil 2 örnek var
+
+`kar_payi_tablosu`'nu doldurmak için tüm kayıtlar yeniden tarandığında,
+17 Ağustos'ta "bilinen sınırlama, TEK örnek için genel kural riskli" diye
+**bilinçli olarak düzeltilmeyen** TF-001 `kar_payi_orani_percent=0.0`
+yanlış pozitifinin (bkz. yukarıdaki "C4" bölümü) aslında **2. bir
+örneği** olduğu ölçüldü: Türkiye Finans'ın `kamu-calisanlarina-ozel-
+ihtiyac-finansmani` sayfası da AYNI "Kâr paysız 2.500 TL'ye kadar Yedek
+Hesap finansman desteğinden yararlanabilirsiniz." cümlesinden aynı
+şekilde etkileniyordu (id=158/165). İkinci örnek, "tek kayıt için genel
+kural riskli" gerekçesini geçersiz kıldı — artık dar kapsamlı, ölçülmüş
+bir düzeltme yazıldı:
+
+`extraction/regex_extractor.py::_ikincil_urun_baglaminda_mi` — "Yedek
+Hesap" **özel adıyla** sınırlı bir bağlam guard'ı (`_ucret_baglaminda_mi`
+ile aynı desen, bkz. `tests/test_baglam_guardlari.py::
+test_ikincil_urundeki_kar_paysiz_ifadesi_ANA_orani_SIFIRLAMAZ`). Genel
+"kar paysiz" kalıbı **daraltılmadı** — yalnızca bu bilinen ikincil ürün
+adı yakınında geçtiğinde devre dışı kalır; doğrudan ana ürünü anlatan
+"kar paysiz" ifadeleri (AL-002/AL-005/AL-006/VK-001/VK-002/VK-003/VK-006/
+KT-006) etkilenmedi (regresyon: `tests/test_baglam_guardlari.py` ve
+`tests/test_regex_extractor*.py` — 59/59 geçti).
+
+### Regex-only fallback'in kendi sınırı — düzeltilmedi, belgelendi
+
+Guard'dan sonra TF-001'in DÜZ METİN (regex-only, `extraction_accuracy.py`
+ölçümü) tahmini `0.0` yerine `5.36` gibi BAŞKA bir hatalı sayıya
+kayıyor — `get_text()`'in düzleştirdiği tablo hücrelerinden
+(`RE_KAR_PAYI_GENEL`, güven 0.6 fallback) geliyor, tam olarak
+`tablo_isle.py`'nin modül başlığında tarif ettiği "hangi sayının hangi
+ürüne ait olduğunu kaybetme" sorunu. Bu, ölçülen tek regex-only Makro
+F1'i (%98,28) **değiştirmiyor** — hâlâ `kar_payi_orani_percent` alanında
+6 kayıttan 1 yanlış pozitif var, yalnızca hangi sayının üretildiği
+değişti. Regex-only katman **BİLİNÇLİ OLARAK GPU/LLM'siz, basit bir
+son çare fallback'tir** (rapor Bölüm 8) — bu katmanın kendisini
+tablo-farkında hale getirmek yeni, dar kapsamlı olmayan bir genel kural
+gerektirir; tek bir kayıt/örüntü için riskli (17 Ağustos'taki aynı
+gerekçe). **Gerçek düzeltme üretim yolunda (DB'yi dolduran kod) zaten
+var:**
+
+`extraction/regex_ile_zenginlestir.py::zenginlestir()` — bir sayfada
+`kar_payi_tablosu` bulunduysa VE hibrit boru hattının
+`kar_payi_orani_percent` tahmini `KILITLEME_GUVEN_ESIGI`nin (0.8) altında
+kaldıysa, alan **boş bırakılır** (DB'ye yazılmaz) — çünkü gerçek (vadeye/
+sigortaya göre değişen) oranlar zaten `kar_payi_tablosu`'nda doğru
+duruyor; düşük güvenli TEK sayı tahminine güvenmenin hiçbir faydası yok,
+yalnızca zararı var. Regresyon kilidi: `tests/
+test_regex_ile_zenginlestir.py::
+test_tablolu_sayfada_dusuk_guvenli_kar_payi_tahmini_guvensiz`.
+
+Üretim DB'sinde bu guard'dan ÖNCE zaten yanlış yazılmış olan 3 satır
+(id=155/158/165 — bu ortamın kendi ID'leri, taşınabilir değil) elle
+`None`'a sıfırlandı ve script yeniden çalıştırıldı; artık ya doğru bir
+yüksek güvenli değer ya da dürüst `None` + dolu `kar_payi_tablosu`
+taşıyorlar.

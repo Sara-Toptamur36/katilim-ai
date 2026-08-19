@@ -5,6 +5,7 @@ import FiltrePaneli from "../components/FiltrePaneli";
 import KampanyaTablosu from "../components/KampanyaTablosu";
 import EtkiSkoruKarti from "../components/EtkiSkoruKarti";
 import KampanyaTarihcesiKarti from "../components/KampanyaTarihcesiKarti";
+import KarPayiTablosuKarti from "../components/KarPayiTablosuKarti";
 
 const { Title } = Typography;
 
@@ -35,6 +36,7 @@ export default function Kampanyalar() {
 
   const bankalar = [...new Set(tumKampanyalar.map((k) => k.banka))];
   const turler = [...new Set(tumKampanyalar.map((k) => k.kampanya_turu))];
+  const secilenKampanya = kampanyalar.find((k) => k.id === secilenIdler[0]);
 
   const rowSelection = {
     selectedRowKeys: secilenIdler,
@@ -68,7 +70,7 @@ export default function Kampanyalar() {
         rowSelection={rowSelection}
       />
 
-      {/* Tek kampanya seçildiğinde etki skoru ve değişim tarihçesi kartları */}
+      {/* Tek kampanya seçildiğinde etki skoru, değişim tarihçesi ve kâr payı tablosu */}
       {secilenIdler.length === 1 && (
         <>
           <Divider />
@@ -78,6 +80,13 @@ export default function Kampanyalar() {
           <Divider />
           <Title level={4}>Değişim Tarihçesi</Title>
           <KampanyaTarihcesiKarti kampanyaId={secilenIdler[0]} />
+
+          {secilenKampanya?.kar_payi_tablosu && (
+            <>
+              <Divider />
+              <KarPayiTablosuKarti tablolar={secilenKampanya.kar_payi_tablosu} />
+            </>
+          )}
         </>
       )}
     </div>

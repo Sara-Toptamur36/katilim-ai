@@ -70,6 +70,14 @@ class Kampanya(Base):
     # gosterebilsin diye (bkz. extraction/regex_ile_zenginlestir.py).
     dogrulanan_alanlar = Column(JSON, default=dict)
 
+    # Kaynak sayfada Rehber Bolum 18 tarzi bir "Kâr Payı Oranları" tablosu
+    # varsa OLDUGU GIBI (vade/tutar kirilimi korunarak) burada saklanir -
+    # extraction/tablo_extractor.py TEK bir sayiya indirgemez (bkz. o
+    # modulun docstring'i), bu yuzden kar_payi_orani_percent'ten AYRI bir
+    # alan. None = sayfada boyle bir tablo yok (extraction/
+    # regex_ile_zenginlestir.py).
+    kar_payi_tablosu = Column(JSON, nullable=True)
+
     # Kayit izleri
     olusturulma = Column(DateTime(timezone=True), server_default=func.now())
     guncellenme = Column(DateTime(timezone=True), onupdate=func.now())

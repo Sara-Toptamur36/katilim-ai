@@ -27,6 +27,7 @@ def _kayda_cevir(satir: Kampanya) -> CampaignRecord:
         "kampanya_turu": satir.kampanya_turu or "Belirlenemedi",
         "kar_payi_orani_percent": satir.kar_payi_orani_percent,
         "kar_payi_orani_decimal": satir.kar_payi_orani_decimal,
+        "kar_payi_tablosu": satir.kar_payi_tablosu,
         "vade_ay": satir.vade_ay,
         "finansman_tutari": satir.finansman_tutari,
         "taksit_sayisi": satir.taksit_sayisi,

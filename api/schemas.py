@@ -78,6 +78,18 @@ class CampaignRecord(BaseModel):
     kar_payi_orani_decimal: float | None = Field(
         None, description="Ornek: 0.0189 (hesaplamalarda kullanilir)"
     )
+    kar_payi_tablosu: list[dict] | None = Field(
+        None,
+        description=(
+            "Kaynak sayfada Rehber Bolum 18 tarzi bir vade/tutar kirilimli "
+            "'Kâr Payı Oranları' tablosu varsa OLDUGU GIBI (satir/sutun "
+            "yapisi korunarak) burada tasinir - kar_payi_orani_percent TEK "
+            "bir sayidir ve boyle bir tablo genellikle TEK sayiya "
+            "indirgenemeyecek kadar cok degiskenlidir (bkz. extraction/"
+            "tablo_extractor.py docstring'i), bu yuzden ayri alan. "
+            "None = kaynakta boyle bir tablo bulunamadi."
+        ),
+    )
     vade_ay: int | None = Field(None, description="Standart ay cinsinden vade")
     finansman_tutari: float | None = Field(None, description="TL cinsinden")
 

@@ -132,6 +132,29 @@ def _ucret_baglaminda_mi(metin: str, baslangic: int, bitis: int, pencere: int = 
     return any(k in sol or k in sag for k in _UCRET_BAGLAM_DISLAMA_KELIMELERI)
 
 
+# OLCULDU (19-20 Agustos, kar_payi_tablosu zenginlestirme calistirmasi):
+# Turkiye Finans'in Ihtiyac Finansmani sayfalarinda (id=155/158/165) "Kâr
+# paysız 2.500 TL'ye kadar Yedek Hesap finansman desteğinden
+# yararlanabilirsiniz." cumlesi var - bu, sayfanin ANA kampanyasindan
+# (kendi orani var, bkz. tablo_extractor.py) TAMAMEN AYRI, kucuk tutarli
+# bir ek urunu (Yedek Hesap) anlatiyor. RE_KAR_PAYSIZ baglamsiz oldugu icin
+# bunu ana kampanyanin orani saniyordu (Verifier de dogrulayamadi -
+# "kar_payi_orani_percent": False olarak isaretlendi ama SILINMEDI, bkz.
+# regex_ile_zenginlestir.py). "Kar paysiz" ifadesinin gercekten kampanyanin
+# kendi urununu anlattigi durumlarla (ör. AL-002/VK-001 - "vade farksiz"
+# kalibindan AYRI olarak dogrudan "kar paysiz" diyen kayitlar) karistirmamak
+# icin sadece bu BILINEN ikincil urun adiyla sinirlandi.
+_IKINCIL_URUN_BAGLAM_DISLAMA_KELIMELERI = _katla_hepsi(["yedek hesap"])
+
+
+def _ikincil_urun_baglaminda_mi(metin: str, baslangic: int, bitis: int, pencere: int = 60) -> bool:
+    # Gercek sayfalarda coklu bosluk/nbsp oluyor ("Yedek  Hesap") - tek
+    # boslukla yazilmis dislama kelimesi bunu sessizce kacirir, bu yuzden
+    # ardisik boslukla ayrilmis her sey tek bosluga indirgenir.
+    sag = re.sub(r"\s+", " ", turkce_ascii_kucult(metin[baslangic:bitis + pencere]))
+    return any(k in sag for k in _IKINCIL_URUN_BAGLAM_DISLAMA_KELIMELERI)
+
+
 # Vade ve taksit sayisi gercek banka verisinde SIK KARISIYOR ("12 aya varan
 # taksit" bir TAKSIT SAYISIdir, vade DEGIL; "2 ay ertelemeli" ise bambaska
 # bir kavramdir - erteleme suresi). Bu yuzden vade kalibi, taksit/erteleme
@@ -608,7 +631,13 @@ def kaydi_cikar(ham_metin: str) -> dict:
         sayi_m = re.search(r"%\s*\d{1,2}(?:[.,]\d{1,4})?", _ham_span(ham_metin, m)) if m else None
         if sayi_m and _kar_payi_ata(alanlar, izler, sayi_m.group(0), 0.9):
             pass
-        elif RE_KAR_PAYSIZ.search(katlanmis) or RE_KAR_PAYI_SIFIR.search(katlanmis):
+        elif (
+            any(
+                not _ikincil_urun_baglaminda_mi(katlanmis, gm.start(), gm.end())
+                for gm in RE_KAR_PAYSIZ.finditer(katlanmis)
+            )
+            or RE_KAR_PAYI_SIFIR.search(katlanmis)
+        ):
             alanlar["kar_payi_orani_decimal"] = 0.0
             alanlar["kar_payi_orani_percent"] = 0.0
             izler["kar_payi_orani_percent"] = ("kâr paysız / 0 kâr paylı", 0.85)

@@ -9,13 +9,21 @@ import pytest
 
 import extraction.regex_ile_zenginlestir as zenginlestir_modulu
 from extraction.hybrid_pipeline import kaydi_hibrit_cikar
-from extraction.regex_ile_zenginlestir import CIKARILABILEN_ALANLAR, _ham_metinleri_url_ile_esle
+from extraction.regex_ile_zenginlestir import (
+    CIKARILABILEN_ALANLAR,
+    _ham_metinleri_url_ile_esle,
+    _tablo_varsa_kar_payi_bastir,
+)
+from extraction.tablo_extractor import oran_tablolarini_sec
 
 
 def test_ham_metinleri_url_ile_esle_gercek_dosyalari_bulur():
     esleme = _ham_metinleri_url_ile_esle()
     assert len(esleme) >= 20
-    assert all(isinstance(metin, str) and metin for metin in esleme.values())
+    assert all(
+        isinstance(veri["ham_metin"], str) and veri["ham_metin"] and "tablolar" in veri
+        for veri in esleme.values()
+    )
 
 
 def test_cikarilabilen_alanlar_finansal_alanlari_kapsiyor():
@@ -56,6 +64,64 @@ def test_veritabanini_dolduran_fonksiyon_hibrit_boru_hattini_kullanir():
     DEGIL) kullandigini DB gerektirmeden kilitler - reel bir DB olmadan da
     calisir, boylece bu regresyon CI'da her push'ta yakalanir."""
     assert zenginlestir_modulu.kaydi_hibrit_cikar is kaydi_hibrit_cikar
+
+
+def _raw_data_kaydi_yukle(goreli_yol: str) -> dict:
+    import json
+    from pathlib import Path
+
+    dosya = Path(__file__).parent.parent / "scraper" / "raw_data" / goreli_yol
+    with open(dosya, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def test_tablolu_sayfada_dusuk_guvenli_kar_payi_tahmini_bastirilir():
+    """OLCULDU (Turkiye Finans Ihtiyac Finansmani sayfalari, kaynak_url
+    ...banka-calisanlarina-ozel-ihtiyac-finansmani.aspx): sayfada gercek bir
+    vade/tutar kirilimli oran TABLOSU var (bkz. tablo_extractor.py), ama
+    kaydi_hibrit_cikar() duz metinde flattened tablo hucrelerine rastlayip
+    dusuk guvenli (0.6) bir "ilk bulunan %X" tahmini uretiyor - YANLIS
+    sutundan (Aylık Toplam Maliyet) geliyordu. `_tablo_varsa_kar_payi_
+    bastir()` bu tahmini (ve ondan derlenen kampanya_avantaji ozetini)
+    DB'ye yazilmadan ONCE silmeli."""
+    kayit = _raw_data_kaydi_yukle(
+        "turkiyefinans/json/20260806_turkiyefinans_tr-tr_kampanyalar_"
+        "Sayfalar_banka-calisanlarina-ozel-ihtiyac-finansmani.aspx.json"
+    )
+    secilen_tablo = oran_tablolarini_sec(kayit["tablolar"])
+    assert secilen_tablo is not None  # onkosul: gercekten bir tablo var
+
+    cikan = kaydi_hibrit_cikar(kayit["ham_metin"], ner_kullan=False, llm_kullan=False)
+    assert cikan["kar_payi_orani_percent"] is not None  # onkosul: bastirilmadan once hatali dolu
+
+    bastirilmis = _tablo_varsa_kar_payi_bastir(dict(cikan), secilen_tablo)
+    assert bastirilmis["kar_payi_orani_percent"] is None
+    assert bastirilmis["kar_payi_orani_decimal"] is None
+    assert "kâr payı" not in (bastirilmis["kampanya_avantaji"] or "").lower()
+
+
+def test_confident_ama_yanlis_kosullu_ifade_de_bastirilir():
+    """OLCULDU (Albaraka dijital-musterilere-ozel-pratik-finansman-kart):
+    sayfa "vade farksiz VEYA ozel oranli" diyor - kosullu bir secim, TUM
+    kampanya icin degil - ama RE_VADE_FARKSIZ bunu YUKSEK guvenle (0.8,
+    KILITLEME_GUVEN_ESIGI'ne esit) "kar_payi_orani=0" saniyor. Tablonun
+    kendisi bunu yalanliyor: yalnizca EN KUCUK tutar diliminde (250-40.000
+    TL) %0, digerlerinde %3,95/3,90/3,85. Bu, bastirmanin GUVEN esikli
+    degil TABLO VARLIGINA gore olmasi gerektigini kanitlayan gercek
+    ornektir - guven-esikli bir tasarim bu vakayi KACIRIRDI."""
+    kayit = _raw_data_kaydi_yukle(
+        "albaraka/json/20260731_albaraka_tr_kampanyalar_detay_"
+        "dijital-musterilere-ozel-pratik-finansman-kart.json"
+    )
+    secilen_tablo = oran_tablolarini_sec(kayit["tablolar"])
+    assert secilen_tablo is not None
+
+    cikan = kaydi_hibrit_cikar(kayit["ham_metin"], ner_kullan=False, llm_kullan=False)
+    assert cikan["kar_payi_orani_percent"] == 0.0  # onkosul: yuksek guvenle ama YANLIS dolu
+    assert cikan["_izler"]["kar_payi_orani_percent"][1] >= 0.8  # "confident" oldugunu dogrula
+
+    bastirilmis = _tablo_varsa_kar_payi_bastir(dict(cikan), secilen_tablo)
+    assert bastirilmis["kar_payi_orani_percent"] is None
 
 
 # ---------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Alert, Drawer } from "antd";
+import { Alert, Drawer, Modal } from "antd";
 import {
   RobotOutlined,
   SwapOutlined,
@@ -82,6 +82,34 @@ export default function Dashboard() {
           background: #0c6653 !important;
         }
 
+        /* AI Asistanı Aç butonu — altın vurgu */
+        .hero-buton-altin {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          height: 40px;
+          padding: 0 20px;
+          border-radius: 8px;
+          background: #d4a34b;
+          border: none;
+          color: #1a1408;
+          font-weight: 650;
+          font-size: 13.5px;
+          text-decoration: none;
+          box-shadow: 0 2px 10px rgba(212,163,75,0.32);
+          transition: all 150ms ease;
+          box-sizing: border-box;
+          cursor: pointer;
+        }
+        .hero-buton-altin:hover {
+          background: #c08f38 !important;
+          color: #1a1408 !important;
+          box-shadow: 0 4px 14px rgba(212,163,75,0.40) !important;
+        }
+        .hero-buton-altin:active {
+          background: #b38432 !important;
+        }
+
         /* 1400px altında hero paneli sağ kutuları tek sıra 4'lü */
         @media (max-width: 1400px) {
           .hero-kapsayici {
@@ -127,14 +155,137 @@ export default function Dashboard() {
           }
         }
 
-        /* Drawer responsive kuralları */
+        /* İki sütunlu grafik ızgarası */
+        .grafik-izgarasi {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+        }
+        @media (max-width: 1200px) {
+          .grafik-izgarasi {
+            grid-template-columns: 1fr !important;
+          }
+        }
+
+        /* Halka grafik lejant satırı */
+        .halka-lejant-satir {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 12.5px;
+          line-height: 1.3;
+          padding: 4px 0;
+        }
+        .halka-lejant-kare {
+          width: 10px;
+          height: 10px;
+          border-radius: 2px;
+          flex-shrink: 0;
+        }
+        .halka-lejant-ad {
+          flex: 1;
+          color: var(--yazi-normal);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .halka-lejant-sayi {
+          font-weight: 650;
+          color: var(--yazi-koyu);
+          min-width: 28px;
+          text-align: right;
+        }
+        .halka-lejant-yuzde {
+          color: var(--yazi-soluk);
+          font-size: 11.5px;
+          min-width: 42px;
+          text-align: right;
+        }
+
+        /* Yatay çubuk grafik satırı */
+        .cubuk-satir {
+          display: grid;
+          grid-template-columns: 150px 1fr 36px;
+          align-items: center;
+          gap: 10px;
+        }
+        .cubuk-banka-adi {
+          font-size: 12.5px;
+          color: var(--yazi-koyu);
+          font-weight: 500;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .cubuk-arka {
+          width: 100%;
+          height: 10px;
+          background: var(--kenarlik);
+          border-radius: 5px;
+          overflow: hidden;
+        }
+        .cubuk-dolu {
+          height: 100%;
+          background: var(--marka-500);
+          border-radius: 5px;
+          transition: width 0.5s ease;
+        }
+        .cubuk-deger {
+          font-size: 12.5px;
+          font-weight: 650;
+          color: var(--yazi-koyu);
+          text-align: right;
+        }
+
+        /* Model Metrikleri Modal — perde ve konum */
+        .metrik-modal .ant-modal-mask {
+          background: rgba(12, 30, 26, 0.55) !important;
+          backdrop-filter: blur(6px);
+        }
+        .metrik-modal .ant-modal {
+          padding-bottom: 0 !important;
+        }
+        .metrik-modal .ant-modal-content {
+          border-radius: 18px !important;
+          padding: 24px !important;
+        }
+        .metrik-modal .ant-modal-header {
+          margin-bottom: 0 !important;
+          padding-bottom: 16px !important;
+          border-bottom: 1px solid var(--kenarlik) !important;
+        }
+        .metrik-modal .ant-modal-body {
+          max-height: 85vh;
+          overflow-y: auto;
+          padding-top: 20px !important;
+        }
+
+        /* Bento ızgara */
+        .bento-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 12px;
+        }
+        @media (max-width: 900px) {
+          .bento-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+        @media (max-width: 640px) {
+          .bento-grid { grid-template-columns: 1fr !important; }
+        }
+
+        /* Modal 1100px altında daralt */
+        @media (max-width: 1100px) {
+          .metrik-modal .ant-modal {
+            width: 94% !important;
+            max-width: 94vw !important;
+          }
+        }
+
+        /* Drawer responsive kuralları (Veri Kaynakları Drawer'ı için) */
         @media (max-width: 1024px) {
           .metrik-drawer .ant-drawer-content-wrapper {
             width: 90% !important;
             max-width: 90vw !important;
-          }
-          .metrik-ikili-grid {
-            grid-template-columns: 1fr !important;
           }
         }
         @media (max-width: 768px) {
@@ -207,7 +358,7 @@ export default function Dashboard() {
 
           {/* 3 Dolu Yeşil Buton */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-            <Link to="/chatbot" className="hero-buton">
+            <Link to="/chatbot" className="hero-buton-altin">
               <RobotOutlined /> AI Asistanı Aç
             </Link>
 
@@ -573,11 +724,12 @@ export default function Dashboard() {
           gap: 16,
         }}
       >
-        {/* Kutu 1: Veri */}
+        {/* Kutu 1: Veri — üst yeşil çizgi */}
         <div
           style={{
             background: "var(--kart)",
             border: "1px solid var(--kenarlik)",
+            borderTop: "3px solid #0c765f",
             borderRadius: 12,
             padding: 20,
             display: "flex",
@@ -593,7 +745,7 @@ export default function Dashboard() {
               fontSize: 10,
               fontWeight: 700,
               letterSpacing: "0.08em",
-              color: "var(--yazi-soluk)",
+              color: "#0c765f",
               textTransform: "uppercase",
             }}
           >
@@ -631,11 +783,12 @@ export default function Dashboard() {
           </span>
         </div>
 
-        {/* Kutu 2: Kapsam */}
+        {/* Kutu 2: Kapsam — üst yeşil çizgi */}
         <div
           style={{
             background: "var(--kart)",
             border: "1px solid var(--kenarlik)",
+            borderTop: "3px solid #0c765f",
             borderRadius: 12,
             padding: 20,
             display: "flex",
@@ -651,7 +804,7 @@ export default function Dashboard() {
               fontSize: 10,
               fontWeight: 700,
               letterSpacing: "0.08em",
-              color: "var(--yazi-soluk)",
+              color: "#0c765f",
               textTransform: "uppercase",
             }}
           >
@@ -689,11 +842,12 @@ export default function Dashboard() {
           </span>
         </div>
 
-        {/* Kutu 3: Çıkarım Ölçümü */}
+        {/* Kutu 3: Çıkarım Ölçümü — üst altın çizgi */}
         <div
           style={{
             background: "var(--kart)",
             border: "1px solid var(--kenarlik)",
+            borderTop: "3px solid #d4a34b",
             borderRadius: 12,
             padding: 20,
             display: "flex",
@@ -709,7 +863,7 @@ export default function Dashboard() {
               fontSize: 10,
               fontWeight: 700,
               letterSpacing: "0.08em",
-              color: "var(--yazi-soluk)",
+              color: "#b8873a",
               textTransform: "uppercase",
             }}
           >
@@ -747,11 +901,12 @@ export default function Dashboard() {
           </span>
         </div>
 
-        {/* Kutu 4: RAG Ölçümü */}
+        {/* Kutu 4: RAG Ölçümü — üst altın çizgi */}
         <div
           style={{
             background: "var(--kart)",
             border: "1px solid var(--kenarlik)",
+            borderTop: "3px solid #d4a34b",
             borderRadius: 12,
             padding: 20,
             display: "flex",
@@ -767,7 +922,7 @@ export default function Dashboard() {
               fontSize: 10,
               fontWeight: 700,
               letterSpacing: "0.08em",
-              color: "var(--yazi-soluk)",
+              color: "#b8873a",
               textTransform: "uppercase",
             }}
           >
@@ -808,17 +963,262 @@ export default function Dashboard() {
       </div>
 
       {/* ========================================================
-          5) MEVCUT İÇERİK: TAZELİK ŞERİDİ (Sadece API bağlıyken)
+          5) İKİ SÜTUNLU GRAFİK IZGARASI
+          ======================================================== */}
+      {(() => {
+        /* -- Halka grafik verileri -- */
+        /* Sıcak renk paleti: koyu yeşil, gri (eksik veri), altın, turuncu, açık yeşil, bej */
+        const halkaRenkler = ["#0c6653", "#b9bdb6", "#d4a34b", "#d97736", "#3fb296", "#d8c48c"];
+        const ilkBes = URUN_AILESI.slice(0, 5);
+        const kalanlar = URUN_AILESI.slice(5);
+        const digerToplam = kalanlar.reduce((t, u) => t + u.sayi, 0);
+        const halkaDilimler = [
+          ...ilkBes.map((u, i) => ({ ad: u.ad, sayi: u.sayi, renk: halkaRenkler[i] })),
+          { ad: "Diğer", sayi: digerToplam, renk: halkaRenkler[5] },
+        ];
+        const toplam = 251;
+        const yaricap = 74;
+        const kalinlik = 26;
+        const merkez = 100;
+
+        /* stroke-dasharray/offset hesaplama (SVG çember) */
+        const cevre = 2 * Math.PI * yaricap;
+        let toplamOffset = 0;
+        const svgDilimler = halkaDilimler.map((d) => {
+          const oran = d.sayi / toplam;
+          const uzunluk = cevre * oran;
+          const bosluk = cevre - uzunluk;
+          const offset = -toplamOffset;
+          toplamOffset += uzunluk;
+          return { ...d, dasharray: `${uzunluk} ${bosluk}`, dashoffset: offset };
+        });
+
+        /* -- Çubuk grafik verileri -- */
+        const enBuyuk = 109;
+
+        return (
+          <div className="grafik-izgarasi">
+            {/* SOL KART — Kampanya Türü Dağılımı (Halka Grafik) */}
+            <div
+              style={{
+                background: "var(--kart)",
+                border: "1px solid var(--kenarlik)",
+                borderRadius: 14,
+                padding: 20,
+                boxShadow: "var(--golge-kart)",
+              }}
+            >
+              {/* Başlık bloğu */}
+              <div style={{ marginBottom: 18 }}>
+                <div
+                  style={{
+                    fontSize: 15,
+                    fontWeight: 650,
+                    color: "var(--yazi-koyu)",
+                  }}
+                >
+                  Kampanya Türü Dağılımı
+                </div>
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "var(--yazi-soluk)",
+                    marginTop: 2,
+                  }}
+                >
+                  251 kampanyanın ürün ailesine göre dağılımı
+                </div>
+              </div>
+
+              {/* İçerik: Halka + Lejant yan yana */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 24,
+                  flexWrap: "wrap",
+                }}
+              >
+                {/* SVG Halka Grafik */}
+                <div style={{ position: "relative", flexShrink: 0 }}>
+                  <svg
+                    viewBox="0 0 200 200"
+                    width={160}
+                    height={160}
+                    style={{ transform: "rotate(-90deg)" }}
+                  >
+                    {svgDilimler.map((d, i) => (
+                      <circle
+                        key={i}
+                        cx={merkez}
+                        cy={merkez}
+                        r={yaricap}
+                        fill="none"
+                        stroke={d.renk}
+                        strokeWidth={kalinlik}
+                        strokeDasharray={d.dasharray}
+                        strokeDashoffset={d.dashoffset}
+                        strokeLinecap="butt"
+                      />
+                    ))}
+                  </svg>
+                  {/* Ortadaki sayı */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "50%",
+                      transform: "translate(-50%, -50%)",
+                      textAlign: "center",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 28,
+                        fontWeight: 700,
+                        color: "var(--yazi-koyu)",
+                        lineHeight: 1,
+                      }}
+                    >
+                      251
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "var(--yazi-soluk)",
+                        marginTop: 2,
+                      }}
+                    >
+                      kampanya
+                    </div>
+                  </div>
+                </div>
+
+                {/* Lejant listesi */}
+                <div style={{ flex: 1, minWidth: 180 }}>
+                  {halkaDilimler.map((d) => {
+                    const yuzde = ((d.sayi / toplam) * 100).toFixed(1).replace(".", ",");
+                    return (
+                      <div className="halka-lejant-satir" key={d.ad}>
+                        <span
+                          className="halka-lejant-kare"
+                          style={{ background: d.renk }}
+                        />
+                        <span className="halka-lejant-ad">{d.ad}</span>
+                        <span className="halka-lejant-sayi">{d.sayi}</span>
+                        <span className="halka-lejant-yuzde">%{yuzde}</span>
+                      </div>
+                    );
+                  })}
+                  {/* Gri dilim açıklama notu */}
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: "var(--yazi-soluk)",
+                      marginTop: 6,
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    Gri dilim, ürün ailesi kaynakta belirtilmemiş kampanyaları gösterir.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* SAĞ KART — Banka Bazında Dağılım (Yatay Çubuk) */}
+            <div
+              style={{
+                background: "var(--kart)",
+                border: "1px solid var(--kenarlik)",
+                borderRadius: 14,
+                padding: 20,
+                boxShadow: "var(--golge-kart)",
+              }}
+            >
+              {/* Başlık bloğu */}
+              <div style={{ marginBottom: 18 }}>
+                <div
+                  style={{
+                    fontSize: 15,
+                    fontWeight: 650,
+                    color: "var(--yazi-koyu)",
+                  }}
+                >
+                  Banka Bazında Dağılım
+                </div>
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "var(--yazi-soluk)",
+                    marginTop: 2,
+                  }}
+                >
+                  Tekil kampanya sayısı
+                </div>
+              </div>
+
+              {/* Çubuk grafik satırları */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {BANKA_DAGILIMI.map((b) => {
+                  const yuzde = (b.tekil / enBuyuk) * 100;
+                  /* Baskın iki banka altın, diğerleri yeşil */
+                  const baskinMi = b.banka === "Ziraat Katılım" || b.banka === "Türkiye Emlak Katılım";
+                  return (
+                    <div className="cubuk-satir" key={b.banka}>
+                      <span className="cubuk-banka-adi">{b.banka}</span>
+                      <div className="cubuk-arka">
+                        <div
+                          className="cubuk-dolu"
+                          style={{
+                            width: `${yuzde}%`,
+                            background: baskinMi ? "#d4a34b" : undefined,
+                          }}
+                        />
+                      </div>
+                      <span className="cubuk-deger">{b.tekil}</span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Amber uyarı notu */}
+              <div
+                style={{
+                  marginTop: 16,
+                  background: "rgba(194, 142, 40, 0.10)",
+                  border: "1px solid rgba(194, 142, 40, 0.35)",
+                  borderRadius: 8,
+                  padding: "8px 12px",
+                  fontSize: 11.5,
+                  color: "#c28e28",
+                  lineHeight: 1.45,
+                }}
+              >
+                Altın renkli iki banka, Ziraat Katılım ve Türkiye Emlak Katılım toplam kampanyaların %76'sını oluşturuyor — dağılım dengesizdir.
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ========================================================
+          6) MEVCUT İÇERİK: TAZELİK ŞERİDİ (Sadece API bağlıyken)
           ======================================================== */}
       {apiBagli && <TazelikSeridi />}
 
       {/* ========================================================
-          6) MODEL METRİKLERİ DETAY PANELİ (DRAWER - 660px)
+          7) MODEL METRİKLERİ DETAY PANELİ (MODAL — BENTO DÜZEN)
           ======================================================== */}
-      <Drawer
+      <Modal
+        open={metrikPaneliAcik}
+        onCancel={() => setMetrikPaneliAcik(false)}
+        footer={null}
+        width={1000}
+        centered
+        className="metrik-modal"
         title={
           <div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: "var(--yazi-koyu)" }}>
+            <div style={{ fontSize: 20, fontWeight: 650, color: "var(--yazi-koyu)" }}>
               Model Metrikleri
             </div>
             <div style={{ fontSize: 12, color: "var(--yazi-soluk)", fontWeight: 400, marginTop: 2 }}>
@@ -826,354 +1226,228 @@ export default function Dashboard() {
             </div>
           </div>
         }
-        placement="right"
-        width={660}
-        onClose={() => setMetrikPaneliAcik(false)}
-        open={metrikPaneliAcik}
-        className="metrik-drawer"
-        styles={{ body: { padding: "16px 20px" } }}
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {/* BÖLÜM 1 - Çıkarım Doğruluğu */}
-          <div
-            style={{
+        {/* --- BENTO GRID --- */}
+        <div className="bento-grid">
+
+          {/* ===== SATIR 1 — ÜÇ BÜYÜK SKOR KARTI ===== */}
+
+          {/* Kart A: Dolu Alan */}
+          {(() => {
+            const bentoKartStil = {
               background: "var(--kart)",
               border: "1px solid var(--kenarlik)",
-              borderRadius: 10,
-              padding: "12px 16px",
-            }}
-          >
-            <div
-              style={{
-                fontSize: 12.5,
-                fontWeight: 700,
-                color: "var(--marka-600)",
-                marginBottom: 10,
-                letterSpacing: "0.05em",
-              }}
-            >
-              ÇIKARIM DOĞRULUĞU
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: 13.5 }}>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "var(--yazi-normal)" }}>Dolu alan doğruluğu</span>
-                <span style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>
-                  %{OLCUMLER.cikarim.doluAlanDogrulugu.toString().replace(".", ",")}{" "}
-                  <span style={{ fontSize: 12, color: "var(--yazi-soluk)", fontWeight: 400 }}>
-                    ({OLCUMLER.cikarim.doluAlanDetay})
-                  </span>
-                </span>
+              borderRadius: 14,
+              padding: 16,
+              boxShadow: "0 1px 3px rgba(60,50,30,0.05)",
+            };
+            const bentoBaslikStil = {
+              fontSize: 11,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: "var(--yazi-soluk)",
+              marginBottom: 12,
+              fontWeight: 700,
+            };
+            /* Doluluk çubuğu yardımcısı */
+            const DolulukCubugu = ({ yuzde, renk }) => (
+              <div style={{ height: 5, borderRadius: 3, background: "var(--kenarlik)", marginTop: 8, overflow: "hidden" }}>
+                <div style={{ width: `${yuzde}%`, height: "100%", borderRadius: 3, background: renk }} />
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "var(--yazi-normal)" }}>Boş alan doğruluğu</span>
-                <span style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>
-                  %{OLCUMLER.cikarim.bosAlanDogrulugu.toString().replace(".", ",")}{" "}
-                  <span style={{ fontSize: 12, color: "var(--yazi-soluk)", fontWeight: 400 }}>
-                    ({OLCUMLER.cikarim.bosAlanDetay})
-                  </span>
-                </span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "var(--yazi-normal)" }}>Alan bazlı makro F1</span>
-                <span style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>
-                  %{OLCUMLER.cikarim.makroF1.toString().replace(".", ",")}{" "}
-                  <span style={{ fontSize: 12, color: "var(--yazi-soluk)", fontWeight: 400 }}>
-                    ({OLCUMLER.cikarim.makroF1Detay})
-                  </span>
-                </span>
-              </div>
-            </div>
-            <div
-              style={{
-                fontSize: 11.5,
-                color: "var(--yazi-soluk)",
-                marginTop: 10,
-                lineHeight: 1.4,
-                borderTop: "1px dashed var(--kenarlik)",
-                paddingTop: 6,
-              }}
-            >
-              Dolu ve boş alan ayrı ölçülür: bir alanı kaçırmak ile olmayan bir değeri uydurmak farklı hatalardır.
-            </div>
-          </div>
+            );
 
-          {/* BÖLÜM 2 - RAG Performansı */}
-          <div
-            style={{
-              background: "var(--kart)",
-              border: "1px solid var(--kenarlik)",
-              borderRadius: 10,
-              padding: "12px 16px",
-            }}
-          >
-            <div
-              style={{
-                fontSize: 12.5,
-                fontWeight: 700,
-                color: "var(--marka-600)",
-                marginBottom: 10,
-                letterSpacing: "0.05em",
-              }}
-            >
-              RAG PERFORMANSI
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: 13.5 }}>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "var(--yazi-normal)" }}>Recall@1</span>
-                <span style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>
-                  %{OLCUMLER.rag.recall1Alt.toString().replace(".", ",")} - %{OLCUMLER.rag.recall1Ust.toString().replace(".", ",")}{" "}
-                  <span style={{ fontSize: 12, color: "var(--yazi-soluk)", fontWeight: 400 }}>
-                    (28-30/32, {OLCUMLER.rag.recall1Not})
-                  </span>
-                </span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "var(--yazi-normal)" }}>Recall@3</span>
-                <span style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>
-                  %{OLCUMLER.rag.recall3.toString().replace(".", ",")}{" "}
-                  <span style={{ fontSize: 12, color: "var(--yazi-soluk)", fontWeight: 400 }}>
-                    ({OLCUMLER.rag.recall5Detay})
-                  </span>
-                </span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "var(--yazi-normal)" }}>Recall@5</span>
-                <span style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>
-                  %{OLCUMLER.rag.recall5.toString().replace(".", ",")}{" "}
-                  <span style={{ fontSize: 12, color: "var(--yazi-soluk)", fontWeight: 400 }}>
-                    ({OLCUMLER.rag.recall5Detay})
-                  </span>
-                </span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "var(--yazi-normal)" }}>Çekimserlik doğruluğu</span>
-                <span style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>
-                  %{OLCUMLER.rag.abstention}{" "}
-                  <span style={{ fontSize: 12, color: "var(--yazi-soluk)", fontWeight: 400 }}>
-                    ({OLCUMLER.rag.abstentionDetay})
-                  </span>
-                </span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "var(--yazi-normal)" }}>İndeks</span>
-                <span style={{ fontWeight: 600, color: "var(--yazi-koyu)", fontSize: 12.5 }}>
-                  {OLCUMLER.rag.indekslenenParca} parça / {OLCUMLER.rag.belgeSayisi} belge - {OLCUMLER.rag.indeksTarihi}
-                </span>
-              </div>
-            </div>
-            <div
-              style={{
-                fontSize: 11.5,
-                color: "var(--yazi-soluk)",
-                marginTop: 10,
-                lineHeight: 1.4,
-                borderTop: "1px dashed var(--kenarlik)",
-                paddingTop: 6,
-              }}
-            >
-              Recall@1 tek bir sayı olarak verilemiyor; aynı süreçte üç kez ölçüldüğünde 28-30/32 arasında değişiyor. Recall@3 ve @5 kararlı.
-            </div>
-          </div>
+            return (
+              <>
+                {/* Kart A: Dolu Alan */}
+                <div style={bentoKartStil}>
+                  <div style={bentoBaslikStil}>DOLU ALAN</div>
+                  <div style={{ fontSize: 34, fontWeight: 700, color: "#b8873a", lineHeight: 1 }}>
+                    %{OLCUMLER.cikarim.doluAlanDogrulugu.toString().replace(".", ",")}
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--yazi-normal)", marginTop: 4 }}>Doğruluk</div>
+                  <DolulukCubugu yuzde={OLCUMLER.cikarim.doluAlanDogrulugu} renk="#d4a34b" />
+                  <div style={{ fontSize: 11, color: "var(--yazi-soluk)", marginTop: 6 }}>{OLCUMLER.cikarim.doluAlanDetay}</div>
+                </div>
 
-          {/* BÖLÜM 3 & 4 - Kapsam Ölçümü ve Otomatik Test (YAN YANA GRID) */}
-          <div
-            className="metrik-ikili-grid"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 12,
-            }}
-          >
-            {/* BÖLÜM 3 - Kapsam Ölçümü (Scope Guard) */}
-            <div
-              style={{
-                background: "var(--kart)",
-                border: "1px solid var(--kenarlik)",
-                borderRadius: 10,
-                padding: "12px 16px",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-              }}
-            >
-              <div>
+                {/* Kart B: Boş Alan — yeşil tonlar */}
+                <div style={bentoKartStil}>
+                  <div style={bentoBaslikStil}>BOŞ ALAN</div>
+                  <div style={{ fontSize: 34, fontWeight: 700, color: "#0c765f", lineHeight: 1 }}>
+                    %{OLCUMLER.cikarim.bosAlanDogrulugu.toString().replace(".", ",")}
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--yazi-normal)", marginTop: 4 }}>Yanlış pozitif kontrolü</div>
+                  <DolulukCubugu yuzde={OLCUMLER.cikarim.bosAlanDogrulugu} renk="#169276" />
+                  <div style={{ fontSize: 11, color: "var(--yazi-soluk)", marginTop: 6 }}>{OLCUMLER.cikarim.bosAlanDetay}</div>
+                </div>
+
+                {/* Kart C: Makro F1 — altın vurgu (ana metrik) */}
+                <div style={bentoKartStil}>
+                  <div style={bentoBaslikStil}>MAKRO F1</div>
+                  <div style={{ fontSize: 34, fontWeight: 700, color: "#b8873a", lineHeight: 1 }}>
+                    %{OLCUMLER.cikarim.makroF1.toString().replace(".", ",")}
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--yazi-normal)", marginTop: 4 }}>Alan bazlı</div>
+                  <DolulukCubugu yuzde={OLCUMLER.cikarim.makroF1} renk="#d4a34b" />
+                  <div style={{ fontSize: 11, color: "var(--yazi-soluk)", marginTop: 6 }}>{OLCUMLER.cikarim.makroF1Detay}</div>
+                </div>
+
+                {/* ===== SATIR 2 — RAG (2 sütun) + KAPSAM (1 sütun) ===== */}
+
+                {/* RAG Performansı — 2 sütun genişliğinde */}
+                <div style={{ ...bentoKartStil, gridColumn: "span 2" }}>
+                  <div style={bentoBaslikStil}>RAG PERFORMANSI</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+
+                    {/* Recall@1 — ARALIK ÇUBUĞU */}
+                    <div>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
+                        <span style={{ fontSize: 13, color: "var(--yazi-normal)" }}>Recall@1</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: "#0c765f" }}>
+                          %{OLCUMLER.rag.recall1Alt.toString().replace(".", ",")} – %{OLCUMLER.rag.recall1Ust.toString().replace(".", ",")}
+                          <span style={{ fontSize: 11, color: "var(--yazi-soluk)", fontWeight: 400, marginLeft: 6 }}>
+                            {OLCUMLER.rag.recall1Not}
+                          </span>
+                        </span>
+                      </div>
+                      {/* Aralık çubuğu: 0→alt açık zümrüt (#7bcbb6), alt→üst koyu zümrüt (#169276), üst→100 boş */}
+                      <div style={{ height: 5, borderRadius: 3, background: "var(--kenarlik)", position: "relative", overflow: "hidden" }}>
+                        <div style={{ position: "absolute", left: 0, top: 0, width: `${OLCUMLER.rag.recall1Alt}%`, height: "100%", background: "#7bcbb6", borderRadius: "3px 0 0 3px" }} />
+                        <div style={{ position: "absolute", left: `${OLCUMLER.rag.recall1Alt}%`, top: 0, width: `${OLCUMLER.rag.recall1Ust - OLCUMLER.rag.recall1Alt}%`, height: "100%", background: "#169276" }} />
+                      </div>
+                    </div>
+
+                    {/* Recall@3 — düz çubuk */}
+                    <div>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
+                        <span style={{ fontSize: 13, color: "var(--yazi-normal)" }}>Recall@3</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: "#0c765f" }}>
+                          %{OLCUMLER.rag.recall3.toString().replace(".", ",")}
+                          <span style={{ fontSize: 11, color: "var(--yazi-soluk)", fontWeight: 400, marginLeft: 6 }}>{OLCUMLER.rag.recall5Detay}</span>
+                        </span>
+                      </div>
+                      <DolulukCubugu yuzde={OLCUMLER.rag.recall3} renk="#169276" />
+                    </div>
+
+                    {/* Recall@5 — düz çubuk */}
+                    <div>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
+                        <span style={{ fontSize: 13, color: "var(--yazi-normal)" }}>Recall@5</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: "#0c765f" }}>
+                          %{OLCUMLER.rag.recall5.toString().replace(".", ",")}
+                          <span style={{ fontSize: 11, color: "var(--yazi-soluk)", fontWeight: 400, marginLeft: 6 }}>{OLCUMLER.rag.recall5Detay}</span>
+                        </span>
+                      </div>
+                      <DolulukCubugu yuzde={OLCUMLER.rag.recall5} renk="#169276" />
+                    </div>
+
+                    {/* Çekimserlik — düz çubuk, koyu yeşil */}
+                    <div>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
+                        <span style={{ fontSize: 13, color: "var(--yazi-normal)" }}>Çekimserlik</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: "#0c765f" }}>
+                          %{OLCUMLER.rag.abstention}
+                          <span style={{ fontSize: 11, color: "var(--yazi-soluk)", fontWeight: 400, marginLeft: 6 }}>{OLCUMLER.rag.abstentionDetay}</span>
+                        </span>
+                      </div>
+                      <DolulukCubugu yuzde={OLCUMLER.rag.abstention} renk="#0c765f" />
+                    </div>
+                  </div>
+
+                  {/* İndeks bilgisi */}
+                  <div style={{ fontSize: 11, color: "var(--yazi-soluk)", marginTop: 14, paddingTop: 10, borderTop: "1px solid var(--kenarlik)" }}>
+                    İndeks: {OLCUMLER.rag.indekslenenParca} parça / {OLCUMLER.rag.belgeSayisi} belge · {OLCUMLER.rag.indeksTarihi}
+                  </div>
+                </div>
+
+                {/* Kapsam Ölçümü — 1 sütun */}
+                <div style={bentoKartStil}>
+                  <div style={bentoBaslikStil}>KAPSAM ÖLÇÜMÜ</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    {/* Hassasiyet */}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: 13, color: "var(--yazi-normal)" }}>Hassasiyet</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 14, fontWeight: 650, color: "var(--yazi-koyu)" }}>{OLCUMLER.kapsam.hassasiyet}</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, background: "rgba(12,118,95,0.12)", color: "#0c765f", padding: "2px 6px", borderRadius: 6 }}>%100</span>
+                      </div>
+                    </div>
+                    {/* Özgüllük */}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: 13, color: "var(--yazi-normal)" }}>Özgüllük</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 14, fontWeight: 650, color: "var(--yazi-koyu)" }}>{OLCUMLER.kapsam.ozgulluk}</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, background: "rgba(12,118,95,0.12)", color: "#0c765f", padding: "2px 6px", borderRadius: 6 }}>%100</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--yazi-soluk)", marginTop: 14 }}>Scope Guard</div>
+                </div>
+
+                {/* ===== SATIR 3 — TEST (1 sütun) + BİLİNEN HATALAR (2 sütun) ===== */}
+
+                {/* Otomatik Test — 1 sütun */}
+                <div style={bentoKartStil}>
+                  <div style={bentoBaslikStil}>OTOMATİK TEST</div>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+                    <span style={{ fontSize: 28, fontWeight: 700, color: "#0c765f", lineHeight: 1 }}>{OLCUMLER.test.gecen}</span>
+                    <span style={{ fontSize: 12, color: "var(--yazi-normal)" }}>geçen test</span>
+                    <span style={{ fontSize: 10, fontWeight: 600, background: "var(--kenarlik)", color: "var(--yazi-soluk)", padding: "2px 7px", borderRadius: 6, marginLeft: "auto" }}>+{OLCUMLER.test.yavas} yavaş</span>
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--yazi-soluk)", marginTop: 14 }}>CI her push'ta çalışır.</div>
+                </div>
+
+                {/* Bilinen Hatalar — 2 sütun genişliğinde */}
+                <div style={{ ...bentoKartStil, gridColumn: "span 2" }}>
+                  <div style={bentoBaslikStil}>BİLİNEN HATALAR</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+                    {OLCUMLER.bilinenHatalar.map((hata, idx) => (
+                      <div key={hata.kod}>
+                        {idx > 0 && <div style={{ borderTop: "1px solid var(--kenarlik)", margin: "10px 0" }} />}
+                        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <span style={{ fontSize: 11, fontWeight: 700, background: "#fbe4e4", color: "#c94f4f", padding: "2px 7px", borderRadius: 6, flexShrink: 0 }}>{hata.kod}</span>
+                            <span style={{ fontWeight: 650, fontSize: 13, color: "var(--yazi-koyu)" }}>{hata.alan}</span>
+                          </div>
+                          <div style={{ fontSize: 12, color: "var(--yazi-normal)", lineHeight: 1.45, paddingLeft: 2 }}>{hata.aciklama}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--yazi-soluk)", marginTop: 12, paddingTop: 8, borderTop: "1px solid var(--kenarlik)" }}>
+                    Hatalar gizlenmez, kayıt altındadır.
+                  </div>
+                </div>
+
+                {/* Renk anlamı açıklama notu */}
+                <div style={{ gridColumn: "1 / -1", fontSize: 11, color: "var(--yazi-soluk)", marginBottom: -4 }}>
+                  Altın renkli değerler çıkarım doğruluğunu, yeşil renkli değerler güvenilirlik ölçümlerini (yanlış pozitif kontrolü, kaynak bulma, çekimserlik) gösterir.
+                </div>
+
+                {/* ===== SATIR 4 — TAM GENİŞLİK AMBER UYARI ===== */}
                 <div
                   style={{
-                    fontSize: 12.5,
-                    fontWeight: 700,
-                    color: "var(--marka-600)",
-                    marginBottom: 10,
-                    letterSpacing: "0.05em",
-                  }}
-                >
-                  KAPSAM ÖLÇÜMÜ
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: 13.5 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "var(--yazi-normal)" }}>Hassasiyet</span>
-                    <span style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>
-                      {OLCUMLER.kapsam.hassasiyet}
-                    </span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "var(--yazi-normal)" }}>Özgüllük</span>
-                    <span style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>
-                      {OLCUMLER.kapsam.ozgulluk}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* BÖLÜM 4 - Otomatik Test */}
-            <div
-              style={{
-                background: "var(--kart)",
-                border: "1px solid var(--kenarlik)",
-                borderRadius: 10,
-                padding: "12px 16px",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-              }}
-            >
-              <div>
-                <div
-                  style={{
-                    fontSize: 12.5,
-                    fontWeight: 700,
-                    color: "var(--marka-600)",
-                    marginBottom: 10,
-                    letterSpacing: "0.05em",
-                  }}
-                >
-                  OTOMATİK TEST
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: 13.5 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "var(--yazi-normal)" }}>Geçen test</span>
-                    <span style={{ fontWeight: 600, color: "#3fb296" }}>
-                      {OLCUMLER.test.gecen}
-                    </span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "var(--yazi-normal)" }}>Yavaş test</span>
-                    <span style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>
-                      {OLCUMLER.test.yavas}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div
-                style={{
-                  fontSize: 11.5,
-                  color: "var(--yazi-soluk)",
-                  marginTop: 8,
-                  lineHeight: 1.3,
-                }}
-              >
-                CI her push'ta çalışır.
-              </div>
-            </div>
-          </div>
-
-          {/* BÖLÜM 5 - Bilinen Hatalar */}
-          <div
-            style={{
-              background: "var(--kart)",
-              border: "1px solid var(--kenarlik)",
-              borderRadius: 10,
-              padding: "12px 16px",
-            }}
-          >
-            <div
-              style={{
-                fontSize: 12.5,
-                fontWeight: 700,
-                color: "var(--marka-600)",
-                marginBottom: 10,
-                letterSpacing: "0.05em",
-              }}
-            >
-              BİLİNEN HATALAR
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {OLCUMLER.bilinenHatalar.map((hata) => (
-                <div
-                  key={hata.kod}
-                  style={{
+                    gridColumn: "1 / -1",
+                    background: "#f8edcf",
+                    border: "1px solid #e7c978",
+                    borderRadius: 12,
+                    padding: 14,
                     display: "flex",
-                    flexDirection: "column",
-                    gap: 3,
+                    alignItems: "flex-start",
+                    gap: 10,
+                    fontSize: 12.5,
+                    color: "#8c6219",
+                    lineHeight: 1.5,
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 700,
-                        background: "rgba(201, 79, 79, 0.12)",
-                        color: "#c94f4f",
-                        padding: "2px 6px",
-                        borderRadius: 4,
-                        flexShrink: 0,
-                      }}
-                    >
-                      {hata.kod}
-                    </span>
-                    <span
-                      style={{
-                        fontWeight: 600,
-                        fontSize: 13,
-                        color: "var(--yazi-koyu)",
-                      }}
-                    >
-                      {hata.alan}
-                    </span>
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 12.5,
-                      color: "var(--yazi-normal)",
-                      lineHeight: 1.45,
-                      paddingLeft: 2,
-                    }}
-                  >
-                    {hata.aciklama}
-                  </div>
+                  {/* Uyarı ikonu */}
+                  <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>⚠</span>
+                  <span>Bu değerler canlı telemetri değildir. {OLCUM_TARIHI} tarihinde yapılmış ölçümlerdir. Veri veya indeks değiştiğinde yeniden ölçülmesi gerekir.</span>
                 </div>
-              ))}
-            </div>
-            <div
-              style={{
-                fontSize: 11.5,
-                color: "var(--yazi-soluk)",
-                marginTop: 10,
-                lineHeight: 1.4,
-                borderTop: "1px dashed var(--kenarlik)",
-                paddingTop: 6,
-              }}
-            >
-              Hatalar gizlenmez, kayıt altındadır.
-            </div>
-          </div>
-
-          {/* En Altta Amber Uyarı Kutusu */}
-          <div
-            style={{
-              background: "rgba(194, 142, 40, 0.10)",
-              border: "1px solid rgba(194, 142, 40, 0.35)",
-              borderRadius: 10,
-              padding: "10px 14px",
-              fontSize: 12,
-              color: "#d8c48c",
-              lineHeight: 1.45,
-            }}
-          >
-            Bu değerler canlı telemetri değildir. 18 Ağustos 2026 tarihinde yapılmış ölçümlerdir. Veri veya indeks değiştiğinde yeniden ölçülmesi gerekir.
-          </div>
+              </>
+            );
+          })()}
         </div>
-      </Drawer>
+      </Modal>
 
       {/* ========================================================
           7) VERİ KAYNAKLARI DETAY PANELİ (DRAWER - 660px)

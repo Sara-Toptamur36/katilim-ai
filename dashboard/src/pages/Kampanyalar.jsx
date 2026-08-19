@@ -4,6 +4,7 @@ import { kampanyalariGetir } from "../api/client";
 import FiltrePaneli from "../components/FiltrePaneli";
 import KampanyaTablosu from "../components/KampanyaTablosu";
 import EtkiSkoruKarti from "../components/EtkiSkoruKarti";
+import KampanyaTarihcesiKarti from "../components/KampanyaTarihcesiKarti";
 
 const { Title } = Typography;
 
@@ -67,12 +68,16 @@ export default function Kampanyalar() {
         rowSelection={rowSelection}
       />
 
-      {/* Tek kampanya seçildiğinde "bu iyi bir kampanya mı?" etki skoru kartı */}
+      {/* Tek kampanya seçildiğinde etki skoru ve değişim tarihçesi kartları */}
       {secilenIdler.length === 1 && (
         <>
           <Divider />
           <Title level={4}>Etki Skoru</Title>
           <EtkiSkoruKarti kampanyaId={secilenIdler[0]} />
+
+          <Divider />
+          <Title level={4}>Değişim Tarihçesi</Title>
+          <KampanyaTarihcesiKarti kampanyaId={secilenIdler[0]} />
         </>
       )}
     </div>

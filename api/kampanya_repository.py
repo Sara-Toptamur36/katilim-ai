@@ -45,6 +45,12 @@ def _kayda_cevir(satir: Kampanya) -> CampaignRecord:
         "confidence": satir.confidence or 0.0,
         "cikarim_yontemi": satir.cikarim_yontemi,
         "alan_belirtilmemis": satir.alan_belirtilmemis or {},
+        # DENETIM BULGUSU: bu alan sema/model/migration/regex_ile_zenginlestir.py
+        # ile DB'ye yaziliyordu ama burada hic aktarilmiyordu - Verifier
+        # gercekten calisip DB'ye kaydetse bile API bunu sessizce {} donuyordu,
+        # ki sema kendi aciklamasinda bos = "Verifier hic calismadi" diyor.
+        # terminoloji_tutarli'nin daha once yasadigi ayni API-siniri hatasi.
+        "dogrulanan_alanlar": satir.dogrulanan_alanlar or {},
     })
 
 

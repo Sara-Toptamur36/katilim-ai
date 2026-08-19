@@ -58,11 +58,13 @@ from api.schemas import (
     EtkiSkoruYanit,
     OdemeSatiriYanit,
     RakipAnaliziYanit,
+    TarihceYanit,
     TazelikYanit,
     TerimKarti,
     TokenYanit,
 )
 from chunking.indeks_durumu import indeks_durumu_oku
+from scraper.scripts.kampanya_tarihcesi import degisen_alanlari_bul, tarihce_getir
 from calculator.calculator import (
     HesapGirdiHatasi,
     aylik_taksit_hesapla,
@@ -543,7 +545,80 @@ def kampanya_etki_skoru(kampanya_id: int, kullanici: dict = Depends(token_dogrul
     sonuc = etki_skoru(kayit, tum_kayitlar)
     latency = int((time.time() - baslangic) * 1000)
     _audit_kaydet(kullanici, "etki-skoru", latency, cagrilan_arac="sql")
-    return EtkiSkoruYanit(**sonuc)
+
+    # aciklama tamamen sabit Turkce sablonlardan uretilir (bkz.
+    # comparison/etki_skoru.py) - /karsilastir ve /hesapla ile ayni
+    # gerekceyle terminoloji kontrolu burada da uygulanir.
+    aciklama = sonuc.get("aciklama")
+    terminoloji_sonucu = (
+        terminoloji_tutarliligini_kontrol_et(aciklama) if aciklama else None
+    )
+
+    return EtkiSkoruYanit(
+        **sonuc,
+        audit=_bos_audit(
+            cagrilan_arac="sql",
+            latency_ms=latency,
+            sebep=aciklama,
+            terminoloji_tutarli=(
+                terminoloji_sonucu["tutarli"] if terminoloji_sonucu else None
+            ),
+            terminoloji_sorunlari=(
+                terminoloji_sonucu["bulunan_sorunlar"] if terminoloji_sonucu else []
+            ),
+        ),
+    )
+
+
+@app.get(
+    "/kampanyalar/{kampanya_id}/tarihce",
+    response_model=TarihceYanit,
+    tags=["Kampanyalar"],
+)
+def kampanya_tarihce(kampanya_id: int, kullanici: dict = Depends(token_dogrula)):
+    """Kampanyanin zaman icindeki degisim tarihcesi (Sprint 5).
+
+    DENETIM BULGUSU: scraper/scripts/kampanya_tarihcesi.py yazilip test
+    edilmisti (README'de "Dunya Katilim'in bitis tarihi degisti" gibi
+    somut bir ornekle anlatiliyor) ama hicbir uc noktaya baglanmamisti -
+    chatbot/dashboard uzerinden bir kampanyanin gecmisini sormanin yolu
+    yoktu. Ek veri toplamaz; scraper/raw_data'da zaten duran coklu-tarihli
+    dosyalari okur (bkz. o modulun docstring'i).
+
+    EK VERI TOPLAMAZ - regex tabanli (hizli, deterministik) oldugu icin
+    hibrit cikarimla (Yagmur'un DB'ye yazdigi NIHAI degerler) birebir
+    ayni sayilari VERMEYEBILIR; trend/degisim icin yaklasik dogru yeterli
+    (bkz. kampanya_tarihcesi.py "NEDEN HIBRIT DEGIL REGEX").
+    """
+    baslangic = time.time()
+
+    if GERCEK_VERI_AKTIF:
+        oturum = next(oturum_al())
+        try:
+            kayit = id_ile_getir_db(oturum, kampanya_id)
+        finally:
+            oturum.close()
+    else:
+        kayit = id_ile_getir(kampanya_id)
+
+    if kayit is None:
+        raise HTTPException(status_code=404, detail="Kampanya bulunamadi")
+
+    tarihce = tarihce_getir(kayit.kaynak_url)
+    degisenler = degisen_alanlari_bul(tarihce)
+
+    latency = int((time.time() - baslangic) * 1000)
+    _audit_kaydet(kullanici, "tarihce", latency, cagrilan_arac="sql")
+
+    return TarihceYanit(
+        kampanya_id=kampanya_id,
+        banka=kayit.banka,
+        kampanya_adi=kayit.kampanya_adi,
+        kaynak_url=kayit.kaynak_url,
+        tarihce=tarihce,
+        degisen_alanlar=degisenler,
+        audit=_bos_audit(cagrilan_arac="sql", latency_ms=latency),
+    )
 
 
 @app.get("/rakip-analizi", response_model=RakipAnaliziYanit, tags=["Karsilastirma"])
@@ -582,7 +657,10 @@ def rakip_analizi(
 
     latency = int((time.time() - baslangic) * 1000)
     _audit_kaydet(kullanici, "rakip-analizi", latency, cagrilan_arac="sql")
-    return RakipAnaliziYanit(**sonuc)
+    return RakipAnaliziYanit(
+        **sonuc,
+        audit=_bos_audit(cagrilan_arac="sql", latency_ms=latency),
+    )
 
 
 @app.post("/karsilastir", response_model=KarsilastirYanit, tags=["Karsilastirma"])

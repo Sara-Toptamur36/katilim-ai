@@ -89,6 +89,23 @@ def test_henuz_cikarilmamis_alanlar_seffaf_isaretlenir(dolu_oturum):
     assert kayit.alan_belirtilmemis.get("kar_payi_orani_percent") is True
 
 
+def test_dogrulanan_alanlar_api_sinirinda_kaybolmaz(dolu_oturum):
+    """DENETIM BULGUSU: _kayda_cevir() bu alani hic aktarmiyordu -
+    Verifier gercekten calisip DB'ye yazsa bile API sessizce {} donuyordu
+    (sema kendi aciklamasinda bos = 'Verifier hic calismadi' diyor).
+    terminoloji_tutarli'nin daha once yasadigi ayni API-siniri hatasi."""
+    from api.kampanya_repository import id_ile_getir_db, kampanyalari_getir_db
+    from api.models import Kampanya
+
+    ilk = kampanyalari_getir_db(dolu_oturum)[0]
+    satir = dolu_oturum.get(Kampanya, ilk.id)
+    satir.dogrulanan_alanlar = {"kar_payi_orani_percent": True, "vade_ay": False}
+    dolu_oturum.commit()
+
+    tekil = id_ile_getir_db(dolu_oturum, ilk.id)
+    assert tekil.dogrulanan_alanlar == {"kar_payi_orani_percent": True, "vade_ay": False}
+
+
 def test_karsilastirma_motoruyla_uyumlu(dolu_oturum):
     """Gercek entegrasyon: DB'den gelen kayitlar comparison/compare_engine.py
     icinden gecebilmeli (attribute erisimi kirilmamali)."""

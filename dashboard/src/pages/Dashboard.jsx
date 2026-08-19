@@ -13,6 +13,9 @@ import {
   BANKA_DAGILIMI,
   URUN_AILESI,
   ZAMAN_EKSENI,
+  ALAN_DOLULUGU,
+  SISTEM_DURUMU,
+  KAYNAK_TAKIP,
 } from "../data/olcumler";
 import TazelikSeridi from "../components/TazelikSeridi";
 
@@ -279,6 +282,32 @@ export default function Dashboard() {
             width: 94% !important;
             max-width: 94vw !important;
           }
+        }
+
+        /* Taranan Kaynaklar kartı stilleri */
+        .kaynak-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 12px 20px;
+        }
+        @media (max-width: 900px) {
+          .kaynak-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+        .kaynak-url-link {
+          font-size: 11px;
+          color: var(--yazi-soluk);
+          text-decoration: none;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          display: block;
+          transition: color 150ms ease;
+        }
+        .kaynak-url-link:hover {
+          text-decoration: underline;
+          color: var(--marka-500) !important;
         }
 
         /* Drawer responsive kuralları (Veri Kaynakları Drawer'ı için) */
@@ -1197,14 +1226,483 @@ export default function Dashboard() {
                 Altın renkli iki banka, Ziraat Katılım ve Türkiye Emlak Katılım toplam kampanyaların %76'sını oluşturuyor — dağılım dengesizdir.
               </div>
             </div>
+
+            {/* SOL KART 2 — Alan Bazında Veri Doluluğu */}
+            <div
+              style={{
+                background: "var(--kart)",
+                border: "1px solid var(--kenarlik)",
+                borderRadius: 14,
+                padding: 20,
+                boxShadow: "var(--golge-kart)",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+              }}
+            >
+              <div>
+                {/* Başlık bloğu */}
+                <div style={{ marginBottom: 18 }}>
+                  <div
+                    style={{
+                      fontSize: 15,
+                      fontWeight: 650,
+                      color: "var(--yazi-koyu)",
+                    }}
+                  >
+                    Alan Bazında Veri Doluluğu
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: "var(--yazi-soluk)",
+                      marginTop: 2,
+                    }}
+                  >
+                    251 kampanyada hangi alan ne sıklıkta dolu
+                  </div>
+                </div>
+
+                {/* Doluluk satırları */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                  {ALAN_DOLULUGU.map((item) => {
+                    const yuzdeSayi = (item.dolu / item.toplam) * 100;
+                    const yuzdeMetin = yuzdeSayi.toFixed(1).replace(".", ",");
+                    let cubukRengi = "#d97736"; // < 15 turuncu
+                    if (yuzdeSayi >= 40) {
+                      cubukRengi = "#169276"; // >= 40 yeşil
+                    } else if (yuzdeSayi >= 15) {
+                      cubukRengi = "#d4a34b"; // 15 - 40 altın
+                    }
+
+                    return (
+                      <div key={item.alan} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                          <span style={{ fontSize: 13, fontWeight: 500, color: "var(--yazi-koyu)" }}>
+                            {item.alan}
+                          </span>
+                          <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+                            <span style={{ fontSize: 13, fontWeight: 650, color: "var(--yazi-koyu)" }}>
+                              {item.dolu} / {item.toplam}
+                            </span>
+                            <span style={{ fontSize: 12, color: "var(--yazi-soluk)" }}>
+                              %{yuzdeMetin}
+                            </span>
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            width: "100%",
+                            height: 8,
+                            background: "var(--kenarlik)",
+                            borderRadius: 4,
+                            overflow: "hidden",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: `${yuzdeSayi}%`,
+                              height: "100%",
+                              background: cubukRengi,
+                              borderRadius: 4,
+                              transition: "width 0.5s ease",
+                            }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* En altta açıklama notları */}
+              <div
+                style={{
+                  marginTop: 16,
+                  paddingTop: 10,
+                  borderTop: "1px solid var(--kenarlik)",
+                  fontSize: 11,
+                  color: "var(--yazi-soluk)",
+                  lineHeight: 1.4,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 8,
+                }}
+              >
+                <div>
+                  Bu oranlar yalnızca regex katmanının sonucudur. NER ve LLM katmanları daha fazlasını doldurur — bu bir alt sınır göstergesidir, kesin doluluk değildir.
+                </div>
+                <div>
+                  Doluluk oranı ile çıkarım doğruluğu farklı şeylerdir: doluluk, bankaların o alanı kaç kampanyada yayımladığını gösterir; %98,28 makro F1 ise yayımlanan alanları ne kadar doğru okuduğumuzu ölçer.
+                </div>
+              </div>
+            </div>
+
+            {/* SAĞ KART 2 — Sistem Sağlığı ve Veri Tazeliği */}
+            <div
+              style={{
+                background: "var(--kart)",
+                border: "1px solid var(--kenarlik)",
+                borderRadius: 14,
+                padding: 20,
+                boxShadow: "var(--golge-kart)",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+              }}
+            >
+              <div>
+                {/* Başlık bloğu */}
+                <div style={{ marginBottom: 18 }}>
+                  <div
+                    style={{
+                      fontSize: 15,
+                      fontWeight: 650,
+                      color: "var(--yazi-koyu)",
+                    }}
+                  >
+                    Sistem Sağlığı ve Veri Tazeliği
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: "var(--yazi-soluk)",
+                      marginTop: 2,
+                    }}
+                  >
+                    Arka plandaki teknik durum
+                  </div>
+                </div>
+
+                {/* 2x2 Mini Kart Grid */}
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: 10,
+                  }}
+                >
+                  {/* Mini Kart 1: RAG İNDEKSİ */}
+                  <div
+                    style={{
+                      background: "var(--zemin-yumusak)",
+                      border: "1px solid var(--kenarlik)",
+                      borderRadius: 10,
+                      padding: 12,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        letterSpacing: "0.08em",
+                        color: "var(--yazi-soluk)",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      RAG İNDEKSİ
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 17,
+                        fontWeight: 650,
+                        color: "var(--yazi-koyu)",
+                        marginTop: 4,
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      {SISTEM_DURUMU.qdrantParca} parça
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "var(--yazi-soluk)",
+                        marginTop: 4,
+                      }}
+                    >
+                      {SISTEM_DURUMU.qdrantBelge} belgeden · {SISTEM_DURUMU.indeksTarihi}
+                    </div>
+                  </div>
+
+                  {/* Mini Kart 2: SON TARAMA */}
+                  <div
+                    style={{
+                      background: "var(--zemin-yumusak)",
+                      border: "1px solid var(--kenarlik)",
+                      borderRadius: 10,
+                      padding: 12,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        letterSpacing: "0.08em",
+                        color: "var(--yazi-soluk)",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      SON TARAMA
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 17,
+                        fontWeight: 650,
+                        color: "var(--yazi-koyu)",
+                        marginTop: 4,
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      {SISTEM_DURUMU.sonTarama}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "#0c765f",
+                        fontWeight: 600,
+                        marginTop: 4,
+                      }}
+                    >
+                      bayatlık {SISTEM_DURUMU.bayatlikGun} gün
+                    </div>
+                  </div>
+
+                  {/* Mini Kart 3: API DURUMU */}
+                  <div
+                    style={{
+                      background: "var(--zemin-yumusak)",
+                      border: "1px solid var(--kenarlik)",
+                      borderRadius: 10,
+                      padding: 12,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        letterSpacing: "0.08em",
+                        color: "var(--yazi-soluk)",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      API DURUMU
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 17,
+                        fontWeight: 650,
+                        color: apiBagli ? "#0c765f" : "#c94f4f",
+                        marginTop: 4,
+                        lineHeight: 1.2,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: "50%",
+                          background: apiBagli ? "#3fb296" : "#c94f4f",
+                          display: "inline-block",
+                        }}
+                      />
+                      {apiBagli ? "Çalışıyor" : "Bağlantı yok"}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "var(--yazi-soluk)",
+                        marginTop: 4,
+                      }}
+                    >
+                      {apiBagli ? "canlı bağlantı aktif" : "API sunucusu kapalı"}
+                    </div>
+                  </div>
+
+                  {/* Mini Kart 4: GOLD VERİ SETİ */}
+                  <div
+                    style={{
+                      background: "var(--zemin-yumusak)",
+                      border: "1px solid var(--kenarlik)",
+                      borderRadius: 10,
+                      padding: 12,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        letterSpacing: "0.08em",
+                        color: "var(--yazi-soluk)",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      GOLD VERİ SETİ
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 17,
+                        fontWeight: 650,
+                        color: "var(--yazi-koyu)",
+                        marginTop: 4,
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      {OLCUMLER.veri.goldKayit} kayıt
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "var(--yazi-soluk)",
+                        marginTop: 4,
+                      }}
+                    >
+                      elle doğrulanmış
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2x2 grid'in ALTINDA TazelikSeridi veya API Kapalı Bilgisi */}
+              <div style={{ marginTop: 14 }}>
+                {apiBagli ? (
+                  <TazelikSeridi />
+                ) : (
+                  <div
+                    style={{
+                      paddingTop: 10,
+                      borderTop: "1px solid var(--kenarlik)",
+                      fontSize: 12,
+                      color: "var(--yazi-normal)",
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    Veri tazeliği API bağlantısı kurulduğunda burada gösterilecektir.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* TAM GENİŞLİK KART — Taranan Kaynaklar */}
+            <div
+              style={{
+                gridColumn: "1 / -1",
+                background: "var(--kart)",
+                border: "1px solid var(--kenarlik)",
+                borderRadius: 14,
+                padding: 20,
+                boxShadow: "var(--golge-kart)",
+              }}
+            >
+              {/* Başlık bloğu */}
+              <div style={{ marginBottom: 18 }}>
+                <div
+                  style={{
+                    fontSize: 15,
+                    fontWeight: 650,
+                    color: "var(--yazi-koyu)",
+                  }}
+                >
+                  Taranan Kaynaklar
+                </div>
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "var(--yazi-soluk)",
+                    marginTop: 2,
+                  }}
+                >
+                  BDDK listesindeki 10 katılım bankasının resmî kampanya sayfaları · son tarama {SISTEM_DURUMU.sonTarama}
+                </div>
+              </div>
+
+              {/* 2 Sütunlu Liste (5 + 5) */}
+              <div className="kaynak-grid">
+                {KAYNAK_TAKIP.map((item) => {
+                  return (
+                    <div
+                      key={item.banka}
+                      style={{
+                        paddingBottom: 10,
+                        borderBottom: "1px solid var(--kenarlik)",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 2,
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: "var(--yazi-koyu)" }}>
+                          {item.banka}
+                        </span>
+                        {item.haric && (
+                          <span
+                            style={{
+                              fontSize: 10,
+                              fontWeight: 600,
+                              background: "#eeeae0",
+                              color: "#7b8c86",
+                              padding: "1px 5px",
+                              borderRadius: 5,
+                            }}
+                          >
+                            kapsam dışı
+                          </span>
+                        )}
+                      </div>
+
+                      {item.haric ? (
+                        <div>
+                          <span
+                            style={{
+                              fontSize: 11,
+                              color: "var(--yazi-soluk)",
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              display: "block",
+                            }}
+                          >
+                            {item.url}
+                          </span>
+                          <div style={{ fontSize: 11, color: "var(--yazi-soluk)", marginTop: 1 }}>
+                            kampanya/ürün yayımlamıyor
+                          </div>
+                        </div>
+                      ) : (
+                        <a
+                          href={`https://${item.url}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="kaynak-url-link"
+                          title={`https://${item.url}`}
+                        >
+                          {item.url}
+                        </a>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* En altta not */}
+              <div
+                style={{
+                  marginTop: 16,
+                  paddingTop: 10,
+                  borderTop: "1px solid var(--kenarlik)",
+                  fontSize: 11,
+                  color: "var(--yazi-soluk)",
+                  lineHeight: 1.4,
+                }}
+              >
+                Her kampanya kaydı, alındığı sayfanın URL'si ve tarih damgasıyla birlikte saklanır. Bir yanıtın dayandığı kaynak Jüri Audit Paneli'nden izlenebilir.
+              </div>
+            </div>
           </div>
         );
       })()}
-
-      {/* ========================================================
-          6) MEVCUT İÇERİK: TAZELİK ŞERİDİ (Sadece API bağlıyken)
-          ======================================================== */}
-      {apiBagli && <TazelikSeridi />}
 
       {/* ========================================================
           7) MODEL METRİKLERİ DETAY PANELİ (MODAL — BENTO DÜZEN)
@@ -1450,12 +1948,18 @@ export default function Dashboard() {
       </Modal>
 
       {/* ========================================================
-          7) VERİ KAYNAKLARI DETAY PANELİ (DRAWER - 660px)
+          8) VERİ KAYNAKLARI DETAY PANELİ (MODAL — BENTO DÜZEN)
           ======================================================== */}
-      <Drawer
+      <Modal
+        open={veriPaneliAcik}
+        onCancel={() => setVeriPaneliAcik(false)}
+        footer={null}
+        width={1000}
+        centered
+        className="metrik-modal"
         title={
           <div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: "var(--yazi-koyu)" }}>
+            <div style={{ fontSize: 20, fontWeight: 650, color: "var(--yazi-koyu)" }}>
               Veri Kaynakları
             </div>
             <div style={{ fontSize: 12, color: "var(--yazi-soluk)", fontWeight: 400, marginTop: 2 }}>
@@ -1463,343 +1967,257 @@ export default function Dashboard() {
             </div>
           </div>
         }
-        placement="right"
-        width={660}
-        onClose={() => setVeriPaneliAcik(false)}
-        open={veriPaneliAcik}
-        className="metrik-drawer"
-        styles={{ body: { padding: "16px 20px" } }}
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {/* BÖLÜM 1 - Banka Bazında Dağılım */}
-          <div
-            style={{
+        {/* --- BENTO GRID --- */}
+        <div className="bento-grid">
+          {(() => {
+            const bentoKartStil = {
               background: "var(--kart)",
               border: "1px solid var(--kenarlik)",
-              borderRadius: 10,
-              padding: "12px 16px",
-            }}
-          >
-            <div
-              style={{
-                fontSize: 12.5,
-                fontWeight: 700,
-                color: "var(--marka-600)",
-                marginBottom: 10,
-                letterSpacing: "0.05em",
-              }}
-            >
-              BANKA BAZINDA DAĞILIM
-            </div>
-
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-              <thead>
-                <tr
-                  style={{
-                    borderBottom: "1px solid var(--kenarlik)",
-                    color: "var(--yazi-soluk)",
-                    fontSize: 12,
-                  }}
-                >
-                  <th style={{ textAlign: "left", padding: "6px 8px" }}>Banka</th>
-                  <th style={{ textAlign: "right", padding: "6px 8px", minWidth: 120 }}>
-                    Tekil kampanya
-                  </th>
-                  <th style={{ textAlign: "right", padding: "6px 8px" }}>Anlık görüntü</th>
-                  <th style={{ textAlign: "right", padding: "6px 8px" }}>Gold kayıt</th>
-                </tr>
-              </thead>
-              <tbody>
-                {BANKA_DAGILIMI.map((b) => {
-                  const maxTekil = 109;
-                  const yuzde = (b.tekil / maxTekil) * 100;
-                  return (
-                    <tr
-                      key={b.banka}
-                      style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.04)" }}
-                    >
-                      <td
-                        style={{
-                          padding: "6px 8px",
-                          color: "var(--yazi-koyu)",
-                          fontWeight: 500,
-                        }}
-                      >
-                        {b.banka}
-                      </td>
-                      <td style={{ padding: "6px 8px", textAlign: "right" }}>
-                        <div style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>
-                          {b.tekil}
-                        </div>
-                        <div
-                          style={{
-                            width: "100%",
-                            height: 4,
-                            background: "var(--kenarlik)",
-                            borderRadius: 2,
-                            marginTop: 3,
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: `${yuzde}%`,
-                              height: "100%",
-                              background: "var(--marka-500)",
-                              borderRadius: 2,
-                            }}
-                          />
-                        </div>
-                      </td>
-                      <td
-                        style={{
-                          padding: "6px 8px",
-                          textAlign: "right",
-                          color: "var(--yazi-normal)",
-                        }}
-                      >
-                        {b.snapshot}
-                      </td>
-                      <td
-                        style={{
-                          padding: "6px 8px",
-                          textAlign: "right",
-                          color: "var(--yazi-normal)",
-                        }}
-                      >
-                        {b.gold}
-                      </td>
-                    </tr>
-                  );
-                })}
-
-                {/* Toplam Satırı */}
-                <tr
-                  style={{
-                    borderTop: "2px solid var(--kenarlik)",
-                    fontWeight: 700,
-                    color: "var(--yazi-koyu)",
-                  }}
-                >
-                  <td style={{ padding: "8px 8px" }}>Toplam</td>
-                  <td style={{ padding: "8px 8px", textAlign: "right" }}>
-                    {BANKA_DAGILIMI.reduce((s, b) => s + b.tekil, 0)}
-                  </td>
-                  <td style={{ padding: "8px 8px", textAlign: "right" }}>
-                    {BANKA_DAGILIMI.reduce((s, b) => s + b.snapshot, 0)}
-                  </td>
-                  <td style={{ padding: "8px 8px", textAlign: "right" }}>
-                    {BANKA_DAGILIMI.reduce((s, b) => s + b.gold, 0)}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            {/* Amber Uyarı Kutusu */}
-            <div
-              style={{
-                background: "rgba(194, 142, 40, 0.10)",
-                border: "1px solid rgba(194, 142, 40, 0.35)",
-                borderRadius: 8,
-                padding: "10px 12px",
-                fontSize: 12,
-                color: "#d8c48c",
-                lineHeight: 1.45,
-                marginTop: 12,
-              }}
-            >
-              Dağılım dengesiz: Ziraat Katılım ve Türkiye Emlak Katılım toplam kampanyaların %76'sını oluşturuyor. Bu bir veri kapsamı boşluğudur, gizlenmemektedir.
-            </div>
-          </div>
-
-          {/* BÖLÜM 2 - Kapsam Dışı Banka */}
-          <div
-            style={{
-              background: "var(--kart)",
-              border: "1px solid var(--kenarlik)",
-              borderRadius: 10,
-              padding: "12px 16px",
-            }}
-          >
-            <div
-              style={{
-                fontSize: 12.5,
-                fontWeight: 700,
-                color: "var(--marka-600)",
-                marginBottom: 8,
-                letterSpacing: "0.05em",
-              }}
-            >
-              KAPSAM DIŞI BANKA
-            </div>
-            <div
-              style={{
-                fontSize: 13,
-                color: "var(--yazi-normal)",
-                lineHeight: 1.5,
-              }}
-            >
-              <strong>{OLCUMLER.veri.haricBanka}</strong> — BDDK listesinde yer alıyor ancak ürün/kampanya yayımlamadığı için hariç tutuldu. Periyodik olarak yeniden kontrol ediliyor.
-            </div>
-          </div>
-
-          {/* BÖLÜM 3 - Ürün Ailesi Dağılımı */}
-          <div
-            style={{
-              background: "var(--kart)",
-              border: "1px solid var(--kenarlik)",
-              borderRadius: 10,
-              padding: "12px 16px",
-            }}
-          >
-            <div
-              style={{
-                fontSize: 12.5,
-                fontWeight: 700,
-                color: "var(--marka-600)",
-                marginBottom: 10,
-                letterSpacing: "0.05em",
-              }}
-            >
-              ÜRÜN AİLESİ DAĞILIMI
-            </div>
-
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-              <thead>
-                <tr
-                  style={{
-                    borderBottom: "1px solid var(--kenarlik)",
-                    color: "var(--yazi-soluk)",
-                    fontSize: 12,
-                  }}
-                >
-                  <th style={{ textAlign: "left", padding: "6px 8px" }}>Ürün ailesi</th>
-                  <th style={{ textAlign: "right", padding: "6px 8px" }}>Kampanya sayısı</th>
-                  <th style={{ textAlign: "right", padding: "6px 8px" }}>Alan doluluk</th>
-                </tr>
-              </thead>
-              <tbody>
-                {URUN_AILESI.map((u) => {
-                  const dusukMu = u.doluluk < 25;
-                  return (
-                    <tr
-                      key={u.ad}
-                      style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.04)" }}
-                    >
-                      <td style={{ padding: "6px 8px", color: "var(--yazi-koyu)" }}>
-                        {u.ad}
-                      </td>
-                      <td
-                        style={{
-                          padding: "6px 8px",
-                          textAlign: "right",
-                          fontWeight: 600,
-                          color: "var(--yazi-koyu)",
-                        }}
-                      >
-                        {u.sayi}
-                      </td>
-                      <td
-                        style={{
-                          padding: "6px 8px",
-                          textAlign: "right",
-                          fontWeight: 600,
-                          color: dusukMu ? "#c28e28" : "var(--yazi-koyu)",
-                        }}
-                      >
-                        %{u.doluluk.toString().replace(".", ",")}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-
-            <div
-              style={{
-                fontSize: 11.5,
-                color: "var(--yazi-soluk)",
-                marginTop: 10,
-                lineHeight: 1.4,
-                borderTop: "1px dashed var(--kenarlik)",
-                paddingTop: 6,
-              }}
-            >
-              Alan doluluk, o üründeki kampanyaların yapılandırılmış alanlarının ne kadarının dolu olduğunu gösterir. Düşük oran veri eksikliğidir, hata değildir.
-            </div>
-          </div>
-
-          {/* BÖLÜM 4 - Zaman Ekseni */}
-          <div
-            style={{
-              background: "var(--kart)",
-              border: "1px solid var(--kenarlik)",
-              borderRadius: 10,
-              padding: "12px 16px",
-            }}
-          >
-            <div
-              style={{
-                fontSize: 12.5,
-                fontWeight: 700,
-                color: "var(--marka-600)",
-                marginBottom: 10,
-                letterSpacing: "0.05em",
-              }}
-            >
-              ZAMAN EKSENİ
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: 13.5 }}>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "var(--yazi-normal)" }}>İlk görülme</span>
-                <span style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>
-                  {ZAMAN_EKSENI.ilkGorulme}
-                </span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "var(--yazi-normal)" }}>Son görülme</span>
-                <span style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>
-                  {ZAMAN_EKSENI.sonGorulme}
-                </span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "var(--yazi-normal)" }}>Bayatlık</span>
-                <span style={{ fontWeight: 600, color: "#3fb296" }}>
-                  {ZAMAN_EKSENI.bayatlikGun} gün
-                </span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "var(--yazi-normal)" }}>Değişen kampanya</span>
-                <span style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>
-                  {ZAMAN_EKSENI.degisenKampanya} / {OLCUMLER.veri.tekilKampanya}
-                </span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "var(--yazi-normal)" }}>
-                  Kampanya başına ortalama versiyon
-                </span>
-                <span style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>
-                  {ZAMAN_EKSENI.ortalamaVersiyon.toString().replace(".", ",")}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* En Altta Gri Bilgi Kutusu */}
-          <div
-            style={{
-              background: "rgba(255, 255, 255, 0.04)",
-              border: "1px solid var(--kenarlik)",
-              borderRadius: 10,
-              padding: "10px 14px",
-              fontSize: 12,
+              borderRadius: 14,
+              padding: 16,
+              boxShadow: "0 1px 3px rgba(60,50,30,0.05)",
+            };
+            const bentoBaslikStil = {
+              fontSize: 11,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
               color: "var(--yazi-soluk)",
-              lineHeight: 1.45,
-            }}
-          >
-            Bilinen sınırlama: Aktif/Süresi dolmuş yaşam döngüsü durumu yalnızca PostgreSQL'de hesaplanır. Bu rapor veritabanı okumadığı için aktif kampanya sayısı içermez.
-          </div>
+              marginBottom: 12,
+              fontWeight: 700,
+            };
+            const DolulukCubugu = ({ yuzde, renk }) => (
+              <div style={{ height: 5, borderRadius: 3, background: "var(--kenarlik)", marginTop: 8, overflow: "hidden" }}>
+                <div style={{ width: `${yuzde}%`, height: "100%", borderRadius: 3, background: renk }} />
+              </div>
+            );
+
+            return (
+              <>
+                {/* ===== SATIR 1 — ÜÇ SKOR KARTI ===== */}
+
+                {/* Kart A: TEKİL KAMPANYA */}
+                <div style={bentoKartStil}>
+                  <div style={bentoBaslikStil}>TEKİL KAMPANYA</div>
+                  <div style={{ fontSize: 34, fontWeight: 700, color: "#0c5144", lineHeight: 1 }}>
+                    {OLCUMLER.veri.tekilKampanya}
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--yazi-normal)", marginTop: 4 }}>Toplanan</div>
+                  <div style={{ fontSize: 11, color: "var(--yazi-soluk)", marginTop: 14 }}>
+                    {OLCUMLER.veri.anlikGoruntu} tarihli anlık görüntü
+                  </div>
+                </div>
+
+                {/* Kart B: BANKA KAPSAMI */}
+                <div style={bentoKartStil}>
+                  <div style={bentoBaslikStil}>BANKA KAPSAMI</div>
+                  <div style={{ fontSize: 34, fontWeight: 700, color: "#169276", lineHeight: 1 }}>
+                    {OLCUMLER.veri.kapsananBanka} / {OLCUMLER.veri.toplamBanka}
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--yazi-normal)", marginTop: 4 }}>Kapsanan katılım bankası</div>
+                  <DolulukCubugu yuzde={(OLCUMLER.veri.kapsananBanka / OLCUMLER.veri.toplamBanka) * 100} renk="#169276" />
+                  <div style={{ fontSize: 11, color: "var(--yazi-soluk)", marginTop: 6 }}>
+                    {OLCUMLER.veri.haricBanka} hariç
+                  </div>
+                </div>
+
+                {/* Kart C: GOLD VERİ SETİ */}
+                <div style={bentoKartStil}>
+                  <div style={bentoBaslikStil}>GOLD VERİ SETİ</div>
+                  <div style={{ fontSize: 34, fontWeight: 700, color: "#b8873a", lineHeight: 1 }}>
+                    {OLCUMLER.veri.goldKayit}
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--yazi-normal)", marginTop: 4 }}>Elle doğrulanmış kayıt</div>
+                  <div style={{ fontSize: 11, color: "var(--yazi-soluk)", marginTop: 14 }}>
+                    referans veri seti
+                  </div>
+                </div>
+
+                {/* ===== SATIR 2 — BANKA DAĞILIMI (2 sutun) + ZAMAN EKSENİ (1 sutun) ===== */}
+
+                {/* Banka Dağılımı Kartı (2 sütun) */}
+                <div style={{ ...bentoKartStil, gridColumn: "span 2" }}>
+                  <div style={bentoBaslikStil}>BANKA BAZINDA DAĞILIM</div>
+                  
+                  {/* Banka listesi */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {BANKA_DAGILIMI.map((b) => {
+                      const maxTekil = 109;
+                      const yuzde = (b.tekil / maxTekil) * 100;
+                      const baskinMi = b.banka === "Ziraat Katılım" || b.banka === "Türkiye Emlak Katılım";
+                      const cubukRengi = baskinMi ? "#d4a34b" : "#169276";
+
+                      return (
+                        <div key={b.banka} style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                              <span style={{ fontSize: 13, fontWeight: 500, color: "var(--yazi-koyu)" }}>
+                                {b.banka}
+                              </span>
+                              {baskinMi && (
+                                <span style={{ fontSize: 10, fontWeight: 600, background: "#f8edcf", color: "#8c6219", padding: "1px 5px", borderRadius: 5 }}>
+                                  baskın
+                                </span>
+                              )}
+                            </div>
+                            <div style={{ fontSize: 11, color: "var(--yazi-soluk)", display: "flex", alignItems: "center", gap: 4 }}>
+                              <span style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>{b.tekil}</span>
+                              <span>|</span>
+                              <span>{b.snapshot}</span>
+                              <span>|</span>
+                              <span>{b.gold}</span>
+                            </div>
+                          </div>
+                          <div style={{ width: "100%", height: 5, background: "var(--kenarlik)", borderRadius: 3, overflow: "hidden" }}>
+                            <div style={{ width: `${yuzde}%`, height: "100%", background: cubukRengi, borderRadius: 3 }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {/* Toplam Satırı */}
+                    <div style={{ borderTop: "2px solid var(--kenarlik)", paddingTop: 8, marginTop: 4, display: "flex", justifyContent: "space-between", alignItems: "center", fontWeight: 700 }}>
+                      <span style={{ fontSize: 13, color: "var(--yazi-koyu)" }}>Toplam</span>
+                      <div style={{ fontSize: 11, color: "var(--yazi-koyu)", display: "flex", alignItems: "center", gap: 4 }}>
+                        <span>{BANKA_DAGILIMI.reduce((s, b) => s + b.tekil, 0)}</span>
+                        <span>|</span>
+                        <span>{BANKA_DAGILIMI.reduce((s, b) => s + b.snapshot, 0)}</span>
+                        <span>|</span>
+                        <span>{BANKA_DAGILIMI.reduce((s, b) => s + b.gold, 0)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Amber Kutusu */}
+                  <div
+                    style={{
+                      background: "#f8edcf",
+                      border: "1px solid #e7c978",
+                      borderRadius: 8,
+                      padding: "10px 12px",
+                      fontSize: 11.5,
+                      color: "#8c6219",
+                      lineHeight: 1.45,
+                      marginTop: 12,
+                    }}
+                  >
+                    Altın renkli iki banka toplam kampanyaların %76'sını oluşturuyor — dağılım dengesizdir. Bu bir veri kapsamı boşluğudur, gizlenmemektedir.
+                  </div>
+                </div>
+
+                {/* Zaman Ekseni Kartı (1 sütun) */}
+                <div style={bentoKartStil}>
+                  <div style={bentoBaslikStil}>ZAMAN EKSENİ</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10, fontSize: 13 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ color: "var(--yazi-normal)" }}>İlk görülme</span>
+                      <span style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>{ZAMAN_EKSENI.ilkGorulme}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ color: "var(--yazi-normal)" }}>Son görülme</span>
+                      <span style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>{ZAMAN_EKSENI.sonGorulme}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ color: "var(--yazi-normal)" }}>Bayatlık</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ fontWeight: 600, color: "#0c765f" }}>{ZAMAN_EKSENI.bayatlikGun} gün</span>
+                        <span style={{ fontSize: 10, fontWeight: 600, background: "rgba(12,118,95,0.12)", color: "#0c765f", padding: "1px 5px", borderRadius: 5 }}>güncel</span>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ color: "var(--yazi-normal)" }}>Değişen kampanya</span>
+                      <span style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>{ZAMAN_EKSENI.degisenKampanya} / {OLCUMLER.veri.tekilKampanya}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ color: "var(--yazi-normal)" }}>Ortalama versiyon</span>
+                      <span style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>{ZAMAN_EKSENI.ortalamaVersiyon.toString().replace(".", ",")}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ===== SATIR 3 — ÜRÜN AİLESİ (2 sutun) + KAPSAM DIŞI (1 sutun) ===== */}
+
+                {/* Ürün Ailesi Kartı (2 sütun) */}
+                <div style={{ ...bentoKartStil, gridColumn: "span 2" }}>
+                  <div style={bentoBaslikStil}>ÜRÜN AİLESİ DAĞILIMI</div>
+                  
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {URUN_AILESI.map((u) => {
+                      const dusukMu = u.doluluk < 25;
+                      const yaziRengi = dusukMu ? "#b8873a" : "#0c765f";
+                      const cubukRengi = dusukMu ? "#d4a34b" : "#169276";
+                      const kaynaktaYokMu = u.ad === "Belirtilmemiş";
+
+                      return (
+                        <div key={u.ad} style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                              <span style={{ fontSize: 13, fontWeight: 500, color: "var(--yazi-koyu)" }}>{u.ad}</span>
+                              {kaynaktaYokMu && (
+                                <span style={{ fontSize: 10, fontWeight: 600, background: "#eeeae0", color: "#7b8c86", padding: "1px 5px", borderRadius: 5 }}>
+                                  kaynakta yok
+                                </span>
+                              )}
+                            </div>
+                            <div style={{ fontSize: 12, display: "flex", alignItems: "center", gap: 12 }}>
+                              <span style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>{u.sayi}</span>
+                              <span style={{ fontWeight: 600, color: yaziRengi, minWidth: 46, textAlign: "right" }}>
+                                %{u.doluluk.toString().replace(".", ",")}
+                              </span>
+                            </div>
+                          </div>
+                          <div style={{ width: "100%", height: 5, background: "var(--kenarlik)", borderRadius: 3, overflow: "hidden" }}>
+                            <div style={{ width: `${u.doluluk}%`, height: "100%", background: cubukRengi, borderRadius: 3 }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div style={{ fontSize: 11, color: "var(--yazi-soluk)", marginTop: 12, paddingTop: 8, borderTop: "1px solid var(--kenarlik)" }}>
+                    Alan doluluk, o üründeki kampanyaların yapılandırılmış alanlarının ne kadarının dolu olduğunu gösterir. Düşük oran veri eksikliğidir, hata değildir.
+                  </div>
+                </div>
+
+                {/* Kapsam Dışı Banka Kartı (1 sütun) */}
+                <div style={{ ...bentoKartStil, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                  <div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                      <span style={bentoBaslikStil}>KAPSAM DIŞI BANKA</span>
+                      <span style={{ fontSize: 10, fontWeight: 600, background: "var(--kenarlik)", color: "var(--yazi-soluk)", padding: "1px 6px", borderRadius: 5 }}>1 banka</span>
+                    </div>
+                    <div style={{ fontSize: 18, fontWeight: 700, color: "var(--yazi-koyu)", marginBottom: 6 }}>
+                      {OLCUMLER.veri.haricBanka}
+                    </div>
+                    <div style={{ fontSize: 12, color: "var(--yazi-normal)", lineHeight: 1.5 }}>
+                      BDDK listesinde yer alıyor ancak ürün/kampanya yayımlamadığı için hariç tutuldu.
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--yazi-soluk)", marginTop: 14 }}>
+                    Periyodik olarak yeniden kontrol ediliyor.
+                  </div>
+                </div>
+
+                {/* ===== SATIR 4 — TAM GENİŞLİK BİLGİ KUTUSU ===== */}
+                <div
+                  style={{
+                    gridColumn: "1 / -1",
+                    background: "var(--zemin-yumusak)",
+                    border: "1px solid var(--kenarlik)",
+                    borderRadius: 12,
+                    padding: 14,
+                    fontSize: 12.5,
+                    color: "var(--yazi-normal)",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  Bilinen sınırlama: Aktif/Süresi dolmuş yaşam döngüsü durumu yalnızca PostgreSQL'de hesaplanır. Bu rapor veritabanı okumadığı için aktif kampanya sayısı içermez.
+                </div>
+              </>
+            );
+          })()}
         </div>
-      </Drawer>
+      </Modal>
     </div>
   );
 }

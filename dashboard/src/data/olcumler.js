@@ -86,3 +86,35 @@ export const ZAMAN_EKSENI = {
   degisenKampanya: 40,
   bayatlikGun: 0,
 };
+
+// Alan bazında veri doluluğu - docs/veri_coverage.md 4. bölüm
+// NOT: Bu oranlar YALNIZCA regex katmanının sonucudur. NER/LLM
+// katmanı daha fazlasını doldurur; bu bir ALT SINIR göstergesidir.
+export const ALAN_DOLULUGU = [
+  { alan: "Taksit sayısı",   dolu: 130, toplam: 251 },
+  { alan: "Ödül miktarı",    dolu: 85,  toplam: 251 },
+  { alan: "Kâr payı oranı",  dolu: 37,  toplam: 251 },
+  { alan: "Vade",            dolu: 5,   toplam: 251 },
+  { alan: "Masraf durumu",   dolu: 5,   toplam: 251 },
+];
+
+export const KAYNAK_TAKIP = [
+  { banka: "Ziraat Katılım",        url: "ziraatkatilim.com.tr/kart-kampanyalari" },
+  { banka: "Türkiye Emlak Katılım", url: "emlakkatilim.com.tr/tr/bireysel/kampanyalar" },
+  { banka: "Kuveyt Türk",           url: "kuveytturk.com.tr/kampanyalar/kendim-icin" },
+  { banka: "Albaraka Türk",         url: "albaraka.com.tr/tr/kampanyalar" },
+  { banka: "Hayat Finans",          url: "hayatfinans.com.tr/kampanyalar" },
+  { banka: "Türkiye Finans",        url: "turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar" },
+  { banka: "Dünya Katılım",         url: "dunyakatilim.com.tr/kampanyalar" },
+  { banka: "Vakıf Katılım",         url: "vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/mevcut-kampanyalar" },
+  { banka: "T.O.M. Katılım",        url: "tombank.com.tr/kampanyalar.html" },
+  { banka: "Adil Katılım",          url: "adilkatilim.com.tr", haric: true },
+];
+
+export const SISTEM_DURUMU = {
+  qdrantParca: 817,
+  qdrantBelge: 263,
+  indeksTarihi: "17 Ağustos 2026",
+  sonTarama: "18 Ağustos 2026",
+  bayatlikGun: 0,
+};

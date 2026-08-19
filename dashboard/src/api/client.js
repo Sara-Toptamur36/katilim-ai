@@ -111,6 +111,14 @@ export const etkiSkoruGetir = async (id) => {
   return yanit.data;
 };
 
+// GET /kampanyalar/{id}/tarihce - kampanyanin zaman icindeki degisim
+// tarihcesi. Ek veri toplamaz, scraper/raw_data'da zaten duran coklu
+// tarihli kayitlari okur (bkz. scraper/scripts/kampanya_tarihcesi.py).
+export const kampanyaTarihcesiGetir = async (id) => {
+  const yanit = await client.get(`/kampanyalar/${id}/tarihce`);
+  return yanit.data;
+};
+
 // GET /rakip-analizi - tum kampanyalari eksen eksen yan yana koyar (Md. 5.7).
 // /karsilastir'dan farki: o TEK kritere gore secilmis id'leri siralar,
 // bu TUM kriterleri tum kampanyalar icin tek tabloda gosterir.

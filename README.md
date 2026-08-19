@@ -397,6 +397,13 @@ Video, sunum ve proje dokümanı yazılırken kullanılacak ortak metin:
 Kısaca: bu bir **hibrit çıkarım mimarisidir** (regex → GLiNER → Qwen2.5).
 Kullanılan üç model de açık kaynak ve **olduğu gibi**, sürümü sabitlenmiş
 biçimde çalışır — **fine-tuning yoktur**, dolayısıyla iddia da edilmez.
+
+### Md. 6 dokümantasyonu (tam metin, tek belge)
+
+Şartname Md. 6'nın istediği 10 dokümantasyon kalemi (mimari, NLP yaklaşımı,
+model/kural yapısı, veri seti, ön işleme, karşılaştırma yöntemi, kurulum,
+karşılaşılan problemler, model çıktı örnekleri, performans değerlendirme)
+dağınık değil, **tek belgede**: [`docs/md6_dokumantasyon.md`](docs/md6_dokumantasyon.md)
 Yeniliğimiz modeli eğitmek değil, hangi katmanın ne kadar katkı verdiğini
 (ve nerede zarar verdiğini) **ölçmüş olmak**.
 

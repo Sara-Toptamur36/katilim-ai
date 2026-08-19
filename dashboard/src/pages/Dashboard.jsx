@@ -5,6 +5,7 @@ import KampanyaTablosu from "../components/KampanyaTablosu";
 import FiltrePaneli from "../components/FiltrePaneli";
 import IstatistikKartlari from "../components/IstatistikKartlari";
 import EtkiSkoruKarti from "../components/EtkiSkoruKarti";
+import KampanyaTarihcesiKarti from "../components/KampanyaTarihcesiKarti";
 import KarsilastirmaPaneli from "../components/KarsilastirmaPaneli";
 import RakipMatrisi from "../components/RakipMatrisi";
 import TazelikSeridi from "../components/TazelikSeridi";
@@ -83,6 +84,10 @@ export default function Dashboard() {
           <Divider />
           <Title level={4}>Etki Skoru</Title>
           <EtkiSkoruKarti kampanyaId={secilenIdler[0]} />
+
+          <Divider />
+          <Title level={4}>Değişim Tarihçesi</Title>
+          <KampanyaTarihcesiKarti kampanyaId={secilenIdler[0]} />
         </>
       )}
 

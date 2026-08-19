@@ -1,4 +1,4 @@
-import { Table, Tag, Tooltip } from "antd";
+import { Table, Tag, Tooltip, Typography } from "antd";
 
 // Verifier (validation/verifier.py) her sayisal alanin kaynak metinde
 // (deger + baglam) gercekten gectigini kontrol eder ve sonucu
@@ -85,6 +85,17 @@ const kolonlar = [
     render: (_, kayit) => (
       <DogrulamaOzeti dogrulananAlanlar={kayit.dogrulanan_alanlar} />
     ),
+  },
+  {
+    title: (
+      <Tooltip title="Kaynak sayfanın son tarandığı tarih. İçeriğin gerçekten değişip değişmediği için bkz. Değişim Tarihçesi (tek kampanya seçince).">
+        Son Tarandı
+      </Tooltip>
+    ),
+    dataIndex: "belge_tarihi",
+    key: "belge_tarihi",
+    render: (deger) => deger ?? <Typography.Text type="secondary">Belirtilmemiş</Typography.Text>,
+    sorter: (a, b) => (a.belge_tarihi ?? "").localeCompare(b.belge_tarihi ?? ""),
   },
   {
     title: "Durum",

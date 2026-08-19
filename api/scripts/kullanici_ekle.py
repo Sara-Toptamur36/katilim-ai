@@ -13,7 +13,7 @@ import sys
 from api.db import OturumYerel
 from api.kullanici_repository import kullanici_getir, kullanici_olustur
 
-GECERLI_ROLLER = ["banka_calisani", "denetleyici", "yonetici"]
+GECERLI_ROLLER = ["banka_calisani", "denetleyici", "yonetici", "musteri"]
 
 
 def calistir() -> None:

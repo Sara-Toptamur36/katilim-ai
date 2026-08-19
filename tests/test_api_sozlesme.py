@@ -39,6 +39,56 @@ def test_token_ucnoktasi_mock_modda_400_doner():
     assert yanit.status_code == 400
 
 
+def _db_erisilebilir_mi() -> bool:
+    try:
+        from api.db import engine
+
+        with engine.connect():
+            return True
+    except Exception:
+        return False
+
+
+DB_YOK_MESAJI = "Yerel PostgreSQL calismiyor (docker compose up -d postgres) - CI'da beklenen durum"
+DB_ERISILEBILIR = _db_erisilebilir_mi()
+
+
+@pytest.mark.skipif(not DB_ERISILEBILIR, reason=DB_YOK_MESAJI)
+def test_kayit_rolu_istemciden_kabul_etmez():
+    """Kayit istegine 'rol' gonderilse bile YOK SAYILIR - sunucu HER ZAMAN
+    'musteri' atar. Aksi halde herhangi bir ziyaretci kendini yonetici
+    yapabilirdi (bkz. api/main.py::kayit_ol docstring'i)."""
+    import uuid
+
+    kullanici_adi = f"test_musteri_{uuid.uuid4().hex[:8]}"
+    yanit = client.post(
+        "/kayit",
+        json={"kullanici_adi": kullanici_adi, "sifre": "gecerli-parola-123", "rol": "yonetici"},
+    )
+    assert yanit.status_code == 200
+    assert yanit.json() == {"kullanici_adi": kullanici_adi, "rol": "musteri"}
+
+
+@pytest.mark.skipif(not DB_ERISILEBILIR, reason=DB_YOK_MESAJI)
+def test_kayit_kisa_sifre_reddedilir():
+    yanit = client.post(
+        "/kayit", json={"kullanici_adi": "kisa_sifreli_test", "sifre": "1234567"}
+    )
+    assert yanit.status_code == 422
+
+
+@pytest.mark.skipif(not DB_ERISILEBILIR, reason=DB_YOK_MESAJI)
+def test_kayit_ayni_kullanici_adi_iki_kez_reddedilir():
+    import uuid
+
+    kullanici_adi = f"test_musteri_{uuid.uuid4().hex[:8]}"
+    ilk = client.post("/kayit", json={"kullanici_adi": kullanici_adi, "sifre": "gecerli-parola-123"})
+    assert ilk.status_code == 200
+
+    ikinci = client.post("/kayit", json={"kullanici_adi": kullanici_adi, "sifre": "baska-parola-456"})
+    assert ikinci.status_code == 409
+
+
 @pytest.mark.parametrize(
     "yol,metot,govde",
     [

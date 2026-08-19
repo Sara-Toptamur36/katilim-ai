@@ -38,7 +38,7 @@ from agent.orchestrator import soru_isle
 from api.auth import GERCEK_JWT_AKTIF, token_dogrula, token_uret
 from api.db import oturum_al
 from api.kampanya_repository import id_ile_getir_db, kampanyalari_getir_db
-from api.kullanici_repository import kullanici_dogrula
+from api.kullanici_repository import kullanici_dogrula, kullanici_getir, kullanici_olustur
 from api.logging_config import log
 from api.mock_data import id_ile_getir, kampanyalari_getir
 from api.models import AuditKayit
@@ -51,6 +51,8 @@ from api.schemas import (
     HesapYanit,
     KarsilastirIstek,
     KarsilastirYanit,
+    KayitIstek,
+    KayitYanit,
     CikarimAdayi,
     CikarimIstek,
     CikarimIzi,
@@ -331,7 +333,38 @@ def token_al(form: OAuth2PasswordRequestForm = Depends()):
     if kullanici is None:
         log.warning("Basarisiz giris denemesi | kullanici_adi=%s", form.username)
         raise HTTPException(status_code=401, detail="Kullanici adi veya parola hatali")
-    return TokenYanit(access_token=token_uret(kullanici.kullanici_adi, kullanici.rol))
+    return TokenYanit(
+        access_token=token_uret(kullanici.kullanici_adi, kullanici.rol),
+        rol=kullanici.rol,
+    )
+
+
+@app.post("/kayit", response_model=KayitYanit, tags=["Kimlik Dogrulama"])
+def kayit_ol(istek: KayitIstek):
+    """Kendi kendine kayit - yalnizca 'musteri' rolu icin.
+
+    TEKNOFEST teknik toplantisinda netlesen kapsam: "sıradan müşteriler
+    de kullanıcı sayılabilir" - bu yuzden banka_calisani/denetleyici/
+    yonetici rolleri (halihazirda api/scripts/kullanici_ekle.py ile elle
+    acilan hesaplardir, bilerek serbest kayit disinda tutuldu) disinda
+    dorduncu, kisitli bir rol acildi.
+
+    ROL ISTEMCIDEN ASLA KABUL EDILMEZ (bkz. KayitIstek): sunucu HER ZAMAN
+    'musteri' atar - aksi halde herhangi bir ziyaretci kendini yonetici
+    yapabilirdi. Bu uc nokta JWT_AKTIF durumundan BAGIMSIZ calisir (mock
+    modda bile kayit DB'ye yazilir, boylece kayit ekrani JWT kapaliyken
+    de gelistirilip test edilebilir - gercek yetkilendirme yalnizca
+    JWT_AKTIF=true oldugunda devreye girer).
+    """
+    oturum = next(oturum_al())
+    try:
+        if kullanici_getir(oturum, istek.kullanici_adi) is not None:
+            raise HTTPException(status_code=409, detail="Bu kullanici adi zaten kayitli")
+        yeni = kullanici_olustur(oturum, istek.kullanici_adi, istek.sifre, rol="musteri")
+        log.info("yeni musteri kaydi | kullanici_adi=%s", yeni.kullanici_adi)
+        return KayitYanit(kullanici_adi=yeni.kullanici_adi, rol=yeni.rol)
+    finally:
+        oturum.close()
 
 
 @app.get("/kampanyalar", response_model=list[CampaignRecord], tags=["Kampanyalar"])

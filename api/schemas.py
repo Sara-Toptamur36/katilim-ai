@@ -166,6 +166,23 @@ class TokenYanit(BaseModel):
 
     access_token: str
     token_type: str = "bearer"
+    rol: str = Field(
+        ..., description="Arayuzun menuyu role gore cizebilmesi icin (ör. musteri 3 ekran gorur)"
+    )
+
+
+class KayitIstek(BaseModel):
+    """POST /kayit istegi. BILEREK rol alani YOK - rol istemciden asla
+    kabul edilmez, sunucu her zaman 'musteri' atar (aksi halde herhangi
+    bir kullanici kendini yonetici/denetleyici yapabilirdi)."""
+
+    kullanici_adi: str = Field(..., min_length=1, max_length=100)
+    sifre: str = Field(..., min_length=8)
+
+
+class KayitYanit(BaseModel):
+    kullanici_adi: str
+    rol: str
 
 
 class ChatIstek(BaseModel):
@@ -230,6 +247,18 @@ class Kaynak(BaseModel):
 
     banka: str | None = None
     kampanya_adi: str | None = None
+    kampanya_id: int | None = Field(
+        None,
+        description=(
+            "Kampanya tablosundaki id - dashboard'un isme gore kirilgan "
+            "eslestirme yapmasi yerine dogrudan kullanabilmesi icin. "
+            "HENUZ agent/router.py::rag_aracini_cagir tarafindan "
+            "doldurulmuyor (vektor indeksindeki parca metadata'sinda id "
+            "tutulmuyor) - bu alan simdilik None doner, doldurma ayri bir "
+            "is (kayit_getirici enjeksiyonunun rag katmanina da "
+            "tasinmasini gerektirir)."
+        ),
+    )
     kaynak_url: str | None = None
     belge_tarihi: date | None = None
     chunk_id: str | None = None
@@ -549,6 +578,15 @@ class AuditBilgisi(BaseModel):
     # Karsilastirma'da gercek True/False.
     terminoloji_tutarli: bool | None = None
     terminoloji_sorunlari: list[TerminolojiSorunu] = Field(default_factory=list)
+
+    # Verifier sonucu (validation/verifier.py) - CampaignRecord.dogrulanan_
+    # alanlar ile AYNI sekil ({"alan_adi": bool}). HENUZ /chat yanit zinciri
+    # Verifier'i CANLI cagirmiyor (RAG birebir alinti donduruyor, simdilik
+    # gerekmiyor - bkz. README "Henuz kurulmayanlar") - bu yuzden bu alan
+    # su an her zaman None doner. Alan BILEREK sema seviyesinde eklendi ki
+    # LLM ile ozetleme + Verifier canli baglama ADIMI geldiginde audit
+    # sozlesmesi (Havin'in arayuzu) degismesin.
+    dogrulanan_alanlar: dict[str, bool] | None = None
 
 
 class ChatYanit(BaseModel):

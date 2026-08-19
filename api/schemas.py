@@ -269,6 +269,35 @@ class TazelikYanit(BaseModel):
     anlik_goruntu: int | None = None
 
 
+class TarihceSatiri(BaseModel):
+    """Bir kampanyanin TEK bir tarihli taramasindaki takip edilen alanlar
+    (bkz. scraper/scripts/kampanya_tarihcesi.py::tarihce_getir)."""
+
+    tarih: str
+    icerik_hash: str | None = None
+    alanlar: dict[str, Any]
+
+
+class TarihceYanit(BaseModel):
+    """Bir kampanyanin zaman icindeki degisim tarihcesi (Sprint 5).
+
+    DENETIM BULGUSU: scraper/scripts/kampanya_tarihcesi.py yazilip test
+    edilmisti (README'de somut ornekle anlatiliyor) ama hicbir API uc
+    noktasina baglanmamisti - chatbot/dashboard uzerinden erisilemiyordu.
+    """
+
+    kampanya_id: int
+    banka: str
+    kampanya_adi: str
+    kaynak_url: str
+    tarihce: list[TarihceSatiri]
+    degisen_alanlar: dict[str, dict[str, Any]] = Field(
+        default_factory=dict,
+        description="Ilk ve son tarama arasinda GERCEKTEN degisen alanlar: {'alan': {'eski':..., 'yeni':...}}",
+    )
+    audit: "AuditBilgisi | None" = None
+
+
 class CikarimIstek(BaseModel):
     """Serbest kampanya metninden yapilandirilmis alan cikarimi istegi
     (Sartname Md. 6 - demo videosunda "metin girdisi verilmesi, modelin
@@ -401,6 +430,14 @@ class EtkiSkoruYanit(BaseModel):
     musteri_geri_bildirim: GeriBildirimBileseni
     durum: str = Field(..., description="kismi | hesaplanamadi")
     aciklama: str | None = None
+    # DENETIM BULGUSU: /karsilastir, /hesapla, /chat, /cikar hepsi audit
+    # blogu doner (latency, terminoloji kontrolu, izlenebilirlik) ama bu
+    # uc nokta hicbirini API yanitinda tasimiyordu - _audit_kaydet() DB'ye
+    # yaziyordu ama Juri Audit Paneli'nde gorunmuyordu.
+    # NOT: "AuditBilgisi" burada henuz tanimlanmadigi icin STRING forward
+    # reference kullanilir (asagida sinif sirasi AuditBilgisi'nden once) -
+    # Pydantic v2 modul sonunda model_rebuild() ile bunu cozer.
+    audit: "AuditBilgisi | None" = None
 
 
 class RakipEkseni(BaseModel):
@@ -451,6 +488,7 @@ class RakipAnaliziYanit(BaseModel):
     satirlar: list[RakipSatiri]
     kayit_sayisi: int
     banka_sayisi: int
+    audit: "AuditBilgisi | None" = None
 
 
 class TerimKarti(BaseModel):

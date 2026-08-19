@@ -259,6 +259,15 @@ def test_etki_skoru_hesaplanamadiginda_sebep_yazar():
         assert veri["finansal"]["sebep"]
 
 
+def test_etki_skoru_audit_blogu_doner():
+    """DENETIM BULGUSU: bu uc nokta audit yazmiyordu - _audit_kaydet() DB'ye
+    yaziyordu ama Juri Audit Paneli'nin okuyacagi yanitta hic yoktu."""
+    veri = client.get("/kampanyalar/1/etki", headers=GECERLI_BASLIK).json()
+    assert veri["audit"] is not None
+    assert veri["audit"]["latency_ms"] is not None
+    assert veri["audit"]["cagrilan_arac"] == "sql"
+
+
 # ---------------------------------------------------------------------------
 # /rakip-analizi (Md. 5.7) - tum kriterleri tek tabloda gosterir
 # ---------------------------------------------------------------------------
@@ -298,6 +307,55 @@ def test_rakip_analizi_tur_suzgeci_calisir():
         headers=GECERLI_BASLIK,
     ).json()
     assert veri["kampanya_turu"] == "Kart Kampanyasi"
+
+
+def test_rakip_analizi_audit_blogu_doner():
+    """DENETIM BULGUSU: bu uc nokta da audit tasimiyordu."""
+    veri = client.get("/rakip-analizi", headers=GECERLI_BASLIK).json()
+    assert veri["audit"] is not None
+    assert veri["audit"]["latency_ms"] is not None
+    assert veri["audit"]["cagrilan_arac"] == "sql"
+
+
+# ---------------------------------------------------------------------------
+# /kampanyalar/{id}/tarihce (Sprint 5)
+# ---------------------------------------------------------------------------
+
+
+def test_kampanya_tarihce_kimlik_dogrulama_ister():
+    assert client.get("/kampanyalar/1/tarihce").status_code == 401
+
+
+def test_olmayan_kampanyanin_tarihcesi_404_doner():
+    assert client.get("/kampanyalar/9999/tarihce", headers=GECERLI_BASLIK).status_code == 404
+
+
+def test_kampanya_tarihce_mock_urlde_bos_ama_gecerli_doner():
+    """Mock veri gercek bir raw_data URL'si tasimadigi icin bos tarihce
+    donmesi beklenir - hata degil, durustce 'kayit yok' demektir."""
+    veri = client.get("/kampanyalar/1/tarihce", headers=GECERLI_BASLIK).json()
+    assert veri["tarihce"] == []
+    assert veri["degisen_alanlar"] == {}
+    assert veri["audit"] is not None
+
+
+def test_kampanya_tarihce_gercek_degisen_kampanyada_calisir(monkeypatch):
+    """DENETIM BULGUSU: scraper/scripts/kampanya_tarihcesi.py yazilip test
+    edilmisti ama hicbir uc noktaya baglanmamisti. Bilinen, gercekten
+    zaman icinde degismis bir URL uzerinden uctan uca dogrulanir (bkz.
+    tests/test_kampanya_tarihcesi.py ile ayni URL)."""
+    import api.main as main_modulu
+    from api.schemas import CampaignRecord
+
+    gercek_url = "https://www.dunyakatilim.com.tr/kampanyalar/avantajli-kurlar"
+    sahte_kayit = CampaignRecord(
+        banka="Dünya Katılım", kampanya_adi="Avantajlı Kurlar", kaynak_url=gercek_url
+    )
+    monkeypatch.setattr(main_modulu, "id_ile_getir", lambda kid: sahte_kayit)
+
+    veri = client.get("/kampanyalar/1/tarihce", headers=GECERLI_BASLIK).json()
+    assert len(veri["tarihce"]) >= 2
+    assert "kampanya_bitis" in veri["degisen_alanlar"]
 
 
 # ---------------------------------------------------------------------------

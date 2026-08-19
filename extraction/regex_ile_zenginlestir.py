@@ -44,7 +44,8 @@ from api.db import OturumYerel
 from api.logging_config import log
 from api.models import Kampanya
 from extraction.hybrid_pipeline import kaydi_hibrit_cikar
-from extraction.regex_extractor import genel_guven_hesapla
+from extraction.regex_extractor import genel_guven_hesapla, kampanya_avantajini_olustur
+from extraction.tablo_extractor import oran_tablolarini_sec
 from validation.verifier import kaydi_dogrula
 
 RAW_DATA_KOK = Path(__file__).resolve().parent.parent / "scraper" / "raw_data"
@@ -69,9 +70,9 @@ CIKARILABILEN_ALANLAR = [
 ]
 
 
-def _ham_metinleri_url_ile_esle() -> dict[str, str]:
-    """kaynak_url -> ham_metin sozlugu. postgrese_yukle.py'deki
-    _json_kayitlarini_bul ile ayni tarama mantigi."""
+def _ham_metinleri_url_ile_esle() -> dict[str, dict]:
+    """kaynak_url -> {"ham_metin": ..., "tablolar": ...} sozlugu.
+    postgrese_yukle.py'deki _json_kayitlarini_bul ile ayni tarama mantigi."""
     esleme = {}
     for dosya in RAW_DATA_KOK.glob("*/json/*.json"):
         try:
@@ -82,34 +83,86 @@ def _ham_metinleri_url_ile_esle() -> dict[str, str]:
         url = kayit.get("url")
         metin = kayit.get("ham_metin") or kayit.get("normalize_metin")
         if url and metin:
-            esleme[url] = metin
+            esleme[url] = {"ham_metin": metin, "tablolar": kayit.get("tablolar")}
     return esleme
+
+
+def _tablo_varsa_kar_payi_bastir(cikan: dict, secilen_tablo: list[dict] | None) -> dict:
+    """Sayfada bir oran TABLOSU varsa, hibrit boru hattinin duz metinden
+    urettigi TEK sayilik `kar_payi_orani_percent`/`_decimal` adayini
+    (ve ondan derlenen `kampanya_avantaji` ozetini) siler.
+
+    OLCULDU - sayfada bir oran TABLOSU varken duz metin tahmini HER GUVEN
+    SEVIYESINDE yaniliyor, iki farkli mekanizmayla:
+      1) dusuk guvenli "ilk bulunan %X" fallback (guven 0.6, Turkiye Finans
+         banka-/kamu-calisanlarina-ozel-ihtiyac-finansmani sayfalari) -
+         get_text()'in duzlestirdigi YANLIS sutundan (ör. "Aylık Toplam
+         Maliyet") geliyordu.
+      2) "confident" ifade eslesmesi (guven 0.8, Albaraka dijital-
+         musterilere-ozel-pratik-finansman-kart) - sayfa "vade farksiz
+         VEYA ozel oranli" diyor (kosullu secim, TUM kampanya DEGIL) ve
+         tablo bunu dogruluyor: sadece EN KUCUK tutar diliminde (250-
+         40.000 TL) %0, digerlerinde %3,95/3,90/3,85.
+    Yani "tablo varsa duz metne guvenme" esigi guven SEVIYESINE gore degil,
+    TABLO VARLIGINA gore konuldu - 3/3 olculen tablolu sayfada duz metin
+    tahmini yanildi, sifir karsi-ornek yok. Gercek (vadeye/tutara gore
+    degisen) oranlar zaten kar_payi_tablosu'nda dogru duruyor.
+    """
+    if secilen_tablo is None:
+        return cikan
+    cikan["kar_payi_orani_percent"] = None
+    cikan["kar_payi_orani_decimal"] = None
+    # kampanya_avantaji DERLEME'dir (bkz. regex_extractor.
+    # kampanya_avantajini_olustur docstring'i) - kaydi_hibrit_cikar() onu
+    # YUKARIDAKI bastirmadan ONCEKI (henuz bastirilmamis, hatali)
+    # kar_payi_orani_percent ile derlemisti; bastirmadan SONRA yeniden
+    # derlenmezse ozet metin alanin kendisiyle (None) CELISIR - OLCULDU.
+    cikan["kampanya_avantaji"] = kampanya_avantajini_olustur(cikan)
+    return cikan
 
 
 def zenginlestir() -> dict:
     """Donen ozet: {"guncellendi": N, "atlandi": M, "ham_metin_yok": K,
-    "dogrulanamayan": L}.
+    "dogrulanamayan": L, "tablo_eklendi": T}.
 
     "dogrulanamayan": bu calistirmada YENI yazilan sayisal alanlardan,
     validation/verifier.py'nin kaynak metinde (deger + baglam) DOGRULAYAMADIGI
-    sayisi - bkz. asagida "Verifier" bolumu."""
-    ozet = {"guncellendi": 0, "atlandi": 0, "ham_metin_yok": 0, "dogrulanamayan": 0}
-    url_metin = _ham_metinleri_url_ile_esle()
+    sayisi - bkz. asagida "Verifier" bolumu.
+    "tablo_eklendi": kar_payi_tablosu bu calistirmada YENI dolduruldu -
+    "guncellendi" ile AYRI sayilir cunku CIKARILABILEN_ALANLAR akisina
+    (confidence/cikarim_yontemi/Verifier) dahil degildir."""
+    ozet = {
+        "guncellendi": 0, "atlandi": 0, "ham_metin_yok": 0,
+        "dogrulanamayan": 0, "tablo_eklendi": 0,
+    }
+    url_veri = _ham_metinleri_url_ile_esle()
     oturum = OturumYerel()
 
     try:
         satirlar = oturum.query(Kampanya).all()
         for satir in satirlar:
-            ham_metin = url_metin.get(satir.kaynak_url)
+            veri = url_veri.get(satir.kaynak_url)
+            ham_metin = veri.get("ham_metin") if veri else None
             if not ham_metin:
                 ozet["ham_metin_yok"] += 1
                 continue
+
+            # Kar payi tablosu (Rehber Bolum 18): idempotent, TEK sayiya
+            # indirgenmez, alan_belirtilmemis/confidence/cikarim_yontemi
+            # akisina dahil edilmez - bkz. extraction/tablo_extractor.py
+            # docstring'i (neden ayri tutuldugu).
+            secilen_tablo = oran_tablolarini_sec(veri.get("tablolar"))
+            if secilen_tablo is not None and satir.kar_payi_tablosu is None:
+                satir.kar_payi_tablosu = secilen_tablo
+                ozet["tablo_eklendi"] += 1
 
             cikan = kaydi_hibrit_cikar(ham_metin)
             izler = cikan.pop("_izler")
             kaynaklar = cikan.pop("_kaynaklar")
             cikan.pop("_adaylar", None)
             cikan.pop("_catismalar", None)
+
+            cikan = _tablo_varsa_kar_payi_bastir(cikan, secilen_tablo)
 
             alan_belirtilmemis = dict(satir.alan_belirtilmemis or {})
             degisti = False
@@ -186,5 +239,6 @@ if __name__ == "__main__":
         f"{sonuc['atlandi']} zaten doluydu/degismedi, "
         f"{sonuc['ham_metin_yok']} icin ham metin bulunamadi, "
         f"{sonuc['dogrulanamayan']} yeni alan Verifier'dan gecemedi "
-        "(silinmedi, bkz. logs/api.log)"
+        "(silinmedi, bkz. logs/api.log), "
+        f"{sonuc['tablo_eklendi']} kayda kar_payi_tablosu eklendi"
     )

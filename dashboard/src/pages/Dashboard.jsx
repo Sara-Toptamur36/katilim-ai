@@ -6,6 +6,7 @@ import FiltrePaneli from "../components/FiltrePaneli";
 import IstatistikKartlari from "../components/IstatistikKartlari";
 import EtkiSkoruKarti from "../components/EtkiSkoruKarti";
 import KampanyaTarihcesiKarti from "../components/KampanyaTarihcesiKarti";
+import KarPayiTablosuKarti from "../components/KarPayiTablosuKarti";
 import KarsilastirmaPaneli from "../components/KarsilastirmaPaneli";
 import RakipMatrisi from "../components/RakipMatrisi";
 import TazelikSeridi from "../components/TazelikSeridi";
@@ -40,6 +41,7 @@ export default function Dashboard() {
 
   const bankalar = [...new Set(tumKampanyalar.map((k) => k.banka))];
   const turler = [...new Set(tumKampanyalar.map((k) => k.kampanya_turu))];
+  const secilenKampanya = kampanyalar.find((k) => k.id === secilenIdler[0]);
 
   const rowSelection = {
     selectedRowKeys: secilenIdler,
@@ -88,6 +90,13 @@ export default function Dashboard() {
           <Divider />
           <Title level={4}>Değişim Tarihçesi</Title>
           <KampanyaTarihcesiKarti kampanyaId={secilenIdler[0]} />
+
+          {secilenKampanya?.kar_payi_tablosu && (
+            <>
+              <Divider />
+              <KarPayiTablosuKarti tablolar={secilenKampanya.kar_payi_tablosu} />
+            </>
+          )}
         </>
       )}
 

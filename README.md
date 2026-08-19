@@ -283,6 +283,7 @@ arayüz kodu geçişte değişmez.
 | GET | `/kampanyalar` | Kampanya listesi (`?banka=` `?kampanya_turu=`) |
 | GET | `/kampanyalar/{id}` | Tek kampanya detayı |
 | GET | `/kampanyalar/{id}/etki` | Etki skoru — piyasaya göre eksen eksen yüzdelik sıra |
+| GET | `/kampanyalar/{id}/tarihce` | Değişim tarihçesi — aynı URL'nin geçmiş taramaları (ek veri toplamaz) |
 | GET | `/rakip-analizi` | Rakip matrisi — tüm kriterler tek tabloda (`?kampanya_turu=`) |
 | GET | `/terminoloji` | Katılım bankacılığı sözlüğü (31 kavram, Md. 5.5) |
 | POST | `/karsilastir` | Kampanya karşılaştırma (sabit kriter listesi) |
@@ -412,6 +413,19 @@ yanlışlıkla eğitim iddiası yazılırsa CI kırmızı verir ve dosya:satır
 gösterir. Test kelimeyi değil **olumlu iddia kalıbını** arar; "fine-tuning
 yapılmadı" gibi doğruyu söyleyen cümleler serbesttir. Yasak/doğru ifade
 eşleşmelerinin tam listesi belgenin 4. bölümündedir.
+
+### Kâr payı oranı tabloları (bankaların kendi hesaplama sayfalarından)
+
+Bazı kampanyalarda "kâr payı oranı" sabit tek bir sayı değil, bankanın
+kendi sayfasında yayınladığı vade/tutar dilimine göre değişen bir
+**tablo**dur (Rehber Bölüm 18). Bu tabloyu tek bir sayıya indirgemek
+(hangi dilim "asıl" kampanya oranı?) uydurma bir seçim olurdu — bu yüzden
+`extraction/tablo_extractor.py`, kaynaktaki tabloyu **olduğu gibi** yeni
+bir `kar_payi_tablosu` alanına taşır (`CampaignRecord` üzerinden
+`/kampanyalar` ve `/kampanyalar/{id}`'de döner, dashboard'da
+`KarPayiTablosuKarti.jsx` ile gösterilir). Detay ve ölçüm:
+[`docs/extraction_accuracy_raporu.md`](docs/extraction_accuracy_raporu.md)
+"Güncelleme — 20 Ağustos 2026" bölümü.
 
 ### Henüz kurulmayanlar (dürüstlük notu)
 

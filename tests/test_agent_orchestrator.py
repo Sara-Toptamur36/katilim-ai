@@ -5,13 +5,17 @@ kayit_getirici ile)."""
 from api.schemas import CampaignRecord
 
 
-def _sahte_rag(soru: str) -> dict:
+def _sahte_rag(soru: str, kayit_getirici=None) -> dict:
     """Kaynak bulamayan sahte RAG araci.
 
     Bu dosya YONLENDIRME mantigini test eder, retrieval kalitesini degil.
     Gercek RAG kullanilsaydi her test embedding modelini yukleyip Qdrant'a
     baglanirdi (olculdu: 2 sn -> 121 sn). Gercek RAG yolunun uctan uca
     testi tests/test_rag_uctan_uca.py'de, Qdrant yoksa atlanarak yapilir.
+
+    `kayit_getirici` gercek rag_aracini_cagir ile AYNI sozlesme icin kabul
+    edilir (kaynaklara kampanya_id eklemede kullanilir) ama bu sahte
+    kaynak zaten hicbir kaynak dondurmuyor, kullanilmiyor.
     """
     return {
         "basarili": False,
@@ -156,7 +160,7 @@ def test_arac_yetersiz_kalirsa_raga_geri_cekilir():
     Secilen arac basarisiz olursa RAG'e geri cekilinmeli."""
     from agent.orchestrator import soru_isle
 
-    def basarili_rag(soru: str) -> dict:
+    def basarili_rag(soru: str, kayit_getirici=None) -> dict:
         return {
             "basarili": True,
             "cevap": "Kaynaklarda bulduklarim: ...",
@@ -207,7 +211,7 @@ def test_rag_yanitindaki_gelenek_terim_hata_sayilmaz():
     (uygulanamaz) olmali, hata (False) DEGIL."""
     from agent.orchestrator import soru_isle
 
-    def gelenek_terimli_rag(soru: str) -> dict:
+    def gelenek_terimli_rag(soru: str, kayit_getirici=None) -> dict:
         return {
             "basarili": True,
             "cevap": "Bankacilik kanununa gore resmi olarak Ihtiyac Kredisi olarak da nitelendirilmektedir.",

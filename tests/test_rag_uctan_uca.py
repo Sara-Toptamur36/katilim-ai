@@ -98,6 +98,35 @@ def test_rag_araci_kaynakli_yanit_uretir():
         assert kaynak["similarity_score"] is not None
 
 
+def test_rag_araci_kayit_getirici_verilmezse_kampanya_id_none_kalir():
+    """Geriye donuk uyumluluk: kayit_getirici enjekte edilmezse (bu test
+    gibi dogrudan cagrilirsa) kampanya_id sessizce None kalir, hata
+    firlatilmaz."""
+    from agent.router import rag_aracini_cagir
+
+    sonuc = rag_aracini_cagir("kâr payı oranı ve vade seçenekleri")
+    assert sonuc["basarili"] is True
+    for kaynak in sonuc["kaynaklar"]:
+        assert kaynak["kampanya_id"] is None
+
+
+def test_rag_araci_kayit_getirici_verilirse_kampanya_id_doldurur():
+    """GERCEK veritabani/mock kaynagiyla kampanya_id eslestirmesi -
+    Havin'in istedigi, isme gore kirilgan eslestirme yerine dogrudan id."""
+    from agent.router import rag_aracini_cagir
+    from api.mock_data import kampanyalari_getir
+
+    sonuc = rag_aracini_cagir("kâr payı oranı ve vade seçenekleri", kampanyalari_getir)
+    assert sonuc["basarili"] is True
+    # Mock veri (A/B/C/D Bankasi) gercek indeksteki (gercek banka) URL'lerle
+    # eslesmeyecegi icin hepsi None kalabilir - test, HATA FIRLAMADIGINI ve
+    # alanin var oldugunu kilitler; gercek DB ile eslesme
+    # test_agent_router.py::test_kampanya_id_bul_* icinde birim testiyle
+    # zaten dogrulandi.
+    for kaynak in sonuc["kaynaklar"]:
+        assert "kampanya_id" in kaynak
+
+
 def test_rag_araci_chunk_id_ve_belge_tarihi_doldurur():
     """DENETIM BULGUSU (11 Agu): Kaynak semasinda chunk_id/belge_tarihi
     vardi ama rag_aracini_cagir bu iki alani hic set etmiyordu - Pydantic

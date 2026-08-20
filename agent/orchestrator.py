@@ -84,7 +84,9 @@ def soru_isle(soru: str, kayit_getirici: KayitGetirici, rag_araci=None) -> dict:
     # `rag_araci` enjekte edilebilir (kayit_getirici ile ayni desen):
     # yonlendirme mantigini test eden birim testleri, gercek embedding
     # modelini yuklemek zorunda kalmasin diye - olculdu: gercek RAG ile
-    # bu testler 2 sn yerine 121 sn suruyordu.
+    # bu testler 2 sn yerine 121 sn suruyordu. Sozlesme iki argumanlidir:
+    # rag(soru, kayit_getirici) - ikinci arguman kaynaklara kampanya_id
+    # eklemek icin kullanilir (bkz. agent/router.py::rag_aracini_cagir).
     rag = rag_araci or rag_aracini_cagir
 
     if niyet == Niyet.HESAPLAMA:
@@ -100,7 +102,7 @@ def soru_isle(soru: str, kayit_getirici: KayitGetirici, rag_araci=None) -> dict:
         sonuc = karsilastirma_aracini_cagir(soru, kayit_getirici)
         arac = "sql"
     else:
-        sonuc = rag(soru)
+        sonuc = rag(soru, kayit_getirici)
         niyet = Niyet.BILGI
         arac = "rag" if sonuc.get("basarili") else "fallback"
 
@@ -115,7 +117,7 @@ def soru_isle(soru: str, kayit_getirici: KayitGetirici, rag_araci=None) -> dict:
     # sorulur. RAG de kaynak bulamazsa sistem yine acikca cekimser kalir
     # (rapor Bolum 5.7/15) - uydurma cevap hicbir yolda uretilmez.
     if not sonuc.get("basarili") and arac != "rag":
-        rag_sonucu = rag(soru)
+        rag_sonucu = rag(soru, kayit_getirici)
         if rag_sonucu.get("basarili"):
             # Ilk aracin neden yetmedigi audit'te korunur - juri
             # panelinde "hangi yol denendi?" gorunur olsun.

@@ -35,7 +35,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 
 from agent.orchestrator import soru_isle
-from api.auth import GERCEK_JWT_AKTIF, token_dogrula, token_uret
+from api.auth import GERCEK_JWT_AKTIF, rol_gerekli, token_dogrula, token_uret
 from api.db import oturum_al
 from api.kampanya_repository import id_ile_getir_db, kampanyalari_getir_db
 from api.kullanici_repository import kullanici_dogrula, kullanici_getir, kullanici_olustur
@@ -455,8 +455,21 @@ _SINIFLANDIRMA_ALANLARI = {"kampanya_turu", "hedef_kitle"}
 
 
 @app.post("/cikar", response_model=CikarimYanit, tags=["Cikarim"])
-def cikar(istek: CikarimIstek, kullanici: dict = Depends(token_dogrula)):
+def cikar(
+    istek: CikarimIstek,
+    kullanici: dict = Depends(rol_gerekli(["banka_calisani", "denetleyici", "yonetici"])),
+):
     """Serbest kampanya metninden yapilandirilmis alanlari cikarir.
+
+    ROL KISITI: yalnizca banka calisani/denetleyici/yonetici - "musteri"
+    rolu icin DEGIL (bkz. api/schemas.py::KayitIstek). Bu, cikarim
+    motorunun ic/analiz araci (MetinAnalizi ekrani) olmasindan gelir, son
+    kullaniciya sunulan bir kampanya karsilastirma ozelligi degildir.
+    MOCK modda (varsayilan, GERCEK_JWT_AKTIF=false) bu kisit hicbir etki
+    yapmaz - rol_gerekli() sadece JWT_AKTIF=true oldugunda uygulanir
+    (bkz. api/auth.py). DENETIM BULGUSU: rol_gerekli() yazilmisti ama
+    hicbir endpoint'e baglanmamisti - "rol var ama hicbir yerde
+    kullanilmiyor" durumu artik somut bir orneğe sahip.
 
     NEDEN VAR (Sartname Md. 6): demo videosunda "metin girdisi verilmesi,
     modelin urettigi yapilandirilmis cikti" gosterilmesi ZORUNLU. Cikarim

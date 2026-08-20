@@ -224,3 +224,47 @@ def test_cok_uzun_metin_sunucuyu_mesgul_etmez():
         "/cikar", json={"metin": "a" * 50000}, headers=GECERLI_BASLIK
     )
     assert yanit.status_code == 422
+
+
+# ---------------------------------------------------------------------------
+# Rol kisiti (DENETIM BULGUSU: rol_gerekli() yazilmisti ama hicbir
+# endpoint'e baglanmamisti - /cikar staff-only ilk gercek ornegidir)
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def gercek_jwt_modu(monkeypatch):
+    """Uctan uca (TestClient uzerinden) test icin: rol_gerekli()'nin
+    kontrol ettigi GERCEK_JWT_AKTIF, api.auth MODULUNDE tanimli - api.main
+    kendi kopyasini import-aninda alir, bu yuzden ikisi de patchlenir."""
+    import api.auth as auth_modulu
+    import api.main as main_modulu
+
+    monkeypatch.setattr(auth_modulu, "GERCEK_JWT_AKTIF", True)
+    monkeypatch.setattr(main_modulu, "GERCEK_JWT_AKTIF", True)
+    monkeypatch.setenv("JWT_SECRET", "test-icin-gizli-anahtar")
+    yield
+
+
+def test_gercek_modda_musteri_rolu_cikara_erisemez(gercek_jwt_modu):
+    from api.auth import token_uret
+
+    tok = token_uret("musteri_mehmet", rol="musteri")
+    yanit = client.post(
+        "/cikar",
+        json={"metin": ORNEK_METIN},
+        headers={"Authorization": f"Bearer {tok}"},
+    )
+    assert yanit.status_code == 403
+
+
+def test_gercek_modda_banka_calisani_cikara_erisir(gercek_jwt_modu):
+    from api.auth import token_uret
+
+    tok = token_uret("calisan_ali", rol="banka_calisani")
+    yanit = client.post(
+        "/cikar",
+        json={"metin": ORNEK_METIN},
+        headers={"Authorization": f"Bearer {tok}"},
+    )
+    assert yanit.status_code == 200

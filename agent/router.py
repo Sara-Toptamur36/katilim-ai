@@ -13,7 +13,7 @@ bulunamazsa cevap UYDURULMAZ - durum acikca bildirilir (rapor Bolum
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from agent.intent import turkce_ascii_katla
 from agent.parametre_cikar import eksik_parametreler, hesaplama_parametrelerini_cikar
@@ -356,7 +356,32 @@ def _erisim_zamanini_tarihe_cevir(erisim_zamani: str | None) -> str | None:
         return None
 
 
-def rag_aracini_cagir(soru: str) -> dict[str, Any]:
+def _kampanya_id_bul(
+    kayit_getirici: Callable[[str], list] | None, banka: str | None, kaynak_url: str | None
+) -> int | None:
+    """RAG parcasinin ustveri'sindeki banka/kaynak_url'e karsilik gelen
+    kampanya id'sini bulur - dashboard'un ISME gore kirilgan eslestirme
+    yapmak yerine dogrudan kullanabilmesi icin (bkz. Kaynak.kampanya_id
+    sema aciklamasi, api/schemas.py).
+
+    Vektor indeksindeki chunk ustverisinde id TUTULMUYOR (yalniz banka/
+    kampanya_adi/kaynak_url var) - bu yuzden id, `kayit_getirici` ile o
+    bankanin GUNCEL kayitlari cekilip kaynak_url eslesmesiyle bulunur.
+    `kayit_getirici` verilmezse (ör. enjekte edilmemis eski/sahte rag
+    testleri) None doner - bu SESSIZ bir eksiklik degildir, cagiran taraf
+    bilerek id istemiyor demektir.
+    """
+    if kayit_getirici is None or not banka or not kaynak_url:
+        return None
+    for kayit in kayit_getirici(banka):
+        if getattr(kayit, "kaynak_url", None) == kaynak_url:
+            return getattr(kayit, "id", None)
+    return None
+
+
+def rag_aracini_cagir(
+    soru: str, kayit_getirici: Callable[[str], list] | None = None
+) -> dict[str, Any]:
     """RAG Tool: soruyu indekslenmis banka belgelerinde arar ve KAYNAKLI
     yanit uretir.
 
@@ -369,6 +394,11 @@ def rag_aracini_cagir(soru: str) -> dict[str, Any]:
     yapisal olarak imkansizdir: kullaniciya gosterilen her cumle bir
     kaynak belgeden birebir gelir. (LLM ile ozetleme sonraki adimdir ve
     ancak Verifier ile birlikte guvenli olur.)
+
+    `kayit_getirici` (opsiyonel, agent/orchestrator.py::soru_isle'den
+    enjekte edilir): verilirse her kaynak parcaya kampanya_id eklenir
+    (bkz. _kampanya_id_bul). Verilmezse (ornegin dogrudan cagiran testler)
+    kampanya_id alani None kalir - geriye donuk uyumluluk bozulmaz.
     """
     from chunking.retriever import getir
 
@@ -396,6 +426,9 @@ def rag_aracini_cagir(soru: str) -> dict[str, Any]:
             {
                 "banka": ustveri.get("banka"),
                 "kampanya_adi": ustveri.get("kampanya_adi"),
+                "kampanya_id": _kampanya_id_bul(
+                    kayit_getirici, ustveri.get("banka"), ustveri.get("kaynak_url")
+                ),
                 "kaynak_url": ustveri.get("kaynak_url"),
                 # DENETIM BULGUSU (11 Agu): bu iki alan Kaynak semasinda vardi
                 # ama burada hic set edilmiyordu, Pydantic sessizce None

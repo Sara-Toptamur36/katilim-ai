@@ -3,6 +3,7 @@
 from datetime import date
 
 from agent.router import (
+    _kampanya_id_bul,
     hesaplama_aracini_cagir,
     karsilastirma_aracini_cagir,
     sozluk_aracini_cagir,
@@ -250,3 +251,44 @@ def test_toplam_maliyet_araci_vade_veya_oran_eksikse_basarisiz_doner():
     sonuc = toplam_maliyet_aracini_cagir(soru, eksik_getirici)
     assert sonuc["basarili"] is False
     assert "dolu degil" in sonuc["sebep"].lower()
+
+
+# ---------------------------------------------------------------------------
+# _kampanya_id_bul - RAG kaynaklarina kampanya_id ekleme (Havin'in istegi:
+# dashboard isme gore kirilgan eslestirme yapmak yerine dogrudan id kullansin)
+# ---------------------------------------------------------------------------
+
+
+def _idli_kayit(kampanya_id: int, banka: str, kaynak_url: str) -> CampaignRecord:
+    return CampaignRecord(id=kampanya_id, banka=banka, kampanya_adi="Ornek", kaynak_url=kaynak_url)
+
+
+def test_kampanya_id_bul_kaynak_url_eslesirse_id_doner():
+    def getirici(banka: str) -> list[CampaignRecord]:
+        return [
+            _idli_kayit(1, banka, "https://ornek.com/a"),
+            _idli_kayit(2, banka, "https://ornek.com/b"),
+        ]
+
+    assert _kampanya_id_bul(getirici, "Kuveyt Türk", "https://ornek.com/b") == 2
+
+
+def test_kampanya_id_bul_eslesme_yoksa_none_doner():
+    def getirici(banka: str) -> list[CampaignRecord]:
+        return [_idli_kayit(1, banka, "https://ornek.com/a")]
+
+    assert _kampanya_id_bul(getirici, "Kuveyt Türk", "https://baska-url.com") is None
+
+
+def test_kampanya_id_bul_getirici_yoksa_sessizce_none_doner():
+    """kayit_getirici enjekte edilmemisse (ör. eski/sahte rag testleri)
+    hata FIRLATILMAZ - id alani basitce None kalir."""
+    assert _kampanya_id_bul(None, "Kuveyt Türk", "https://ornek.com") is None
+
+
+def test_kampanya_id_bul_banka_veya_url_eksikse_none_doner():
+    def getirici(banka: str) -> list[CampaignRecord]:
+        raise AssertionError("banka/url eksikken getirici hic cagrilmamali")
+
+    assert _kampanya_id_bul(getirici, None, "https://ornek.com") is None
+    assert _kampanya_id_bul(getirici, "Kuveyt Türk", None) is None

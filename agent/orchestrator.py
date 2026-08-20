@@ -157,6 +157,15 @@ def soru_isle(soru: str, kayit_getirici: KayitGetirici, rag_araci=None) -> dict:
             # alanlarin o araclarda anlami yoktur (rapor Bolum 5.7/15).
             "extraction_confidence": veri.get("extraction_confidence"),
             "regex_basari_orani": veri.get("regex_basari_orani"),
+            # Verifier'in ajan yanit yoluna baglanmasi (README "Henuz
+            # kurulmayanlar" maddesi). YALNIZCA yapilandirilmis veri
+            # kullanan araclar (karsilastirma / toplam maliyet) doldurur.
+            # RAG'de None kalir ve bu DOGRUDUR: RAG kaynak parcasini
+            # BIREBIR dondurur, uzerine cumle uretmez - orada "sayi
+            # kaynakta var mi" kontrolu tanim geregi hep EVET derdi,
+            # yani eleme yapmayan bir guvence izlenimi olurdu
+            # (bkz. validation/yanit_dogrulama.py docstring'i).
+            "dogrulama": veri.get("dogrulama"),
             # Juri Audit Paneli'nin retriever bolumu (rapor Bolum 10.2):
             # hangi parcalar, hangi skorla getirildi?
             "retriever_sonuclari": [

@@ -974,5 +974,6 @@ def chat(istek: ChatIstek, kullanici: dict = Depends(token_dogrula)):
             sebep=ekstra["sebep"],
             terminoloji_tutarli=ekstra["terminoloji_tutarli"],
             terminoloji_sorunlari=ekstra["terminoloji_sorunlari"],
+            dogrulama=ekstra["dogrulama"],
         ),
     )

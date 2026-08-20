@@ -600,6 +600,43 @@ class TerimKarti(BaseModel):
     ornek_kaynak: str | None = None
 
 
+class AlanDogrulamaOzeti(BaseModel):
+    """Tek bir alanin, cevaba giren kayitlar genelindeki dogrulama sayimi.
+
+    UC DURUM AYRI SAYILIR ve bilerek tek bir orana indirgenmez:
+    "calistirilmamis"i basarisizlik saymak sistemi haksiz yere kotu,
+    basari saymak ise yalanci gosterirdi (bkz. validation/yanit_dogrulama.py).
+    """
+
+    alan: str
+    dogrulanan: int = Field(0, description="Kaynakta dogrulandi")
+    dogrulanamayan: int = Field(
+        0, description="Dogrulanamadi - deger SILINMEZ, Verifier'in bilinen siniri var"
+    )
+    calistirilmamis: int = Field(0, description="Verifier bu alan icin hic calismadi")
+    kayit_sayisi: int
+
+
+class DogrulamaOzeti(BaseModel):
+    """Ajan yanitinin dayandigi sayilarin dogrulama durumu.
+
+    `kaynak="kayitli"`: hukum CIKARIM ANINDA verildi, soru sorulurken metin
+    yeniden taranmadi - CampaignRecord ham kaynak metni tasimaz. Alan
+    bilerek acik: kullaniciya taze bir kontrol yapilmis gibi sunulmaz.
+    """
+
+    durum: str = Field(
+        ...,
+        description=(
+            "dogrulandi = kullanilan tum alanlar tum kayitlarda dogrulandi | "
+            "kismi = Verifier calisti ama bir kismini onaylayamadi | "
+            "calistirilmamis = bu alanlar icin Verifier hic calismadi"
+        ),
+    )
+    kaynak: str = Field("kayitli", description="Kayitli hukum; canli yeniden dogrulama degil")
+    alanlar: list[AlanDogrulamaOzeti] = Field(default_factory=list)
+
+
 class AuditBilgisi(BaseModel):
     """Juri Audit Paneli'nin (rapor Bolum 10.2) ihtiyac duydugu TUM alanlar.
 
@@ -629,13 +666,17 @@ class AuditBilgisi(BaseModel):
     terminoloji_sorunlari: list[TerminolojiSorunu] = Field(default_factory=list)
 
     # Verifier sonucu (validation/verifier.py) - CampaignRecord.dogrulanan_
-    # alanlar ile AYNI sekil ({"alan_adi": bool}). HENUZ /chat yanit zinciri
-    # Verifier'i CANLI cagirmiyor (RAG birebir alinti donduruyor, simdilik
-    # gerekmiyor - bkz. README "Henuz kurulmayanlar") - bu yuzden bu alan
-    # su an her zaman None doner. Alan BILEREK sema seviyesinde eklendi ki
-    # LLM ile ozetleme + Verifier canli baglama ADIMI geldiginde audit
-    # sozlesmesi (Havin'in arayuzu) degismesin.
+    # alanlar ile AYNI sekil ({"alan_adi": bool}). TEK kayda dayanan
+    # yanitlar icindir; su an dolduran bir yol yok, sema sozlesmesi
+    # bozulmasin diye korunuyor (Havin'in arayuzu bu adlara gore kurulu).
     dogrulanan_alanlar: dict[str, bool] | None = None
+
+    # Ajan yanitinin dayandigi sayilarin dogrulama ozeti. YALNIZCA
+    # yapilandirilmis veri kullanan araclar (karsilastirma / toplam
+    # maliyet) doldurur; RAG'de None kalir ve bu dogrudur - RAG kaynak
+    # parcasini birebir dondurdugu icin orada kontrol tanim geregi hep
+    # EVET derdi (bkz. validation/yanit_dogrulama.py).
+    dogrulama: DogrulamaOzeti | None = None
 
 
 class ChatYanit(BaseModel):

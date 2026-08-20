@@ -24,6 +24,10 @@ from calculator.calculator import (
 )
 from comparison.compare_engine import BilinmeyenKriter, aciklama_uret, karsilastir_bellekte
 from terminology.genisletme import benzer_terim_bul, gelenek_terimden_bul
+from validation.yanit_dogrulama import (
+    karsilastirma_dogrulamasini_ozetle,
+    yanit_dogrulamasini_ozetle,
+)
 from terminology.sozluk import gelenek_karsiligi_bul, sozluk_yukle
 
 BANKALAR_JSON = Path(__file__).resolve().parents[1] / "scraper" / "config" / "bankalar.json"
@@ -249,6 +253,11 @@ def karsilastirma_aracini_cagir(soru: str, kayit_getirici) -> dict[str, Any]:
             "sonuc_sayisi": len(sonuc["sonuclar"]),
             "extraction_confidence": _ortalama_confidence(kayitlar),
             "regex_basari_orani": _regex_basari_orani(kayitlar),
+            # Cevaptaki sayilarin kaynakta dogrulanip dogrulanmadigi
+            # (validation/yanit_dogrulama.py). Yalnizca SIRALAMAYI
+            # belirleyen eksen(ler) raporlanir - "en uzun vade" sorusunda
+            # odul_miktari'nin durumu o cevap hakkinda bilgi vermez.
+            "dogrulama": karsilastirma_dogrulamasini_ozetle(kayitlar, kriter),
         },
     }
 
@@ -290,6 +299,7 @@ def toplam_maliyet_aracini_cagir(soru: str, kayit_getirici) -> dict[str, Any]:
         }
 
     secenekler = []
+    kullanilan_kayitlar = []
     veri_eksik_bankalar = []
     for banka in bulunan_bankalar:
         kayitlar = kayit_getirici(banka)
@@ -307,6 +317,9 @@ def toplam_maliyet_aracini_cagir(soru: str, kayit_getirici) -> dict[str, Any]:
         if uygun is None:
             veri_eksik_bankalar.append(banka)
             continue
+        # Dogrulama ozeti, hesaba GERCEKTEN giren kayitlar uzerinden
+        # cikarilir - bankanin diger kampanyalari bu cevabi etkilemedi.
+        kullanilan_kayitlar.append(uygun)
         secenekler.append(
             {
                 "banka": banka,
@@ -340,6 +353,11 @@ def toplam_maliyet_aracini_cagir(soru: str, kayit_getirici) -> dict[str, Any]:
             "secenekler": sonuc.secenekler,
             "en_dusuk_toplam_maliyet": sonuc.en_dusuk_toplam_maliyet,
             "veri_eksik_bankalar": veri_eksik_bankalar,
+            # Amortisman hesabi bu iki alandan turer; ikisinin de kaynakta
+            # dogrulanip dogrulanmadigi cevabin guvenilirligini belirler.
+            "dogrulama": yanit_dogrulamasini_ozetle(
+                kullanilan_kayitlar, ["kar_payi_orani_decimal", "vade_ay"]
+            ),
         },
     }
 

@@ -465,23 +465,39 @@ tanımlanmadığı sürece yayınlanan site `localhost:8000`'e istek atmaya
 hata değil, uydurma veri göstermemenin sonucudur. Repo ayarında bir kerelik
 gereken adım: *Settings → Pages → Source = "GitHub Actions"*.
 
+### Yanıtın dayandığı sayılar doğrulandı mı?
+
+`/chat`, yapılandırılmış veriden cevap verirken (karşılaştırma ve toplam
+maliyet araçları) artık **hangi alanın kaynakta doğrulandığını** da döndürür —
+`audit.dogrulama`. Üç durum bilerek ayrı sayılır:
+
+| Durum | Anlamı |
+|---|---|
+| `dogrulandi` | Kullanılan tüm alanlar, tüm kayıtlarda kaynakta doğrulandı |
+| `kismi` | Verifier çalıştı ama bir kısmını onaylayamadı (değer **silinmez**) |
+| `calistirilmamis` | Bu alanlar için Verifier hiç çalışmadı |
+
+Bunları tek bir orana indirgemek en büyük hata olurdu: "çalıştırılmamış"ı
+başarısızlık saymak sistemi haksız yere kötü, başarı saymak yalancı gösterirdi.
+
+Yalnızca **sıralamayı belirleyen eksen(ler)** raporlanır — "en uzun vade"
+sorusunda ödül miktarının doğrulanmış olması o cevap hakkında bilgi vermez.
+
+**RAG yolunda özet bilerek üretilmez** (`None`) ve bu doğrudur: RAG hiçbir cümle
+üretmez, kaynak parçasını **birebir** döndürür. Orada "bu sayı kaynakta geçiyor
+mu?" kontrolü tanım gereği her zaman *evet* derdi — hiçbir şey elemeyen,
+yalnızca doğrulama yapılmış **izlenimi** veren bir kontrol olurdu. LLM ile
+özetleme eklenirse Verifier o yola **birlikte** bağlanmalıdır.
+
+Özet, çıkarım anında verilmiş **kayıtlı** hükümdür (`kaynak: "kayitli"`); soru
+sorulurken metin yeniden taranmaz — `CampaignRecord` ham kaynak metni taşımaz.
+Ayrıntı: [`validation/yanit_dogrulama.py`](validation/yanit_dogrulama.py)
+
 ### Henüz kurulmayanlar (dürüstlük notu)
 
 Aşağıdakiler hedef mimaride yer alır ancak **bu depoda henüz tamamlanmamıştır**;
 tasarım ilkesi olarak sunulmakla birlikte uçtan uca çalışan bir özellik değildir:
 
-- **Verifier'ın ajan yanıt yoluna bağlanması:** `validation/verifier.py`
-  yazıldı ve gerçek veriyle ölçüldü (6/6 yanlış pozitif doğru şekilde
-  reddedildi, 41 gerçek iddianın 37'si onaylandı — yöntem ve bilinen
-  sınırlar modülün kendi başlığında belgelidir). Sonucu artık `kampanyalar`
-  tablosundaki `dogrulanan_alanlar` sütununda **kalıcı** (önceden yalnızca
-  log dosyasına yazılıyordu, API'den hiç dönmüyordu) ve `CampaignRecord`
-  sözleşmesinin bir parçası — dashboard/audit paneli her alanın kaynakta
-  doğrulanıp doğrulanmadığını göstermek isterse veri hazır. Henüz eksik
-  olan: `/chat` yanıt zincirinin Verifier'ı **canlı** çağırması (RAG
-  birebir alıntı döndürdüğü için şimdilik gerekmiyor; LLM ile özetleme
-  eklenirse ikisi **birlikte** bağlanmalı) ve dashboard tarafında bu
-  bilginin **görüntülenmesi** (Havin'in alanı).
 - **Zaman aşımına bağlı otomatik fallback:** ölçülmüş bir p95 eşiğine göre
   deterministik katmana düşme.
 - **LLM ile yanıt özetleme:** RAG şu an bulduğu kaynak parçalarını *birebir*

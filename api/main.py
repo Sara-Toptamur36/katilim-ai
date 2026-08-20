@@ -36,6 +36,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from agent.orchestrator import soru_isle
 from api.auth import GERCEK_JWT_AKTIF, rol_gerekli, token_dogrula, token_uret
+from complaint.tema_siniflandirici import tema_siniflandir
 from api.db import oturum_al
 from api.kampanya_repository import id_ile_getir_db, kampanyalari_getir_db
 from api.kullanici_repository import kullanici_dogrula, kullanici_getir, kullanici_olustur
@@ -53,6 +54,10 @@ from api.schemas import (
     KarsilastirYanit,
     KayitIstek,
     KayitYanit,
+    MusteriSesiIstek,
+    MusteriSesiOrnek,
+    MusteriSesiOrnekYanit,
+    MusteriSesiYanit,
     CikarimAdayi,
     CikarimIstek,
     CikarimIzi,
@@ -146,6 +151,13 @@ app.add_middleware(
 
 MODEL_ADI = "qwen2.5:7b-instruct-q4_K_M"  # rapor Bolum 5.3
 TEMPERATURE = 0.0  # rapor Bolum 8: tutarli/tekrarlanabilir cikti
+
+# Faz 1 T8 - sentetik musteri sesi demo verisi (urun verisi DEGIL, bkz.
+# complaint/tema_siniflandirici.py modul basligi).
+SENTETIK_MUSTERI_SESI_YOLU = (
+    Path(__file__).resolve().parent.parent
+    / "tests" / "veri" / "kapsam_disi" / "sentetik_musteri_sesi.json"
+)
 
 # Varsayilan "false" (bkz. dosya basi aciklamasi, VERI KAYNAGI).
 GERCEK_VERI_AKTIF = os.environ.get("GERCEK_VERI_AKTIF", "false").lower() == "true"
@@ -555,6 +567,51 @@ def cikar(
         sure_ms=sure_ms,
         **{"not": not_metni},
     )
+
+
+@app.post(
+    "/musteri-sesi/siniflandir",
+    response_model=MusteriSesiYanit,
+    tags=["Musteri Sesi"],
+)
+def musteri_sesi_siniflandir(
+    istek: MusteriSesiIstek, kullanici: dict = Depends(token_dogrula)
+):
+    """Serbest metni Complaint Insight taksonomisine (mentor 3.3, 10 tema)
+    gore kural tabanli siniflandirir.
+
+    HICBIR SEY SAKLAMAZ: bu uc nokta bir sikayet veritabani DEGILDIR,
+    gonderilen metni islenmez, kaydetmez - yalnizca siniflandirip doner.
+    Gercek musteri verisi henuz yok (bkz. MusteriSesiOrnekYanit docstring'i
+    - kurumsal/hukuki izin sureci Faz 2). KURAL TABANLI (duygu modeli
+    degil) - hizli, aciklanabilir, "neden bu temaya girdi?" sorusuna hangi
+    ifadenin eslestigini gostererek cevap verir. Hicbir tema eslesmezse
+    None doner - uydurulmaz (rapor Bolum 5.7/15 ile ayni ilke).
+    """
+    sonuc = tema_siniflandir(istek.metin)
+    return MusteriSesiYanit(**sonuc)
+
+
+@app.get(
+    "/musteri-sesi/ornekler",
+    response_model=MusteriSesiOrnekYanit,
+    tags=["Musteri Sesi"],
+)
+def musteri_sesi_ornekler(kullanici: dict = Depends(token_dogrula)):
+    """Sentetik musteri sesi demo seti - Faz 1 T8.
+
+    DURUSTLUK: donen 'ornekler' GERCEK sikayet DEGILDIR, elle yazilmis
+    sentetik veridir (bkz. MusteriSesiOrnekYanit.aciklama alani, her
+    yanitta tekrar edilir - dashboard bunu gizlemeden gostermeli).
+    """
+    with open(SENTETIK_MUSTERI_SESI_YOLU, encoding="utf-8") as f:
+        veri = json.load(f)
+
+    ornekler = [
+        MusteriSesiOrnek(id=o["id"], metin=o["metin"], **tema_siniflandir(o["metin"]))
+        for o in veri["ornekler"]
+    ]
+    return MusteriSesiOrnekYanit(temalar=veri["temalar"], ornekler=ornekler)
 
 
 @app.get(

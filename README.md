@@ -292,6 +292,8 @@ arayüz kodu geçişte değişmez.
 | POST | `/karsilastir` | Kampanya karşılaştırma (sabit kriter listesi) |
 | POST | `/hesapla` | Taksit/kâr payı hesabı (saf Python, LLM yok) |
 | POST | `/chat` | Doğal dilde soru-cevap (kaynak + audit bilgisiyle) |
+| POST | `/musteri-sesi/siniflandir` | Serbest metni Complaint Insight taksonomisine (10 tema) göre sınıflandırır |
+| GET | `/musteri-sesi/ornekler` | Sentetik Complaint Insight demo seti — **gerçek şikâyet değildir** |
 
 ```bash
 curl -H "Authorization: Bearer test-token" \
@@ -430,6 +432,39 @@ bir `kar_payi_tablosu` alanına taşır (`CampaignRecord` üzerinden
 [`docs/extraction_accuracy_raporu.md`](docs/extraction_accuracy_raporu.md)
 "Güncelleme — 20 Ağustos 2026" bölümü.
 
+### Müşteri Sesi (Complaint Insight) — sentetik demo
+
+Şartname/mentör raporu, kampanya verisinin yanında bir "müşteri deneyimi"
+sinyali de bekliyor. Gerçek Şikâyetvar/müşteri platformu verisi ancak
+kurumsal/hukuki (KVKK) izin sürecinden sonra ingest edilebilir (bkz. aşağıdaki
+"Henüz kurulmayanlar"), bu yüzden Faz 1'de **kural tabanlı, sentetik veri
+üzerinde çalışan** bir sınıflandırma demosu kuruldu: `complaint/
+tema_siniflandirici.py`, 10 temalı bir taksonomiye (ödül yatmadı, koşul
+uyuşmazlığı, taksit/vade, işyeri kapsamı, aktivasyon, tarih, kart/ürün
+uyuşmazlığı, ücret, iletişim belirsizliği, çözüm süreci) göre serbest metni
+eşleştirir; hiçbir ifade eşleşmezse tema **uydurulmaz**, `None` döner.
+
+Veri seti (`tests/veri/kapsam_disi/sentetik_musteri_sesi.json`) elle
+yazıldı, hiçbir gerçek şikâyetten kopyalanmadı ve hiçbir gerçek bankaya
+atfedilmiyor — tıpkı terminoloji karşı-örnek setiyle aynı disiplinde
+(`tests/test_karsi_ornekler.py`), üretim verisine/RAG indeksine sızmadığı
+`tests/test_sentetik_musteri_sesi.py::test_sentetik_ornekler_urun_verisine_sizmamis`
+ile kilitlendi. Uç noktalar (`POST /musteri-sesi/siniflandir`,
+`GET /musteri-sesi/ornekler`) ve dashboard ekranı (`/musteri-sesi`) her
+yanıtta bu verinin **sentetik** olduğunu açıkça belirtir, gizlemez.
+
+### GitHub Pages (statik arayüz)
+
+`dashboard/` her `main` push'unda otomatik olarak GitHub Pages'e derlenip
+yayınlanır (`.github/workflows/deploy-pages.yml`) — sunumda paylaşılabilir
+bir URL için. **Backend orada çalışmaz**: Pages yalnız statik dosyaları
+sunar; Postgres/Qdrant/Ollama gerektiren canlı veri gösterimi ekibin kendi
+makinesinde çalışır. Depoda bir `VITE_API_BASE_URL` repo değişkeni
+tanımlanmadığı sürece yayınlanan site `localhost:8000`'e istek atmaya
+çalışır ve dış ziyaretçilerde dürüstçe "Veri alınamadı" gösterir — bu bir
+hata değil, uydurma veri göstermemenin sonucudur. Repo ayarında bir kerelik
+gereken adım: *Settings → Pages → Source = "GitHub Actions"*.
+
 ### Henüz kurulmayanlar (dürüstlük notu)
 
 Aşağıdakiler hedef mimaride yer alır ancak **bu depoda henüz tamamlanmamıştır**;
@@ -460,6 +495,11 @@ tasarım ilkesi olarak sunulmakla birlikte uçtan uca çalışan bir özellik de
   başına 150–300 sn sürdüğü için 263 kayıtlık ablation koşusu yapılamadı.
   `ablation.py` bu durumda LLM varyantını `GEÇERSİZ` işaretler; "katkı yok"
   diye yanlış bir sonuç raporlamaz.
+- **Gerçek Complaint Insight verisi:** yukarıdaki Müşteri Sesi modülü şu an
+  yalnızca sentetik veriyle çalışıyor. Gerçek platform verisi, kurumsal/
+  hukuki (KVKK) onay süreci tamamlanmadan **bilerek** ingest edilmiyor —
+  ham şikâyet metni izin kapısından önce diske yazılmaz (Zeynep'in Veri
+  Rehberi'ndeki kırmızı çizgi).
 
 ---
 
@@ -477,6 +517,7 @@ katilim-ai/
 ├── storage/          # PostgreSQL + Qdrant erisimi
 ├── comparison/       # Karsilastirma motoru + rakip matrisi + etki skoru (Sara)
 ├── calculator/       # Hesap makinesi araci (Sara)
+├── complaint/        # Musteri Sesi - kural tabanli tema siniflandirici (sentetik demo)
 ├── agent/            # Ajan orkestrator + tool router (Sara)
 ├── dashboard/        # React + Ant Design arayuz (Havin)
 ├── gold_dataset/     # Altin Veri Seti (dogrulama referansi)

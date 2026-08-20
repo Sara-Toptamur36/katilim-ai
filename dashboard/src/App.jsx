@@ -11,6 +11,7 @@ import {
   MoonOutlined,
   SunOutlined,
   MenuOutlined,
+  MessageOutlined,
 } from "@ant-design/icons";
 
 /* Sayfa bileşenleri */
@@ -18,6 +19,7 @@ import Dashboard from "./pages/Dashboard";
 import Kampanyalar from "./pages/Kampanyalar";
 import Karsilastirma from "./pages/Karsilastirma";
 import MetinAnalizi from "./pages/MetinAnalizi";
+import MusteriSesi from "./pages/MusteriSesi";
 import Chatbot from "./pages/Chatbot";
 import AuditPanel from "./pages/AuditPanel";
 
@@ -44,6 +46,7 @@ const KONTROL_MENUSU = [
 
 const GUVEN_MENUSU = [
   { yol: "/analiz", etiket: "Metin Analizi", ikon: <FileSearchOutlined /> },
+  { yol: "/musteri-sesi", etiket: "Müşteri Sesi", ikon: <MessageOutlined /> },
   { yol: "/audit", etiket: "Jüri Audit Paneli", ikon: <AuditOutlined /> },
 ];
 
@@ -54,6 +57,7 @@ const SAYFA_ADLARI = {
   "/kampanyalar": "Kampanyalar",
   "/karsilastirma": "Karşılaştırma",
   "/analiz": "Metin Analizi",
+  "/musteri-sesi": "Müşteri Sesi",
   "/audit": "Jüri Audit Paneli",
 };
 
@@ -359,6 +363,7 @@ function App() {
                   <Route path="/kampanyalar" element={<Kampanyalar />} />
                   <Route path="/karsilastirma" element={<Karsilastirma />} />
                   <Route path="/analiz" element={<MetinAnalizi />} />
+                  <Route path="/musteri-sesi" element={<MusteriSesi />} />
                   <Route path="/chatbot" element={<Chatbot />} />
                   <Route path="/audit" element={<AuditPanel />} />
                 </Routes>

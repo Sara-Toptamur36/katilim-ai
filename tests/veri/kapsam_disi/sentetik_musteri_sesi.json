@@ -1,0 +1,47 @@
+{
+  "_aciklama": "SENTETIK MUSTERI SESI SETI - Faz 1 T8 (mentorun 3.7'deki en dusuk riskli yol onerisi). Bu dosya BILEREK tests/veri/ altindadir: icerigi veritabanina, altin veri setine ve RAG indeksine ASLA girmez - urun verisi DEGILDIR, yalnizca Complaint Insight konseptinin OLCULEBILIR bir demosu icindir. Dogrulama icin bkz. tests/test_sentetik_musteri_sesi.py.",
+  "_uretim_yontemi": "Ornekler ELLE yazildi; hicbiri gercek bir sikayetten kopyalanmadi ve hicbiri gercek bir bankaya atfedilmiyor (banka adi yerine 'A Bankasi' ya da kendi kampanyalarimizdan turetilmis genel ifadeler kullanildi). Gercek Sikayetvar/musteri platformu verisi ancak kurumsal/hukuki izin surecinden (KVKK) sonra, Faz 2'de ingest edilecek - bkz. PeacewAI_Faz_Plani_ve_Is_Bolumu.docx Bolum 4 'Faz 2'nin kapilari'.",
+  "_surum": "1.0 - 20 Agustos 2026",
+  "_taksonomi_kaynagi": "Mentorun 3.3'teki 10 temali taksonomisi (Rehber_Yagmur_NLP.docx)",
+
+  "temalar": [
+    { "kod": "REWARD_NOT_CREDITED", "ad": "Odul yatmadi", "aciklama": "Vaat edilen odul/puan/nakit iade hesaba gecmedi" },
+    { "kod": "ELIGIBILITY_MISMATCH", "ad": "Kosul uyusmazligi", "aciklama": "Musteri kosulu sagladigini saniyor ama kampanya kapsami disinda" },
+    { "kod": "INSTALLMENT_MATURITY", "ad": "Taksit/vade uyusmazligi", "aciklama": "Taksit sayisi, vade veya erteleme beklentisi gerceklesenle uyusmuyor" },
+    { "kod": "MERCHANT_MCC_SCOPE", "ad": "Isyeri kapsam disi", "aciklama": "Isyeri/harcama turu kampanyaya dahil sanildi ama degil" },
+    { "kod": "ACTIVATION_REGISTRATION", "ad": "Aktivasyon sorunu", "aciklama": "Kampanyaya katilim icin gereken aktivasyon yapilmamis/basarisiz olmus" },
+    { "kod": "DATE_EXPIRY", "ad": "Tarih uyusmazligi", "aciklama": "Kampanya baslangic/bitis tarihiyle ilgili yanlis anlama" },
+    { "kod": "CARD_PRODUCT_MISMATCH", "ad": "Kart/urun uyusmazligi", "aciklama": "Yanlis kart veya urun turu kampanyaya baglanmis" },
+    { "kod": "FEE_CHARGE", "ad": "Beklenmeyen ucret", "aciklama": "Masrafsiz sanilan islemde ucret/komisyon kesildi" },
+    { "kod": "COMMUNICATION_AMBIGUITY", "ad": "Iletisim belirsizligi", "aciklama": "Kampanya metni yaniltici veya eksik anlasilmis" },
+    { "kod": "SERVICE_RESOLUTION", "ad": "Cozum surecinde sorun", "aciklama": "Cagri merkezi/sube basvurusu sorunu cozmedi" }
+  ],
+
+  "ornekler": [
+    { "id": "SM-001", "tema": "REWARD_NOT_CREDITED", "metin": "A Bankasi'nin kampanyasina katildim ama vaat edilen Worldpuan hesabima hala yatmadi, 2 haftadir bekliyorum." },
+    { "id": "SM-002", "tema": "REWARD_NOT_CREDITED", "metin": "Kampanya kosullarini tamamladim fakat 500 TL'lik odul tutari hesabima gecmedi, musteri hizmetleri de net bir tarih veremedi." },
+    { "id": "SM-003", "tema": "ELIGIBILITY_MISMATCH", "metin": "Yeni musteri kampanyasindan yararlanabilecegimi dusunuyordum ama meger daha once hesabim varmis, uygun degilmisim." },
+    { "id": "SM-004", "tema": "ELIGIBILITY_MISMATCH", "metin": "Kampanyanin herkese acik oldugunu saniyordum, aradigimda sadece belirli musteri segmenti icin gecerli oldugunu soylediler." },
+    { "id": "SM-005", "tema": "INSTALLMENT_MATURITY", "metin": "Kampanyada 12 taksit yaziyordu ama basvurumda sadece 6 taksit secenegi cikti." },
+    { "id": "SM-006", "tema": "INSTALLMENT_MATURITY", "metin": "Odemesiz donem olacagini saniyordum, ilk ay yine taksit tahsil edildi." },
+    { "id": "SM-007", "tema": "MERCHANT_MCC_SCOPE", "metin": "Markette yaptigim alisverisin kampanya kapsaminda oldugunu dusunuyordum ama bu isyeri kampanyaya dahil degilmis." },
+    { "id": "SM-008", "tema": "MERCHANT_MCC_SCOPE", "metin": "Akaryakit kampanyasi her istasyonda gecerli saniyordum, benim gittigim istasyon anlasmali degilmis." },
+    { "id": "SM-009", "tema": "ACTIVATION_REGISTRATION", "metin": "Kampanyaya katilmak icin aktivasyon yapmam gerektigini bilmiyordum, uygulamada boyle bir adim goremedim." },
+    { "id": "SM-010", "tema": "ACTIVATION_REGISTRATION", "metin": "Aktivasyon butonuna bastim ama islem basarisiz oldu, tekrar denedim yine olmadi." },
+    { "id": "SM-011", "tema": "DATE_EXPIRY", "metin": "Kampanyanin suresinin doldugunu bilmiyordum, sayfada bitis tarihi net gorunmuyordu." },
+    { "id": "SM-012", "tema": "DATE_EXPIRY", "metin": "Basvurumu son gun yaptim ama sistem kampanyanin bir gun once bittigini soyledi." },
+    { "id": "SM-013", "tema": "CARD_PRODUCT_MISMATCH", "metin": "Kampanya belirli bir kart turu icin gecerliymis, benim kartim farkli bir urun oldugu icin yararlanamadim." },
+    { "id": "SM-014", "tema": "CARD_PRODUCT_MISMATCH", "metin": "Kredi kartimla degil banka kartimla harcama yaptigim icin kampanyadan faydalanamamisim." },
+    { "id": "SM-015", "tema": "FEE_CHARGE", "metin": "Masrafsiz oldugu yaziyordu ama hesap ozetimde tahsis ucreti gorundu." },
+    { "id": "SM-016", "tema": "FEE_CHARGE", "metin": "Kampanya ucretsiz saniyordum, islem sonunda beklenmedik bir komisyon kesildi." },
+    { "id": "SM-017", "tema": "COMMUNICATION_AMBIGUITY", "metin": "Kampanya metni cok karisik yazilmis, hangi urunler icin gecerli oldugunu anlayamadim." },
+    { "id": "SM-018", "tema": "COMMUNICATION_AMBIGUITY", "metin": "Duyuru sayfasinda kosullar net degildi, aradigim sart hicbir yerde yazmiyordu." },
+    { "id": "SM-019", "tema": "SERVICE_RESOLUTION", "metin": "Cagri merkezini aradim ama sorunum cozulmedi, farkli temsilciler farkli seyler soyledi." },
+    { "id": "SM-020", "tema": "SERVICE_RESOLUTION", "metin": "Subeye gittim ama kampanyayla ilgili net bir cevap alamadim, beni tekrar cagri merkezine yonlendirdiler." }
+  ],
+
+  "alan_disi_ornekler": [
+    { "id": "SM-D01", "not": "Hicbir temayla ilgisi olmayan, siniflandirici None donmeli", "metin": "Yarin hava nasil olacak acaba, sube saat kacta aciliyor?" },
+    { "id": "SM-D02", "not": "Genel memnuniyet, sikayet degil - siniflandirici None donmeli", "metin": "Bankanizin hizmetinden genel olarak memnunum, tesekkur ederim." }
+  ]
+}

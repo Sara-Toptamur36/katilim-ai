@@ -185,6 +185,55 @@ class KayitYanit(BaseModel):
     rol: str
 
 
+class MusteriSesiIstek(BaseModel):
+    """POST /musteri-sesi/siniflandir istegi - serbest metin.
+
+    ONEMLI: Bu uc nokta bir SIKAYET VERI TABANI DEGILDIR, hicbir seyi
+    saklamaz - yalnizca gonderilen metni kural tabanli 10 temali
+    taksonomiye (complaint/tema_siniflandirici.py) gore siniflandirip
+    doner. Gercek musteri verisi henuz ingest edilmiyor (bkz.
+    MusteriSesiOrnekYanit aciklamasi)."""
+
+    metin: str = Field(..., min_length=1, max_length=2000)
+
+
+class MusteriSesiYanit(BaseModel):
+    tema: str | None = Field(
+        None, description="Eslesen tema kodu (ör. REWARD_NOT_CREDITED) - hicbiri eslesmezse None"
+    )
+    guven: float = Field(0.0, ge=0.0, le=1.0)
+    eslesen_ifadeler: list[str] = Field(default_factory=list)
+
+
+class MusteriSesiOrnek(BaseModel):
+    id: str
+    metin: str
+    tema: str | None
+    guven: float
+    eslesen_ifadeler: list[str]
+
+
+class MusteriSesiOrnekYanit(BaseModel):
+    """GET /musteri-sesi/ornekler yaniti.
+
+    DURUSTLUK NOTU: buradaki 'ornekler' GERCEK musteri sikayeti DEGILDIR -
+    elle yazilmis, hicbir gercek bankaya atfedilmeyen SENTETIK veridir
+    (bkz. tests/veri/kapsam_disi/sentetik_musteri_sesi.json _uretim_yontemi
+    alani). Gercek Sikayetvar/musteri platformu verisi ancak kurumsal/
+    hukuki (KVKK) izin surecinden sonra ingest edilecek - Faz 2. Bu uc
+    nokta o zamana kadar YALNIZCA "sistem boyle bir siniflandirmayi
+    yapabilir mi?" sorusunun demosudur.
+    """
+
+    sentetik: bool = True
+    aciklama: str = (
+        "Bu ornekler gercek musteri sikayeti degildir - elle yazilmis, "
+        "hicbir bankaya atfedilmeyen sentetik veridir (Faz 1 demo verisi)."
+    )
+    temalar: list[dict]
+    ornekler: list[MusteriSesiOrnek]
+
+
 class ChatIstek(BaseModel):
     soru: str = Field(..., min_length=1, max_length=500)
 

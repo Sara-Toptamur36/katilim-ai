@@ -1,7 +1,13 @@
 import axios from "axios";
 
-// Sara'nin FastAPI'sinin adresi (Sprint 1: lokal calisir)
-const API_TABANI = "http://localhost:8000";
+// Sara'nin FastAPI'sinin adresi. VITE_API_BASE_URL ortam degiskeni
+// verilmezse (yerel gelistirme, `npm run dev`) localhost:8000'e duser.
+// GitHub Pages build'i (.github/workflows/deploy-pages.yml) bu degiskeni
+// GERCEK backend adresine ayarlar - Pages yalniz STATIK arayuzu yayinlar,
+// backend orada CALISMAZ (bkz. PeacewAI_Faz_Plani_ve_Is_Bolumu.docx "T5"
+// notu: "Pages yalnizca statik arayuz yayinlar... demo videosunda 'canli
+// URL' gosterirken bunu dogru anlat").
+const API_TABANI = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
 const TOKEN_ANAHTARI = "katilimai_token";
 
@@ -134,6 +140,22 @@ export const rakipAnaliziGetir = async (kampanyaTuru) => {
 // o kopya gercek sozlukten sapmisti (bkz. api/main.py::terminoloji).
 export const terminolojiGetir = async () => {
   const yanit = await client.get("/terminoloji");
+  return yanit.data;
+};
+
+// POST /musteri-sesi/siniflandir - serbest metni Complaint Insight
+// taksonomisine (10 tema) gore kural tabanli siniflandirir. HICBIR SEY
+// SAKLAMAZ - sadece siniflandirip doner.
+export const musteriSesiSiniflandir = async (metin) => {
+  const yanit = await client.post("/musteri-sesi/siniflandir", { metin });
+  return yanit.data;
+};
+
+// GET /musteri-sesi/ornekler - sentetik demo seti (Faz 1 T8). Yanit
+// GERCEK sikayet DEGILDIR - "sentetik: true" ve "aciklama" alanlari
+// arayuzde GIZLENMEDEN gosterilmeli (rapor Bolum 5.7/15 seffaflik ilkesi).
+export const musteriSesiOrneklerGetir = async () => {
+  const yanit = await client.get("/musteri-sesi/ornekler");
   return yanit.data;
 };
 

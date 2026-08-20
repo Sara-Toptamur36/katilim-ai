@@ -680,3 +680,56 @@ def test_zenginlestiricinin_yazdigi_yontem_degerleri_semada_gecerli(deger):
     from api.schemas import CikarimYontemi
 
     assert CikarimYontemi(deger).value == deger
+
+
+# ---------------------------------------------------------------------------
+# /musteri-sesi - Faz 1 T8 (sentetik demo, urun verisi degil)
+# ---------------------------------------------------------------------------
+
+
+def test_musteri_sesi_siniflandir_kimlik_dogrulama_ister():
+    assert client.post("/musteri-sesi/siniflandir", json={"metin": "test"}).status_code == 401
+
+
+def test_musteri_sesi_ornekler_kimlik_dogrulama_ister():
+    assert client.get("/musteri-sesi/ornekler").status_code == 401
+
+
+def test_musteri_sesi_siniflandir_bilinen_temayi_bulur():
+    yanit = client.post(
+        "/musteri-sesi/siniflandir",
+        json={"metin": "Kampanyaya katildim ama odul tutari hesabima gecmedi."},
+        headers=GECERLI_BASLIK,
+    )
+    assert yanit.status_code == 200
+    govde = yanit.json()
+    assert govde["tema"] == "REWARD_NOT_CREDITED"
+    assert govde["guven"] > 0
+    assert govde["eslesen_ifadeler"]
+
+
+def test_musteri_sesi_siniflandir_alan_disi_metinde_tema_uydurmaz():
+    yanit = client.post(
+        "/musteri-sesi/siniflandir",
+        json={"metin": "Yarin hava nasil olacak?"},
+        headers=GECERLI_BASLIK,
+    )
+    assert yanit.status_code == 200
+    govde = yanit.json()
+    assert govde["tema"] is None
+    assert govde["guven"] == 0.0
+
+
+def test_musteri_sesi_ornekler_sentetik_oldugunu_acikca_belirtir():
+    """DURUSTLUK: donen veri gercek sikayet degil - yanit bunu ACIKCA
+    soylemeli, arayuz bu alani gizlemeden gostermeli (rapor Bolum 5.7/15
+    ile ayni seffaflik ilkesi)."""
+    yanit = client.get("/musteri-sesi/ornekler", headers=GECERLI_BASLIK)
+    assert yanit.status_code == 200
+    govde = yanit.json()
+    assert govde["sentetik"] is True
+    assert "sentetik" in govde["aciklama"].lower()
+    assert len(govde["ornekler"]) == 20
+    assert len(govde["temalar"]) == 10
+    for ornek in govde["ornekler"]:
+        assert ornek["tema"] is not None, f"{ornek['id']} kendi ornek setinde siniflandirilamadi"

@@ -279,13 +279,16 @@ arayüz kodu geçişte değişmez.
 | Metot | Yol | Açıklama |
 |---|---|---|
 | GET | `/` · `/saglik` | Servis bilgisi / health check (kimlik gerektirmez) |
+| GET | `/sistem/tazelik` | Veri/RAG indeksinin ne kadar güncel olduğu (son tarama, gün farkı) |
 | POST | `/token` | Kullanıcı adı-parola ile JWT (yalnızca `JWT_AKTIF=true`) |
+| POST | `/kayit` | Kendi kendine kayıt — rol her zaman `musteri` (istemciden kabul edilmez) |
 | GET | `/kampanyalar` | Kampanya listesi (`?banka=` `?kampanya_turu=`) |
 | GET | `/kampanyalar/{id}` | Tek kampanya detayı |
 | GET | `/kampanyalar/{id}/etki` | Etki skoru — piyasaya göre eksen eksen yüzdelik sıra |
 | GET | `/kampanyalar/{id}/tarihce` | Değişim tarihçesi — aynı URL'nin geçmiş taramaları (ek veri toplamaz) |
 | GET | `/rakip-analizi` | Rakip matrisi — tüm kriterler tek tabloda (`?kampanya_turu=`) |
 | GET | `/terminoloji` | Katılım bankacılığı sözlüğü (31 kavram, Md. 5.5) |
+| POST | `/cikar` | Serbest metinden yapılandırılmış çıktı — MetinAnalizi ekranı (staff-only: `musteri` hariç) |
 | POST | `/karsilastir` | Kampanya karşılaştırma (sabit kriter listesi) |
 | POST | `/hesapla` | Taksit/kâr payı hesabı (saf Python, LLM yok) |
 | POST | `/chat` | Doğal dilde soru-cevap (kaynak + audit bilgisiyle) |

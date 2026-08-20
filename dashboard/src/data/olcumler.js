@@ -10,7 +10,7 @@ export const OLCUMLER = {
     toplamBanka: 10,
     haricBanka: "Adil Katılım",
     haricSebep: "kampanya/ürün yayını bulunmadığı için hariç",
-    goldKayit: 58,
+    goldKayit: 62,
   },
   cikarim: {
     doluAlanDogrulugu: 98.48,
@@ -50,7 +50,7 @@ export const OLCUMLER = {
     {
       kod: "TF-001",
       alan: "Kâr payı oranı",
-      aciklama: "Yanlış pozitif: sayfanın ortasında başka bir ürüne ait \"Kâr paysız 2.500 TL'ye kadar\" ifadesi %0 oran olarak alındı. Dar kapsamlı, bilinen sınırlama.",
+      aciklama: "20 Ağustos'ta düzeltildi: \"Kâr paysız ... Yedek Hesap\" yanlış pozitifi (2. bir örnekle doğrulanıp) dar kapsamlı bir guard ile giderildi; sayfadaki gerçek (vadeye göre değişen) oranlar artık kar_payi_tablosu alanında olduğu gibi gösteriliyor, tek sayıya indirgenmiyor. Regex-only fallback katmanında (GPU'suz demo yolu) hâlâ farklı bir düşük güvenli tahmin sorunu var — bilinen, kabul edilmiş bir sınırlama.",
     },
   ],
 };

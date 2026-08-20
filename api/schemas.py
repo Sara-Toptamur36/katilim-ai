@@ -648,7 +648,15 @@ class AuditBilgisi(BaseModel):
     intent: str | None = None
     intent_confidence: float | None = None
     cagrilan_arac: str | None = None
-    sql_sorgusu: str | None = None
+    sql_sorgusu: str | None = Field(
+        None,
+        description=(
+            "Karsilastirmanin SQL KARSILIGI. Su an CALISTIRILMAZ - siralama "
+            "bellekte yapilir (comparison/compare_engine.py::karsilastir_bellekte); "
+            "sorgu seffaflik icin uretilip gosterilir. /karsilastir ve /chat "
+            "ayni sorguyu uretir - ikisi arasinda fark olmamali."
+        ),
+    )
     retriever_sonuclari: list[RetrieverSonuc] = Field(default_factory=list)
     extraction_confidence: float | None = None
     response_confidence: float | None = None

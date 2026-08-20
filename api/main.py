@@ -955,6 +955,7 @@ def chat(istek: ChatIstek, kullanici: dict = Depends(token_dogrula)):
         intent=ekstra["intent"],
         intent_confidence=ekstra["intent_confidence"],
         cagrilan_arac=ekstra["cagrilan_arac"],
+        sql_sorgusu=ekstra["sql_sorgusu"],
     )
 
     return ChatYanit(
@@ -975,5 +976,6 @@ def chat(istek: ChatIstek, kullanici: dict = Depends(token_dogrula)):
             terminoloji_tutarli=ekstra["terminoloji_tutarli"],
             terminoloji_sorunlari=ekstra["terminoloji_sorunlari"],
             dogrulama=ekstra["dogrulama"],
+            sql_sorgusu=ekstra["sql_sorgusu"],
         ),
     )

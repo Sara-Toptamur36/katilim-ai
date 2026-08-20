@@ -179,3 +179,52 @@ def test_sozluk_yolunda_da_ozet_uretilmez():
     iddia yok."""
     sonuc = soru_isle("Murabaha nedir", lambda banka: [])
     assert sonuc["audit_ekstra"]["dogrulama"] is None
+
+
+# ---------------------------------------------------------------------------
+# Audit paneli: SQL karsiligi (ayni sinif bosluk - uretiliyor ama tasinmiyordu)
+# ---------------------------------------------------------------------------
+
+
+def test_sohbet_karsilastirmasinda_sql_karsiligi_donuyor(iki_banka):
+    """DENETIM BULGUSU: /karsilastir uc noktasi SQL'i uretip Juri Audit
+    Paneli'nde gosteriyordu, ajan yolu GOSTERMIYORDU - panel "cagrilan
+    arac: sql" diyor ama SQL kartini hic basmiyordu (AuditPanel.jsx bos
+    alani gizler). Juri demoda en cok bu yolu kullanir."""
+    a, b = iki_banka
+    veri = {
+        a: [_kayit(a, kar_payi_orani_percent=1.89)],
+        b: [_kayit(b, kar_payi_orani_percent=2.45)],
+    }
+
+    sonuc = soru_isle(f"{a} ile {b} arasinda en dusuk kar payi hangisi",
+                      lambda banka: veri.get(banka, []))
+
+    sql = sonuc["audit_ekstra"]["sql_sorgusu"]
+    assert sql is not None
+    assert "FROM kampanyalar" in sql
+    assert "kar_payi_orani_percent ASC" in sql
+    # Kullanici metni SQL'e GIRMEZ - degerler %s ile parametrelenir.
+    assert "%s" in sql and a not in sql
+
+
+def test_iki_yol_ayni_sorguyu_uretiyor(iki_banka):
+    """/karsilastir ile /chat farkli SQL gosterirse panel hangisinin
+    dogru oldugunu soyleyemez - ikisi ayni ureteci kullanmali."""
+    from comparison.compare_engine import karsilastir_sorgusu
+
+    a, b = iki_banka
+    veri = {
+        a: [_kayit(a, kar_payi_orani_percent=1.89)],
+        b: [_kayit(b, kar_payi_orani_percent=2.45)],
+    }
+    sonuc = soru_isle(f"{a} ile {b} arasinda en dusuk kar payi hangisi",
+                      lambda banka: veri.get(banka, []))
+
+    beklenen, _ = karsilastir_sorgusu("en_dusuk_kar_payi")
+    assert sonuc["audit_ekstra"]["sql_sorgusu"] == beklenen
+
+
+def test_rag_ve_sozluk_yolunda_sql_uretilmez():
+    """Belge/kavram donduren araclarda SQL yoktur - bos gostermek dogru."""
+    assert soru_isle("Murabaha nedir", lambda b: [])["audit_ekstra"]["sql_sorgusu"] is None

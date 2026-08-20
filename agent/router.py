@@ -22,7 +22,12 @@ from calculator.calculator import (
     aylik_taksit_hesapla,
     toplam_maliyet_karsilastir,
 )
-from comparison.compare_engine import BilinmeyenKriter, aciklama_uret, karsilastir_bellekte
+from comparison.compare_engine import (
+    BilinmeyenKriter,
+    aciklama_uret,
+    karsilastir_bellekte,
+    karsilastir_sorgusu,
+)
 from terminology.genisletme import benzer_terim_bul, gelenek_terimden_bul
 from validation.yanit_dogrulama import (
     karsilastirma_dogrulamasini_ozetle,
@@ -242,6 +247,12 @@ def karsilastirma_aracini_cagir(soru: str, kayit_getirici) -> dict[str, Any]:
     kriter = _sorudaki_kriteri_tespit_et(soru)
     try:
         sonuc = karsilastir_bellekte(kayitlar, kriter=kriter)
+        # DENETIM BULGUSU: /karsilastir uc noktasi bu sorguyu uretip Juri
+        # Audit Paneli'nde gosteriyordu, ajan yolu GOSTERMIYORDU - yani
+        # sohbetten karsilastirma sorulunca panel "cagrilan arac: sql"
+        # diyor ama SQL kartini hic basmiyordu (AuditPanel.jsx alani bos
+        # oldugu icin gizler). Juri demoda en cok bu yolu kullanacak.
+        sql, _ = karsilastir_sorgusu(kriter)
     except BilinmeyenKriter as e:
         return {"basarili": False, "cevap": str(e), "sebep": str(e)}
 
@@ -258,6 +269,7 @@ def karsilastirma_aracini_cagir(soru: str, kayit_getirici) -> dict[str, Any]:
             # belirleyen eksen(ler) raporlanir - "en uzun vade" sorusunda
             # odul_miktari'nin durumu o cevap hakkinda bilgi vermez.
             "dogrulama": karsilastirma_dogrulamasini_ozetle(kayitlar, kriter),
+            "sql_sorgusu": sql,
         },
     }
 

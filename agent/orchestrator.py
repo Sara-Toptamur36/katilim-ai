@@ -166,6 +166,12 @@ def soru_isle(soru: str, kayit_getirici: KayitGetirici, rag_araci=None) -> dict:
             # yani eleme yapmayan bir guvence izlenimi olurdu
             # (bkz. validation/yanit_dogrulama.py docstring'i).
             "dogrulama": veri.get("dogrulama"),
+            # Karsilastirma araci doldurur. UYARI: bu sorgu ajan
+            # yolunda CALISTIRILMAZ - siralama bellekte yapilir
+            # (karsilastir_bellekte). Panelde gosterilme sebebi
+            # seffafliktir: "bu karsilastirmanin SQL karsiligi
+            # budur" (ayni konvansiyon /karsilastir ucunda da var).
+            "sql_sorgusu": veri.get("sql_sorgusu"),
             # Juri Audit Paneli'nin retriever bolumu (rapor Bolum 10.2):
             # hangi parcalar, hangi skorla getirildi?
             "retriever_sonuclari": [

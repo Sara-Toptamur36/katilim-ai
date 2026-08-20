@@ -30,10 +30,41 @@ def _adim(metin: str) -> None:
     print(f"\n==> {metin}")
 
 
-def _docker_compose_ayaga_kaldir() -> bool:
-    _adim("Docker servisleri baslatiliyor (postgres, qdrant, ollama)...")
+def _native_ollama_calisiyor_mu() -> bool:
+    """DENETIM BULGUSU (kuru prova, 20 Agustos): docker-compose.yml'deki
+    ollama servisi 11434 portunu baglamaya calisiyor - ama bu makinede
+    (ve muhtemelen jüri makinesinde de) Ollama winget/native kurulumla
+    ZATEN calisiyor ve ayni portu tutuyor. `docker compose up -d`
+    ollama icin 'port zaten kullanimda' hatasi verince TUM komut
+    basarisiz sayiliyordu (check=True) - postgres/qdrant saglikli
+    baslamis olsa bile script tamamen durup demoyu iptal ediyordu.
+
+    Ayni kontrol extraction/llm_extractor.py::_ollama_hazir_mi ile AYNI
+    (http://localhost:11434/api/tags) - iki ayri yerde ayni sabiti
+    tutmamak icin kucuk, bagimsiz bir kontrol burada tekrarlandi (bu
+    script'in extraction/ paketine bagimli olmasi gerekmiyor)."""
+    import urllib.request
+
     try:
-        subprocess.run(["docker", "compose", "up", "-d"], check=True, timeout=120)
+        with urllib.request.urlopen("http://localhost:11434/api/tags", timeout=2):
+            return True
+    except Exception:  # noqa: BLE001 - Ollama kapaliyken beklenen durum
+        return False
+
+
+def _docker_compose_ayaga_kaldir() -> bool:
+    if _native_ollama_calisiyor_mu():
+        # Native Ollama zaten 11434'u tutuyor - Docker'daki ollama servisini
+        # BASLATMAYA CALISMIYORUZ (port catisir, tum komut basarisiz olurdu).
+        # Native olan zaten ayni isi goruyor, iki tane ollama'ya gerek yok.
+        _adim("Native Ollama zaten calisiyor (localhost:11434) - Docker Ollama servisi atlaniyor.")
+        servisler = ["postgres", "qdrant"]
+    else:
+        servisler = ["postgres", "qdrant", "ollama"]
+
+    _adim(f"Docker servisleri baslatiliyor ({', '.join(servisler)})...")
+    try:
+        subprocess.run(["docker", "compose", "up", "-d", *servisler], check=True, timeout=120)
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError) as e:
         print(f"HATA: docker compose up -d basarisiz ({type(e).__name__}: {e})")
         print("Docker Desktop acik mi? 'docker compose up -d' elle deneyin.")

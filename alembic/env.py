@@ -51,10 +51,19 @@ def run_migrations_online() -> None:
     bolum = config.get_section(config.config_ini_section, {})
     bolum["sqlalchemy.url"] = veritabani_adresi()
 
+    # connect_timeout: api/db.py ile ayni duzeltme (DENETIM BULGUSU, kuru
+    # prova 20 Agustos) - "localhost" bu makinede once IPv6 (::1) adresini
+    # deniyor, orada dinleyen olmadigi icin Windows'ta bu deneme saniyeler
+    # yerine DAKIKALARCA takiliyor (varsayilan isletim sistemi baglanti
+    # zaman asimi). connect_timeout olmadan "alembic upgrade head" ve
+    # "alembic current" 60 sn'lik subprocess zaman asimini bile asip
+    # basarisiz oluyordu; IPv4'e (127.0.0.1) dusmesi zaten ~saniyeler
+    # icinde oluyor, sadece IPv6 denemesinin kendisi cok uzun suruyor.
     connectable = engine_from_config(
         bolum,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
+        connect_args={"connect_timeout": 2},
     )
 
     with connectable.connect() as connection:

@@ -25,6 +25,8 @@ olcumu, terminology/tutarlilik_kontrolu.py'deki ayni derste).
 
 from __future__ import annotations
 
+import re
+
 from extraction.normalizer import turkce_ascii_kucult
 
 # Her tema icin COK KELIMELI ifadeler - tek kelime degil (capraz eslesme
@@ -79,8 +81,42 @@ def _katla_liste(ifadeler: list[str]) -> list[str]:
     return [turkce_ascii_kucult(i) for i in ifadeler]
 
 
+def _ifadeyi_derle(ifade_katlanmis: str) -> re.Pattern:
+    r"""Ifadeyi, ARA KELIMELERDE Turkce ek kabul eden bir desene cevirir.
+
+    BULGU (21 Agustos, sikayet hatti uctan uca denenirken): eslesme duz
+    alt-dize icermesiyle yapiliyordu. Bu, SON kelimedeki eki zaten tolere
+    ediyor ("vade" ifadesi "vadeli" icinde gecer) ama ARA kelimedeki eki
+    kiriyordu: "odul yatmadi" ifadesi "odulum yatmadi" cumlesinde
+    BULUNAMIYORDU - oysa ikincisi daha dogal bir konusma bicimi.
+
+    COZUM: kelimeler arasindaki bosluk `\w*\s+` olur - yani her kelimeden
+    sonra ek gelebilir. `\w*` bosluk gecemedigi icin yalnizca AYNI
+    kelimeye eklenir; araya baska bir kelime sokmaz.
+
+    BILINEN SINIR: yalnizca kelimenin SONUNA eklenen ek tolere edilir.
+    Iyelik eki kelimenin ICINDE degisirse ("hesabima" -> "hesabimiza")
+    eslesme yine kurulmaz; bunun icin govdeleme gerekir ve ozgullugu
+    olcmeden eklemek belirsiz bir yanlis pozitif riski dogurur.
+
+    Kelime SINIRI () BILEREK eklenmedi: mevcut alt-dize davranisi
+    korunur, yoksa ozgulluk olcumu (tests/test_sentetik_musteri_sesi.py)
+    bu degisiklikle birlikte sessizce kayardi. Degisiklik yalnizca
+    GENISLETIR, daraltmaz.
+    """
+    kelimeler = ifade_katlanmis.split()
+    if len(kelimeler) == 1:
+        return re.compile(re.escape(kelimeler[0]))
+    return re.compile(r"\w*\s+".join(re.escape(k) for k in kelimeler))
+
+
 _TEMA_IFADELERI_KATLANMIS = {
     tema: _katla_liste(ifadeler) for tema, ifadeler in _TEMA_IFADELERI.items()
+}
+
+_TEMA_DESENLERI = {
+    tema: [_ifadeyi_derle(i) for i in ifadeler]
+    for tema, ifadeler in _TEMA_IFADELERI_KATLANMIS.items()
 }
 
 
@@ -98,10 +134,10 @@ def tema_siniflandir(metin: str) -> dict:
     en_iyi_tema: str | None = None
     en_iyi_eslesenler: list[str] = []
 
-    for tema, ifadeler_katlanmis in _TEMA_IFADELERI_KATLANMIS.items():
+    for tema, desenler in _TEMA_DESENLERI.items():
         eslesenler = [
-            ham for ham, kat in zip(_TEMA_IFADELERI[tema], ifadeler_katlanmis)
-            if kat in katlanmis
+            ham for ham, desen in zip(_TEMA_IFADELERI[tema], desenler)
+            if desen.search(katlanmis)
         ]
         if len(eslesenler) > len(en_iyi_eslesenler):
             en_iyi_tema = tema

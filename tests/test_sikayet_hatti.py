@@ -338,3 +338,60 @@ def test_banka_ve_odul_birimi_birlikte_eslesir():
     sonuc = kampanya_esle("D Bankasi kartimdan Mil hediyesi yatmadi", [k])
     assert sonuc.kampanya_id == 9
     assert sonuc.gerekce.get("odul_birimi") == "Mil"
+
+
+# ---------------------------------------------------------------------------
+# Siniflandiricida Turkce ek toleransi (21 Agustos bulgusu)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "cumle",
+    [
+        "odul yatmadi",        # eki olmayan bicim - onceden de calisiyordu
+        "odulum yatmadi",      # ONCEDEN KACIRILIYORDU
+        "odullerim yatmadi",
+        "puanim gecmedi",
+        "hesabima gecmedi",
+    ],
+)
+def test_ara_kelimedeki_ek_eslesmeyi_kirmiyor(cumle):
+    """BULGU: eslesme duz alt-dize icermesiyle yapiliyordu; SON kelimedeki
+    eki tolere ediyordu ("vade" -> "vadeli") ama ARA kelimedeki eki
+    kiriyordu. "odulum yatmadi" - daha dogal bir konusma bicimi -
+    hicbir temaya girmiyordu."""
+    from complaint.tema_siniflandirici import tema_siniflandir
+
+    assert tema_siniflandir(cumle)["tema"] == "REWARD_NOT_CREDITED"
+
+
+def test_ek_toleransi_araya_KELIME_sokmuyor():
+    r"""`\w*` bosluk gecemez - yalnizca ayni kelimeye ek ekler. Araya
+    bagimsiz bir kelime girerse eslesme OLMAMALI, yoksa ifadeler
+    birbirinden kopar ve capraz tema yanlis pozitifleri baslar."""
+    from complaint.tema_siniflandirici import tema_siniflandir
+
+    # "odul" ile "yatmadi" arasina baska kelime girmis
+    assert tema_siniflandir("odul konusunda param yatmadi")["tema"] != "REWARD_NOT_CREDITED"
+
+
+def test_bilinen_sinir_ic_iyelik_degisimi_yakalanmiyor():
+    """BILINEN SINIR, gizlenmiyor: ek toleransi kelimenin SONUNA eklenen
+    eki tolere eder ("odul" -> "odulum"). Iyelik eki kelimenin ICINDE
+    degistiginde ("hesabima" -> "hesabimiza") ifade artik onekle
+    baslamadigi icin eslesmez.
+
+    Bunu cozmek govdeleme (stemming) gerektirir; ozgullugu olcmeden
+    eklemek, kazanci belirsiz bir yanlis pozitif riski dogurur. Test
+    YESIL kalirsa sinir hala ayni yerdedir - "sorun yok" demek DEGIL."""
+    from complaint.tema_siniflandirici import tema_siniflandir
+
+    assert tema_siniflandir("hesabimiza gecmedi")["tema"] != "REWARD_NOT_CREDITED"
+
+
+def test_ek_toleransi_alan_disi_metni_hala_reddediyor():
+    """Degisiklik yalnizca GENISLETIR; alan disi metin yine tema almamali."""
+    from complaint.tema_siniflandirici import tema_siniflandir
+
+    assert tema_siniflandir("yarin hava nasil olacak acaba")["tema"] is None
+    assert tema_siniflandir("makarna tarifi ariyorum")["tema"] is None

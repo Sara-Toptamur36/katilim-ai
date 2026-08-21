@@ -5,6 +5,14 @@
 > Katılım hâlâ gerekçeli hariç). Google Sheets'e taşıma bu tarihte
 > yapılıyor; bu dosya taşınana kadarki **son yerel referans kopyadır**.
 > Ham CSV: [`sayfa_takip_tablosu.csv`](sayfa_takip_tablosu.csv).
+>
+> **Not (18 Ağustos 2026):** Aşağıdaki tablo 11 Ağustos'ta **donduruldu** —
+> satır bazlı seçici/gerekçe notları hâlâ doğru ve değerlidir, ama alt
+> toplam (263) o tarihten sonraki yeniden taramaları (18 Ağustos: 9 banka,
+> 31 kampanya güncellendi) yansıtmaz. **Güncel toplam ve banka bazlı
+> dağılım için:** [`veri_coverage.md`](veri_coverage.md) (`python -m
+> scraper.scripts.coverage_raporu` ile yeniden üretilebilir) — 18 Ağustos
+> itibarıyla 251 tekil kampanya / 300 anlık görüntü.
 
 Kim Aldı sütunu: tüm satırlar → **Zeynep**.
 Son Kontrol: bankaya göre değişir, en son **2026-08-11** (Ziraat Katılım, Emlak Katılım, Hayat Finans, Kuveyt Türk, Albaraka).

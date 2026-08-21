@@ -10,10 +10,23 @@ import axios from "axios";
 const API_TABANI = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
 const TOKEN_ANAHTARI = "katilimai_token";
+const ROL_ANAHTARI = "katilimai_rol";
 
 export const tokenKaydet = (token) => {
   localStorage.setItem(TOKEN_ANAHTARI, token);
 };
+
+// Rol, menunun hangi ekranlari gosterecegini belirler. NULL = "giris
+// yapilmadi" demektir; o durumda hicbir sey gizlenmez (mock/demo modu,
+// bkz. App.jsx::menuyuRoleGoreSuz). Rol YOKLUGU ile "yetkisiz" ayni sey
+// degildir - ikisini karistirmak demoyu kilitlerdi.
+export const rolKaydet = (rol) => {
+  if (rol) localStorage.setItem(ROL_ANAHTARI, rol);
+};
+
+export const rolAl = () => localStorage.getItem(ROL_ANAHTARI);
+
+export const rolSil = () => localStorage.removeItem(ROL_ANAHTARI);
 
 export const tokenAl = () => {
   // Sprint 1-3: mock modda deger kontrol edilmiyor, herhangi bir metin yeter
@@ -48,6 +61,35 @@ client.interceptors.response.use(
     return Promise.reject(hata);
   }
 );
+
+// POST /kayit - kendi kendine kayit. Istek govdesinde ROL YOKTUR ve
+// olmamalidir: sunucu her zaman "musteri" atar (api/schemas.py::KayitIstek).
+// Arayuzde rol sectiren bir alan koymak, herkesin kendini yonetici
+// yapabilmesi anlamina gelirdi.
+export const kayitOl = async (kullaniciAdi, sifre) => {
+  const yanit = await client.post("/kayit", {
+    kullanici_adi: kullaniciAdi,
+    sifre: sifre,
+  });
+  return yanit.data;
+};
+
+// POST /token - OAuth2 form formati (JSON DEGIL).
+// DIKKAT: bu uc nokta yalnizca JWT_AKTIF=true iken calisir; varsayilan
+// (mock) modda 400 doner ve mesaji "mock modda /token gerekmez" der.
+// Cagiran taraf o mesaji OLDUGU GIBI gostermeli - genel bir "giris
+// basarisiz" metni kullaniciyi yaniltirdi.
+export const girisYap = async (kullaniciAdi, sifre) => {
+  const govde = new URLSearchParams();
+  govde.append("username", kullaniciAdi);
+  govde.append("password", sifre);
+  const yanit = await client.post("/token", govde, {
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  });
+  tokenKaydet(yanit.data.access_token);
+  rolKaydet(yanit.data.rol);
+  return yanit.data;
+};
 
 // GET /kampanyalar?banka=...&kampanya_turu=...
 export const kampanyalariGetir = async (filtreler = {}) => {

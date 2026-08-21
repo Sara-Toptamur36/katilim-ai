@@ -12,6 +12,8 @@ import {
   SunOutlined,
   MenuOutlined,
   MessageOutlined,
+  CalculatorOutlined,
+  LoginOutlined,
 } from "@ant-design/icons";
 
 /* Sayfa bileşenleri */
@@ -20,6 +22,8 @@ import Kampanyalar from "./pages/Kampanyalar";
 import Karsilastirma from "./pages/Karsilastirma";
 import MetinAnalizi from "./pages/MetinAnalizi";
 import MusteriSesi from "./pages/MusteriSesi";
+import HesapMakinesi from "./pages/HesapMakinesi";
+import Giris from "./pages/Giris";
 import Chatbot from "./pages/Chatbot";
 import AuditPanel from "./pages/AuditPanel";
 
@@ -27,7 +31,7 @@ import AuditPanel from "./pages/AuditPanel";
 import { AuditProvider } from "./context/AuditContext";
 
 /* API istemcisi — veri modu kontrolü için */
-import client from "./api/client";
+import client, { rolAl } from "./api/client";
 
 const { Sider, Header, Content } = Layout;
 
@@ -42,13 +46,35 @@ const KONTROL_MENUSU = [
   { yol: "/chatbot", etiket: "AI Asistan", ikon: <RobotOutlined /> },
   { yol: "/kampanyalar", etiket: "Kampanyalar", ikon: <TagsOutlined /> },
   { yol: "/karsilastirma", etiket: "Karşılaştırma", ikon: <SwapOutlined /> },
+  { yol: "/hesapla", etiket: "Hesap Makinesi", ikon: <CalculatorOutlined /> },
 ];
 
 const GUVEN_MENUSU = [
-  { yol: "/analiz", etiket: "Metin Analizi", ikon: <FileSearchOutlined /> },
+  // `roller`: yalnizca API'de GERCEKTEN bir kisit varsa yazilir. Metin
+  // Analizi, POST /cikar ucuna dayanir ve o uc rol_gerekli(["banka_calisani",
+  // "denetleyici", "yonetici"]) ile korunur - menu bu kisiti YANSITIR,
+  // kendi basina politika UYDURMAZ. Digerlerinde API kisiti olmadigi icin
+  // burada da yoktur.
+  {
+    yol: "/analiz",
+    etiket: "Metin Analizi",
+    ikon: <FileSearchOutlined />,
+    roller: ["banka_calisani", "denetleyici", "yonetici"],
+  },
   { yol: "/musteri-sesi", etiket: "Müşteri Sesi", ikon: <MessageOutlined /> },
   { yol: "/audit", etiket: "Jüri Audit Paneli", ikon: <AuditOutlined /> },
+  { yol: "/giris", etiket: "Giriş / Kayıt", ikon: <LoginOutlined /> },
 ];
+
+/* Rol BILINMIYORSA hicbir sey gizlenmez.
+   "rol yok" ile "yetkisiz" AYNI SEY DEGILDIR: sistem varsayilan olarak mock
+   kimlik dogrulamayla calisir (rol_gerekli o modda hicbir kisit uygulamaz),
+   dolayisiyla giris yapilmamis olmasi demoyu kilitlememelidir. Menu ancak
+   GERCEK bir rol biliniyorsa suzer. */
+function menuyuRoleGoreSuz(ogeler, rol) {
+  if (!rol) return ogeler;
+  return ogeler.filter((o) => !o.roller || o.roller.includes(rol));
+}
 
 /* Yola göre aktif sayfa adını döndürür */
 const SAYFA_ADLARI = {
@@ -56,9 +82,11 @@ const SAYFA_ADLARI = {
   "/chatbot": "AI Asistan",
   "/kampanyalar": "Kampanyalar",
   "/karsilastirma": "Karşılaştırma",
+  "/hesapla": "Hesap Makinesi",
   "/analiz": "Metin Analizi",
   "/musteri-sesi": "Müşteri Sesi",
   "/audit": "Jüri Audit Paneli",
+  "/giris": "Giriş / Kayıt",
 };
 
 /* -------------------------------------------------------
@@ -66,6 +94,15 @@ const SAYFA_ADLARI = {
    ------------------------------------------------------- */
 function MenuIcerigi({ tiklaCalistir }) {
   const { pathname } = useLocation();
+
+  // Rol her yol degisiminde yeniden OKUNUR: Giris ekraninda giris/cikis
+  // yapilinca menu ayni oturumda guncellensin diye. localStorage degisimi
+  // React'e kendiliginden haber vermez, o yuzden yol degisimi tetikleyici
+  // olarak kullanilir (kullanici zaten Giris ekranindan bir yere gider).
+  const [rol, setRol] = useState(() => rolAl());
+  useEffect(() => {
+    setRol(rolAl());
+  }, [pathname]);
 
   /* ---------- Veri modu göstergesi ---------- */
   /* "kontrol"      = sayfa açılışında API'ye bağlanıyor
@@ -201,11 +238,11 @@ function MenuIcerigi({ tiklaCalistir }) {
 
       {/* Kontrol merkezi menüsü */}
       <div className="menu-bolum-baslik">Kontrol Merkezi</div>
-      {KONTROL_MENUSU.map(menuOgesiOlustur)}
+      {menuyuRoleGoreSuz(KONTROL_MENUSU, rol).map(menuOgesiOlustur)}
 
       {/* Güven ve izleme menüsü */}
       <div className="menu-bolum-baslik">Güven ve İzleme</div>
-      {GUVEN_MENUSU.map(menuOgesiOlustur)}
+      {menuyuRoleGoreSuz(GUVEN_MENUSU, rol).map(menuOgesiOlustur)}
     </>
   );
 }
@@ -362,10 +399,12 @@ function App() {
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/kampanyalar" element={<Kampanyalar />} />
                   <Route path="/karsilastirma" element={<Karsilastirma />} />
+                  <Route path="/hesapla" element={<HesapMakinesi />} />
                   <Route path="/analiz" element={<MetinAnalizi />} />
                   <Route path="/musteri-sesi" element={<MusteriSesi />} />
                   <Route path="/chatbot" element={<Chatbot />} />
                   <Route path="/audit" element={<AuditPanel />} />
+                  <Route path="/giris" element={<Giris />} />
                 </Routes>
               </Content>
             </Layout>

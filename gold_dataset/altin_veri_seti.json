@@ -2152,5 +2152,78 @@
       "masraf_durumu": true,
       "odul_birimi": true
     }
+  },
+  {
+    "kayit_id": "KT-008",
+    "banka": "Kuveyt Türk",
+    "kampanya_adi": "Colin's'de Vade Farksız 4 Aya Varan Taksit Fırsatı",
+    "kampanya_turu": "Kart Kampanyasi",
+    "kaynak_url": "www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/colinsde-vade-farksiz-4-aya-varan-taksit-firsati",
+    "kar_payi_orani": null,
+    "maliyet_orani": null,
+    "oran_periyodu": null,
+    "vade_ay": null,
+    "finansman_tutari": null,
+    "odul_miktari": null,
+    "odul_birimi": null,
+    "kampanya_avantaji": "Colin's web sitesi ve mağazalarındaki alışverişlerde vade farksız 4 aya varan taksit",
+    "masraf_durumu": null,
+    "kampanya_baslangic": "2026-08-06",
+    "kampanya_bitis": "2026-12-31",
+    "hedef_kitle": "Kuveyt Türk bireysel kredi kartı sahipleri (sanal ve ek kartlar dahil)",
+    "ekran_goruntusu": null,
+    "giren_kisi": null,
+    "giris_tarihi": "2026-08-21",
+    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Ticari kartlar kampanya disi. Ust limit belirtilmemis.",
+    "taksit_sayisi": 4,
+    "erteleme_suresi_ay": null,
+    "kanit_spanlari": {
+      "taksit_sayisi": "vade farksız 4 aya varan taksit imkanı",
+      "kampanya_baslangic": "6.08.2026 - 31.12.2026",
+      "kampanya_bitis": "6.08.2026 - 31.12.2026"
+    },
+    "alan_belirtilmemis": {
+      "kar_payi_orani": true,
+      "vade_ay": true,
+      "odul_miktari": true,
+      "masraf_durumu": true,
+      "finansman_tutari": true,
+      "odul_birimi": true
+    }
+  },
+  {
+    "kayit_id": "VK-009",
+    "banka": "Vakıf Katılım",
+    "kampanya_adi": "Tamamla Kazan",
+    "kampanya_turu": "Belirlenemedi",
+    "kaynak_url": "www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/tamamla-kazan",
+    "kar_payi_orani": null,
+    "maliyet_orani": null,
+    "oran_periyodu": null,
+    "vade_ay": null,
+    "finansman_tutari": null,
+    "odul_miktari": null,
+    "odul_birimi": null,
+    "kampanya_avantaji": "Ay boyunca en az 6 kriteri tamamlayan bireysel müşteriler, seçtikleri bir avantajdan yararlanır",
+    "masraf_durumu": null,
+    "kampanya_baslangic": null,
+    "kampanya_bitis": null,
+    "hedef_kitle": "Vakıf Katılım bireysel müşterileri",
+    "ekran_goruntusu": null,
+    "giren_kisi": null,
+    "giris_tarihi": "2026-08-21",
+    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. TUM SAYISAL ALANLAR BILEREK BOS: sayfadaki tek sayi 'en az 6 kriter' olup katilim sartidir, taksit/odul degil. Odul tutari sayfada yok (mobil uygulamada gosteriliyor). Kampanya suresiz - her ay basinda kriterler sifirlaniyor.",
+    "taksit_sayisi": null,
+    "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
+    "alan_belirtilmemis": {
+      "kar_payi_orani": true,
+      "vade_ay": true,
+      "odul_miktari": true,
+      "masraf_durumu": true,
+      "kampanya_bitis": true,
+      "finansman_tutari": true,
+      "odul_birimi": true
+    }
   }
 ]

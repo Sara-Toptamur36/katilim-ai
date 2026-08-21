@@ -80,8 +80,9 @@ SAHTE_ONEKLER = ("A-", "B-", "C-", "D-")
 # Katilim'in UC altin kaydi (TOM-001/002/003) TEK bir sayfadan gelir -
 # "kampanyalar.html". Yani bir liste sayfasi pekala etiketlenebilir
 # olabilir; banka tum kampanya detaylarini tek sayfaya koymussa oradan
-# birden fazla gecerli kayit cikar. (O sayfa filtreye takilmadi ama
-# yalnizca uzantisi .html oldugu icin - tasarimdan degil, sanstan.)
+# birden fazla gecerli kayit cikar. (Ilk surumde o sayfa filtreye
+# takilmiyordu - yalnizca uzantisi .html oldugu icin, tasarimdan degil
+# sanstan. Kalip artik .html'i de kapsiyor: sayfa ISARETLENIR, elenmez.)
 #
 # Karar insanindir: ekip zaten her kaydi ekran goruntusuyle dogruluyor.
 # Bu isaret, o kontrolun yerine gecmez; SIRAYA sokar.
@@ -90,7 +91,12 @@ SAHTE_ONEKLER = ("A-", "B-", "C-", "D-")
 # sayfa = liste sayfasi" varsayildi, ama 800 karakterlik esik 42 sayfayi
 # eliyordu ve bunlarin cogu GERCEK kisa kampanyaydi ("bridgestoneda-5-
 # taksit" 514 karakter).
-KONTROL_GEREK_KALIBI = re.compile(r"kampanyalar[iı]?(\.aspx)?$", re.IGNORECASE)
+# `default.aspx` de eklendi: Turkiye Finans kampanya kokunu
+# `/kampanyalar/Sayfalar/default.aspx` altinda sunuyor ve o sayfa yalnizca
+# kategori kutulari icerir ("Finansman Kampanyalari - Detayli Bilgi"),
+# tek bir kampanya verisi tasimaz. Adi "default" olan bir sayfa hicbir
+# zaman belirli bir kampanya degildir.
+KONTROL_GEREK_KALIBI = re.compile(r"(kampanyalar[iı]?|default)(\.aspx|\.html)?$", re.IGNORECASE)
 
 # Basliktan atilacak gezinti satirlari - kampanyayi tanitmazlar.
 _GEZINTI_ISARETLERI = ("ana sayfa", "anasayfa", "kampanyalar", "müşteri ol")

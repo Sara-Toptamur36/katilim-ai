@@ -243,7 +243,50 @@ def _kaydi_dogrula(kayit: dict) -> list[str]:
     if not kayit.get("kaynak_url"):
         uyarilar.append(f"[{kid}] kaynak_url bos - provenance icin zorunlu")
 
+    uyarilar.extend(_taksit_vade_karisikligi(kayit, kid))
+
     return uyarilar
+
+
+# Kampanya adindaki "3 Taksit" / "5 Aya Varan Taksit" kalibi.
+_ADDA_TAKSIT = re.compile(r"(\d{1,2})\s*(?:aya varan\s*)?taksit", re.IGNORECASE)
+
+
+def _taksit_vade_karisikligi(kayit: dict, kid: str) -> list[str]:
+    """taksit_sayisi ile vade_ay ayni seyi ifade ETMEZ - ama altin sette
+    karismislar.
+
+    OLCULEN DURUM: "MTV Odemelerinde Vade Farksiz 3 Taksit" kampanyasi
+    VK-001'de vade_ay=3 olarak, ayni cumleye sahip AL-002'de ise
+    taksit_sayisi=3 olarak yazilmis. Ikisi de dogru olamaz.
+
+    NEDEN ONEMLI: vade_ay OLCULEN bir sutundur. Taksit sayisi oraya
+    yazildiginda motor ne uretirse uretsin kayitlarin bir kismi yanlis
+    sayilir - yani olcum, motorun hatasini degil ETIKETLEYICILERIN
+    ANLASMAZLIGINI olcer. Bu, en pahali hata turudur: sebep motorda
+    aranir, orada yoktur.
+
+    DOGRU AYRIM: taksit sayisi bir ADETTIR (3 taksit = 3 odeme);
+    vade ise finansmanin SURESIDIR (12 ay vade). MTV/vergi/alisveris
+    odemesinde "vade" kavrami yoktur - oralarda deger taksit_sayisi'dir.
+
+    BURASI HATA DEGIL UYARI URETIR: dokunulan kayitlar baskasinin
+    etiketidir ve bu projede altin kayit, insan dogrulamasi + ekran
+    goruntusuyle degistirilir. Kod yalnizca GORUNUR kilar; duzeltmeyi
+    kaydi giren kisi kendi kaynagina bakarak yapar.
+    """
+    ad = kayit.get("kampanya_adi") or ""
+    eslesme = _ADDA_TAKSIT.search(ad)
+    if not eslesme:
+        return []
+    sayi = int(eslesme.group(1))
+    if kayit.get("vade_ay") == sayi and kayit.get("taksit_sayisi") is None:
+        return [
+            f"[{kid}] kampanya adi '{eslesme.group(0)}' diyor ama deger "
+            f"vade_ay={sayi} olarak yazilmis; taksit_sayisi bos. Taksit "
+            "ADEDI ile finansman SURESI ayni alan degildir - kaynagi kontrol et."
+        ]
+    return []
 
 
 def donustur(excel_yolu: Path = EXCEL) -> tuple[list[dict], list[str]]:

@@ -1,0 +1,108 @@
+{
+  "surum": "v1",
+  "olusturulma_yontemi": "banka-katmanli, kaynak_url gruplu split (gold_dataset/split_manifest_uret.py)",
+  "test_orani_hedef": 0.2,
+  "tohum": 42,
+  "toplam_kayit": 58,
+  "toplam_kampanya_url": 56,
+  "train": [
+    "AL-002",
+    "AL-003",
+    "AL-004",
+    "AL-005",
+    "AL-006",
+    "DK-001",
+    "DK-002",
+    "DK-003",
+    "DK-004",
+    "DK-005",
+    "DK-007",
+    "HF-001",
+    "HF-002",
+    "HF-003",
+    "HF-004",
+    "KT-001",
+    "KT-002",
+    "KT-003",
+    "KT-004",
+    "KT-005",
+    "KT-007",
+    "TEK-001",
+    "TEK-002",
+    "TEK-003",
+    "TEK-004",
+    "TEK-005",
+    "TEK-006",
+    "TF-001",
+    "TF-002",
+    "TF-003",
+    "TF-005",
+    "TF-006",
+    "TF-007",
+    "TOM-001",
+    "TOM-002",
+    "TOM-003",
+    "VK-001",
+    "VK-003",
+    "VK-004",
+    "VK-005",
+    "VK-007",
+    "VK-008",
+    "ZK-002",
+    "ZK-003",
+    "ZK-004",
+    "ZK-005",
+    "ZK-006",
+    "ZK-007"
+  ],
+  "test": [
+    "AL-001",
+    "DK-006",
+    "HF-005",
+    "KT-006",
+    "TEK-007",
+    "TF-004",
+    "VK-002",
+    "VK-006",
+    "ZK-001",
+    "ZK-008"
+  ],
+  "banka_bazinda_ozet": {
+    "Albaraka Türk": {
+      "toplam_url": 6,
+      "test_url": 1
+    },
+    "Dünya Katılım": {
+      "toplam_url": 7,
+      "test_url": 1
+    },
+    "Hayat Finans": {
+      "toplam_url": 5,
+      "test_url": 1
+    },
+    "Kuveyt Türk": {
+      "toplam_url": 7,
+      "test_url": 1
+    },
+    "T.O.M. Katılım": {
+      "toplam_url": 1,
+      "test_url": 0
+    },
+    "Türkiye Emlak Katılım": {
+      "toplam_url": 7,
+      "test_url": 1
+    },
+    "Türkiye Finans": {
+      "toplam_url": 7,
+      "test_url": 1
+    },
+    "Vakıf Katılım": {
+      "toplam_url": 8,
+      "test_url": 2
+    },
+    "Ziraat Katılım": {
+      "toplam_url": 8,
+      "test_url": 2
+    }
+  }
+}

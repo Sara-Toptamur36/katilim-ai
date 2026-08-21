@@ -120,6 +120,27 @@ def _sadelestir(metin: str) -> str:
     return re.sub(r"[^a-z0-9]+", "", turkce_ascii_kucult(metin or ""))
 
 
+# Ayni teklifin AY VARYANTLARI. Olculdu: Albaraka'nin ayni fatura
+# kampanyasi altin sette "agustos-ayina-ozel-fatura-kampanyasi" (AL-007),
+# ham korpusta ayrica "temmuz-ayina-ozel-fatura-kampanyasi" adresiyle
+# duruyor - ayni kod (OFT2026), ayni odul (talimat basina 500 TL,
+# toplam 2.000 TL Worldpuan), yalnizca ay farkli.
+#
+# Ikisini de etiketlemek iki sorun dogurur: (1) o teklif olcumde CIFT
+# agirlik alir, (2) metinler neredeyse ayni oldugu icin biri train'e
+# digeri test'e duserse sizinti olur - mentor raporunun 5.4 maddesi.
+# Karar yine INSANIN: tarihler farkli oldugu icin ekip bunlari ayri
+# kayit saymak isteyebilir. Kod yalnizca gorunur kilar.
+_AYLAR = ("ocak", "subat", "mart", "nisan", "mayis", "haziran", "temmuz",
+          "agustos", "eylul", "ekim", "kasim", "aralik")
+
+
+def _aysiz(sade: str) -> str:
+    for ay in _AYLAR:
+        sade = sade.replace(ay, "")
+    return sade
+
+
 def _etiketli_kimlikler() -> tuple[set[str], set[str]]:
     """(etiketli slug'lar, sadelestirilmis etiketli kampanya adlari)."""
     with open(GOLD, encoding="utf-8") as f:
@@ -168,6 +189,8 @@ def _kopya_suphesi(slug: str, baslik: str, sluglar: set[str], adlar: set[str]) -
         kok_etiketli = sade_etiketli.rstrip("0123456789")
         if kok_slug and kok_slug == kok_etiketli:
             return f"slug '{etiketli}' ile yalnizca sondaki rakamlarda farkli"
+        if _aysiz(kok_slug) and _aysiz(kok_slug) == _aysiz(kok_etiketli):
+            return f"slug '{etiketli}' ile yalnizca AY ADINDA farkli"
     if _sadelestir(baslik) in adlar:
         return "baslik, etiketli bir kampanya adiyla ayni"
     return None
@@ -230,7 +253,15 @@ def is_listesi_uret(hedef: int, kota: int) -> dict:
     banka_ham: dict[str, list[dict]] = defaultdict(list)
     kontrol_gerek: list[dict] = []
     for slug, kayit in ham.items():
-        if KONTROL_GEREK_KALIBI.search(slug) and slug not in etiketli:
+        # BOSLUKLU ADRES = BOZUK TARAMA. Olculdu: Emlak Katilim'in
+        # ".../kampanya/Paraf ile Hepsiburada'da ... Firsati!" adresi
+        # (URL'de kodlanmamis bosluk) kampanya sayfasi yerine BANKANIN
+        # ANA SAYFASINI dondurmus - 4.581 karakterin tamami menu, doviz
+        # kuru ve baska kampanyalarin tanitim kutusu. Sayfada kampanyanin
+        # kendisine dair TEK cumle yok, dolayisiyla etiketlenemez.
+        # Korpusta tek ornek; yine de ELENMEZ, kontrole gonderilir -
+        # sayfa yeniden taranirsa gecerli hale gelebilir.
+        if (" " in slug or KONTROL_GEREK_KALIBI.search(slug)) and slug not in etiketli:
             # ASIL LISTEDEN AYRILIR ama ATILMAZ: kategori sayfasi olabilir
             # de, T.O.M. ornegindeki gibi coklu kampanya sayfasi da
             # olabilir. Insan bakar, karar verir.

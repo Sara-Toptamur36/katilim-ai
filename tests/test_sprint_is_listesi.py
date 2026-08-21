@@ -175,3 +175,36 @@ def test_ORTADAKI_rakam_farki_kopya_SAYILMAZ():
         "akaryakit-harcamalariniza-400-tl-parafpara", "",
         {"akaryakit-harcamalariniza-300-tl-parafpara"}, set(),
     ) is None
+
+
+def test_ay_varyanti_kopya_olarak_ISARETLENIR():
+    """Albaraka'nin ayni fatura kampanyasi hem "temmuz-ayina-ozel-..."
+    hem "agustos-ayina-ozel-..." adresiyle duruyor: ayni davet kodu
+    (OFT2026), ayni odul (2.000 TL Worldpuan), yalnizca ay farkli.
+    Metinler neredeyse ayni oldugu icin biri train'e digeri test'e
+    duserse sizinti olur."""
+    from gold_dataset.sprint_is_listesi import _kopya_suphesi
+
+    s = _kopya_suphesi("temmuz-ayina-ozel-fatura-kampanyasi", "",
+                       {"agustos-ayina-ozel-fatura-kampanyasi"}, set())
+    assert s and "AY ADINDA" in s
+
+
+def test_ay_normallestirmesi_farkli_kampanyalari_BIRLESTIRMEZ():
+    """Ay adlarini atmak, adinda ay gecen iki AYRI kampanyayi tek
+    sayacak kadar ileri gitmemeli."""
+    from gold_dataset.sprint_is_listesi import _kopya_suphesi
+
+    assert _kopya_suphesi("temmuz-ayina-ozel-fatura-kampanyasi", "",
+                          {"agustos-ayina-ozel-akaryakit-kampanyasi"}, set()) is None
+
+
+def test_bosluklu_adres_ana_listeye_GIRMEZ(rapor):
+    """Emlak Katilim'in bosluk iceren kampanya adresi kampanya sayfasi
+    yerine bankanin ANA SAYFASINI donduruyor - etiketlenecek tek cumle
+    yok. Etiketleyici oraya gonderilmemeli; ama sayfa yeniden taranirsa
+    gecerli hale gelebilecegi icin ATILMAZ, kontrole gider."""
+    assert not [k["slug"] for k in rapor["liste"] if " " in k["slug"]]
+    assert [x for x in rapor["kontrol_gerek"] if " " in x["slug"]], (
+        "bosluklu adres kontrol listesinde de yok - tamamen kaybolmus"
+    )

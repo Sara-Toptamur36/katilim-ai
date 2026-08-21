@@ -2813,5 +2813,113 @@
       "finansman_tutari": true,
       "odul_birimi": true
     }
+  },
+  {
+    "kayit_id": "AL-012",
+    "banka": "Albaraka Türk",
+    "kampanya_adi": "Dijital Müşterilere Özel Pratik Finansman Kart",
+    "kampanya_turu": "Yeni Musteri Kampanyasi",
+    "kaynak_url": "www.albaraka.com.tr/tr/kampanyalar/detay/dijital-musterilere-ozel-pratik-finansman-kart",
+    "kar_payi_orani": null,
+    "maliyet_orani": null,
+    "oran_periyodu": null,
+    "vade_ay": null,
+    "finansman_tutari": 40000,
+    "odul_miktari": null,
+    "odul_birimi": null,
+    "kampanya_avantaji": "Görüntülü görüşmeyle ilk kez müşteri olanlara vade farksız 40.000 TL veya özel oranlı Pratik Finansman Kart",
+    "masraf_durumu": null,
+    "kampanya_baslangic": "2026-01-01",
+    "kampanya_bitis": "2026-12-31",
+    "hedef_kitle": "Albaraka Mobil'den görüntülü görüşmeyle ilk kez Albaraka müşterisi olanlar",
+    "ekran_goruntusu": null,
+    "giren_kisi": null,
+    "giris_tarihi": "2026-08-21",
+    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. kar_payi_orani BILEREK BOS: sayfa 'uygun oranli' diyor, sayi vermiyor; oran basvuruda musteriye gore belirleniyor. Pratik Finansman Kart ile ATM'den nakit cekilemiyor.",
+    "taksit_sayisi": null,
+    "erteleme_suresi_ay": null,
+    "kanit_spanlari": {
+      "finansman_tutari": "Vade farksız 40.000 TL ve uygun oranlı hoş geldin finansmanı Albaraka'da!"
+    },
+    "alan_belirtilmemis": {
+      "kar_payi_orani": true,
+      "vade_ay": true,
+      "odul_miktari": true,
+      "masraf_durumu": true,
+      "odul_birimi": true
+    }
+  },
+  {
+    "kayit_id": "HF-010",
+    "banka": "Hayat Finans",
+    "kampanya_adi": "Biz Kart ile Yemek Harcamalarına 1.000 TL'ye Varan Nakit İade",
+    "kampanya_turu": "Kart Kampanyasi",
+    "kaynak_url": "hayatfinans.com.tr/kampanyalar/biz-kart-yemek-harcamasi-nakit-iade-kampanyasi",
+    "kar_payi_orani": null,
+    "maliyet_orani": null,
+    "oran_periyodu": null,
+    "vade_ay": null,
+    "finansman_tutari": null,
+    "odul_miktari": 1000,
+    "odul_birimi": "TL",
+    "kampanya_avantaji": "Biz Kart ile yemek sektörü harcamalarının %10'u nakit iade; günlük en fazla 100 TL, aylık 1.000 TL",
+    "masraf_durumu": null,
+    "kampanya_baslangic": "2026-02-06",
+    "kampanya_bitis": "2026-08-31",
+    "hedef_kitle": "Hayat Finans bireysel müşterilerinin yakınlarına verdiği Biz Kart sahipleri",
+    "ekran_goruntusu": null,
+    "giren_kisi": null,
+    "giris_tarihi": "2026-08-21",
+    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. odul_miktari AYLIK tavandir (gunluk tavan 100 TL). kar_payi_orani BILEREK BOS: %10 nakit iade oranidir.",
+    "taksit_sayisi": null,
+    "erteleme_suresi_ay": null,
+    "kanit_spanlari": {
+      "odul_miktari": "aylık toplamda ise 1.000 TL’ye kadar nakit iade",
+      "kampanya_baslangic": "6 Şubat - 31 Ağustos 2026",
+      "kampanya_bitis": "6 Şubat - 31 Ağustos 2026"
+    },
+    "alan_belirtilmemis": {
+      "kar_payi_orani": true,
+      "vade_ay": true,
+      "masraf_durumu": true,
+      "finansman_tutari": true
+    }
+  },
+  {
+    "kayit_id": "TF-008",
+    "banka": "Türkiye Finans",
+    "kampanya_adi": "Kamu Çalışanlarına Özel İhtiyaç Finansmanı",
+    "kampanya_turu": "Ihtiyac Finansmani Kampanyasi",
+    "kaynak_url": "www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/kamu-calisanlarina-ozel-ihtiyac-finansmani.aspx",
+    "kar_payi_orani": null,
+    "maliyet_orani": null,
+    "oran_periyodu": null,
+    "vade_ay": null,
+    "finansman_tutari": 400000,
+    "odul_miktari": null,
+    "odul_birimi": null,
+    "kampanya_avantaji": "Kamu çalışanlarına 50.000-400.000 TL arası ihtiyaç finansmanı, kişiye özel kâr payı oranı ve 3 ay ödeme öteleme",
+    "masraf_durumu": null,
+    "kampanya_baslangic": null,
+    "kampanya_bitis": null,
+    "hedef_kitle": "Kamu çalışanları",
+    "ekran_goruntusu": null,
+    "giren_kisi": null,
+    "giris_tarihi": "2026-08-21",
+    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. kar_payi_orani BILEREK BOS: 'size ozel kar payi oranlari' deniyor ama SAYI verilmiyor. Kampanya tarihi de sayfada YOK. erteleme_suresi_ay dolu olan ilk altin kayit - o sutun su an OLCUM DISI (excel_to_json INCELENMIS_ALANLAR'a bak).",
+    "taksit_sayisi": null,
+    "erteleme_suresi_ay": 3,
+    "kanit_spanlari": {
+      "finansman_tutari": "Kampanya kapsamında 50.000 TL – 400.000 TL arasındaki ihtiyaçlarını için finansman başvurusu yapabilirsiniz.",
+      "erteleme_suresi_ay": "Finansman geri ödemelerinizde ilk taksiniz için 3 ay öteleme hakkınızı kullanabilir"
+    },
+    "alan_belirtilmemis": {
+      "kar_payi_orani": true,
+      "vade_ay": true,
+      "odul_miktari": true,
+      "masraf_durumu": true,
+      "kampanya_bitis": true,
+      "odul_birimi": true
+    }
   }
 ]

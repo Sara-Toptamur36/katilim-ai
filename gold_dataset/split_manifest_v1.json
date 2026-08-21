@@ -3,15 +3,15 @@
   "olusturulma_yontemi": "banka-katmanli, kaynak_url gruplu split (gold_dataset/split_manifest_uret.py)",
   "test_orani_hedef": 0.2,
   "tohum": 42,
-  "toplam_kayit": 59,
-  "toplam_kampanya_url": 57,
+  "toplam_kayit": 60,
+  "toplam_kampanya_url": 58,
   "train": [
     "AL-001",
-    "AL-002",
     "AL-003",
     "AL-004",
-    "AL-005",
+    "AL-006",
     "AL-007",
+    "AL-008",
     "DK-002",
     "DK-003",
     "DK-004",
@@ -57,7 +57,8 @@
     "ZK-007"
   ],
   "test": [
-    "AL-006",
+    "AL-002",
+    "AL-005",
     "DK-001",
     "HF-005",
     "KT-005",
@@ -70,8 +71,8 @@
   ],
   "banka_bazinda_ozet": {
     "Albaraka Türk": {
-      "toplam_url": 7,
-      "test_url": 1
+      "toplam_url": 8,
+      "test_url": 2
     },
     "Dünya Katılım": {
       "toplam_url": 7,

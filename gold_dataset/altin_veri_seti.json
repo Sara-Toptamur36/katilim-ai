@@ -2040,5 +2040,43 @@
       "masraf_durumu": true,
       "finansman_tutari": true
     }
+  },
+  {
+    "kayit_id": "AL-008",
+    "banka": "Albaraka Türk",
+    "kampanya_adi": "Albarakalılara Özel Ücretsiz İSPARK Kampanyası",
+    "kampanya_turu": "Belirlenemedi",
+    "kaynak_url": "www.albaraka.com.tr/tr/kampanyalar/detay/albarakalilara-ozel-ucretsiz-ispark-kampanyasi-1",
+    "kar_payi_orani": null,
+    "maliyet_orani": null,
+    "oran_periyodu": null,
+    "vade_ay": null,
+    "finansman_tutari": null,
+    "odul_miktari": null,
+    "odul_birimi": null,
+    "kampanya_avantaji": "Cari hesabında 10.000 TL ve üzeri bakiyesi olan bireysel müşterilere İSPARK otoparklarında ayda 2 defa ücretsiz park (yol üstü 2 saat, bariyerli 4 saat)",
+    "masraf_durumu": null,
+    "kampanya_baslangic": "2026-01-01",
+    "kampanya_bitis": "2026-12-31",
+    "hedef_kitle": "Cari hesabında 10.000 TL ve üzerinde bakiyesi bulunan bireysel müşteriler",
+    "ekran_goruntusu": null,
+    "giren_kisi": null,
+    "giris_tarihi": "2026-08-21",
+    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Parasal odul YOK: 'ayda 2 defa ucretsiz park' hizmet avantajidir, 10.000 TL ise uygunluk esigidir - ikisi de odul_miktari DEGILDIR (bu kayit, motorun olmayan odul uydurup uydurmadigini olcer). Yalnizca binek otomobil; bazi otoparklar ve mac gunleri haric.",
+    "taksit_sayisi": null,
+    "erteleme_suresi_ay": null,
+    "kanit_spanlari": {
+      "kampanya_baslangic": "1 Ocak 2026 – 31 Aralık 2026",
+      "kampanya_bitis": "1 Ocak 2026 – 31 Aralık 2026",
+      "hedef_kitle": "cari hesabında 10.000 TL ve üzerinde bakiyesi"
+    },
+    "alan_belirtilmemis": {
+      "kar_payi_orani": true,
+      "vade_ay": true,
+      "odul_miktari": true,
+      "masraf_durumu": true,
+      "finansman_tutari": true,
+      "odul_birimi": true
+    }
   }
 ]

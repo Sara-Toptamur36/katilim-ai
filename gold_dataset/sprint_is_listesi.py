@@ -148,6 +148,16 @@ def _kopya_suphesi(slug: str, baslik: str, sluglar: set[str], adlar: set[str]) -
         return f"'{slug.split('#', 1)[0]}' sayfasinin bir bolumu; sayfa zaten etiketli"
 
     sade_slug = _sadelestir(slug)
+    # SONDAKI RAKAMLAR ATILIR. Olculdu: altin sette AL-005'in adresi
+    # ".../saglik-harcamalarina-vade-farksiz-6-taksit-kampanyasi-1_1",
+    # ham korpusta ayni kampanya ".../...-kampanyasi1-2". Sadelestirilmis
+    # halleri "...kampanyasi11" ve "...kampanyasi12" - AYNI UZUNLUKTA
+    # oldugu icin onek iliskisi kurulamiyor, kayit temiz gorunuyordu.
+    # Bankalar slug sonuna surum numarasi ekliyor; sondaki rakamlari
+    # atmak bu gurultuyu temizler. Ortadaki rakamlara DOKUNULMAZ -
+    # "akaryakit...-300-tl-parafpara" ile "...-400-tl-parafpara" iki
+    # AYRI kampanyadir ve ayrik kalmalidir.
+    kok_slug = sade_slug.rstrip("0123456789")
     for etiketli in sluglar:
         sade_etiketli = _sadelestir(etiketli)
         if not sade_etiketli or sade_slug == sade_etiketli:
@@ -155,6 +165,9 @@ def _kopya_suphesi(slug: str, baslik: str, sluglar: set[str], adlar: set[str]) -
         # Onek iliskisi: "altin-kesemTicari" -> "altin-kesem"
         if sade_slug.startswith(sade_etiketli) or sade_etiketli.startswith(sade_slug):
             return f"slug '{etiketli}' ile onek iliskisi"
+        kok_etiketli = sade_etiketli.rstrip("0123456789")
+        if kok_slug and kok_slug == kok_etiketli:
+            return f"slug '{etiketli}' ile yalnizca sondaki rakamlarda farkli"
     if _sadelestir(baslik) in adlar:
         return "baslik, etiketli bir kampanya adiyla ayni"
     return None

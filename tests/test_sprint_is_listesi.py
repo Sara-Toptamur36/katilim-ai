@@ -148,3 +148,30 @@ def test_kopya_suphesi_kendini_isaretlemez():
     from gold_dataset.sprint_is_listesi import _kopya_suphesi
 
     assert _kopya_suphesi("altin-kesem", "Altın Kesem", {"altin-kesem"}, set()) is None
+
+
+def test_slug_sonundaki_surum_rakamlari_kopyayi_GIZLEMEZ():
+    """Olculmus durum: AL-005 altin sette
+    "...-6-taksit-kampanyasi-1_1", ham korpusta ayni kampanya
+    "...-6-taksit-kampanyasi1-2". Sadelestirilmis halleri ayni
+    UZUNLUKTA oldugu icin onek kurali calismiyordu ve kayit temiz
+    gorunuyordu - ta ki elle okunana kadar."""
+    from gold_dataset.sprint_is_listesi import _kopya_suphesi
+
+    s = _kopya_suphesi(
+        "saglik-harcamalarina-vade-farksiz-6-taksit-kampanyasi1-2", "",
+        {"saglik-harcamalarina-vade-farksiz-6-taksit-kampanyasi-1_1"}, set(),
+    )
+    assert s and "sondaki rakamlar" in s
+
+
+def test_ORTADAKI_rakam_farki_kopya_SAYILMAZ():
+    """"...-300-tl-parafpara" ile "...-400-tl-parafpara" iki AYRI
+    kampanyadir. Sondaki rakamlari atma kurali ortaya bulasirsa iki
+    gercek kampanya tek sayilir - liste sessizce eksilir."""
+    from gold_dataset.sprint_is_listesi import _kopya_suphesi
+
+    assert _kopya_suphesi(
+        "akaryakit-harcamalariniza-400-tl-parafpara", "",
+        {"akaryakit-harcamalariniza-300-tl-parafpara"}, set(),
+    ) is None

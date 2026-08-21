@@ -55,17 +55,25 @@ CIKTI = KOK / "gold_dataset" / "sprint_is_listesi.json"
 
 SAHTE_ONEKLER = ("A-", "B-", "C-", "D-")
 
-# LISTE SAYFALARI - tekil kampanya DEGIL, kampanya listeleyen kategori
-# sayfalari ("diger-kampanyalar.aspx", "kart-kampanyalari.aspx" gibi).
-# Etiketleyiciyi buraya gondermek hem zaman kaybi hem de UYDURMA bir
-# altin kayit riskidir: sayfada cikarilacak TEK bir kampanya yoktur.
+# KONTROL GEREKTIREN SAYFALAR - kampanya listeleyen kategori sayfalari
+# ("diger-kampanyalar.aspx", "kart-kampanyalari.aspx" gibi).
+#
+# BUNLAR ELENMEZ, ISARETLENIR. Ilk surumde otomatik eleniyorlardi; bu
+# YANLISTI ve gerekcesi altin veri setinin kendisinde duruyor: T.O.M.
+# Katilim'in UC altin kaydi (TOM-001/002/003) TEK bir sayfadan gelir -
+# "kampanyalar.html". Yani bir liste sayfasi pekala etiketlenebilir
+# olabilir; banka tum kampanya detaylarini tek sayfaya koymussa oradan
+# birden fazla gecerli kayit cikar. (O sayfa filtreye takilmadi ama
+# yalnizca uzantisi .html oldugu icin - tasarimdan degil, sanstan.)
+#
+# Karar insanindir: ekip zaten her kaydi ekran goruntusuyle dogruluyor.
+# Bu isaret, o kontrolun yerine gecmez; SIRAYA sokar.
 #
 # NEDEN URL KALIBI, NEDEN METIN UZUNLUGU DEGIL (olculdu): once "kisa
 # sayfa = liste sayfasi" varsayildi, ama 800 karakterlik esik 42 sayfayi
 # eliyordu ve bunlarin cogu GERCEK kisa kampanyaydi ("bridgestoneda-5-
-# taksit" 514 karakter). Cogul URL kalibi ise 11 liste sayfasinin
-# hepsini yakaliyor ve hicbir gercek kampanyayi elemiyor.
-LISTE_SAYFASI_KALIBI = re.compile(r"kampanyalar[iı]?(\.aspx)?$", re.IGNORECASE)
+# taksit" 514 karakter).
+KONTROL_GEREK_KALIBI = re.compile(r"kampanyalar[iı]?(\.aspx)?$", re.IGNORECASE)
 
 # Basliktan atilacak gezinti satirlari - kampanyayi tanitmazlar.
 _GEZINTI_ISARETLERI = ("ana sayfa", "anasayfa", "kampanyalar", "müşteri ol")
@@ -140,11 +148,18 @@ def is_listesi_uret(hedef: int, kota: int) -> dict:
     ham = _ham_kampanyalar()
 
     banka_ham: dict[str, list[dict]] = defaultdict(list)
-    liste_sayfalari: list[dict] = []
+    kontrol_gerek: list[dict] = []
     for slug, kayit in ham.items():
-        if LISTE_SAYFASI_KALIBI.search(slug):
-            # SESSIZCE ATILMAZ - ayri raporlanir ki yanlis eleme fark edilsin.
-            liste_sayfalari.append({"slug": slug, "banka": kayit.get("banka")})
+        if KONTROL_GEREK_KALIBI.search(slug) and slug not in etiketli:
+            # ASIL LISTEDEN AYRILIR ama ATILMAZ: kategori sayfasi olabilir
+            # de, T.O.M. ornegindeki gibi coklu kampanya sayfasi da
+            # olabilir. Insan bakar, karar verir.
+            kontrol_gerek.append({
+                "slug": slug,
+                "banka": kayit.get("banka"),
+                "url": kayit.get("url"),
+                "metin_uzunlugu": len(kayit.get("normalize_metin") or ""),
+            })
             continue
         banka_ham[kayit.get("banka") or "BILINMIYOR"].append({**kayit, "_slug": slug})
 
@@ -199,7 +214,7 @@ def is_listesi_uret(hedef: int, kota: int) -> dict:
         "mevcut_altin_kayit": len(etiketli),
         "listelenen": len(secilenler),
         "ulasilabilir_toplam": len(etiketli) + len(secilenler),
-        "liste_sayfasi_elenen": liste_sayfalari,
+        "kontrol_gerek": kontrol_gerek,
         "banka_ozeti": ozet,
         "banka_basina_secilen": dict(sorted(alinan.items())),
         "liste": secilenler,
@@ -235,6 +250,14 @@ def main() -> None:
             f"\n  Kotayi yukseltmek hacmi artirir ama seti iki bankaya kaydirir;"
             f"\n  denge korunacaksa eksik bankalardan YENI VERI toplanmalidir."
         )
+
+    kg = r["kontrol_gerek"]
+    if kg:
+        print(f"\n  KONTROL GEREK ({len(kg)} sayfa) - kategori sayfasi OLABILIR,")
+        print("  ama T.O.M. ornegindeki gibi coklu kampanya sayfasi da olabilir")
+        print("  (TOM-001/002/003 tek sayfadan cikti). Once bunlara bakin:")
+        for x in sorted(kg, key=lambda z: -z["metin_uzunlugu"])[:8]:
+            print(f"    [{(x['banka'] or '')[:14]:<14}] {x['slug'][:40]:<40} {x['metin_uzunlugu']:>6} krk")
 
     print(f"\n  Ilk {s.goster} kayit:\n")
     for k in r["liste"][:s.goster]:

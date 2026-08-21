@@ -41,18 +41,27 @@ def test_zaten_etiketli_kampanya_listeye_GIRMEZ(rapor, etiketli_sluglar):
     assert not tekrarlar, f"zaten etiketli kampanyalar listede: {tekrarlar[:5]}"
 
 
-def test_liste_sayfalari_ELENIR(rapor):
-    """Kategori/liste sayfalarinda cikarilacak TEK bir kampanya yoktur."""
-    from gold_dataset.sprint_is_listesi import LISTE_SAYFASI_KALIBI
+def test_kontrol_gerekenler_ana_listeye_KARISMAZ(rapor):
+    """Kategori sayfalari ana listeye karismamali - ama ATILMAZLAR da,
+    ayri bolumde insan kontrolune sunulurlar (bkz. bir sonraki test)."""
+    from gold_dataset.sprint_is_listesi import KONTROL_GEREK_KALIBI
 
-    sizanlar = [k["slug"] for k in rapor["liste"] if LISTE_SAYFASI_KALIBI.search(k["slug"])]
+    sizanlar = [k["slug"] for k in rapor["liste"] if KONTROL_GEREK_KALIBI.search(k["slug"])]
     assert not sizanlar, f"liste sayfasi is listesine sizmis: {sizanlar}"
 
 
-def test_elenenler_SESSIZCE_atilmaz(rapor):
-    """Yanlis eleme fark edilebilsin diye elenenler raporlanir."""
-    assert "liste_sayfasi_elenen" in rapor
-    assert rapor["liste_sayfasi_elenen"], "hic liste sayfasi elenmemis - filtre calisiyor mu?"
+def test_kontrol_gerekenler_ATILMAZ_raporlanir(rapor):
+    """ILK SURUM BUNLARI OTOMATIK ELIYORDU - yanlisti.
+
+    Altin veri setinin kendisi karsi ornegi tasiyor: T.O.M. Katilim'in
+    UC kaydi (TOM-001/002/003) TEK bir "kampanyalar.html" sayfasindan
+    cikarilmis. Yani kategori kalibina uyan bir sayfa pekala coklu
+    kampanya sayfasi olabilir. Karar insanindir; kod yalnizca siraya
+    sokar."""
+    assert "kontrol_gerek" in rapor
+    assert rapor["kontrol_gerek"], "kontrol listesi bos - kalip calisiyor mu?"
+    for x in rapor["kontrol_gerek"]:
+        assert x.get("url"), "kontrol icin URL sart - sayfa acilamazsa bakilamaz"
 
 
 def test_kota_asilmaz(rapor):

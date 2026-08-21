@@ -4,50 +4,72 @@
   "mevcut_altin_kayit": 56,
   "listelenen": 93,
   "ulasilabilir_toplam": 149,
-  "liste_sayfasi_elenen": [
+  "kontrol_gerek": [
     {
       "slug": "Biten-Kampanyalar.aspx",
-      "banka": "Türkiye Finans"
+      "banka": "Türkiye Finans",
+      "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/Biten-Kampanyalar.aspx",
+      "metin_uzunlugu": 3056
     },
     {
       "slug": "birikim-fon-kampanyalari.aspx",
-      "banka": "Türkiye Finans"
+      "banka": "Türkiye Finans",
+      "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/birikim-fon-kampanyalari.aspx",
+      "metin_uzunlugu": 885
     },
     {
       "slug": "diger-kampanyalar.aspx",
-      "banka": "Türkiye Finans"
+      "banka": "Türkiye Finans",
+      "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/diger-kampanyalar.aspx",
+      "metin_uzunlugu": 469
     },
     {
       "slug": "dijital-bankacilik-kampanyalari.aspx",
-      "banka": "Türkiye Finans"
+      "banka": "Türkiye Finans",
+      "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/dijital-bankacilik-kampanyalari.aspx",
+      "metin_uzunlugu": 1583
     },
     {
       "slug": "finansman-kampanyalari.aspx",
-      "banka": "Türkiye Finans"
+      "banka": "Türkiye Finans",
+      "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/finansman-kampanyalari.aspx",
+      "metin_uzunlugu": 844
     },
     {
       "slug": "kart-kampanyalari.aspx",
-      "banka": "Türkiye Finans"
+      "banka": "Türkiye Finans",
+      "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/kart-kampanyalari.aspx",
+      "metin_uzunlugu": 664
     },
     {
       "slug": "odeme-kampanyalari.aspx",
-      "banka": "Türkiye Finans"
+      "banka": "Türkiye Finans",
+      "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/odeme-kampanyalari.aspx",
+      "metin_uzunlugu": 638
     },
     {
       "slug": "sigorta-kampanyalari.aspx",
-      "banka": "Türkiye Finans"
+      "banka": "Türkiye Finans",
+      "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/sigorta-kampanyalari.aspx",
+      "metin_uzunlugu": 683
     },
     {
       "slug": "ticari-kampanyalar.aspx",
-      "banka": "Türkiye Finans"
+      "banka": "Türkiye Finans",
+      "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/ticari-kampanyalar.aspx",
+      "metin_uzunlugu": 664
     },
     {
       "slug": "yatirim-kampanyalari.aspx",
-      "banka": "Türkiye Finans"
+      "banka": "Türkiye Finans",
+      "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/yatirim-kampanyalari.aspx",
+      "metin_uzunlugu": 682
     },
     {
       "slug": "ziraat-katilim-avantajli-bankkart-kampanyalari",
-      "banka": "Ziraat Katılım"
+      "banka": "Ziraat Katılım",
+      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/ziraat-katilim-avantajli-bankkart-kampanyalari",
+      "metin_uzunlugu": 382
     }
   ],
   "banka_ozeti": [

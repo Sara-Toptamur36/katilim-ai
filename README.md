@@ -493,6 +493,33 @@ yalnızca doğrulama yapılmış **izlenimi** veren bir kontrol olurdu. LLM ile
 sorulurken metin yeniden taranmaz — `CampaignRecord` ham kaynak metni taşımaz.
 Ayrıntı: [`validation/yanit_dogrulama.py`](validation/yanit_dogrulama.py)
 
+### Şikâyet hattı — kırmızı çizgiler koda gömüldü
+
+Şikâyet verisi henüz toplanmıyor ama hattın tamamı kurulu:
+`complaint/izin_kapisi.py` · `pii_temizleme.py` · `kampanya_eslestirme.py` ·
+`toplama.py`, ayrı `sikayetler` tablosu ve migration'ıyla birlikte.
+
+Veri Rehberi'ndeki dört kırmızı çizgi **niyet beyanı değil, çalışan kontrol**:
+
+| Kırmızı çizgi | Kodda karşılığı |
+|---|---|
+| Ham metin izin kapısı geçmeden diske yazılmaz | İzin kaydı yoksa `IzinYok` fırlar; diske yazan `kaydet()` izni **ikinci kez** sorar |
+| PII temizliği kayıttan **önce** | `hazirla()` ham metni ne döner ne loglar — tek çıkış temizlenmiş metindir |
+| Şikâyet verisi kampanya tablosuna karışmaz | Ayrı tablo, kampanyalara **foreign key yok** |
+| "Şikâyet oranı" denmez | `yogunluk_ozeti()` yüzde üretmez; adet döner, alan adı `gozlenen_yogunluk` |
+
+Varsayılan **her zaman izin yokluğudur**: dosya yoksa, bozuksa ya da alanları
+eksikse "izin var" sayılmaz.
+
+**Eşleşme bir hipotezdir.** Güven 0,50 eşiğinin altındaysa bağ kurulmaz ve
+*neden* kurulmadığı yazılır. Banka adının geçmesi tek başına yetmez — bir
+bankanın onlarca kampanyası vardır. İki kampanya aynı güveni alırsa yine
+bağ kurulmaz: rastgele birini seçmek, olmayan bir kesinlik üretmek olurdu.
+Şikâyet tarihi kampanyanın penceresi dışındaysa aday **elenir**; pencere
+içinde olmak ise puan kazandırmaz (aynı anda onlarca kampanya yürürlüktedir).
+
+Ayrıntı: [`complaint/kampanya_eslestirme.py`](complaint/kampanya_eslestirme.py)
+
 ### Henüz kurulmayanlar (dürüstlük notu)
 
 Aşağıdakiler hedef mimaride yer alır ancak **bu depoda henüz tamamlanmamıştır**;
@@ -512,10 +539,10 @@ tasarım ilkesi olarak sunulmakla birlikte uçtan uca çalışan bir özellik de
   `ablation.py` bu durumda LLM varyantını `GEÇERSİZ` işaretler; "katkı yok"
   diye yanlış bir sonuç raporlamaz.
 - **Gerçek Complaint Insight verisi:** yukarıdaki Müşteri Sesi modülü şu an
-  yalnızca sentetik veriyle çalışıyor. Gerçek platform verisi, kurumsal/
-  hukuki (KVKK) onay süreci tamamlanmadan **bilerek** ingest edilmiyor —
-  ham şikâyet metni izin kapısından önce diske yazılmaz (Zeynep'in Veri
-  Rehberi'ndeki kırmızı çizgi).
+  yalnızca sentetik veriyle çalışıyor. **Hat kurulu, veri yok** — şikâyet
+  veri modeli, PII temizliği, izin kapısı ve kampanya eşleştirmesi yazıldı
+  ve test edildi (aşağıya bakınız); eksik olan tek şey kurumsal/hukuki
+  (KVKK) onaydır. Onay gelene kadar `sikayetler` tablosu **boş kalır**.
 
 ---
 

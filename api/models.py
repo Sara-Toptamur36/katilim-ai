@@ -121,3 +121,48 @@ class AuditKayit(Base):
     latency_ms = Column(Integer, nullable=True)
     cache_hit = Column(Boolean, default=False)
     zaman = Column(DateTime(timezone=True), server_default=func.now(), index=True)
+
+
+class Sikayet(Base):
+    """Musteri sikayeti (Complaint Insight).
+
+    KIRMIZI CIZGI (Rehber_Zeynep_Veri.md): "Sikayet verisi kampanya
+    tablosuna ve RAG indeksine KARISMAZ. Ayri tablo, ayri indeks, ayri
+    etiket." Bu yuzden `kampanyalar` tablosuna bir FOREIGN KEY BILEREK
+    KONULMADI - eslesme, silinebilir/duzeltilebilir bir HIPOTEZDIR
+    (bkz. complaint/kampanya_eslestirme.py), veritabani seviyesinde
+    dayatilan bir gercek degil. FK koymak, dusuk guvenli bir tahmini
+    semanin garantisi gibi gosterirdi.
+
+    HAM METIN YOKTUR: yalnizca `temiz_metin` saklanir. PII temizligi
+    KAYITTAN ONCE yapilir (complaint/pii_temizleme.py); ham metin hicbir
+    asamada diske yazilmaz.
+    """
+
+    __tablename__ = "sikayetler"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
+    # --- Icerik (yalnizca temizlenmis) ---
+    temiz_metin = Column(String(4000), nullable=False)
+    pii_bulundu = Column(Boolean, default=False)
+    insan_kontrolu_gerekir = Column(Boolean, default=False, index=True)
+
+    # --- Siniflandirma (complaint/tema_siniflandirici.py) ---
+    tema = Column(String(50), nullable=True, index=True)
+    tema_kaniti = Column(String(200), nullable=True)
+
+    # --- Kaynak ve izin izi ---
+    # Hangi izin kaydiyla toplandigi saklanir: denetimde "bu satir hangi
+    # onaya dayaniyor?" sorusunun cevabi kaydin kendisinde olmali.
+    kaynak = Column(String(100), nullable=False, index=True)
+    izin_onaylayan = Column(String(100), nullable=True)
+    izin_onay_tarihi = Column(Date, nullable=True)
+
+    # --- Kampanya eslesmesi (HIPOTEZ - bkz. sinif docstring'i) ---
+    eslesen_kampanya_id = Column(Integer, nullable=True, index=True)
+    eslesme_guveni = Column(Float, nullable=True)
+    eslesme_gerekcesi = Column(JSON, nullable=True)
+
+    sikayet_tarihi = Column(Date, nullable=True, index=True)
+    kayit_zamani = Column(DateTime(timezone=True), server_default=func.now())

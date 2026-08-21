@@ -134,7 +134,7 @@ export default function MusteriSesi() {
           {sonuc && (
             <Card size="small" title="Sonuç">
               {sonuc.tema ? (
-                <Space direction="vertical" style={{ width: "100%" }}>
+                <Space orientation="vertical" style={{ width: "100%" }}>
                   <Tag color="geekblue" style={{ fontSize: 14, padding: "4px 10px" }}>
                     {sonuc.tema}
                   </Tag>

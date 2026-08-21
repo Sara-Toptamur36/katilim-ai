@@ -377,7 +377,7 @@ function App() {
               placement="left"
               onClose={cekmeceyiKapat}
               open={cekmeceAcik}
-              width={272}
+              size={272}
               styles={{
                 body: { padding: 0, background: "var(--kenar-cubugu)" },
                 header: { display: "none" },

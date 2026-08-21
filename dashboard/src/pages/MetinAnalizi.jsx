@@ -200,7 +200,7 @@ export default function MetinAnalizi() {
           )}
 
           {sonuc && (
-            <Space direction="vertical" size={12} style={{ width: "100%" }}>
+            <Space orientation="vertical" size={12} style={{ width: "100%" }}>
               <Card size="small">
                 <Space size="large" wrap>
                   <span>

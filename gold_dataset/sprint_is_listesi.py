@@ -19,6 +19,23 @@ Ayni ilkenin etiket tarafi: gold_dataset/etiketleme_yardimcisi.py
 "NEDEN CIKARIM MOTORUNUN CIKTISI KULLANILMIYOR" bolumu.
 
 --------------------------------------------------------------------------
+AYNI KAMPANYA, IKI ADRES
+--------------------------------------------------------------------------
+"Zaten etiketli mi" sorusu ilk surumde YALNIZCA URL slug'i esitligiyle
+cevaplaniyordu. Yetmedi: Dunya Katilim'in "Altin Kesem" kampanyasi altin
+sette `/kampanyalar/altin-kesem` adresiyle duruyor (DK-003), ham korpusta
+ise ayni kampanya `/kampanyalar/altin-kesemTicari` adresiyle. Slug'lar
+farkli oldugu icin liste bunu YENI is sanip tekrar etiketlemeye
+gonderiyordu - o kayit altin sete girseydi ayni kampanya olcumde CIFT
+agirlik alacakti.
+
+Bu yuzden slug esitligine ek olarak iki zayif sinyal daha bakilir:
+slug'in etiketli bir slug'la ONEK iliskisi, ve turetilmis basligin
+etiketli bir kampanya adiyla ayni olmasi. Ikisi de ISARETLER, ELEMEZ -
+"bridgestoneda-5-taksit" ile "bridgestoneda-5-taksit-2" pekala iki ayri
+kampanya olabilir. Karar, T.O.M. ornegindeki gibi, insanindir.
+
+--------------------------------------------------------------------------
 DENGE ILE HACIM CATISIYOR - OLCULMUS GERCEK
 --------------------------------------------------------------------------
 Ham korpus banka bazinda cok dengesizdir (bkz. ciktidaki tablo): iki
@@ -83,14 +100,58 @@ def _slug(url: str) -> str:
     return (url or "").rstrip("/").split("/")[-1]
 
 
-def _etiketli_sluglar() -> set[str]:
+def _sadelestir(metin: str) -> str:
+    """Karsilastirma icin sadelestirir: diyakritik katlanir, harf/rakam
+    disindaki her sey atilir. Boylece "Altin Kesem!" ile "altin-kesem"
+    esit sayilir.
+
+    NOT: `extraction.normalizer` bir NORMALLESTIRICIDIR, cikarim motoru
+    degil - modul docstring'indeki yasak regex_extractor icindir. Kurali
+    burada kopyalamak, ayni mantigi iki yerde tutmak olurdu.
+    """
+    from extraction.normalizer import turkce_ascii_kucult
+
+    return re.sub(r"[^a-z0-9]+", "", turkce_ascii_kucult(metin or ""))
+
+
+def _etiketli_kimlikler() -> tuple[set[str], set[str]]:
+    """(etiketli slug'lar, sadelestirilmis etiketli kampanya adlari)."""
     with open(GOLD, encoding="utf-8") as f:
         kayitlar = json.load(f)
-    return {
-        _slug(k["kaynak_url"])
-        for k in kayitlar
-        if not k["kayit_id"].startswith(SAHTE_ONEKLER) and k.get("kaynak_url")
-    }
+    gercek = [k for k in kayitlar if not k["kayit_id"].startswith(SAHTE_ONEKLER)]
+    sluglar = {_slug(k["kaynak_url"]) for k in gercek if k.get("kaynak_url")}
+    adlar = {_sadelestir(k["kampanya_adi"]) for k in gercek if k.get("kampanya_adi")}
+    return sluglar, adlar - {""}
+
+
+def _etiketli_sluglar() -> set[str]:
+    return _etiketli_kimlikler()[0]
+
+
+def _kopya_suphesi(slug: str, baslik: str, sluglar: set[str], adlar: set[str]) -> str | None:
+    """Ayni kampanyanin farkli adresle tekrar listelenmesine karsi zayif
+    sinyal. Bulunursa GEREKCE dondurur - etiketleyici kendisi bakabilsin.
+    Hicbir kaydi ELEMEZ; bkz. modul docstring'i."""
+    # URL PARCASI (#bolum) ONCE BAKILIR: parca, bir sayfanin BOLUMUNU
+    # gosterir - taban sayfa etiketliyse o bolum zaten okunmus demektir.
+    # Olculdu: T.O.M.'un uc "kampanyalar.html#..." girdisi, altin setteki
+    # TOM-001/002/003'un tam karsiligi cikti; liste etiketleyiciyi ayni
+    # ise ucuncu kez gonderiyordu. Yine de ELENMEZ: ayni sayfada HENUZ
+    # etiketlenmemis baska bolumler de olabilir.
+    if "#" in slug and slug.split("#", 1)[0] in sluglar:
+        return f"'{slug.split('#', 1)[0]}' sayfasinin bir bolumu; sayfa zaten etiketli"
+
+    sade_slug = _sadelestir(slug)
+    for etiketli in sluglar:
+        sade_etiketli = _sadelestir(etiketli)
+        if not sade_etiketli or sade_slug == sade_etiketli:
+            continue
+        # Onek iliskisi: "altin-kesemTicari" -> "altin-kesem"
+        if sade_slug.startswith(sade_etiketli) or sade_etiketli.startswith(sade_slug):
+            return f"slug '{etiketli}' ile onek iliskisi"
+    if _sadelestir(baslik) in adlar:
+        return "baslik, etiketli bir kampanya adiyla ayni"
+    return None
 
 
 def _ham_kampanyalar() -> dict[str, dict]:
@@ -144,7 +205,7 @@ def _baslik(kayit: dict) -> str:
 
 
 def is_listesi_uret(hedef: int, kota: int) -> dict:
-    etiketli = _etiketli_sluglar()
+    etiketli, etiketli_adlar = _etiketli_kimlikler()
     ham = _ham_kampanyalar()
 
     banka_ham: dict[str, list[dict]] = defaultdict(list)
@@ -194,13 +255,18 @@ def is_listesi_uret(hedef: int, kota: int) -> dict:
             if tur >= len(havuz) or alinan[banka] >= kota:
                 continue
             kayit = havuz[tur]
+            baslik = _baslik(kayit)
             secilenler.append({
                 "sira": len(secilenler) + 1,
                 "banka": banka,
-                "baslik": _baslik(kayit),
+                "baslik": baslik,
                 "url": kayit.get("url"),
                 "slug": kayit["_slug"],
                 "son_tarama": (kayit.get("erisim_zamani") or "")[:10],
+                # None ise supheli degil; dolu ise ETIKETLEMEDEN ONCE bakilir.
+                "muhtemel_kopya": _kopya_suphesi(
+                    kayit["_slug"], baslik, etiketli, etiketli_adlar
+                ),
             })
             alinan[banka] += 1
             eklendi = True
@@ -258,6 +324,14 @@ def main() -> None:
         print("  (TOM-001/002/003 tek sayfadan cikti). Once bunlara bakin:")
         for x in sorted(kg, key=lambda z: -z["metin_uzunlugu"])[:8]:
             print(f"    [{(x['banka'] or '')[:14]:<14}] {x['slug'][:40]:<40} {x['metin_uzunlugu']:>6} krk")
+
+    supheli = [k for k in r["liste"] if k.get("muhtemel_kopya")]
+    if supheli:
+        print(f"\n  MUHTEMEL KOPYA ({len(supheli)} kayit) - ayni kampanya farkli")
+        print("  adresle listeye girmis OLABILIR. Etiketlemeden once bakin;")
+        print("  cift kayit, olcumde o kampanyaya CIFT agirlik verir:")
+        for k in supheli[:8]:
+            print(f"    {k['sira']:>3}. {k['slug'][:38]:<38} ({k['muhtemel_kopya']})")
 
     print(f"\n  Ilk {s.goster} kayit:\n")
     for k in r["liste"][:s.goster]:

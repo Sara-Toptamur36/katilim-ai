@@ -2078,5 +2078,79 @@
       "finansman_tutari": true,
       "odul_birimi": true
     }
+  },
+  {
+    "kayit_id": "AL-009",
+    "banka": "Albaraka Türk",
+    "kampanya_adi": "Dijital Katılma Hesabına Özel Paylaşım Oranları",
+    "kampanya_turu": "Yatirim Urunu Kampanyasi",
+    "kaynak_url": "www.albaraka.com.tr/tr/kampanyalar/detay/dijital-katilma-hesabina-ozel-paylasim-oranlari-10",
+    "kar_payi_orani": null,
+    "maliyet_orani": null,
+    "oran_periyodu": null,
+    "vade_ay": null,
+    "finansman_tutari": null,
+    "odul_miktari": null,
+    "odul_birimi": null,
+    "kampanya_avantaji": "Albaraka Mobil'den açılan TL Dijital Katılma Hesabında 98/2 kâr paylaşım oranı (asgari 250 TL)",
+    "masraf_durumu": null,
+    "kampanya_baslangic": "2026-04-01",
+    "kampanya_bitis": "2026-12-31",
+    "hedef_kitle": "Albaraka Mobil'den görüntülü görüşmeyle ilk kez müşteri olan ve TL Katılma Hesabı açan gerçek kişiler",
+    "ekran_goruntusu": null,
+    "giren_kisi": null,
+    "giris_tarihi": "2026-08-21",
+    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. kar_payi_orani BILEREK BOS: '98/2 kar paylasim orani' bir yuzde DEGIL, paylasim seklidir (musteriye 98, bankaya 2). Bu kayit, motorun 98'i oran sanip sanmadigini olcer. Ad sayfada baslik satiri olmadigi icin URL slug'indan turetildi.",
+    "taksit_sayisi": null,
+    "erteleme_suresi_ay": null,
+    "kanit_spanlari": {
+      "kampanya_baslangic": "1 Nisan – 31 Aralık 2026",
+      "kampanya_bitis": "1 Nisan – 31 Aralık 2026"
+    },
+    "alan_belirtilmemis": {
+      "kar_payi_orani": true,
+      "vade_ay": true,
+      "odul_miktari": true,
+      "masraf_durumu": true,
+      "finansman_tutari": true,
+      "odul_birimi": true
+    }
+  },
+  {
+    "kayit_id": "HF-006",
+    "banka": "Hayat Finans",
+    "kampanya_adi": "Bana Bunu Al İş Ortağım ile Troy Mağazalarında Finansman Fırsatı!",
+    "kampanya_turu": "Finansman Kampanyasi",
+    "kaynak_url": "www.hayatfinans.com.tr/kampanyalar/bana-bunu-al-is-ortagim-ile-troy-magaza-firsatlari",
+    "kar_payi_orani": null,
+    "maliyet_orani": null,
+    "oran_periyodu": null,
+    "vade_ay": null,
+    "finansman_tutari": 80000,
+    "odul_miktari": null,
+    "odul_birimi": null,
+    "kampanya_avantaji": "Troy fiziksel mağazalarında 3 aya varan taksit; kampanya üst limiti 80.000 TL",
+    "masraf_durumu": null,
+    "kampanya_baslangic": null,
+    "kampanya_bitis": "2026-08-31",
+    "hedef_kitle": "Hayat Finans müşterileri (Bana Bunu Al İş Ortağım)",
+    "ekran_goruntusu": null,
+    "giren_kisi": null,
+    "giris_tarihi": "2026-08-21",
+    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Baslangic tarihi sayfada belirtilmemis. Yalnizca fiziksel magazalar.",
+    "taksit_sayisi": 3,
+    "erteleme_suresi_ay": null,
+    "kanit_spanlari": {
+      "taksit_sayisi": "3 aya varan taksit fırsatı",
+      "finansman_tutari": "Kampanya üst limiti 80.000TL'dir.",
+      "kampanya_bitis": "Kampanya 31 Ağustos 2026 tarihine kadar geçerlidir."
+    },
+    "alan_belirtilmemis": {
+      "kar_payi_orani": true,
+      "vade_ay": true,
+      "odul_miktari": true,
+      "masraf_durumu": true,
+      "odul_birimi": true
+    }
   }
 ]

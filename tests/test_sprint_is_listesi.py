@@ -112,3 +112,39 @@ def test_hedefe_ulasilamiyorsa_bu_GIZLENMEZ(rapor):
         "Korpus buyumus olabilir - is listesi artik 200 hedefini karsiliyor. "
         "docs/ ve README'deki 'denge ile hacim catisiyor' notu guncellenmeli."
     )
+
+
+def test_ayni_kampanya_farkli_adresle_ISARETLENIR(rapor):
+    """Slug esitligi yetmiyor - olculmus iki durum var:
+
+      - Dunya Katilim "Altin Kesem": altin sette `/altin-kesem`,
+        ham korpusta `/altin-kesemTicari` (DK-003 ile ayni kampanya)
+      - T.O.M.: `kampanyalar.html#...` parcalari, altin setteki
+        TOM-001/002/003'un tam karsiligi
+
+    Ikisi de slug esitligini gecip listeye giriyordu. Isaret konmazsa
+    etiketleyici ayni kampanyayi tekrar yazar ve o kampanya olcumde
+    CIFT agirlik alir.
+    """
+    isaretli = {k["slug"]: k["muhtemel_kopya"] for k in rapor["liste"] if k.get("muhtemel_kopya")}
+    assert "altin-kesemTicari" in isaretli, "DK-003 kopyasi isaretlenmedi"
+    parcalar = [s for s in isaretli if "kampanyalar.html#" in s]
+    assert parcalar, "etiketli sayfanin URL parcalari isaretlenmedi"
+
+
+def test_kopya_isareti_ELEMEZ_yalnizca_isaretler(rapor):
+    """Kontrol gerek listesindeki dersle ayni: karar insanindir.
+    "bridgestoneda-5-taksit" ile "bridgestoneda-5-taksit-2" pekala iki
+    ayri kampanya olabilir - isaretli kayit listede KALIR."""
+    assert any(k.get("muhtemel_kopya") for k in rapor["liste"])
+    assert all("muhtemel_kopya" in k for k in rapor["liste"]), (
+        "alan her kayitta bulunmali; yoklugu 'bakilmadi' ile 'temiz'i karistirir"
+    )
+
+
+def test_kopya_suphesi_kendini_isaretlemez():
+    """Etiketli bir slug'in KENDISI zaten listeye girmez; ama fonksiyon
+    yanlislikla cagrilirsa "kendisiyle onek iliskisi" demesin."""
+    from gold_dataset.sprint_is_listesi import _kopya_suphesi
+
+    assert _kopya_suphesi("altin-kesem", "Altın Kesem", {"altin-kesem"}, set()) is None

@@ -150,8 +150,16 @@ def test_kanit_spani_yalnizca_DOLU_alanlara_verilir(kayitlar):
 
 
 def test_kanit_spani_bilinen_alanlara_ait(kayitlar):
-    """Yazim hatasi bir spani sessizce olcum disi birakirdi."""
-    bilinen = set(OLCULEN_ALANLAR) | {"masraf_durumu", "kampanya_bitis", "hedef_kitle"}
+    """Yazim hatasi bir spani sessizce olcum disi birakirdi.
+
+    IZINLI ALAN LISTESI TEK YERDE: excel_to_json.py. Ilk surumde bu test
+    kendi kopyasini tutuyordu ve listeler AYRISTI - Excel'in kabul ettigi
+    `kampanya_baslangic` burada "taninmayan alan" sayildi. Kopya liste,
+    ayni kurali iki yerde tutmanin klasik bedelidir.
+    """
+    from gold_dataset.excel_to_json import SPAN_VERILEBILIR_ALANLAR
+
+    bilinen = SPAN_VERILEBILIR_ALANLAR
     hatalar = [
         f"{k['kayit_id']}.{alan}"
         for k in kayitlar

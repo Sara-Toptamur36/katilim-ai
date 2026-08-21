@@ -1,0 +1,46 @@
+# Imaja GIRMEMESI gerekenler.
+#
+# Iki sebep: (1) imaj boyutu, (2) SIR SIZINTISI. `.env` ve anahtar
+# dosyalari buraya yazilmazsa build baglamiyla imaja tasinir ve
+# `docker history` ile okunabilir hale gelir.
+
+# --- Sirlar (asla imaja girmez) ---
+.env
+.env.*
+*.pem
+*.key
+
+# --- Surum kontrolu / arac dizinleri ---
+.git
+.github
+.pytest_cache
+__pycache__
+*.pyc
+venv
+.venv
+
+# --- Ham veri: 300 belge, imajda isi yok ---
+# API bunlari calisma aninda okumaz; yalnizca scraper/olcum betikleri
+# kullanir ve onlar imaj icinde calistirilmaz.
+scraper/raw_data
+
+# --- Buyuk model dosyalari (calisma aninda indirilir, bkz. Dockerfile) ---
+*.gguf
+*.safetensors
+models/
+
+# --- Arayuz: ayri dagitilir (GitHub Pages), API imajinda yeri yok ---
+dashboard/node_modules
+dashboard/dist
+
+# --- Yerel ciktilar ---
+logs
+htmlcov
+.coverage
+*.log
+
+# --- Editor / isletim sistemi ---
+.idea
+.vscode
+.DS_Store
+Thumbs.db

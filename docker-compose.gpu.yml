@@ -1,0 +1,40 @@
+# GPU'lu makine icin EK dosya (override).
+#
+# --------------------------------------------------------------------------
+# NEDEN AYRI DOSYA
+# --------------------------------------------------------------------------
+# GPU ayarini dogrudan docker-compose.yml'e koymak, GPU'su OLMAYAN her
+# makinede konteynerin baslamamasina yol acardi - ekibin cogu oyle
+# calisiyor. Bu yuzden varsayilan yol degismedi; GPU'lu makine ACIKCA
+# bu dosyayi ekleyerek acar:
+#
+#     docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d
+#
+# --------------------------------------------------------------------------
+# NEDEN GEREKLI (olculmus)
+# --------------------------------------------------------------------------
+# LLM katmani GPU'suz makinede kayit basina 150-300 sn suruyor; bu yuzden
+# 300 kayitlik tam ablation kosusu bugune kadar YAPILAMADI (bkz. README,
+# "Hibrit katman katkisinin tam olcumu"). O olcum, mentorun sagladigi
+# GPU'lu makinede yapilacak - ama Ollama konteyneri GPU'yu gormezse
+# makine bosuna beklemis olur.
+#
+# --------------------------------------------------------------------------
+# ON KOSUL
+# --------------------------------------------------------------------------
+# Ana makinede NVIDIA Container Toolkit kurulu olmali. Kontrol:
+#
+#     docker run --rm --gpus all nvidia/cuda:12.4.0-base-ubuntu22.04 nvidia-smi
+#
+# Bu komut GPU tablosunu basmiyorsa once toolkit kurulmalidir; asagidaki
+# ayar tek basina yetmez.
+
+services:
+  ollama:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

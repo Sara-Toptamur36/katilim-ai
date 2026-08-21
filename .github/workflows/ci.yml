@@ -71,3 +71,159 @@ jobs:
 
       - name: Derleme
         run: npm run build --prefix dashboard
+
+  # --------------------------------------------------------------------
+  # ENTEGRASYON - GERCEK Postgres + Qdrant ile
+  # --------------------------------------------------------------------
+  # DENETIM BULGUSU (21 Agustos): veritabani gerektiren testler, Postgres
+  # yoksa dosya duzeyinde KOMPLE SKIP ediyordu - yani CI'da HIC
+  # calismiyorlardi. "Test var" gorunuyordu ama koruma yoktu.
+  #
+  # Bu bosluk gercek bir hatayi kacirdi: `cikarim_yontemi='hibrit'` degeri
+  # semada tanimsizdi ve GERCEK_VERI_AKTIF=true iken /kampanyalar 16
+  # kayitta patliyordu. Testleri vardi; sadece hicbir zaman kosmuyorlardi.
+  #
+  # Bu job servisleri ayaga kaldirir, semayi migrate eder ve o testleri
+  # GERCEKTEN calistirir.
+  entegrasyon:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: katilim
+          POSTGRES_PASSWORD: katilim_dev
+          POSTGRES_DB: katilimai
+        options: >-
+          --health-cmd "pg_isready -U katilim"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+        ports: ["5432:5432"]
+      qdrant:
+        image: qdrant/qdrant:v1.18.1
+        ports: ["6333:6333"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Python kurulumu
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Bagimliliklari kur
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Veritabani semasini kur
+        env:
+          DATABASE_URL: postgresql+psycopg://katilim:katilim_dev@localhost:5432/katilimai
+        run: alembic upgrade head
+
+      # Migration'lar GERI ALINABILIR olmali: bozuk bir surumden donus
+      # yolu yoksa, gece yarisi tek secenek veritabanini elle onarmaktir.
+      - name: Migration gidis-donus (downgrade + upgrade)
+        env:
+          DATABASE_URL: postgresql+psycopg://katilim:katilim_dev@localhost:5432/katilimai
+        run: |
+          alembic downgrade -1
+          alembic upgrade head
+
+      - name: Entegrasyon testleri (artik SKIP etmiyor)
+        env:
+          DATABASE_URL: postgresql+psycopg://katilim:katilim_dev@localhost:5432/katilimai
+          QDRANT_URL: http://localhost:6333
+        run: |
+          pytest tests/ -v -m "not slow" \
+            -k "repository or postgrese_yukle or zenginlestir or sikayet or qdrant"
+
+      # Testler gercekten kostu mu, yoksa yine mi atlandi? Bir job'in
+      # "yesil" olmasi, testlerin KOSTUGU anlamina gelmez - hepsi skip
+      # edilmis olabilir. Bu adim o sessiz basarisizligi yakalar.
+      - name: Testler SKIP edilmedi mi
+        env:
+          DATABASE_URL: postgresql+psycopg://katilim:katilim_dev@localhost:5432/katilimai
+        run: |
+          SONUC=$(pytest tests/test_kampanya_repository.py -q -m "not slow" 2>&1 | tail -3)
+          echo "$SONUC"
+          if echo "$SONUC" | grep -qE "[0-9]+ skipped" && ! echo "$SONUC" | grep -qE "[0-9]+ passed"; then
+            echo "HATA: veritabani testleri yine SKIP edildi - servis baglantisi kurulamamis."
+            exit 1
+          fi
+
+  # --------------------------------------------------------------------
+  # IMAJ DERLEMESI - yayinlamadan
+  # --------------------------------------------------------------------
+  # PR'da imaj YAYINLANMAZ, yalnizca DERLENIR: Dockerfile bozulduysa
+  # bunu etiket atarken degil, PR'da gormek gerekir.
+  imaj:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Buildx kurulumu
+        uses: docker/setup-buildx-action@v3
+
+      - name: Imaji derle (push YOK)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: katilimai-api:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Imaj ayaga kalkiyor ve cevap veriyor mu
+        run: |
+          docker run -d --name ci-api -p 8000:8000 \
+            -e GERCEK_VERI_AKTIF=false katilimai-api:ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:8000/saglik; then
+              echo; echo "Imaj cevap veriyor."; exit 0
+            fi
+            sleep 5
+          done
+          echo "HATA: imaj saglik ucuna cevap vermedi."
+          docker logs ci-api
+          exit 1
+
+      # Imaj ROOT ile calismamali - konteyner kacisi durumunda ayricalik
+      # kazanimini sinirlar. Dockerfile'daki `USER` satiri sessizce
+      # silinirse bu adim yakalar.
+      - name: Imaj root ile calismiyor
+        run: |
+          KULLANICI=$(docker exec ci-api id -un)
+          echo "Konteyner kullanicisi: $KULLANICI"
+          test "$KULLANICI" != "root"
+
+  # --------------------------------------------------------------------
+  # GUVENLIK TARAMASI
+  # --------------------------------------------------------------------
+  guvenlik:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Python kurulumu
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Tarama araclarini kur
+        run: pip install pip-audit==2.9.0 bandit==1.8.6
+
+      # Bilinen zafiyetli bagimlilik var mi? requirements.txt `==` ile
+      # sabitlendigi icin sonuc TEKRARLANABILIR - bugun temiz olan yarin
+      # kendiliginden degismez, ancak yeni bir CVE aciklandiginda degisir.
+      - name: Bagimlilik zafiyet taramasi
+        run: pip-audit -r requirements.txt --strict
+        continue-on-error: true   # yeni CVE aciklanmasi PR'i bloke etmemeli
+
+      # Koddaki riskli desenler (hardcoded sir, shell=True, assert ile
+      # dogrulama vb.). Yalnizca YUKSEK guvenli bulgular kapiya cevrilir;
+      # dusuk guvenli bulgular gurultu uretip taramanin gormezden
+      # gelinmesine yol acar.
+      - name: Statik guvenlik analizi
+        run: bandit -r api/ agent/ extraction/ chunking/ complaint/ validation/ -ll -ii

@@ -1,0 +1,153 @@
+name: Release
+
+# Etiket atildiginda API imajini uretir, GHCR'a yayinlar ve SURUM KUNYESI
+# olusturur.
+#
+# --------------------------------------------------------------------------
+# NEDEN DIGEST, NEDEN ETIKET DEGIL
+# --------------------------------------------------------------------------
+# Etiket TASINABILIR: "v1.0.0" bugun bir imaji, yarin baskasini
+# gosterebilir. Geri alma (rollback) icin gereken sey, degismeyecek bir
+# adres - yani DIGEST'tir. Kunye bu yuzden digest'i kaydeder; "hangi
+# surumu calistiriyoruz?" sorusunun tek dogru cevabi odur.
+#
+# --------------------------------------------------------------------------
+# KUNYE NE ISE YARAR
+# --------------------------------------------------------------------------
+# Bir sorun ciktiginda "hangi kod, hangi sema, hangi model" sorularinin
+# cevabi TEK YERDE olmali. Kunye; imaj digest'ini, git SHA'sini, alembic
+# surumunu ve kullanilan model adlarini birlikte tutar. Bunlari ayri ayri
+# hatirlamaya calismak, gece yarisi yapilan en pahali hatadir.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      etiket:
+        description: "Elle uretim icin etiket (ör. v0.1.0-deneme)"
+        required: true
+
+env:
+  KAYIT: ghcr.io
+  IMAJ: ${{ github.repository }}-api
+
+jobs:
+  imaj:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      digest: ${{ steps.uret.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Buildx kurulumu
+        uses: docker/setup-buildx-action@v3
+
+      - name: GHCR oturumu
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.KAYIT }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Etiketleri belirle
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.KAYIT }}/${{ env.IMAJ }}
+          tags: |
+            type=ref,event=tag
+            type=raw,value=${{ github.event.inputs.etiket }},enable=${{ github.event_name == 'workflow_dispatch' }}
+            type=sha,format=long
+
+      - name: Imaji uret ve yayinla
+        id: uret
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Surum kunyesi olustur
+        run: |
+          cat > surum_kunyesi.json <<EOF
+          {
+            "surum": "${{ github.ref_name }}",
+            "git_sha": "${{ github.sha }}",
+            "imaj": "${{ env.KAYIT }}/${{ env.IMAJ }}",
+            "imaj_digest": "${{ steps.uret.outputs.digest }}",
+            "uretim_zamani": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "alembic_surumu": "$(grep -h '^revision' alembic/versions/*.py | tail -1 | cut -d\"'\" -f2)",
+            "modeller": {
+              "llm": "qwen2.5:7b-instruct-q4_K_M",
+              "gomme": "intfloat/multilingual-e5-base",
+              "ner": "urchade/gliner_multi-v2.1"
+            },
+            "not": "Geri alma DIGEST ile yapilir - etiket tasinabilir, digest tasinmaz."
+          }
+          EOF
+          cat surum_kunyesi.json
+
+      - name: Kunyeyi yayinla
+        uses: actions/upload-artifact@v4
+        with:
+          name: surum-kunyesi-${{ github.ref_name }}
+          path: surum_kunyesi.json
+          retention-days: 90
+
+  # Hazirlik ortami (staging) DOGRULAMA adimidir: yayinlanan imaj
+  # GERCEKTEN ayaga kalkiyor mu? Yalnizca "build gecti" demek yetmez -
+  # calismayan bir imaj da basariyla uretilebilir.
+  hazirlik_dogrulama:
+    needs: imaj
+    runs-on: ubuntu-latest
+    permissions:
+      packages: read
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: katilim
+          POSTGRES_PASSWORD: katilim
+          POSTGRES_DB: katilimai
+        options: >-
+          --health-cmd "pg_isready -U katilim"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+        ports: ["5432:5432"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: GHCR oturumu
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.KAYIT }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Yayinlanan imaji DIGEST ile calistir
+        run: |
+          IMAJ="${{ env.KAYIT }}/${{ env.IMAJ }}@${{ needs.imaj.outputs.digest }}"
+          echo "Calistirilan: $IMAJ"
+          docker run -d --name katilimai-hazirlik --network host \
+            -e GERCEK_VERI_AKTIF=false \
+            "$IMAJ"
+
+      - name: Saglik ucu cevap veriyor mu
+        run: |
+          # Imajin HEALTHCHECK'i ile ayni uc; burada disaridan dogrulanir.
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:8000/saglik; then
+              echo; echo "Imaj ayakta ve cevap veriyor."
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "HATA: imaj 150 sn icinde saglik ucuna cevap vermedi."
+          docker logs katilimai-hazirlik
+          exit 1

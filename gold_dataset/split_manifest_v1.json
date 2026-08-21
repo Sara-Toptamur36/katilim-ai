@@ -3,27 +3,29 @@
   "olusturulma_yontemi": "banka-katmanli, kaynak_url gruplu split (gold_dataset/split_manifest_uret.py)",
   "test_orani_hedef": 0.2,
   "tohum": 42,
-  "toplam_kayit": 69,
-  "toplam_kampanya_url": 67,
+  "toplam_kayit": 75,
+  "toplam_kampanya_url": 73,
   "train": [
+    "AL-001",
     "AL-002",
     "AL-003",
     "AL-004",
-    "AL-005",
     "AL-007",
     "AL-008",
     "AL-009",
     "AL-010",
+    "AL-011",
+    "DK-002",
     "DK-003",
     "DK-004",
     "DK-005",
-    "DK-006",
     "DK-007",
     "DK-008",
+    "DK-009",
     "HF-001",
     "HF-002",
     "HF-003",
-    "HF-004",
+    "HF-005",
     "HF-006",
     "HF-007",
     "KT-001",
@@ -33,12 +35,12 @@
     "KT-006",
     "KT-008",
     "KT-009",
-    "TEK-002",
+    "TEK-001",
     "TEK-003",
     "TEK-004",
     "TEK-005",
-    "TEK-006",
     "TEK-007",
+    "TEK-008",
     "TF-001",
     "TF-002",
     "TF-004",
@@ -50,46 +52,50 @@
     "TOM-003",
     "VK-001",
     "VK-002",
-    "VK-003",
     "VK-004",
+    "VK-005",
+    "VK-006",
     "VK-007",
     "VK-008",
     "VK-009",
-    "ZK-002",
     "ZK-003",
+    "ZK-004",
     "ZK-005",
     "ZK-006",
     "ZK-007",
     "ZK-008",
-    "ZK-009"
+    "ZK-009",
+    "ZK-010"
   ],
   "test": [
-    "AL-001",
+    "AL-005",
     "AL-006",
     "DK-001",
-    "DK-002",
-    "HF-005",
+    "DK-006",
+    "HF-004",
+    "HF-008",
     "KT-005",
     "KT-007",
-    "TEK-001",
+    "TEK-002",
+    "TEK-006",
     "TF-003",
-    "VK-005",
-    "VK-006",
+    "VK-003",
+    "VK-010",
     "ZK-001",
-    "ZK-004"
+    "ZK-002"
   ],
   "banka_bazinda_ozet": {
     "Albaraka Türk": {
-      "toplam_url": 10,
+      "toplam_url": 11,
       "test_url": 2
     },
     "Dünya Katılım": {
-      "toplam_url": 8,
+      "toplam_url": 9,
       "test_url": 2
     },
     "Hayat Finans": {
-      "toplam_url": 7,
-      "test_url": 1
+      "toplam_url": 8,
+      "test_url": 2
     },
     "Kuveyt Türk": {
       "toplam_url": 9,
@@ -100,19 +106,19 @@
       "test_url": 0
     },
     "Türkiye Emlak Katılım": {
-      "toplam_url": 7,
-      "test_url": 1
+      "toplam_url": 8,
+      "test_url": 2
     },
     "Türkiye Finans": {
       "toplam_url": 7,
       "test_url": 1
     },
     "Vakıf Katılım": {
-      "toplam_url": 9,
+      "toplam_url": 10,
       "test_url": 2
     },
     "Ziraat Katılım": {
-      "toplam_url": 9,
+      "toplam_url": 10,
       "test_url": 2
     }
   }

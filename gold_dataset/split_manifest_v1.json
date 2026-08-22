@@ -3,8 +3,8 @@
   "olusturulma_yontemi": "banka-katmanli, kaynak_url gruplu split (gold_dataset/split_manifest_uret.py)",
   "test_orani_hedef": 0.2,
   "tohum": 42,
-  "toplam_kayit": 98,
-  "toplam_kampanya_url": 96,
+  "toplam_kayit": 102,
+  "toplam_kampanya_url": 100,
   "train": [
     "AL-001",
     "AL-002",
@@ -53,15 +53,17 @@
     "TEK-006",
     "TEK-007",
     "TEK-008",
+    "TEK-010",
     "TEK-012",
     "TEK-013",
-    "TEK-014",
+    "TEK-015",
+    "TEK-016",
     "TF-001",
     "TF-002",
     "TF-003",
+    "TF-004",
     "TF-005",
-    "TF-007",
-    "TF-008",
+    "TF-006",
     "TOM-001",
     "TOM-002",
     "TOM-003",
@@ -72,10 +74,10 @@
     "VK-005",
     "VK-006",
     "VK-007",
-    "VK-008",
+    "VK-010",
     "ZK-002",
     "ZK-003",
-    "ZK-006",
+    "ZK-004",
     "ZK-007",
     "ZK-008",
     "ZK-009",
@@ -84,7 +86,9 @@
     "ZK-012",
     "ZK-013",
     "ZK-014",
-    "ZK-015"
+    "ZK-015",
+    "ZK-016",
+    "ZK-017"
   ],
   "test": [
     "AL-010",
@@ -97,15 +101,15 @@
     "KT-015",
     "KT-016",
     "TEK-009",
-    "TEK-010",
     "TEK-011",
-    "TF-004",
-    "TF-006",
+    "TEK-014",
+    "TF-007",
+    "TF-008",
+    "VK-008",
     "VK-009",
-    "VK-010",
     "ZK-001",
-    "ZK-004",
-    "ZK-005"
+    "ZK-005",
+    "ZK-006"
   ],
   "banka_bazinda_ozet": {
     "Albaraka Türk": {
@@ -129,7 +133,7 @@
       "test_url": 0
     },
     "Türkiye Emlak Katılım": {
-      "toplam_url": 14,
+      "toplam_url": 16,
       "test_url": 3
     },
     "Türkiye Finans": {
@@ -141,7 +145,7 @@
       "test_url": 2
     },
     "Ziraat Katılım": {
-      "toplam_url": 15,
+      "toplam_url": 17,
       "test_url": 3
     }
   }

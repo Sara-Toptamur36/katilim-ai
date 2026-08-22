@@ -434,3 +434,50 @@ def test_altin_setin_KENDI_kopyalari_raporlanir(rapor, capsys):
                   f"{fazla} fazla kayit")
             for idler in catisan:
                 print(f"    {', '.join(idler)}")
+
+
+def test_baslik_CUMLE_PARCASI_olmaz(rapor):
+    """Baslik turetmesi gelistirme sirasinda IKI KEZ bozuldu; her seferinde
+    liste okunamaz hale geldi. Olculmus kotu ornekler:
+
+        "10 Temmuz 2026 - 7 Agustos 2026"                (tarih araligi)
+        "Bankkart Lira kazanabilirsiniz."                (cumle kuyrugu)
+        "Kampanyaya Trendyol Dolap uygulamasindan..."    (kosul cumlesi)
+        "Saat&Saat Magazalarindan ve"                    (cumle parcasi)
+
+    Etiketleyici listede kampanyayi TANIYAMAZSA sira ise yaramaz.
+    """
+    import re
+
+    kotu = []
+    for k in rapor["liste"]:
+        b = k["baslik"].strip()
+        if not b:
+            kotu.append((k["sira"], b, "bos"))
+        elif b[0].islower():
+            kotu.append((k["sira"], b, "kucuk harfle basliyor - cumle ortasi"))
+        elif re.fullmatch(r"[\d\s.\-–—/]+", b):
+            kotu.append((k["sira"], b, "yalnizca sayi/tarih"))
+        elif b.endswith((" ve", " ile", " veya", ",")):
+            kotu.append((k["sira"], b, "yarim kalmis"))
+    assert not kotu, "cumle parcasi baslik: " + "; ".join(
+        f"{s}. {b!r} ({n})" for s, b, n in kotu[:5])
+
+
+def test_baslik_slug_ile_ILGILI(rapor):
+    """Baslik ya sayfanin slug'ini tanitan bir satiridir ya da slug'in
+    kendisinden turetilmistir. Ikisi de degilse baslik BASKA bir
+    kampanyayi gosteriyor olabilir - listenin en tehlikeli hatasi budur.
+    """
+    from extraction.normalizer import turkce_ascii_kucult
+    import re
+
+    kopuk = []
+    for k in rapor["liste"]:
+        slug_kok = {w[:6] for w in re.split(r"[^a-z0-9]+",
+                                            turkce_ascii_kucult(k["slug"])) if len(w) >= 4}
+        baslik_kok = {w[:6] for w in re.split(r"[^a-z0-9]+",
+                                              turkce_ascii_kucult(k["baslik"])) if len(w) >= 4}
+        if slug_kok and not (slug_kok & baslik_kok):
+            kopuk.append(f"{k['sira']}. {k['baslik'][:40]!r} <-> {k['slug'][:40]}")
+    assert not kopuk, "baslik slug ile hic ortusmuyor: " + "; ".join(kopuk[:5])

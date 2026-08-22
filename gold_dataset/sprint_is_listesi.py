@@ -237,38 +237,140 @@ def _ham_kampanyalar() -> dict[str, dict]:
 
 
 def _baslik(kayit: dict) -> str:
-    """Kampanya basligi ham metnin ilk anlamli satirindan alinir.
+    """Kampanya basligi, ham metnin SLUG'A EN COK BENZEYEN satiridir.
 
     Cikarim motoru CAGRILMAZ (bkz. modul docstring'i) - bu yalnizca
     etiketleyicinin listede kampanyayi tanimasi icin bir etikettir,
     yer gercegi degildir.
+
+    NEDEN "ILK UZUN SATIR" DEGIL (olculdu): o kural liste boyunca
+    okunamaz basliklar uretti -
+      "10 Temmuz 2026 - 7 Agustos 2026"              (tarih araligi)
+      "Bankkart Lira kazanabilmek icin alisveris.."  (cumle ortasi)
+      "Saat&Saat Magazalarindan ve"                  (cumle parcasi)
+    Ziraat ve Emlak sayfalari kampanya adini basliga koymuyor; metin
+    kampanya doneminden ya da kosul cumlesinden basliyor.
+
+    SLUG kampanyanin kimligini tasir ("mobilya-alisverisinize-1500-tl-
+    bankkart-lira"). Bu yuzden aday satirlar slug kelimeleriyle ORTUSME
+    oranina gore puanlanir; hicbir satir ortusmuyorsa slug'in kendisi
+    okunabilir hale getirilip kullanilir. Uydurma yok: her iki durumda da
+    gosterilen sey sayfanin kendi metni ya da kendi adresidir.
     """
     metin = kayit.get("normalize_metin") or kayit.get("ham_metin") or ""
-    banka = (kayit.get("banka") or "").lower()
+    banka = turkce_ascii_kucult(kayit.get("banka") or "")
+    slug = kayit.get("_slug") or _slug(kayit.get("url") or "")
+    # AYIRT EDICI SLUG KELIMELERI. Ziraat'in slug'larinin neredeyse
+    # hepsinde "bankkart" ve "lira" gecer; o kelimelerle eslesen bir
+    # satir kampanyayi TANITMAZ. Olculdu: "Bankkart Lira kazanabilirsiniz."
+    # cumle kuyrugu %40 ortusme aliyor ve baslik secilebiliyordu.
+    # Bankanin slug'larinda YAYGIN olan kelimeler elenir; geriye kampanyayi
+    # ayirt eden kelimeler kalir ("mobilya", "alisverisinize", "1500").
+    yaygin = _yaygin_slug_kelimeleri(kayit.get("banka") or "")
+    slug_kelimeleri = {
+        k for k in re.split(r"[^a-z0-9]+", turkce_ascii_kucult(slug))
+        if len(k) >= 4 and k not in yaygin
+    }
 
-    for satir in metin.split("\n"):
+    if not slug_kelimeleri:
+        # Slug ayirt edici kelime tasimiyor: metinden secilecek bir
+        # satirin kampanyayi TANITTIGINI dogrulayamayiz. Ilk surum bu
+        # durumda "ilk uygun satiri" aliyordu ve cumle kuyruklari
+        # baslik oluyordu.
+        return _sluga_gore_baslik(slug)
+
+    en_iyi: tuple[float, int, str] | None = None
+    for sira, satir in enumerate(metin.split("\n")):
         sade = " ".join(satir.split())
-        if len(sade) <= 25:
+        if not (25 < len(sade) <= 110):
             continue
-        kucuk = sade.lower()
-        # Gezinti satiri, banka adinin kendisi ya da kategori basligi
-        # kampanyayi TANITMAZ. (Ilk surumde "Türkiye Emlak Katilim
-        # Bankasi" satiri baslik olarak seciliyordu.)
+        kucuk = turkce_ascii_kucult(sade)
         if any(i in kucuk for i in _GEZINTI_ISARETLERI):
             continue
         if banka and kucuk.startswith(banka):
             continue
-        # CUMLE ORTASI SATIRLAR BASLIK DEGILDIR. Ziraat sayfalarinda metin
-        # magaza adinda bolundugu icin ilk uzun satir cogu zaman
-        # "firsatindan yararlanabilirsiniz." gibi bir CUMLE KUYRUGU
-        # oluyordu; liste okunamaz hale geliyordu. Baslik buyuk harf ya da
-        # rakamla baslar.
         if sade[0].islower():
-            continue
-        return sade[:80]
+            continue  # cumle ortasi
+        satir_kelimeleri = {
+            k for k in re.split(r"[^a-z0-9]+", kucuk) if len(k) >= 4
+        }
+        # KOK ESLESMESI - Turkce eklerini asmak icin. Olculdu: slug
+        # "hepsiburadada" (bulunma eki slug'a girmis), sayfadaki basliksa
+        # "Hepsiburada'da" -> kelime kelime eslesme SIFIR veriyor ve
+        # sayfanin gercek basligi reddedilip slug'a dusuluyordu.
+        # Ilk 6 karakter karsilastirmasi eki asar, farkli kelimeleri
+        # birlestirmeye yetmez ("mobilya" vs "mobile" gibi cakismalar
+        # 6 karakterde ayrisir).
+        koku = lambda k: k[:6]
+        satir_kokleri = {koku(k) for k in satir_kelimeleri}
+        eslesen = sum(1 for k in slug_kelimeleri if koku(k) in satir_kokleri)
+        ortusme = eslesen / len(slug_kelimeleri)
+        # ESIK 0.6 VE KONUM ONCELIKLI - ikisi de olculdu.
+        #
+        # Ortusme TEK BASINA "baslik" ile "kosul cumlesi"ni ayirmiyor:
+        # "Kampanyaya Trendyol Dolap uygulamasindan yapilacak..." cumlesi
+        # slug'daki tek ayirt edici kelimeyle (%100) esleserek baslik
+        # seciliyordu. Iki duzeltme birlikte calisiyor:
+        #   - esik 0.6: ayirt edici kelimelerin YARIDAN FAZLASI gecmeli,
+        #     boylece "alisveris" gibi tek bir genel kelimeyle eslesen
+        #     parcalar elenir,
+        #   - konum onceligi: esigi gecen EN ERKEN satir kazanir, cunku
+        #     baslik sayfada kosullardan ONCE durur.
+        aday = (-sira, ortusme, sade[:80])
+        if ortusme >= 0.6 and (en_iyi is None or aday > en_iyi):
+            en_iyi = aday
 
-    # Hicbir satir uymadiysa slug daha bilgilendiricidir.
-    return _slug(kayit.get("url")).replace("-", " ").strip()[:80] or "(baslik yok)"
+    if en_iyi:
+        return en_iyi[2]
+    # Hicbir satir slug'i tanitmiyor: adresin kendisi daha bilgilendirici.
+    return _sluga_gore_baslik(slug)
+
+
+_YAYGIN_ONBELLEK: dict[str, set[str]] = {}
+
+
+def _yaygin_slug_kelimeleri(banka: str) -> set[str]:
+    """Bir bankanin slug'larinin en az yarisinda gecen kelimeler."""
+    if banka in _YAYGIN_ONBELLEK:
+        return _YAYGIN_ONBELLEK[banka]
+    sluglar = [
+        _slug(k.get("url") or "")
+        for k in _ham_kampanyalar().values()
+        if (k.get("banka") or "") == banka
+    ]
+    sayac: Counter[str] = Counter()
+    for sl in sluglar:
+        sayac.update({
+            k for k in re.split(r"[^a-z0-9]+", turkce_ascii_kucult(sl)) if len(k) >= 4
+        })
+    # ESIK NEDEN %20 (olculdu): satir kaliplari icin kullanilan %50, slug
+    # kelimeleri icin fazla katiydi - Ziraat'in 109 slug'inda yalnizca
+    # "taksit" yakalaniyordu; "bankkart" (31) ve "lira" (30) kaciyor ve
+    # "Bankkart Lira kazanabilirsiniz." cumle kuyrugu baslik seciliyordu.
+    # Ziraat'te 30 (lira) ile 12 (toplam) arasinda dogal bir bosluk var,
+    # yani %13-%30 arasindaki her esik AYNI kumeyi verir - secim bicak
+    # sirti degil. %10'a inince "indirim" gibi ayirt edici kelimeler de
+    # elenmeye basliyor.
+    esik = max(3, int(len(sluglar) * 0.20))
+    _YAYGIN_ONBELLEK[banka] = {k for k, n in sayac.items() if n >= esik}
+    return _YAYGIN_ONBELLEK[banka]
+
+
+def _sluga_gore_baslik(slug: str) -> str:
+    """"mobilya-alisverisinize-1500-tl-bankkart-lira-0" ->
+    "Mobilya Alisverisinize 1500 TL Bankkart Lira" """
+    govde = slug.split("#", 1)[0]
+    for uzanti in (".aspx", ".html", ".htm"):
+        if govde.lower().endswith(uzanti):
+            govde = govde[: -len(uzanti)]
+    kelimeler = [k for k in re.split(r"[-_]+", govde) if k]
+    # Sondaki surum numaralari kampanyayi tanitmaz.
+    while kelimeler and kelimeler[-1].isdigit():
+        kelimeler.pop()
+    duzgun = []
+    for k in kelimeler:
+        duzgun.append(k.upper() if k.lower() in ("tl", "qr", "mtv", "kdv") else k.capitalize())
+    return " ".join(duzgun)[:80] or slug[:80]
 
 
 # METIN BENZERLIGI ESIGI - "ayni kalibin baska magazasi" durumu.
@@ -620,14 +722,18 @@ def _gerekce_metni(yeni: set[str], tumu: set[str] | None = None) -> str:
     edilebilir olmali, "kod boyle sectti" yeterli degil.
 
     Yapisal ozellik uzayi kucuktur (~30 belirtec) ve hizla doyar; o
-    noktadan sonra secim "en zengin kalan sayfa" olcutune duser. O
-    durumda bile kaydin NE TASIDIGI yazilir, yoksa listenin ikinci
-    yarisi gerekcesiz gorunur."""
+    noktadan sonra secim "en zengin kalan sayfa" olcutune duser.
+
+    O DURUMDA BELIRTEC LISTESI BURAYA YAZILMAZ: kaydin ne tasidigi zaten
+    `yapisal_ozellikler` alaninda duruyor ve her iki raporda da onun
+    yaninda gosteriliyor. Ilk surum listeyi buraya da dokuyordu; sonuc,
+    ayni bilginin iki kez ve bir kez de ham belirtec adlariyla
+    ("tutar=10b+") insan yuzlu bir alanda gorunmesiydi.
+    """
     if not yeni:
-        if tumu:
-            return ("yeni ozellik yok; kalan havuzun en zengin sayfasi - "
-                    "tasidigi: " + ", ".join(sorted(tumu)))
-        return "kalan havuzdan; yeni bir yapisal ozellik getirmiyor"
+        n = len(tumu) if tumu else 0
+        return (f"yeni ozellik yok; havuzun en zengin sayfasi ({n} yapisal ozellik)"
+                if n else "kalan havuzdan; yeni bir yapisal ozellik getirmiyor")
     parcalar = []
     taksitler = sorted(int(b.split("=")[1]) for b in yeni if b.startswith("taksit="))
     if taksitler:

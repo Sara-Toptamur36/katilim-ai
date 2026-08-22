@@ -11,6 +11,7 @@ bulunamazsa cevap UYDURULMAZ - durum acikca bildirilir (rapor Bolum
 """
 
 import json
+from difflib import SequenceMatcher
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable
@@ -67,6 +68,88 @@ def _bilinen_bankalari_yukle() -> list[str]:
     with open(BANKALAR_JSON, encoding="utf-8") as f:
         veri = json.load(f)
     return [banka["ad"] for banka in veri.values()]
+
+
+# --- Bulanik banka adi eslestirme -------------------------------------
+# NEDEN VAR (olculdu): banka adlari TAM ALT DIZE olarak araniyordu. Bu
+# yuzden "kuvettürkü" (bitisik + ek) ve "ziraat" (kisa ad) taninmiyor,
+# soru "en az 2 banka adi gerekiyor" diye geri cevriliyordu. Jurinin
+# dogal yazisi bu kaliba uymuyor.
+#
+# ESIKLER: tam ad penceresi 0.80, ayirt edici tek kelime 0.85. Ikincisi
+# daha yuksek cunku tek kelimede yanlis eslesme riski daha buyuk. Yanlis
+# BANKA secmek, banka bulamamaktan kotudur - kullaniciya baska bankanin
+# kampanyasi gosterilirdi.
+_BANKA_TAM_ESIK = 0.80
+_BANKA_KELIME_ESIK = 0.85
+
+
+def _ayirt_edici_kelimeler(bankalar: list[str]) -> dict[str, str]:
+    """Yalnizca TEK bir banka adinda gecen kelimeleri banka adina esler.
+
+    "katilim", "turkiye", "turk", "finans" birden fazla bankada geciyor -
+    bunlar tek basina bir bankayi isaret edemez, disarida birakilir.
+    """
+    sayac: dict[str, int] = {}
+    for b in bankalar:
+        for kelime in set(turkce_ascii_katla(b).split()):
+            if len(kelime) >= 4:
+                sayac[kelime] = sayac.get(kelime, 0) + 1
+    esleme = {}
+    for b in bankalar:
+        for kelime in set(turkce_ascii_katla(b).split()):
+            if sayac.get(kelime) == 1:
+                esleme[kelime] = b
+    return esleme
+
+
+def _sorudaki_bankalari_bul(soru: str, bilinen_bankalar: list[str]) -> list[str]:
+    """Once TAM alt dize, bulunamayanlar icin BULANIK eslestirme yapar.
+
+    Tam eslesme onceliklidir: kesin ve hizlidir. Bulanik yol yalnizca
+    tam eslesmenin kacirdiklarini yakalar.
+    """
+    s = turkce_ascii_katla(soru)
+    bulunan = [b for b in bilinen_bankalar if turkce_ascii_katla(b) in s]
+    kalan = [b for b in bilinen_bankalar if b not in bulunan]
+    if not kalan:
+        return bulunan
+
+    kelimeler = s.split()
+    ayirt_edici = _ayirt_edici_kelimeler(bilinen_bankalar)
+
+    for banka in kalan:
+        katlanmis = turkce_ascii_katla(banka)
+        n = len(katlanmis.split())
+        eslesti = False
+
+        # 1) Tam ad penceresi: "kuvetturku" <-> "kuveyt turk"
+        for pencere_boyu in range(1, n + 1):
+            for i in range(len(kelimeler) - pencere_boyu + 1):
+                pencere = " ".join(kelimeler[i : i + pencere_boyu])
+                if SequenceMatcher(None, pencere, katlanmis).ratio() >= _BANKA_TAM_ESIK:
+                    eslesti = True
+                    break
+            if eslesti:
+                break
+
+        # 2) Ayirt edici tek kelime: "ziraat" -> "Ziraat Katilim"
+        if not eslesti:
+            for kelime in kelimeler:
+                for ae_kelime, ae_banka in ayirt_edici.items():
+                    if ae_banka != banka:
+                        continue
+                    if SequenceMatcher(None, kelime, ae_kelime).ratio() >= _BANKA_KELIME_ESIK:
+                        eslesti = True
+                        break
+                if eslesti:
+                    break
+
+        if eslesti:
+            bulunan.append(banka)
+
+    # Bilinen banka sirasini koru (deterministik cikti)
+    return [b for b in bilinen_bankalar if b in bulunan]
 
 
 def _sorudaki_kriteri_tespit_et(soru: str) -> str:
@@ -217,11 +300,8 @@ def karsilastirma_aracini_cagir(soru: str, kayit_getirici) -> dict[str, Any]:
     """
     # Katlama iki yonlu de yapilir: kullanici diyakritiksiz yazsa bile
     # ("Kuveyt Turk") banka adi "Kuveyt Türk" ile eslesmeli.
-    s = turkce_ascii_katla(soru)
     bilinen_bankalar = _bilinen_bankalari_yukle()
-    bulunan_bankalar = [
-        b for b in bilinen_bankalar if turkce_ascii_katla(b) in s
-    ]
+    bulunan_bankalar = _sorudaki_bankalari_bul(soru, bilinen_bankalar)
 
     if len(bulunan_bankalar) < 2:
         return {

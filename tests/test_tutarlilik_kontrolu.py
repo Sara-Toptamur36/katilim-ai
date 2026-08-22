@@ -139,6 +139,23 @@ ALARM_VERMESI_BEKLENEN_SAYFALAR = {
     # Bu sayfanin KENDI kampanya adi zaten "Hadi Alisveris Kredisi" -
     # bankanin oz urun ismi, yukaridaki sizinti degil dogrudan kaynak.
     "tombankhadi_kampanyalar_hadi-alisveris-kredisi-ile-klima-supurge-ve-televizyonlarda-vade-farksiz-12-taksit",
+    # Sitemap genisletmesi (18 Agustos 2026) sonrasi bulunan yeni desenler:
+    # Albaraka - "aradaki fark kullanicIya kredi olarak iade edilmeyecektir"
+    # (genel "hesaba alacak yazma" anlaminda "kredi", borc/finansman degil -
+    # Ingilizce'deki "account credit" ile ayni kullanim).
+    "albaraka_tr_kampanyalar_detay_2026_uberde-ilk-yolculukta-80-indirim",
+    # Kuveyt Turk KOBI/tarim kampanyalari - "basvuru sahibinin kredi
+    # degerlendirme sonucuna gore" - "kredi degerlendirmesi" (risk/underwriting
+    # sureci), zaten mesru sayilan "kredi skoru/notu" ile AYNI terim ailesi
+    # (tutarlilik_kontrolu.py'nin guvenli_sonraki_kelime_onekleri listesine
+    # "degerlendirme" eklenmesi Yagmur'a onerildi, henuz eklenmedi).
+    "kuveytturk_kampanyalar_isim-icin_kobi-kampanyalari_kuveyt-turkten-kfk-destekli-yatirim-finansmani",
+    "kuveytturk_kampanyalar_isim-icin_kobi-kampanyalari_tarimda-kuveyt-turk-ile-buyume-zamani",
+    "kuveytturk_kampanyalar_kendim-icin_finansman-kampanyalari_tarimda-kuveyt-turk-ile-buyume-zamani",
+    # "Alisveris Kredisi" burada da (T.O.M./Hadi'deki gibi) bir URUN ADI -
+    # Kuveyt Turk'un kendi odeme secenegi markalamasi, katilim terminolojisi
+    # ihlali degil dogrudan kaynak metindeki resmi urun ismi.
+    "kuveytturk_kampanyalar_kendim-icin_musteri-ol-kampanyalari_evlenecek-olan-veya-yeni-evli-ciftlere-kuveyt-turkten-mujde-evlilik-paketi",
 }
 
 

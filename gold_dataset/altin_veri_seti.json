@@ -2412,43 +2412,6 @@
     }
   },
   {
-    "kayit_id": "TEK-008",
-    "banka": "Türkiye Emlak Katılım",
-    "kampanya_adi": "Akaryakıt Harcamalarınıza 400 TL ParafPara",
-    "kampanya_turu": "Kart Kampanyasi",
-    "kaynak_url": "www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/akaryakit-harcamalariniza-400-tl-parafpara",
-    "kar_payi_orani": null,
-    "maliyet_orani": null,
-    "oran_periyodu": null,
-    "vade_ay": null,
-    "finansman_tutari": null,
-    "odul_miktari": 400,
-    "odul_birimi": "ParafPara",
-    "kampanya_avantaji": "SMS ile katılıp 1.500 TL üzeri 2. ve 4. akaryakıt harcamasına 200'er TL, toplam 400 TL ParafPara",
-    "masraf_durumu": null,
-    "kampanya_baslangic": "2026-08-01",
-    "kampanya_bitis": "2026-08-31",
-    "hedef_kitle": "Emlak Katılım Paraf ve Paraf Premium kart sahipleri (sanal ve ek kartlar dahil)",
-    "ekran_goruntusu": null,
-    "giren_kisi": null,
-    "giris_tarihi": "2026-08-21",
-    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Katilim SMS ile ('AKARYAKIT' yazip 6026'ya). Musteri basina bir kez.",
-    "taksit_sayisi": null,
-    "erteleme_suresi_ay": null,
-    "kanit_spanlari": {
-      "odul_miktari": "Kampanya kapsamında yurt içinde tek seferde yapılacak 1.500 TL ve üzeri ikinci ve dördüncü akaryakıt harcamasına 200 TL, toplam 400 TL ParafPara verilecektir.",
-      "odul_birimi": "Kampanya kapsamında yurt içinde tek seferde yapılacak 1.500 TL ve üzeri ikinci ve dördüncü akaryakıt harcamasına 200 TL, toplam 400 TL ParafPara verilecektir.",
-      "kampanya_baslangic": "Kampanya 1-31 Ağustos 2026 tarihleri arasında geçerlidir.",
-      "kampanya_bitis": "Kampanya 1-31 Ağustos 2026 tarihleri arasında geçerlidir."
-    },
-    "alan_belirtilmemis": {
-      "kar_payi_orani": true,
-      "vade_ay": true,
-      "masraf_durumu": true,
-      "finansman_tutari": true
-    }
-  },
-  {
     "kayit_id": "VK-010",
     "banka": "Vakıf Katılım",
     "kampanya_adi": "VClub Dünyası Artık Vakıf Katılım Mobil'de",
@@ -2738,43 +2701,6 @@
       "vade_ay": true,
       "masraf_durumu": true,
       "finansman_tutari": true
-    }
-  },
-  {
-    "kayit_id": "HF-009",
-    "banka": "Hayat Finans",
-    "kampanya_adi": "Xiaomi Ürünlerinde Finansman Avantajı",
-    "kampanya_turu": "Finansman Kampanyasi",
-    "kaynak_url": "hayatfinans.com.tr/kampanyalar/xiaomi-urunlerinde-finansman-avantaji",
-    "kar_payi_orani": null,
-    "maliyet_orani": null,
-    "oran_periyodu": null,
-    "vade_ay": null,
-    "finansman_tutari": 40000,
-    "odul_miktari": null,
-    "odul_birimi": null,
-    "kampanya_avantaji": "Xiaomi fiziksel mağazalarında 3 aya varan taksit; kampanya üst limiti 40.000 TL",
-    "masraf_durumu": null,
-    "kampanya_baslangic": null,
-    "kampanya_bitis": "2026-08-31",
-    "hedef_kitle": "Hayat Finans müşterileri (Bana Bunu Al İş Ortağım)",
-    "ekran_goruntusu": null,
-    "giren_kisi": null,
-    "giris_tarihi": "2026-08-21",
-    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Baslangic tarihi sayfada YOK. HF-006 ile ayni urun (Bana Bunu Al Is Ortagim) ama farkli magaza ve farkli ust limit: HF-006 Troy magazalari/80.000 TL, bu kayit Xiaomi/40.000 TL.",
-    "taksit_sayisi": 3,
-    "erteleme_suresi_ay": null,
-    "kanit_spanlari": {
-      "taksit_sayisi": "Hayat Finanslılara özel Xiaomi mağazalarında 3 aya varan taksit fırsatı Bana Bunu Al İş Ortağımda!",
-      "finansman_tutari": "Kampanya üst limiti 40.000TL'dir.",
-      "kampanya_bitis": "Kampanya 31 Ağustos 2026 tarihine kadar geçerlidir."
-    },
-    "alan_belirtilmemis": {
-      "kar_payi_orani": true,
-      "vade_ay": true,
-      "odul_miktari": true,
-      "masraf_durumu": true,
-      "odul_birimi": true
     }
   },
   {

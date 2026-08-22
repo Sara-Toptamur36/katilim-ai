@@ -22,7 +22,10 @@ _GOLD_DOSYASI = GOLD
 def rapor():
     from gold_dataset.sprint_is_listesi import is_listesi_uret
 
-    return is_listesi_uret(hedef=200, kota=45)
+    # KOTA YOK: korpus zaten iki bankaya agir bastigi icin kota,
+    # ulasilabilir kayit sayisini 200'un altinda tutuyordu. Denge
+    # bedeli raporda acikca gorunur.
+    return is_listesi_uret(hedef=200, kota=None)
 
 
 @pytest.fixture(scope="module")
@@ -68,6 +71,15 @@ def test_kontrol_gerekenler_ATILMAZ_raporlanir(rapor):
 def test_kota_asilmaz(rapor):
     """Kotanin isi, setin tek bankaya kaymasini engellemek."""
     kota = rapor["banka_basina_kota"]
+    if kota is None:
+        # Kota kaldirildiginda sinir yoktur; sinanacak olan, kotanin
+        # VERILDIGINDE calistigidir.
+        from gold_dataset.sprint_is_listesi import is_listesi_uret
+
+        kotali = is_listesi_uret(hedef=200, kota=5)
+        asanlar = {b: n for b, n in kotali["banka_basina_secilen"].items() if n > 5}
+        assert not asanlar, f"kota asilmis: {asanlar}"
+        return
     asanlar = {b: n for b, n in rapor["banka_basina_secilen"].items() if n > kota}
     assert not asanlar, f"kota asilmis (kota={kota}): {asanlar}"
 
@@ -135,14 +147,51 @@ def test_ayni_kampanya_farkli_adresle_LISTEYE_GIRMEZ(rapor):
     )
 
 
-def test_kopya_isareti_ELEMEZ_yalnizca_isaretler(rapor):
-    """Kontrol gerek listesindeki dersle ayni: karar insanindir.
-    "bridgestoneda-5-taksit" ile "bridgestoneda-5-taksit-2" pekala iki
-    ayri kampanya olabilir - isaretli kayit listede KALIR."""
-    assert any(k.get("muhtemel_kopya") for k in rapor["liste"])
+def test_ADRES_benzerligi_tek_basina_ELEMEZ(rapor):
+    """Iki farkli kanit, iki farkli yetki.
+
+    SLUG kurallari (muhtemel_kopya) yalnizca ISARETLER: adres benzerligi
+    zayif bir kanittir, "...-300-tl-parafpara" ile "...-400-tl-parafpara"
+    pekala iki ayri kampanyadir. Bunlari elemek gercek kampanya kaybi olur.
+
+    METIN+PROFIL eslesmesi ise ELER (bkz. bir sonraki test): orada iki
+    sayfanin hem sozleri hem tasidigi degerler aynidir.
+    """
     assert all("muhtemel_kopya" in k for k in rapor["liste"]), (
         "alan her kayitta bulunmali; yoklugu 'bakilmadi' ile 'temiz'i karistirir"
     )
+    # ASIL DEGISMEZ: hicbir kayit YALNIZCA adres benzerligi yuzunden
+    # elenmis olmamali. Elenen her kaydin metin benzerligi olcusu var.
+    #
+    # NOT: "listede isaretli kayit KALMALI" diye bir sart KOYULMUYOR.
+    # Korpus temizlendikce isaretli kayit sayisi sifira inebilir ve o
+    # zaman boyle bir sart, testi kendiliginden kirardi - sinanan sey
+    # kural degil, o gunku verinin hali olurdu.
+    for x in rapor["benzer_atlanan"]:
+        assert "oran" in x, f"{x['slug']} adres benzerligiyle elenmis olabilir"
+
+
+def test_metin_ve_profil_ayni_olan_LISTEYE_GIRMEZ(rapor):
+    """Kumeleme tek gecislidir ve kacirir: bir aday, kendi kumesinin
+    temsilcisine benzemeyip BASKA bir etiketli sayfaya benzeyebilir.
+    Olculdu: "mobilya-...-4000-tlye-varan-parafpara" temsilciye
+    takilmiyordu ama TEK-009 ile hem metni hem profili ayniydi.
+
+    Bu yuzden son kontrol secim aninda yapilir ve ELER."""
+    sizanlar = [k for k in rapor["liste"] if k.get("cok_benzer")]
+    assert not sizanlar, (
+        "altin setteki bir kayitla hem metni hem profili ayni olan sayfa listede: "
+        + ", ".join(f"{k['slug']} <-> {k['cok_benzer'][0]}" for k in sizanlar[:5])
+    )
+
+
+def test_elenen_kayit_ATILMAZ_gerekcesiyle_raporlanir(rapor):
+    """Sessiz eleme denetlenemez. Elenen her sayfa, hangi altin kayda
+    hangi oranla benzedigiyle birlikte raporda durmali."""
+    for x in rapor["benzer_atlanan"]:
+        assert x["slug"] and x["ikiz"] and x["url"]
+        assert x["oran"] >= 0.85
+        assert "profil" in x["gerekce"]
 
 
 def test_kopya_suphesi_kendini_isaretlemez():
@@ -226,22 +275,6 @@ def test_cok_benzer_esigin_altini_ISARETLEMEZ(rapor):
             assert k["cok_benzer"][1] >= COK_BENZER_ESIGI
 
 
-def test_emniyet_agi_calisiyor(rapor):
-    """Kumeleme TEK GECISLIDIR: bir sayfa, kumenin temsilcisine
-    benzemeyip baska bir etiketli sayfaya benziyor olabilir. Isaretler
-    o bosluk icin duruyor.
-
-    Burada isaretin BULUNMASI degil, ISARETLENEN KAYIT SAYISININ KUCUK
-    kalmasi sinaniyor: kumeleme dogru calisiyorsa emniyet agina cok az
-    sey dusmeli. Cok sey duserse kumeleme bozulmus demektir."""
-    isaretli = [k for k in rapor["liste"]
-                if k.get("muhtemel_kopya") or k.get("cok_benzer")]
-    assert len(isaretli) <= max(3, len(rapor["liste"]) // 10), (
-        f"emniyet agina {len(isaretli)} kayit dustu - kumeleme bozulmus olabilir: "
-        + ", ".join(k["slug"] for k in isaretli[:5])
-    )
-
-
 def test_ikiz_ayni_bankadan(rapor):
     """Kalip metni bankaya ozeldir; farkli bankadan ikiz gosterilmesi
     olcumun yanlis kurulduguna isarettir."""
@@ -322,7 +355,11 @@ def test_rapor_kume_sayilarini_TASIR(rapor):
     assert rapor["toplam_kume"] == sum(o["kume"] for o in rapor["banka_ozeti"])
     assert rapor["kapsanan_kume"] == sum(o["kapsanan_kume"] for o in rapor["banka_ozeti"])
     assert rapor["aday_kume"] == sum(o["aday_kume"] for o in rapor["banka_ozeti"])
-    assert rapor["listelenen"] + sum(rapor["kalan_kume"].values()) == rapor["aday_kume"]
+    # Her aday kume UC yoldan birine gider: listeye girer, benzer
+    # oldugu icin elenir, ya da kotaya takilip bekler. Toplam tutmali -
+    # tutmuyorsa bir kume sessizce kaybolmus demektir.
+    assert (rapor["listelenen"] + len(rapor["benzer_atlanan"])
+            + sum(rapor["kalan_kume"].values())) == rapor["aday_kume"]
     assert rapor["benzerlik_esigi"] == 0.85
 
 
@@ -339,6 +376,10 @@ def test_kalan_kume_kotadan_dolayi_BEKLETILENLERDIR(rapor):
     """Kotaya takilip listeye giremeyen kumeler GIZLENMEZ - hacim
     gerekirse nereden gelecegi gorunur olmali."""
     for banka, sayi in rapor["kalan_kume"].items():
+        assert rapor["banka_basina_kota"] is not None, (
+            f"kota YOKKEN {banka} icin {sayi} kume beklemede kalmis - "
+            "havuzun tamami listeye girmeliydi"
+        )
         assert rapor["banka_basina_secilen"].get(banka, 0) == rapor["banka_basina_kota"], (
             f"{banka} kotasi dolmadigi halde {sayi} kume beklemede"
         )
@@ -356,7 +397,8 @@ def test_altin_setin_KENDI_kopyalari_raporlanir(rapor, capsys):
     import collections
     import json as _json
 
-    from gold_dataset.sprint_is_listesi import _ham_kampanyalar, _kumeleri_al
+    from gold_dataset.sprint_is_listesi import (_ham_kampanyalar, _kumeleri_al,
+                                            _yapisal_belirtecler)
 
     ham = _ham_kampanyalar()
     with open(_GOLD_DOSYASI, encoding="utf-8") as f:
@@ -366,12 +408,20 @@ def test_altin_setin_KENDI_kopyalari_raporlanir(rapor, capsys):
     for k in gold:
         slug_kayit[(k.get("kaynak_url") or "").rstrip("/").split("/")[-1]].append(k["kayit_id"])
 
+    # KUME UYELIGI YETMEZ: kumeleme yalnizca METNE bakar. Ziraat'in
+    # "2 taksit" ve "6 taksit" sayfalari ayni kumededir ama FARKLI DEGER
+    # tasirlar - onlar kopya degildir. Gercek kopya, metni de yapisal
+    # profili de ayni olan cifttir (bkz. _profile_gore_bol).
     catisan = []
     for kumeler in _kumeleri_al(ham).values():
         for kume in kumeler:
-            idler = sorted(i for u in kume["uyeler"] for i in slug_kayit.get(u["_slug"], []))
-            if len(idler) > 1:
-                catisan.append(idler)
+            gruplar = {}
+            for u in kume["uyeler"]:
+                anahtar = frozenset(_yapisal_belirtecler(u.get("normalize_metin") or ""))
+                gruplar.setdefault(anahtar, []).extend(slug_kayit.get(u["_slug"], []))
+            for idler in gruplar.values():
+                if len(idler) > 1:
+                    catisan.append(sorted(idler))
 
     kaynaksiz = sum(1 for k in gold
                     if (k.get("kaynak_url") or "").rstrip("/").split("/")[-1] not in ham)

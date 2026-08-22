@@ -78,10 +78,10 @@ import argparse
 import glob
 import json
 import re
-from collections import defaultdict
+from collections import Counter, defaultdict
 from pathlib import Path
 
-from extraction.normalizer import turkce_ascii_kucult
+from extraction.normalizer import TR_AY_ADLARI, tutara_cevir, turkce_ascii_kucult
 
 KOK = Path(__file__).resolve().parent.parent
 GOLD = KOK / "gold_dataset" / "altin_veri_seti.json"
@@ -291,39 +291,111 @@ def _baslik(kayit: dict) -> str:
 # olcume hicbir sey katmaz, atlanir. Degerler farkliysa etiketlenebilir.
 COK_BENZER_ESIGI = 0.85
 
+# ---------------------------------------------------------------------------
+# KARSILASTIRMA METNI - banka kalibi CIKARILIR
+# ---------------------------------------------------------------------------
+# OLCULEN HATA: ilk surum sayfalari HAM haliyle karsilastiriyordu. Dunya
+# Katilim sayfalarinin 12.337 karakterinin ~10.000'i her sayfada ayni
+# menu/altbilgi oldugu icin BIRBIRIYLE ALAKASIZ iki kampanya %87 benzer
+# cikiyordu: "LC Waikiki'de 300 TL indirim" ile "Avantajli Kurlar". Kalip
+# satirlar cikarilinca ayni cift %11'e dusuyor.
+#
+# Yani esik degil OLCUM yanlisti: agir menulu bankalarda her sayfa her
+# sayfaya benziyor, hafif menulu bankalarda benzemiyordu. Bu, Dunya
+# Katilim'in tum sayfalarinin sahte kumelere dusmesine ve gercek
+# kampanyalarin listeden silinmesine yol aciyordu.
+#
+# Karsi kontrol: gercekten ayni olan ciftler kalip cikarildiktan SONRA da
+# yuksek kaliyor (Emlak akaryakit 300/400 TL surumleri %98 -> %98).
+_KALIP_ONBELLEK: dict[str, dict[str, set[str]]] = {}
 
-def _cok_benzer_ikiz(metin: str, banka: str, etiketli_metinler: dict) -> tuple[str, float] | None:
+
+def _banka_kaliplari(ham: dict) -> dict[str, set[str]]:
+    """banka -> o bankanin sayfalarinin en az yarisinda gecen satirlar."""
+    imza = f"{len(ham)}:{max((k.get('erisim_zamani') or '') for k in ham.values())}"
+    if imza in _KALIP_ONBELLEK:
+        return _KALIP_ONBELLEK[imza]
+
+    banka_satirlar: dict[str, list[set[str]]] = defaultdict(list)
+    for kayit in ham.values():
+        metin = turkce_ascii_kucult(kayit.get("normalize_metin") or "")
+        banka_satirlar[kayit.get("banka") or "BILINMIYOR"].append(
+            {sat.strip() for sat in metin.split("\n") if sat.strip()}
+        )
+
+    sonuc: dict[str, set[str]] = {}
+    for banka, sayfalar in banka_satirlar.items():
+        sayac: Counter[str] = Counter()
+        for satirlar in sayfalar:
+            sayac.update(satirlar)
+        # En az 2 sayfada VE sayfalarin en az yarisinda gecen satir kaliptir.
+        esik = max(2, len(sayfalar) // 2)
+        sonuc[banka] = {sat for sat, n in sayac.items() if n >= esik}
+    _KALIP_ONBELLEK[imza] = sonuc
+    return sonuc
+
+
+def _karsilastirma_metni(metin: str, kalip: set[str]) -> str:
+    """Katlanmis metinden banka kalibi cikarilmis hali."""
+    return "\n".join(
+        sat for sat in turkce_ascii_kucult(metin).split("\n")
+        if sat.strip() and sat.strip() not in kalip
+    )
+
+
+def _oran(a: str, b: str) -> float:
+    """Iki metnin benzerlik orani.
+
+    autojunk=False SART: varsayilan autojunk, uzunlugu 200'u gecen IKINCI
+    dizide sik gecen ogeleri "gurultu" sayip atar. Bunun iki sonucu var -
+    olcum ARGUMAN SIRASINA gore degisir (ayni cift icin %86 ve %83
+    olculdu) ve uzun metinlerde oran carpitilir. Kaynak kodu satirlari
+    icin tasarlanmis bir sezgiseldir, dogal metinde isimize yaramaz.
+    """
+    import difflib
+
+    olcer = difflib.SequenceMatcher(None, a, b, autojunk=False)
+    # real_quick_ratio/quick_ratio gercek oranin UST SINIRLARIDIR ve ucuzdur;
+    # esigin altinda kalan cift icin pahali ratio() hic calistirilmaz.
+    # (Ilk surumde bunlar autojunk ile birlikte kaldirilmisti ve kumeleme
+    # dakikalarca surer hale gelmisti.)
+    if olcer.real_quick_ratio() < COK_BENZER_ESIGI:
+        return 0.0
+    if olcer.quick_ratio() < COK_BENZER_ESIGI:
+        return 0.0
+    return olcer.ratio()
+
+
+def _cok_benzer_ikiz(metin: str, banka: str, etiketli_metinler: dict,
+                     profil: frozenset | None = None) -> tuple[str, float] | None:
     """Ayni bankanin etiketli sayfalari icinde en benzerini bulur.
 
     YALNIZCA AYNI BANKA: kalip metni bankaya ozeldir ve olcumde en
     benzer eslesmelerin TAMAMI ayni bankadan cikti. Bankaya kisitlamak
     hem daha dogru hem de karsilastirma sayisini buyuk olcude azaltir.
     """
-    import difflib
-
     if len(metin) < 200:
         return None
     en_iyi: tuple[str, float] | None = None
-    for kayit_id, (kayit_banka, kayit_metni) in etiketli_metinler.items():
-        if kayit_banka != banka:
+    for kayit_id, (kayit_banka, kayit_metni, kayit_profili) in etiketli_metinler.items():
+        if kayit_banka != banka or len(kayit_metni) < 200:
             continue
-        olcer = difflib.SequenceMatcher(None, metin, kayit_metni)
-        # Ucuz on elemeler: gercek oran bunlarin ustune cikamaz.
-        if olcer.real_quick_ratio() < COK_BENZER_ESIGI:
+        # FARKLI PROFIL = FARKLI DEGER TASIYOR. Ziraat'in "2 taksit" ve
+        # "6 taksit" sayfalari metin olarak %91 ayni ama kopya degiller;
+        # burada isaretlenmeleri emniyet agini gurultuye bogar ve gercek
+        # kopyayi gorunmez kilar. Ayrica pahali karsilastirmayi da atlar.
+        if profil is not None and profil != kayit_profili:
             continue
-        if olcer.quick_ratio() < COK_BENZER_ESIGI:
-            continue
-        oran = olcer.ratio()
+        oran = _oran(metin, kayit_metni)
         if oran >= COK_BENZER_ESIGI and (en_iyi is None or oran > en_iyi[1]):
             en_iyi = (kayit_id, oran)
     return en_iyi
 
 
-def _etiketli_metinler(ham: dict) -> dict[str, tuple[str, str]]:
+def _etiketli_metinler(ham: dict) -> dict[str, tuple[str, str, frozenset]]:
     """kayit_id -> (banka, katlanmis metin). Kaynak sayfasi ham veride
     kalmamis kayitlar disarida kalir - kampanya rotasyonu."""
-    from extraction.normalizer import turkce_ascii_kucult
-
+    kaliplar = _banka_kaliplari(ham)
     with open(GOLD, encoding="utf-8") as f:
         kayitlar = json.load(f)
     sonuc = {}
@@ -334,9 +406,12 @@ def _etiketli_metinler(ham: dict) -> dict[str, tuple[str, str]]:
         kaynak = ham.get(slug)
         if not kaynak:
             continue
+        banka = kaynak.get("banka") or k.get("banka") or ""
+        ham_metin = kaynak.get("normalize_metin") or ""
         sonuc[k["kayit_id"]] = (
-            k.get("banka") or "",
-            turkce_ascii_kucult(kaynak.get("normalize_metin") or ""),
+            banka,
+            _karsilastirma_metni(ham_metin, kaliplar.get(banka, set())),
+            frozenset(_yapisal_belirtecler(ham_metin)),
         )
     return sonuc
 
@@ -345,17 +420,32 @@ def _etiketli_metinler(ham: dict) -> dict[str, tuple[str, str]]:
 # YAPISAL PROFIL - "bu sayfa hangi alan turlerini barindiriyor"
 # ---------------------------------------------------------------------------
 # Bunlar OLCUM yapmaz, DEGER uretmez: yalnizca sayfada o turden bir sey
-# gecip gecmedigini soyler. regex_extractor'in kaliplariyla ilgisi yoktur
-# ve onun ciktisi hicbir sekilde okunmaz (bkz. modul docstring'i).
+# gecip gecmedigini soyler.
+#
+# regex_extractor CAGRILMAZ VE CAGRILMAMALI: o, olculen motordur; ciktisi
+# siraya girerse olcum dairesel olur. Buna karsilik `extraction.normalizer`
+# bir NORMALLESTIRICIDIR - bicim bilgisi tasir, karar uretmez - ve
+# kullanilir.
+#
+# ILK SURUMDEKI HATA: tutar ve ay adlari burada ELLE yeniden yazilmisti.
+# Kopya hem gereksizdi hem de ZAYIFTI: tutar deseni binlik ayiraci ZORUNLU
+# kiliyordu (`\d{1,3}(?:\.\d{3})+`), yani "500 TL" hic gorulmuyordu ve
+# T.O.M.'un kelimeyle yazdigi "250 Bin TL" bicimi de gorulmuyordu - oysa o
+# bicim normalizer'da zaten olculup belgelenmis bir bulgudur
+# (bkz. normalizer._BUYUKLIK_EKLERI aciklamasi).
 _TARIH_IZI = re.compile(
     r"\d{1,2}[./]\d{1,2}[./]\d{4}"
-    r"|\d{1,2}\s+(?:Ocak|Şubat|Mart|Nisan|Mayıs|Haziran|Temmuz|Ağustos"
-    r"|Eylül|Ekim|Kasım|Aralık)"
+    r"|\d{1,2}\s+(?:" + "|".join(TR_AY_ADLARI) + r")\b",
+    re.IGNORECASE,
 )
-_TUTAR_IZI = re.compile(r"\d{1,3}(?:\.\d{3})+\s*TL")
+# Tutar ADAYLARINI bulur; DEGERE cevirmeyi normalizer.tutara_cevir yapar.
+# (normalizer._TUTAR_DESENI bir arayici degil, izole edilmis bir dizgiyi
+# ayristirmak icindir - sayfa taramasinda her sayiya eslesirdi.)
+_TUTAR_IZI = re.compile(
+    r"\d{1,3}(?:\.\d{3})*(?:,\d+)?\s*(?:bin|milyon|milyar)?\s*(?:TL|₺)",
+    re.IGNORECASE,
+)
 _YUZDE_IZI = re.compile(r"%\s?\d")
-# findall icin: yuzde DEGERLERI (kac farkli oran gectigi de bir sinyal)
-_YUZDE_ORANI = re.compile(r"%\s?(\d{1,3}(?:[.,]\d+)?)")
 _TAKSIT_IZI = re.compile(r"(\d{1,2})\s*taksit", re.IGNORECASE)
 
 # Odul birimi sozcukleri - katlanmis metinde aranir.
@@ -369,12 +459,6 @@ _ODUL_IZLERI = {
 }
 
 
-def _uzunluk_bandi(n: int) -> str:
-    if n < 800:
-        return "kisa"
-    return "orta" if n < 2000 else "uzun"
-
-
 def _yapisal_belirtecler(metin: str) -> set[str]:
     """Sayfayi CESITLILIK acisindan tanimlayan belirtec kumesi.
 
@@ -382,13 +466,20 @@ def _yapisal_belirtecler(metin: str) -> set[str]:
     bir sayfa, altin sete zaten temsil edilen bir kalibi bir kez daha
     eklemekten baska is yapmaz.
     """
+    # METIN UZUNLUGU BELIRTEC DEGILDIR - olculdu ve cikarildi. Ilk surumde
+    # "uzunluk=kisa/orta/uzun" bir belirtecti; Hayat Finans'in "Bana Bunu
+    # Al" (Troy) ve Xiaomi sayfalari %92 ayni metin, ayni taksit sayisi ve
+    # ayni tutar bandini tasidigi halde YALNIZCA uzunluk bandi farkli oldugu
+    # icin "farkli profil" sayilip ikisi de altin sete girmisti. Uzunluk bir
+    # DEGER degildir; cesitlilik olcutu olarak kullanilmasi sahte ayrim
+    # uretiyor.
     katlanmis = turkce_ascii_kucult(metin)
-    belirtecler: set[str] = {f"uzunluk={_uzunluk_bandi(len(metin))}"}
+    belirtecler: set[str] = set()
 
     tarihler = _TARIH_IZI.findall(metin)
     tutarlar = _TUTAR_IZI.findall(metin)
-    yuzdeler = _YUZDE_ORANI.findall(metin)
-    var_tarih, var_tutar, var_yuzde = bool(tarihler), bool(tutarlar), bool(yuzdeler)
+    var_tarih, var_tutar = bool(tarihler), bool(tutarlar)
+    var_yuzde = bool(_YUZDE_IZI.search(metin))
 
     if var_tarih:
         belirtecler.add("tarih")
@@ -404,20 +495,27 @@ def _yapisal_belirtecler(metin: str) -> set[str]:
     # TUTAR BUYUKLUK BANDI: "200 TL odul" ile "1.000.000 TL finansman"
     # ayni belirtec olmamali - ilk surumde ikisi de sadece "tutar"di ve
     # siralama aralarindaki farki goremiyordu.
+    #
+    # Cevirme isini normalizer.tutara_cevir yapar: Turkce binlik/ondalik
+    # ayiraci ve "bin/milyon/milyar" ekleri onun sorumlulugudur. Burada
+    # elle ayristirmak, ayni kurali ikinci bir yerde tutmak olurdu -
+    # ustelik projenin daha once yasadigi "1.89 -> 189" hatasinin aynisini
+    # davet ederdi.
+    degerler = set()
     for ham_tutar in tutarlar:
-        try:
-            deger = int(ham_tutar.replace(".", "").replace(" ", "").removesuffix("TL"))
-        except ValueError:
+        deger = tutara_cevir(ham_tutar)
+        if deger is None:
             continue
+        degerler.add(deger)
         for esik, ad in ((1_000_000, "1m+"), (100_000, "100b+"), (10_000, "10b+"),
-                         (1_000, "1b+")):
+                         (1_000, "1b+"), (0, "1b-")):
             if deger >= esik:
                 belirtecler.add(f"tutar={ad}")
                 break
-    # KADEMELI ODUL: uc ya da daha fazla farkli tutar tasiyan sayfa
+    # KADEMELI ODUL: uc ya da daha fazla FARKLI tutar tasiyan sayfa
     # ("300 TL / 750 TL / 1.750 TL / 3.000 TL") duz bir sayfadan farkli
     # bir cikarim problemidir.
-    if len({t.strip() for t in tutarlar}) >= 3:
+    if len(degerler) >= 3:
         belirtecler.add("kademeli_tutar")
 
     for ham_sayi in set(_TAKSIT_IZI.findall(metin)):
@@ -459,13 +557,14 @@ _KUME_ONBELLEK: dict[str, dict[str, list[dict]]] = {}
 
 def _kumele(ham: dict) -> dict[str, list[dict]]:
     """banka -> kume listesi. Her kume: {"uyeler": [kayit], ...}"""
-    import difflib
-
+    kaliplar = _banka_kaliplari(ham)
     banka_sayfalar: dict[str, list[dict]] = defaultdict(list)
     for slug, kayit in sorted(ham.items()):
-        banka_sayfalar[kayit.get("banka") or "BILINMIYOR"].append(
+        banka = kayit.get("banka") or "BILINMIYOR"
+        banka_sayfalar[banka].append(
             {**kayit, "_slug": slug,
-             "_katlanmis": turkce_ascii_kucult(kayit.get("normalize_metin") or "")}
+             "_katlanmis": _karsilastirma_metni(kayit.get("normalize_metin") or "",
+                                                kaliplar.get(banka, set()))}
         )
 
     sonuc: dict[str, list[dict]] = {}
@@ -477,12 +576,7 @@ def _kumele(ham: dict) -> dict[str, list[dict]]:
             # sokmadan her biri kendi kumesi sayilir.
             if len(metin) >= 200:
                 for kume in kumeler:
-                    olcer = difflib.SequenceMatcher(None, metin, kume["_temsil_metin"])
-                    if olcer.real_quick_ratio() < COK_BENZER_ESIGI:
-                        continue
-                    if olcer.quick_ratio() < COK_BENZER_ESIGI:
-                        continue
-                    if olcer.ratio() >= COK_BENZER_ESIGI:
+                    if _oran(metin, kume["_temsil_metin"]) >= COK_BENZER_ESIGI:
                         kume["uyeler"].append(sayfa)
                         break
                 else:
@@ -503,6 +597,24 @@ def _kumeleri_al(ham: dict) -> dict[str, list[dict]]:
     return _KUME_ONBELLEK[imza]
 
 
+def _profile_gore_bol(kumeler: list[dict]) -> list[dict]:
+    """Her kumeyi, uyelerinin yapisal profiline gore alt kumelere ayirir.
+
+    Ayni metin + ayni profil = gercek kopya, tek temsilci.
+    Ayni metin + FARKLI profil = farkli deger tasiyan sayfa, ayri kalir.
+    """
+    bolunmus: list[dict] = []
+    for kume in kumeler:
+        gruplar: dict[frozenset, list[dict]] = {}
+        for uye in kume["uyeler"]:
+            if "_belirtec" not in uye:
+                uye["_belirtec"] = _yapisal_belirtecler(uye.get("normalize_metin") or "")
+            gruplar.setdefault(frozenset(uye["_belirtec"]), []).append(uye)
+        for _, uyeler in sorted(gruplar.items(), key=lambda g: g[1][0]["_slug"]):
+            bolunmus.append({"uyeler": uyeler, "_kume_boyu": len(kume["uyeler"])})
+    return bolunmus
+
+
 def _gerekce_metni(yeni: set[str], tumu: set[str] | None = None) -> str:
     """Kaydin NEDEN secildigini insan diliyle yazar - liste takip
     edilebilir olmali, "kod boyle sectti" yeterli degil.
@@ -513,11 +625,8 @@ def _gerekce_metni(yeni: set[str], tumu: set[str] | None = None) -> str:
     yarisi gerekcesiz gorunur."""
     if not yeni:
         if tumu:
-            # uzunluk bandi burada gurultudur; ayirt edici olan
-            # yapi/taksit/odul belirtecleridir.
-            onemli = sorted(b for b in tumu if not b.startswith("uzunluk="))
             return ("yeni ozellik yok; kalan havuzun en zengin sayfasi - "
-                    "tasidigi: " + ", ".join(onemli))
+                    "tasidigi: " + ", ".join(sorted(tumu)))
         return "kalan havuzdan; yeni bir yapisal ozellik getirmiyor"
     parcalar = []
     taksitler = sorted(int(b.split("=")[1]) for b in yeni if b.startswith("taksit="))
@@ -534,13 +643,10 @@ def _gerekce_metni(yeni: set[str], tumu: set[str] | None = None) -> str:
                        ("yuzde", "ilk kez yuzde tasiyor")):
         if ad in yeni:
             parcalar.append(etiket)
-    uzunluk = sorted(b.split("=", 1)[1] for b in yeni if b.startswith("uzunluk="))
-    if uzunluk:
-        parcalar.append("yeni metin uzunlugu bandi " + ", ".join(uzunluk))
     return "; ".join(parcalar)
 
 
-def is_listesi_uret(hedef: int, kota: int) -> dict:
+def is_listesi_uret(hedef: int, kota: int | None = None) -> dict:
     """Etiketlenecek kampanyalari KUME bazinda secer.
 
     Onceki surum sayfa bazindaydi: ayni kalibin her kopyasi ayri is
@@ -555,12 +661,28 @@ def is_listesi_uret(hedef: int, kota: int) -> dict:
       3. Kalan her kumeden TEK temsilci alinir.
       4. Temsilciler, altin sette HENUZ BULUNMAYAN yapisal ozellik
          getirenlerden baslanarak siralanir (bkz. _yapisal_belirtecler).
-      5. Banka kotasi dagilimin tek bankaya kaymasini engeller.
+      5. Banka kotasi (verilmisse) dagilimin tek bankaya kaymasini
+         engeller. `kota=None` kotayi tumuyle kaldirir - havuzdaki her
+         benzersiz kume listeye girer ve dagilim korpusun kendi
+         dengesizligini yansitir. O dengesizlik raporda gorunur.
     """
     etiketli, etiketli_adlar = _etiketli_kimlikler()
     ham = _ham_kampanyalar()
+    # KAYNAK SAYFASI HAM VERIDE OLMAYAN ETIKETLI KAYITLAR (kampanya
+    # rotasyonu). Onlarla METIN karsilastirmasi YAPILAMAZ, dolayisiyla
+    # kume kapsamasi da calismaz. Olculmus ornek: DK-003'un adresi
+    # "/kampanyalar/altin-kesem" artik korpusta yok; ayni kampanya
+    # "/kampanyalar/altin-kesemTicari" adresiyle duruyor ve kume
+    # kapsamasi bunu goremedigi icin listeye giriyordu.
+    #
+    # Bu kayitlar icin ELIMIZDEKI TEK KANIT slug kurallaridir; orada
+    # isaretlemekle yetinmeyip DISLIYORUZ. Kaynagi duran kayitlarda ise
+    # metin+profil karsilastirmasi zaten calisir - slug kurali orada
+    # yalnizca emniyet agi olarak kalir.
+    kaynaksiz_etiketli = {sl for sl in etiketli if sl not in ham}
     etiketli_metinler = _etiketli_metinler(ham)
     kumeler_banka = _kumeleri_al(ham)
+    kaliplar = _banka_kaliplari(ham)
 
     kontrol_gerek: list[dict] = []
     aday_kumeler: dict[str, list[dict]] = {}
@@ -569,7 +691,19 @@ def is_listesi_uret(hedef: int, kota: int) -> dict:
     for banka, kumeler in sorted(kumeler_banka.items()):
         adaylar: list[dict] = []
         kapsanan = 0
-        for kume in kumeler:
+        # KUMEYI YAPISAL PROFILE GORE BOL.
+        #
+        # NEDEN: kalip satirlar cikarildiktan sonra Ziraat'in
+        # "bauhausta-3-taksit" ve "alfemoda-5-taksit" sayfalari ayni kumeye
+        # dusuyor - metin gercekten neredeyse ayni. Ama TAKSIT DEGERI farkli
+        # ve o, olculen bir alandir. Kumeden tek temsilci alsaydik "3 taksit"
+        # ya da "5 taksit"ten biri altin sette hic gorunmezdi.
+        #
+        # Bu yuzden birim KUME degil, (kume x yapisal profil) ciftidir:
+        # ayni metnin ayni degerleri tasiyan kopyalari tek temsilciye iner,
+        # farkli deger tasiyanlar ayri ayri kalir.
+        bolunmus = _profile_gore_bol(kumeler)
+        for kume in bolunmus:
             uyeler = kume["uyeler"]
             sluglar = [u["_slug"] for u in uyeler]
             # URL PARCASI DA KAPSAR: T.O.M.'un uc altin kaydi (TOM-001/002/
@@ -579,6 +713,12 @@ def is_listesi_uret(hedef: int, kota: int) -> dict:
             # kapsanmis saymadigi icin uc kayit yeniden listeleniyordu.
             if any(sl in etiketli or sl.split("#", 1)[0] in etiketli
                    for sl in sluglar):
+                kapsanan += 1
+                continue
+            # Kaynagi kaybolmus bir etiketli kaydin adres ikizi mi?
+            if kaynaksiz_etiketli and any(
+                _kopya_suphesi(sl, "", kaynaksiz_etiketli, set()) for sl in sluglar
+            ):
                 kapsanan += 1
                 continue
 
@@ -612,7 +752,14 @@ def is_listesi_uret(hedef: int, kota: int) -> dict:
         ozet.append({
             "banka": banka,
             "ham_kampanya": sum(len(k["uyeler"]) for k in kumeler),
-            "kume": len(kumeler),
+            # METIN KUMESI: yalnizca metne bakan kaba kumeleme.
+            "metin_kumesi": len(kumeler),
+            # SECIM BIRIMI: (metin kumesi x yapisal profil). kapsanan/aday/
+            # secilen sayilari BUNUN uzerinden verilir - ilk surumde ust
+            # satirda metin kumesi, alt satirlarda secim birimi yaziliyordu
+            # ve tablo "kume 11, kapsanan 12" gibi imkansiz satirlar
+            # uretiyordu.
+            "kume": len(bolunmus),
             "kapsanan_kume": kapsanan,
             "aday_kume": len(adaylar),
         })
@@ -628,6 +775,7 @@ def is_listesi_uret(hedef: int, kota: int) -> dict:
     baslangic_ozellik = len(gorulmus)
 
     secilenler: list[dict] = []
+    benzer_atlanan: list[dict] = []
     alinan: dict[str, int] = defaultdict(int)
     kalan = {b: list(v) for b, v in aday_kumeler.items()}
     bankalar = sorted(kalan)
@@ -637,17 +785,48 @@ def is_listesi_uret(hedef: int, kota: int) -> dict:
         for banka in bankalar:
             if len(secilenler) >= hedef:
                 break
-            if alinan[banka] >= kota or not kalan[banka]:
+            if (kota is not None and alinan[banka] >= kota) or not kalan[banka]:
                 continue
             # EN COK YENI OZELLIK GETIREN kume. Esitlikte once daha
             # zengin sayfa, sonra slug (deterministiklik).
-            en_iyi = sorted(
-                kalan[banka],
-                key=lambda a: (-len(a["temsilci"]["_belirtec"] - gorulmus),
-                               -len(a["temsilci"]["_belirtec"]),
-                               a["temsilci"]["_slug"]),
-            )[0]
-            kalan[banka].remove(en_iyi)
+            # KUMELEME TEK GECISLIDIR: bir aday, kendi kumesinin
+            # temsilcisine benzemeyip BASKA bir etiketli sayfaya benzeyebilir.
+            # Olculdu: "mobilya-...-4000-tlye-varan-parafpara" temsilciye
+            # takilmadan listeye giriyor ama TEK-009 ile hem metni hem
+            # yapisal profili ayni cikiyordu.
+            #
+            # Bu yuzden emniyet agi artik yalnizca ISARETLEMIYOR, ELIYOR.
+            # Elenen kayit ATILMIYOR - `benzer_atlanan` altinda gerekcesiyle
+            # raporlaniyor ki karar denetlenebilsin.
+            en_iyi = None
+            while kalan[banka]:
+                aday = sorted(
+                    kalan[banka],
+                    key=lambda a: (-len(a["temsilci"]["_belirtec"] - gorulmus),
+                                   -len(a["temsilci"]["_belirtec"]),
+                                   a["temsilci"]["_slug"]),
+                )[0]
+                kalan[banka].remove(aday)
+                at = aday["temsilci"]
+                ikiz = _cok_benzer_ikiz(
+                    _karsilastirma_metni(at.get("normalize_metin") or "",
+                                         kaliplar.get(banka, set())),
+                    banka, etiketli_metinler, frozenset(at["_belirtec"]),
+                )
+                if ikiz is None:
+                    en_iyi = aday
+                    break
+                benzer_atlanan.append({
+                    "slug": at["_slug"],
+                    "banka": banka,
+                    "url": at.get("url"),
+                    "ikiz": ikiz[0],
+                    "oran": round(ikiz[1], 3),
+                    "gerekce": (f"altin setteki {ikiz[0]} ile metin benzerligi "
+                                f"%{ikiz[1] * 100:.0f} VE yapisal profil ayni"),
+                })
+            if en_iyi is None:
+                continue
 
             t = en_iyi["temsilci"]
             yeni_ozellikler = t["_belirtec"] - gorulmus
@@ -667,16 +846,18 @@ def is_listesi_uret(hedef: int, kota: int) -> dict:
                 # Kumedeki diger sayfalar: bu temsilci onlari da temsil
                 # eder, ayrica etiketlenmezler.
                 "kume_uyeleri": [sl for sl in en_iyi["uyeler"] if sl != t["_slug"]],
-                # Emniyet agi: kumeleme tek gecislidir, temsilciye
-                # benzemeyip baska bir etiketli sayfaya benzeyen bir
-                # sayfa buradan yakalanir.
+                # Slug kurallari YALNIZCA ISARETLER (eleme yapmaz):
+                # kaynagi duran kayitlarda metin+profil karsilastirmasi
+                # zaten karar verdi, slug benzerligi tek basina bir
+                # kampanyayi silmeye yetmez ("...-300-tl" ile "...-400-tl"
+                # iki ayri kampanyadir).
                 "muhtemel_kopya": _kopya_suphesi(
                     t["_slug"], baslik, etiketli, etiketli_adlar
                 ),
-                "cok_benzer": _cok_benzer_ikiz(
-                    turkce_ascii_kucult(t.get("normalize_metin") or ""),
-                    banka, etiketli_metinler
-                ),
+                # Buraya gelen kayitta bu ALAN HER ZAMAN None'dir - dolu
+                # olsaydi yukaridaki dongude elenirdi. Cikti sozlesmesinin
+                # bir parcasi olarak birakildi.
+                "cok_benzer": None,
             })
             alinan[banka] += 1
             eklendi = True
@@ -695,6 +876,7 @@ def is_listesi_uret(hedef: int, kota: int) -> dict:
         "aday_kume": sum(o["aday_kume"] for o in ozet),
         "kalan_kume": {b: len(v) for b, v in sorted(kalan.items()) if v},
         "ozellik_kapsami": {"baslangic": baslangic_ozellik, "bitis": len(gorulmus)},
+        "benzer_atlanan": benzer_atlanan,
         "kontrol_gerek": kontrol_gerek,
         "banka_ozeti": ozet,
         "banka_basina_secilen": dict(sorted(alinan.items())),
@@ -705,8 +887,8 @@ def is_listesi_uret(hedef: int, kota: int) -> dict:
 def main() -> None:
     a = argparse.ArgumentParser(description="Etiketleme sprinti is listesi")
     a.add_argument("--hedef", type=int, default=200, help="Kac YENI kayit etiketlenecek")
-    a.add_argument("--kota", type=int, default=45,
-                   help="Banka basina azami kampanya (kume temsilcisi)")
+    a.add_argument("--kota", type=int, default=None,
+                   help="Banka basina azami kampanya; verilmezse KOTA YOK")
     a.add_argument("--goster", type=int, default=15, help="Ekranda kac satir gosterilsin")
     s = a.parse_args()
 
@@ -716,8 +898,9 @@ def main() -> None:
     print("  ETIKETLEME SPRINTI - IS LISTESI")
     print("=" * 74)
     print(f"\n  Mevcut altin kayit : {r['mevcut_altin_kayit']}")
-    print(f"  Hedef yeni kayit   : {r['hedef_yeni_kayit']}  "
-          f"(banka basina kota {r['banka_basina_kota']})")
+    kota_metni = ("kota YOK" if r["banka_basina_kota"] is None
+                  else f"banka basina kota {r['banka_basina_kota']}")
+    print(f"  Hedef yeni kayit   : {r['hedef_yeni_kayit']}  ({kota_metni})")
     print(f"  Benzerlik esigi    : %{r['benzerlik_esigi'] * 100:.0f}")
     print(f"  Listelenebilen     : {r['listelenen']}")
     print(f"  Ulasilabilir toplam: {r['ulasilabilir_toplam']}")
@@ -725,23 +908,32 @@ def main() -> None:
           f"-> {r['ozellik_kapsami']['bitis']}")
 
     print(f"\n  KUME DAGILIMI (ayni kalibin kopyalari tek kumede)")
-    print("  Banka                 sayfa   kume  kapsanan  aday  secilen  kalan")
-    print("  " + "-" * 68)
+    print("  Banka                 sayfa  metin   secim  kapsanan  aday  secilen  kalan")
+    print("  " + " " * 27 + "kumesi  birimi")
+    print("  " + "-" * 76)
     for o in r["banka_ozeti"]:
         secilen = r["banka_basina_secilen"].get(o["banka"], 0)
         kalan = r["kalan_kume"].get(o["banka"], 0)
-        print(f"  {o['banka'][:20]:<20}{o['ham_kampanya']:>7}{o['kume']:>7}"
-              f"{o['kapsanan_kume']:>10}{o['aday_kume']:>6}{secilen:>9}{kalan:>7}")
-    print("  " + "-" * 68)
+        print(f"  {o['banka'][:20]:<20}{o['ham_kampanya']:>7}{o['metin_kumesi']:>7}"
+              f"{o['kume']:>8}{o['kapsanan_kume']:>10}{o['aday_kume']:>6}"
+              f"{secilen:>9}{kalan:>7}")
+    print("  " + "-" * 76)
     print(f"  {'TOPLAM':<20}{sum(o['ham_kampanya'] for o in r['banka_ozeti']):>7}"
-          f"{r['toplam_kume']:>7}{r['kapsanan_kume']:>10}{r['aday_kume']:>6}"
+          f"{sum(o['metin_kumesi'] for o in r['banka_ozeti']):>7}"
+          f"{r['toplam_kume']:>8}{r['kapsanan_kume']:>10}{r['aday_kume']:>6}"
           f"{r['listelenen']:>9}{sum(r['kalan_kume'].values()):>7}")
 
     if r["ulasilabilir_toplam"] < 200:
         eksik = 200 - r["ulasilabilir_toplam"]
-        print(f"\n  UYARI: kota {r['banka_basina_kota']} ile 200'e {eksik} kayit "
-              f"KALIYOR.\n  Kotayi yukseltmek hacmi artirir ama seti buyuk bankalara "
-              f"kaydirir;\n  denge korunacaksa eksik bankalardan YENI VERI toplanmalidir.")
+        print(f"\n  UYARI: 200 hedefine {eksik} kayit KALIYOR.")
+        if r["banka_basina_kota"] is not None:
+            print(f"  Kota {r['banka_basina_kota']} kaldirilirsa "
+                  f"{sum(r['kalan_kume'].values())} kume daha eklenir.")
+        else:
+            # KOTA YOKKEN acik kalan tek yol veri toplamaktir - bu,
+            # korpusun kendisinin yetmedigi anlamina gelir.
+            print("  Kota YOK; havuzdaki her benzersiz kume zaten listede.")
+            print("  Aradaki fark ancak YENI VERI TOPLAYARAK kapanir.")
     elif sum(r["kalan_kume"].values()):
         print(f"\n  200 hedefi karsilaniyor. Kotaya takilip listeye giremeyen "
               f"{sum(r['kalan_kume'].values())} benzersiz kume var;\n  hacim daha da "
@@ -756,14 +948,21 @@ def main() -> None:
             print(f"    [{(x['banka'] or '')[:14]:<14}] {x['slug'][:40]:<40} "
                   f"{x['metin_uzunlugu']:>6} krk")
 
-    supheli = [k for k in r["liste"] if k.get("muhtemel_kopya") or k.get("cok_benzer")]
+    ba = r["benzer_atlanan"]
+    if ba:
+        print(f"\n  BENZER OLDUGU ICIN ATLANDI ({len(ba)} sayfa) - altin sette")
+        print("  ayni metni VE ayni yapisal profili tasiyan bir kayit zaten var:")
+        for x in sorted(ba, key=lambda z: -z["oran"])[:10]:
+            print(f"    {x['slug'][:44]:<44} %{x['oran'] * 100:.0f} <-> {x['ikiz']}")
+
+    supheli = [k for k in r["liste"] if k.get("muhtemel_kopya")]
     if supheli:
-        print(f"\n  EMNIYET AGI ({len(supheli)} kayit) - kumeleme kacirmis olabilir,")
-        print("  etiketlemeden once ikizine bakin:")
+        print(f"\n  ADRES BENZERLIGI ISARETI ({len(supheli)} kayit) - ELENMEDI,")
+        print("  cunku metin+profil karsilastirmasi bunlari FARKLI buldu")
+        print("  (ornegin ayni kampanyanin 300 TL ve 400 TL surumleri).")
+        print("  Yine de etiketlemeden once ikizine bakmakta fayda var:")
         for k in supheli[:8]:
-            sebep = k.get("muhtemel_kopya") or (
-                f"%{k['cok_benzer'][1] * 100:.0f} benzer <-> {k['cok_benzer'][0]}")
-            print(f"    {k['sira']:>3}. {k['slug'][:38]:<38} ({sebep})")
+            print(f"    {k['sira']:>3}. {k['slug'][:38]:<38} ({k['muhtemel_kopya']})")
 
     print(f"\n  Ilk {s.goster} kayit (banka | neden secildi):\n")
     for k in r["liste"][:s.goster]:

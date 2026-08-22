@@ -130,6 +130,13 @@ _TR_AYLAR = {
 }
 
 
+# Ay adlari, tarih ARAYAN kod tarafindan da gerekiyor (ornegin
+# gold_dataset/sprint_is_listesi.py sayfada tarih izi olup olmadigina
+# bakar). Listeyi orada tekrar yazmak, ay adlarini iki yerde tutmak
+# demekti; tek kaynak burasidir.
+TR_AY_ADLARI: tuple[str, ...] = tuple(_TR_AYLAR)
+
+
 def tarihe_cevir(ham: str) -> str | None:
     """'31.12.2026' / '31/12/2026' / '31 Aralık 2026' -> '2026-12-31' (ISO8601)."""
     ham = ham.strip().lower()

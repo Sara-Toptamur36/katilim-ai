@@ -14,7 +14,7 @@ Mentorluk raporu II (Bolum 6.3): "veri eksikligi yalnizca toplam kampanya sayisi
 | Dünya Katılım | 5 | 15 | 7 |
 | Hayat Finans | 10 | 18 | 5 |
 | Kuveyt Türk | 13 | 15 | 7 |
-| T.O.M. Katılım | 3 | 3 | 3 |
+| T.O.M. Katılım | 13 | 13 | 3 |
 | Türkiye Emlak Katılım | 81 | 103 | 7 |
 | Türkiye Finans | 25 | 28 | 7 |
 | Vakıf Katılım | 3 | 3 | 8 |
@@ -26,7 +26,7 @@ En son gorulen versiyon uzerinden hesaplanir (ayni kampanyanin eski snapshot'lar
 
 | Urun ailesi (kampanya_turu) | Sayi | Alan doluluk % |
 |---|---|---|
-| Kart Kampanyasi | 162 | %20.6 |
+| Kart Kampanyasi | 172 | %22.3 |
 | Belirtilmemis | 38 | %16.8 |
 | Alisveris Puani Kampanyasi | 37 | %20.0 |
 | Ihtiyac Finansmani Kampanyasi | 9 | %42.2 |
@@ -40,7 +40,7 @@ En son gorulen versiyon uzerinden hesaplanir (ayni kampanyanin eski snapshot'lar
 
 - Ilk gorulme: 2026-07-31
 - Son gorulme: 2026-08-22
-- Kampanya basina ortalama versiyon sayisi: 1.19
+- Kampanya basina ortalama versiyon sayisi: 1.18
 - Coklu versiyonlu (gercekten degismis) kampanya sayisi: 40
 - Bayatlik (son taramadan bu yana gecen gun): 0
 
@@ -50,8 +50,8 @@ Kar payi / vade / taksit / odul / masraf alanlarinin en son versiyonda ne siklik
 
 | Alan | Dolu | Toplam | Doluluk % |
 |---|---|---|---|
-| kar_payi_orani_percent | 40 | 263 | %15.2 |
-| vade_ay | 7 | 263 | %2.7 |
-| taksit_sayisi | 130 | 263 | %49.4 |
-| odul_miktari | 87 | 263 | %33.1 |
-| masraf_durumu | 10 | 263 | %3.8 |
+| kar_payi_orani_percent | 50 | 273 | %18.3 |
+| vade_ay | 7 | 273 | %2.6 |
+| taksit_sayisi | 140 | 273 | %51.3 |
+| odul_miktari | 92 | 273 | %33.7 |
+| masraf_durumu | 10 | 273 | %3.7 |

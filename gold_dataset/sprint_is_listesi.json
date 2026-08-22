@@ -12,8 +12,8 @@
     "Ziraat Katılım": 18
   },
   "ozellik_kapsami": {
-    "baslangic": 32,
-    "bitis": 35
+    "baslangic": 37,
+    "bitis": 40
   },
   "kontrol_gerek": [
     {
@@ -199,21 +199,25 @@
     {
       "sira": 2,
       "banka": "Ziraat Katılım",
-      "baslik": "250.000 TL- 1.000.000 TL arası 2-7 taksitli",
-      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/okul-odemelerinizde-6ya-varan-taksit",
-      "slug": "okul-odemelerinizde-6ya-varan-taksit",
-      "son_tarama": "2026-08-11",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=5, taksit=6, taksit=7, tutar, yapi=tutar+taksit",
+      "baslik": "10 Temmuz 2026 – 7 Ağustos 2026",
+      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/giyim-ve-ayakkabi-alisverisinizde-toplam-1000-tl-bankkart-lira-2",
+      "slug": "giyim-ve-ayakkabi-alisverisinizde-toplam-1000-tl-bankkart-lira-2",
+      "son_tarama": "2026-08-01",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: kademeli_tutar, odul=bankkart lira, tarih, tarih_coklu, tutar=10b+, tutar=1b+, yapi=tarih+tutar",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
-        "taksit=5",
-        "taksit=6",
-        "taksit=7",
-        "tutar",
+        "kademeli_tutar",
+        "odul=bankkart lira",
+        "tarih",
+        "tarih_coklu",
+        "tutar=10b+",
+        "tutar=1b+",
         "uzunluk=orta",
-        "yapi=tutar+taksit"
+        "yapi=tarih+tutar"
       ],
-      "kume_uyeleri": [],
+      "kume_uyeleri": [
+        "giyim-ve-ayakkabi-alisverisinizde-toplam-1000-tl-bankkart-lira-3"
+      ],
       "muhtemel_kopya": null,
       "cok_benzer": null
     },
@@ -242,19 +246,21 @@
     {
       "sira": 4,
       "banka": "Ziraat Katılım",
-      "baslik": "İşlemlerin Bankkart anlaşmalı üye işyerlerinde ve Bankkart POS'undan yapılması g",
-      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/turk-hava-yollarinda-6-taksit",
-      "slug": "turk-hava-yollarinda-6-taksit",
-      "son_tarama": "2026-08-01",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=3, taksit=6, tarih, tutar, yapi=tarih+tutar+taksit",
+      "baslik": "Bankkart Lira kazanabilmek için alışveriş yapmadan önce",
+      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/mobilya-alisverisinize-1500-tl-bankkart-lira-0",
+      "slug": "mobilya-alisverisinize-1500-tl-bankkart-lira-0",
+      "son_tarama": "2026-08-11",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: kademeli_tutar, odul=bankkart lira, tarih, tarih_coklu, tutar=10b+, tutar=1b+, yapi=tarih+tutar",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
-        "taksit=3",
-        "taksit=6",
+        "kademeli_tutar",
+        "odul=bankkart lira",
         "tarih",
-        "tutar",
+        "tarih_coklu",
+        "tutar=10b+",
+        "tutar=1b+",
         "uzunluk=orta",
-        "yapi=tarih+tutar+taksit"
+        "yapi=tarih+tutar"
       ],
       "kume_uyeleri": [],
       "muhtemel_kopya": null,
@@ -263,19 +269,21 @@
     {
       "sira": 5,
       "banka": "Türkiye Emlak Katılım",
-      "baslik": "Paraf ile Hepsiburada’da Peşin Fiyatına 9 Aya Varan Taksit Fırsatı!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-hepsiburadada-pesin-fiyatina-9-aya-varan-taksit-firsati",
-      "slug": "paraf-ile-hepsiburadada-pesin-fiyatina-9-aya-varan-taksit-firsati",
-      "son_tarama": "2026-08-01",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=12, taksit=3, taksit=6, taksit=9, tarih, tutar, yapi=tarih+tutar+taksit",
+      "baslik": "Metatechtr’de Peşin Fiyatına 9 aya varan taksit ve 6.000 TL’ye varan ParafPara!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/metatechtrde-pesin-fiyatina-9-aya-varan-taksit-ve-6000-tlye-varan-parafpara",
+      "slug": "metatechtrde-pesin-fiyatina-9-aya-varan-taksit-ve-6000-tlye-varan-parafpara",
+      "son_tarama": "2026-08-06",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: kademeli_tutar, odul=parafpara, taksit=6, tarih, tarih_coklu, tutar=100b+, tutar=10b+, tutar=1b+, yapi=tarih+tutar+taksit",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
-        "taksit=12",
-        "taksit=3",
+        "kademeli_tutar",
+        "odul=parafpara",
         "taksit=6",
-        "taksit=9",
         "tarih",
-        "tutar",
+        "tarih_coklu",
+        "tutar=100b+",
+        "tutar=10b+",
+        "tutar=1b+",
         "uzunluk=uzun",
         "yapi=tarih+tutar+taksit"
       ],
@@ -286,16 +294,18 @@
     {
       "sira": 6,
       "banka": "Ziraat Katılım",
-      "baslik": "Kampanyadan faydalanabilmek için işlemlerin Bankkart ile Bankkart POS'undan gerç",
-      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/e-bebekte-8-taksit",
-      "slug": "e-bebekte-8-taksit",
-      "son_tarama": "2026-08-01",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=4, taksit=8, tutar, yapi=tutar+taksit",
+      "baslik": "250.000 TL- 1.000.000 TL arası 2-7 taksitli",
+      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/okul-odemelerinizde-6ya-varan-taksit",
+      "slug": "okul-odemelerinizde-6ya-varan-taksit",
+      "son_tarama": "2026-08-11",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=5, taksit=6, taksit=7, tutar=100b+, tutar=1m+, yapi=tutar+taksit",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
-        "taksit=4",
-        "taksit=8",
-        "tutar",
+        "taksit=5",
+        "taksit=6",
+        "taksit=7",
+        "tutar=100b+",
+        "tutar=1m+",
         "uzunluk=orta",
         "yapi=tutar+taksit"
       ],
@@ -306,19 +316,22 @@
     {
       "sira": 7,
       "banka": "Türkiye Emlak Katılım",
-      "baslik": "Paraf ile Pazarama’da Peşin Fiyatına 6 Taksit!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-pazaramada-pesin-fiyatina-6-taksit",
-      "slug": "paraf-ile-pazaramada-pesin-fiyatina-6-taksit",
-      "son_tarama": "2026-08-06",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=2, taksit=3, taksit=6, tarih, tutar, yapi=tarih+tutar+taksit",
+      "baslik": "Paraf ile Hepsiburada’da Peşin Fiyatına 9 Aya Varan Taksit Fırsatı!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-hepsiburadada-pesin-fiyatina-9-aya-varan-taksit-firsati",
+      "slug": "paraf-ile-hepsiburadada-pesin-fiyatina-9-aya-varan-taksit-firsati",
+      "son_tarama": "2026-08-01",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: kademeli_tutar, taksit=12, taksit=3, taksit=6, taksit=9, tarih, tutar=10b+, tutar=1b+, yapi=tarih+tutar+taksit",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
-        "taksit=2",
+        "kademeli_tutar",
+        "taksit=12",
         "taksit=3",
         "taksit=6",
+        "taksit=9",
         "tarih",
-        "tutar",
-        "uzunluk=orta",
+        "tutar=10b+",
+        "tutar=1b+",
+        "uzunluk=uzun",
         "yapi=tarih+tutar+taksit"
       ],
       "kume_uyeleri": [],
@@ -328,21 +341,23 @@
     {
       "sira": 8,
       "banka": "Ziraat Katılım",
-      "baslik": "250 TL, toplam 500 TL Bankkart Lira",
-      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/e-ticaret-alisverislerinize-toplam-500-tl-bankkart-lira-2",
-      "slug": "e-ticaret-alisverislerinize-toplam-500-tl-bankkart-lira-2",
+      "baslik": "Bankkart Lira kazanabilirsiniz.",
+      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/optik-alisverisinize-500-tl-bankkart-lira-2",
+      "slug": "optik-alisverisinize-500-tl-bankkart-lira-2",
       "son_tarama": "2026-08-01",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=bankkart lira, tarih, tutar, yapi=tarih+tutar",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=bankkart lira, tarih, tarih_coklu, tutar=10b+, tutar=1b+, yapi=tarih+tutar",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
         "odul=bankkart lira",
         "tarih",
-        "tutar",
+        "tarih_coklu",
+        "tutar=10b+",
+        "tutar=1b+",
         "uzunluk=orta",
         "yapi=tarih+tutar"
       ],
       "kume_uyeleri": [
-        "e-ticaret-alisverislerinize-toplam-500-tl-bankkart-lira-3"
+        "optik-alisverisinize-500-tl-bankkart-lira-3"
       ],
       "muhtemel_kopya": null,
       "cok_benzer": null
@@ -354,14 +369,17 @@
       "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-trendyolda-pesin-fiyatina-9-taksit-firsati",
       "slug": "paraf-ile-trendyolda-pesin-fiyatina-9-taksit-firsati",
       "son_tarama": "2026-08-06",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=3, taksit=6, taksit=9, tarih, tutar, yapi=tarih+tutar+taksit",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: kademeli_tutar, taksit=3, taksit=6, taksit=9, tarih, tutar=100b+, tutar=10b+, tutar=1b+, yapi=tarih+tutar+taksit",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
+        "kademeli_tutar",
         "taksit=3",
         "taksit=6",
         "taksit=9",
         "tarih",
-        "tutar",
+        "tutar=100b+",
+        "tutar=10b+",
+        "tutar=1b+",
         "uzunluk=uzun",
         "yapi=tarih+tutar+taksit"
       ],
@@ -372,21 +390,22 @@
     {
       "sira": 10,
       "banka": "Ziraat Katılım",
-      "baslik": "10 Temmuz 2026 – 7 Ağustos 2026",
-      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/giyim-ve-ayakkabi-alisverisinizde-toplam-1000-tl-bankkart-lira-2",
-      "slug": "giyim-ve-ayakkabi-alisverisinizde-toplam-1000-tl-bankkart-lira-2",
+      "baslik": "250 TL, toplam 500 TL Bankkart Lira",
+      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/e-ticaret-alisverislerinize-toplam-500-tl-bankkart-lira-2",
+      "slug": "e-ticaret-alisverislerinize-toplam-500-tl-bankkart-lira-2",
       "son_tarama": "2026-08-01",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=bankkart lira, tarih, tutar, yapi=tarih+tutar",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=bankkart lira, tarih, tarih_coklu, tutar=1b+, yapi=tarih+tutar",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
         "odul=bankkart lira",
         "tarih",
-        "tutar",
+        "tarih_coklu",
+        "tutar=1b+",
         "uzunluk=orta",
         "yapi=tarih+tutar"
       ],
       "kume_uyeleri": [
-        "giyim-ve-ayakkabi-alisverisinizde-toplam-1000-tl-bankkart-lira-3"
+        "e-ticaret-alisverislerinize-toplam-500-tl-bankkart-lira-3"
       ],
       "muhtemel_kopya": null,
       "cok_benzer": null
@@ -394,79 +413,43 @@
     {
       "sira": 11,
       "banka": "Türkiye Emlak Katılım",
-      "baslik": "Metatechtr’de Peşin Fiyatına 9 aya varan taksit ve 6.000 TL’ye varan ParafPara!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/metatechtrde-pesin-fiyatina-9-aya-varan-taksit-ve-6000-tlye-varan-parafpara",
-      "slug": "metatechtrde-pesin-fiyatina-9-aya-varan-taksit-ve-6000-tlye-varan-parafpara",
-      "son_tarama": "2026-08-06",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=parafpara, taksit=6, tarih, tutar, yapi=tarih+tutar+taksit",
+      "baslik": "Mobilya, Dekorasyon ve Yapı Marketi Alışverişinize 4.000 TL'ye Varan ParafPara!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/mobilya-dekorasyon-ve-yapi-marketi-alisverisinize-4000-tlye-varan-parafpara",
+      "slug": "mobilya-dekorasyon-ve-yapi-marketi-alisverisinize-4000-tlye-varan-parafpara",
+      "son_tarama": "2026-08-01",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: kademeli_tutar, odul=parafpara, tarih, tarih_coklu, tutar=100b+, tutar=10b+, tutar=1b+, yapi=tarih+tutar",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
+        "kademeli_tutar",
         "odul=parafpara",
-        "taksit=6",
         "tarih",
-        "tutar",
+        "tarih_coklu",
+        "tutar=100b+",
+        "tutar=10b+",
+        "tutar=1b+",
         "uzunluk=uzun",
-        "yapi=tarih+tutar+taksit"
+        "yapi=tarih+tutar"
       ],
-      "kume_uyeleri": [],
+      "kume_uyeleri": [
+        "mobilya-dekorasyon-ve-yapi-marketi-alisverisinize-1250-tlye-varan-parafpara"
+      ],
       "muhtemel_kopya": null,
       "cok_benzer": null
     },
     {
       "sira": 12,
       "banka": "Ziraat Katılım",
-      "baslik": "Bir müşteri kampanya dönemi boyunca sınırsız olarak taksit imkanından faydalanab",
-      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/ikeada-6-taksit",
-      "slug": "ikeada-6-taksit",
-      "son_tarama": "2026-08-06",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=3, taksit=6, tutar, yapi=tutar+taksit",
-      "yeni_ozellikler": [],
-      "yapisal_ozellikler": [
-        "taksit=3",
-        "taksit=6",
-        "tutar",
-        "uzunluk=orta",
-        "yapi=tutar+taksit"
-      ],
-      "kume_uyeleri": [],
-      "muhtemel_kopya": null,
-      "cok_benzer": null
-    },
-    {
-      "sira": 13,
-      "banka": "Türkiye Emlak Katılım",
-      "baslik": "Giyim ve Kozmetik Alışverişlerinize 1.000 TL ParafPara!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/giyim-ve-kozmetik-alisverislerinize-1000-tl-parafpara",
-      "slug": "giyim-ve-kozmetik-alisverislerinize-1000-tl-parafpara",
-      "son_tarama": "2026-08-01",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=parafpara, tarih, tutar, yapi=tarih+tutar",
-      "yeni_ozellikler": [],
-      "yapisal_ozellikler": [
-        "odul=parafpara",
-        "tarih",
-        "tutar",
-        "uzunluk=uzun",
-        "yapi=tarih+tutar"
-      ],
-      "kume_uyeleri": [
-        "giyim-ve-kozmetik-alisverislerinize-2000-tl-parafpara"
-      ],
-      "muhtemel_kopya": null,
-      "cok_benzer": null
-    },
-    {
-      "sira": 14,
-      "banka": "Ziraat Katılım",
       "baslik": "Kampanyaya alışveriş yapmadan önce",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/kafe-ve-restoran-harcamalariniza-toplam-450-tl-bankkart-lira-2",
       "slug": "kafe-ve-restoran-harcamalariniza-toplam-450-tl-bankkart-lira-2",
       "son_tarama": "2026-08-01",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=bankkart lira, tarih, tutar, yapi=tarih+tutar",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=bankkart lira, tarih, tarih_coklu, tutar=1b+, yapi=tarih+tutar",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
         "odul=bankkart lira",
         "tarih",
-        "tutar",
+        "tarih_coklu",
+        "tutar=1b+",
         "uzunluk=orta",
         "yapi=tarih+tutar"
       ],
@@ -477,18 +460,22 @@
       "cok_benzer": null
     },
     {
-      "sira": 15,
+      "sira": 13,
       "banka": "Türkiye Emlak Katılım",
-      "baslik": "Market Alışverişlerinize 800 TL ParafPara!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/market-alisverislerinize-800-tl-parafpara",
-      "slug": "market-alisverislerinize-800-tl-parafpara",
-      "son_tarama": "2026-08-01",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=parafpara, tarih, tutar, yapi=tarih+tutar",
+      "baslik": "Seyahat Alışverişlerinize 3.500 TL'ye varan ParafPara!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/seyahat-alisverislerinize-3500-tlye-varan-parafpara",
+      "slug": "seyahat-alisverislerinize-3500-tlye-varan-parafpara",
+      "son_tarama": "2026-08-06",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: kademeli_tutar, odul=parafpara, tarih, tarih_coklu, tutar=100b+, tutar=10b+, tutar=1b+, yapi=tarih+tutar",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
+        "kademeli_tutar",
         "odul=parafpara",
         "tarih",
-        "tutar",
+        "tarih_coklu",
+        "tutar=100b+",
+        "tutar=10b+",
+        "tutar=1b+",
         "uzunluk=uzun",
         "yapi=tarih+tutar"
       ],
@@ -497,17 +484,18 @@
       "cok_benzer": null
     },
     {
-      "sira": 16,
+      "sira": 14,
       "banka": "Ziraat Katılım",
       "baslik": "10 Temmuz 2026 - 7 Ağustos 2026",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/kultur-sanat-harcamalariniza-toplam-500-tl-bankkart-lira-2",
       "slug": "kultur-sanat-harcamalariniza-toplam-500-tl-bankkart-lira-2",
       "son_tarama": "2026-08-01",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=bankkart lira, tarih, yapi=tarih+yuzde, yuzde",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=bankkart lira, tarih, tarih_coklu, yapi=tarih+yuzde, yuzde",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
         "odul=bankkart lira",
         "tarih",
+        "tarih_coklu",
         "uzunluk=orta",
         "yapi=tarih+yuzde",
         "yuzde"
@@ -519,80 +507,44 @@
       "cok_benzer": null
     },
     {
-      "sira": 17,
+      "sira": 15,
       "banka": "Türkiye Emlak Katılım",
-      "baslik": "Mobilya, Dekorasyon ve Yapı Marketi Alışverişinize 1.250 TL'ye Varan ParafPara!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/mobilya-dekorasyon-ve-yapi-marketi-alisverisinize-1250-tlye-varan-parafpara",
-      "slug": "mobilya-dekorasyon-ve-yapi-marketi-alisverisinize-1250-tlye-varan-parafpara",
-      "son_tarama": "2026-08-11",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=parafpara, tarih, tutar, yapi=tarih+tutar",
+      "baslik": "Giyim ve Kozmetik Alışverişlerinize 1.000 TL ParafPara!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/giyim-ve-kozmetik-alisverislerinize-1000-tl-parafpara",
+      "slug": "giyim-ve-kozmetik-alisverislerinize-1000-tl-parafpara",
+      "son_tarama": "2026-08-01",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: kademeli_tutar, odul=parafpara, tarih, tarih_coklu, tutar=10b+, tutar=1b+, yapi=tarih+tutar",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
+        "kademeli_tutar",
         "odul=parafpara",
         "tarih",
-        "tutar",
+        "tarih_coklu",
+        "tutar=10b+",
+        "tutar=1b+",
         "uzunluk=uzun",
         "yapi=tarih+tutar"
       ],
       "kume_uyeleri": [
-        "mobilya-dekorasyon-ve-yapi-marketi-alisverisinize-4000-tlye-varan-parafpara"
+        "giyim-ve-kozmetik-alisverislerinize-2000-tl-parafpara"
       ],
       "muhtemel_kopya": null,
       "cok_benzer": null
     },
     {
-      "sira": 18,
-      "banka": "Ziraat Katılım",
-      "baslik": "Bankkart Lira kazanabilmek için alışveriş yapmadan önce",
-      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/mobilya-alisverisinize-1500-tl-bankkart-lira-0",
-      "slug": "mobilya-alisverisinize-1500-tl-bankkart-lira-0",
-      "son_tarama": "2026-08-11",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=bankkart lira, tarih, tutar, yapi=tarih+tutar",
-      "yeni_ozellikler": [],
-      "yapisal_ozellikler": [
-        "odul=bankkart lira",
-        "tarih",
-        "tutar",
-        "uzunluk=orta",
-        "yapi=tarih+tutar"
-      ],
-      "kume_uyeleri": [],
-      "muhtemel_kopya": null,
-      "cok_benzer": null
-    },
-    {
-      "sira": 19,
-      "banka": "Türkiye Emlak Katılım",
-      "baslik": "Modanisa’da Tüm İndirimlere Ek %15 İndirim Fırsatı!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/modanisada-tum-indirimlere-ek-15-indirim-firsati",
-      "slug": "modanisada-tum-indirimlere-ek-15-indirim-firsati",
-      "son_tarama": "2026-08-01",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: tarih, tutar, yapi=tarih+tutar+yuzde, yuzde",
-      "yeni_ozellikler": [],
-      "yapisal_ozellikler": [
-        "tarih",
-        "tutar",
-        "uzunluk=orta",
-        "yapi=tarih+tutar+yuzde",
-        "yuzde"
-      ],
-      "kume_uyeleri": [],
-      "muhtemel_kopya": null,
-      "cok_benzer": null
-    },
-    {
-      "sira": 20,
+      "sira": 16,
       "banka": "Ziraat Katılım",
       "baslik": "Kampanyadan faydalanabilmek için işlemlerin Bankkart ile",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/n11de-6-taksit",
       "slug": "n11de-6-taksit",
       "son_tarama": "2026-08-18",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=3, taksit=6, tutar, yapi=tutar+taksit",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=3, taksit=6, tutar=10b+, tutar=1b+, yapi=tutar+taksit",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
         "taksit=3",
         "taksit=6",
-        "tutar",
+        "tutar=10b+",
+        "tutar=1b+",
         "uzunluk=orta",
         "yapi=tutar+taksit"
       ],
@@ -601,18 +553,20 @@
       "cok_benzer": null
     },
     {
-      "sira": 21,
+      "sira": 17,
       "banka": "Türkiye Emlak Katılım",
       "baslik": "Paraf ile ADV mağazalarında 1.000 TL ParafPara",
       "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-adv-magazalarinda-1000-tl-parafpara",
       "slug": "paraf-ile-adv-magazalarinda-1000-tl-parafpara",
       "son_tarama": "2026-08-06",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=parafpara, tarih, tutar, yapi=tarih+tutar",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=parafpara, tarih, tarih_coklu, tutar=10b+, tutar=1b+, yapi=tarih+tutar",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
         "odul=parafpara",
         "tarih",
-        "tutar",
+        "tarih_coklu",
+        "tutar=10b+",
+        "tutar=1b+",
         "uzunluk=uzun",
         "yapi=tarih+tutar"
       ],
@@ -626,29 +580,278 @@
       "cok_benzer": null
     },
     {
-      "sira": 22,
+      "sira": 18,
       "banka": "Ziraat Katılım",
-      "baslik": "Bankkart Lira kazanabilirsiniz.",
-      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/optik-alisverisinize-500-tl-bankkart-lira-2",
-      "slug": "optik-alisverisinize-500-tl-bankkart-lira-2",
+      "baslik": "Peşin fiyatına taksit imkanları tek seferde yapacağınız",
+      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/trendyolda-6ya-varan-taksit",
+      "slug": "trendyolda-6ya-varan-taksit",
       "son_tarama": "2026-08-01",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=bankkart lira, tarih, tutar, yapi=tarih+tutar",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=3, taksit=6, tutar=100b+, tutar=1b+, yapi=tutar+taksit",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
-        "odul=bankkart lira",
-        "tarih",
-        "tutar",
+        "taksit=3",
+        "taksit=6",
+        "tutar=100b+",
+        "tutar=1b+",
         "uzunluk=orta",
+        "yapi=tutar+taksit"
+      ],
+      "kume_uyeleri": [],
+      "muhtemel_kopya": null,
+      "cok_benzer": null
+    },
+    {
+      "sira": 19,
+      "banka": "Türkiye Emlak Katılım",
+      "baslik": "Paraf ile Pazarama’da Peşin Fiyatına 6 Taksit!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-pazaramada-pesin-fiyatina-6-taksit",
+      "slug": "paraf-ile-pazaramada-pesin-fiyatina-6-taksit",
+      "son_tarama": "2026-08-06",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=2, taksit=3, taksit=6, tarih, tutar=1b+, yapi=tarih+tutar+taksit",
+      "yeni_ozellikler": [],
+      "yapisal_ozellikler": [
+        "taksit=2",
+        "taksit=3",
+        "taksit=6",
+        "tarih",
+        "tutar=1b+",
+        "uzunluk=orta",
+        "yapi=tarih+tutar+taksit"
+      ],
+      "kume_uyeleri": [],
+      "muhtemel_kopya": null,
+      "cok_benzer": null
+    },
+    {
+      "sira": 20,
+      "banka": "Ziraat Katılım",
+      "baslik": "TROY kartla idefix’te yaz boyunca her 1.000 TL’ye 200 TL, toplamda 3.000 TL’ye v",
+      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/troy-kartla-idefixte-3000-tlye-varan-indirim",
+      "slug": "troy-kartla-idefixte-3000-tlye-varan-indirim",
+      "son_tarama": "2026-08-01",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: kademeli_tutar, tarih, tarih_coklu, tutar=1b+, yapi=tarih+tutar",
+      "yeni_ozellikler": [],
+      "yapisal_ozellikler": [
+        "kademeli_tutar",
+        "tarih",
+        "tarih_coklu",
+        "tutar=1b+",
+        "uzunluk=uzun",
         "yapi=tarih+tutar"
       ],
-      "kume_uyeleri": [
-        "optik-alisverisinize-500-tl-bankkart-lira-3"
+      "kume_uyeleri": [],
+      "muhtemel_kopya": null,
+      "cok_benzer": null
+    },
+    {
+      "sira": 21,
+      "banka": "Türkiye Emlak Katılım",
+      "baslik": "Paraf ile Seçili E-Ticaret Alışverişlerinize 1.500 TL'ye varan ParafPara!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-secili-e-ticaret-alisverislerinize-1500-tlye-varan-parafpara",
+      "slug": "paraf-ile-secili-e-ticaret-alisverislerinize-1500-tlye-varan-parafpara",
+      "son_tarama": "2026-08-06",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=parafpara, tarih, tarih_coklu, tutar=10b+, tutar=1b+, yapi=tarih+tutar",
+      "yeni_ozellikler": [],
+      "yapisal_ozellikler": [
+        "odul=parafpara",
+        "tarih",
+        "tarih_coklu",
+        "tutar=10b+",
+        "tutar=1b+",
+        "uzunluk=uzun",
+        "yapi=tarih+tutar"
       ],
+      "kume_uyeleri": [],
+      "muhtemel_kopya": null,
+      "cok_benzer": null
+    },
+    {
+      "sira": 22,
+      "banka": "Ziraat Katılım",
+      "baslik": "İşlemlerin Bankkart anlaşmalı üye işyerlerinde ve Bankkart POS'undan yapılması g",
+      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/turk-hava-yollarinda-6-taksit",
+      "slug": "turk-hava-yollarinda-6-taksit",
+      "son_tarama": "2026-08-01",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=3, taksit=6, tarih, tutar=1b+, yapi=tarih+tutar+taksit",
+      "yeni_ozellikler": [],
+      "yapisal_ozellikler": [
+        "taksit=3",
+        "taksit=6",
+        "tarih",
+        "tutar=1b+",
+        "uzunluk=orta",
+        "yapi=tarih+tutar+taksit"
+      ],
+      "kume_uyeleri": [],
       "muhtemel_kopya": null,
       "cok_benzer": null
     },
     {
       "sira": 23,
+      "banka": "Türkiye Emlak Katılım",
+      "baslik": "Market Alışverişlerinize 800 TL ParafPara!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/market-alisverislerinize-800-tl-parafpara",
+      "slug": "market-alisverislerinize-800-tl-parafpara",
+      "son_tarama": "2026-08-01",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=parafpara, tarih, tarih_coklu, tutar=10b+, yapi=tarih+tutar",
+      "yeni_ozellikler": [],
+      "yapisal_ozellikler": [
+        "odul=parafpara",
+        "tarih",
+        "tarih_coklu",
+        "tutar=10b+",
+        "uzunluk=uzun",
+        "yapi=tarih+tutar"
+      ],
+      "kume_uyeleri": [],
+      "muhtemel_kopya": null,
+      "cok_benzer": null
+    },
+    {
+      "sira": 24,
+      "banka": "Ziraat Katılım",
+      "baslik": "Bankkart Lira verilecektir.",
+      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/veteriner-ve-petshop-harcamalariniza-2000-tl-bankkart-lira",
+      "slug": "veteriner-ve-petshop-harcamalariniza-2000-tl-bankkart-lira",
+      "son_tarama": "2026-08-18",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=bankkart lira, tarih, tarih_coklu, tutar=1b+, yapi=tarih+tutar",
+      "yeni_ozellikler": [],
+      "yapisal_ozellikler": [
+        "odul=bankkart lira",
+        "tarih",
+        "tarih_coklu",
+        "tutar=1b+",
+        "uzunluk=orta",
+        "yapi=tarih+tutar"
+      ],
+      "kume_uyeleri": [],
+      "muhtemel_kopya": null,
+      "cok_benzer": null
+    },
+    {
+      "sira": 25,
+      "banka": "Türkiye Emlak Katılım",
+      "baslik": "Paraf ile Seçili E-Ticaret Alışverişlerinize 2.000 TL'ye varan ParafPara!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-secili-e-ticaret-alisverislerinize-2000-tlye-varan-parafpara",
+      "slug": "paraf-ile-secili-e-ticaret-alisverislerinize-2000-tlye-varan-parafpara",
+      "son_tarama": "2026-08-06",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=parafpara, tarih, tarih_coklu, tutar=1b+, yapi=tarih+tutar",
+      "yeni_ozellikler": [],
+      "yapisal_ozellikler": [
+        "odul=parafpara",
+        "tarih",
+        "tarih_coklu",
+        "tutar=1b+",
+        "uzunluk=uzun",
+        "yapi=tarih+tutar"
+      ],
+      "kume_uyeleri": [],
+      "muhtemel_kopya": null,
+      "cok_benzer": null
+    },
+    {
+      "sira": 26,
+      "banka": "Ziraat Katılım",
+      "baslik": "Kampanyadan faydalanabilmek için işlemlerin Bankkart ile Bankkart POS'undan gerç",
+      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/e-bebekte-8-taksit",
+      "slug": "e-bebekte-8-taksit",
+      "son_tarama": "2026-08-01",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=4, taksit=8, tutar=1b+, yapi=tutar+taksit",
+      "yeni_ozellikler": [],
+      "yapisal_ozellikler": [
+        "taksit=4",
+        "taksit=8",
+        "tutar=1b+",
+        "uzunluk=orta",
+        "yapi=tutar+taksit"
+      ],
+      "kume_uyeleri": [],
+      "muhtemel_kopya": null,
+      "cok_benzer": null
+    },
+    {
+      "sira": 27,
+      "banka": "Türkiye Emlak Katılım",
+      "baslik": "TROY ile idefix’te 3.000 TL İndirim Fırsatı!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/troy-ile-idefixte-3000-tl-indirim-firsati",
+      "slug": "troy-ile-idefixte-3000-tl-indirim-firsati",
+      "son_tarama": "2026-08-01",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: kademeli_tutar, tarih, tarih_coklu, tutar=1b+, yapi=tarih+tutar",
+      "yeni_ozellikler": [],
+      "yapisal_ozellikler": [
+        "kademeli_tutar",
+        "tarih",
+        "tarih_coklu",
+        "tutar=1b+",
+        "uzunluk=uzun",
+        "yapi=tarih+tutar"
+      ],
+      "kume_uyeleri": [],
+      "muhtemel_kopya": null,
+      "cok_benzer": null
+    },
+    {
+      "sira": 28,
+      "banka": "Ziraat Katılım",
+      "baslik": "Gold Statü ile; ücretsiz kayıt, otomatik yenileme, %10 oranına varan özel indiri",
+      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/halalbookingde-size-ozel-avantajli-tatiller",
+      "slug": "halalbookingde-size-ozel-avantajli-tatiller",
+      "son_tarama": "2026-08-01",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: tutar=10b+, tutar=1b+, yapi=tutar+yuzde, yuzde",
+      "yeni_ozellikler": [],
+      "yapisal_ozellikler": [
+        "tutar=10b+",
+        "tutar=1b+",
+        "uzunluk=uzun",
+        "yapi=tutar+yuzde",
+        "yuzde"
+      ],
+      "kume_uyeleri": [],
+      "muhtemel_kopya": null,
+      "cok_benzer": null
+    },
+    {
+      "sira": 29,
+      "banka": "Türkiye Emlak Katılım",
+      "baslik": "Modanisa’da Tüm İndirimlere Ek %15 İndirim Fırsatı!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/modanisada-tum-indirimlere-ek-15-indirim-firsati",
+      "slug": "modanisada-tum-indirimlere-ek-15-indirim-firsati",
+      "son_tarama": "2026-08-01",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: tarih, tutar=1b+, yapi=tarih+tutar+yuzde, yuzde",
+      "yeni_ozellikler": [],
+      "yapisal_ozellikler": [
+        "tarih",
+        "tutar=1b+",
+        "uzunluk=orta",
+        "yapi=tarih+tutar+yuzde",
+        "yuzde"
+      ],
+      "kume_uyeleri": [],
+      "muhtemel_kopya": null,
+      "cok_benzer": null
+    },
+    {
+      "sira": 30,
+      "banka": "Ziraat Katılım",
+      "baslik": "Bir müşteri kampanya dönemi boyunca sınırsız olarak taksit imkanından faydalanab",
+      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/ikeada-6-taksit",
+      "slug": "ikeada-6-taksit",
+      "son_tarama": "2026-08-06",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=3, taksit=6, tutar=1b+, yapi=tutar+taksit",
+      "yeni_ozellikler": [],
+      "yapisal_ozellikler": [
+        "taksit=3",
+        "taksit=6",
+        "tutar=1b+",
+        "uzunluk=orta",
+        "yapi=tutar+taksit"
+      ],
+      "kume_uyeleri": [],
+      "muhtemel_kopya": null,
+      "cok_benzer": null
+    },
+    {
+      "sira": 31,
       "banka": "Türkiye Emlak Katılım",
       "baslik": "Paraf ile ADV Mağazalarında 6 Taksit!",
       "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-adv-magazalarinda-6-taksit",
@@ -668,18 +871,18 @@
       "cok_benzer": null
     },
     {
-      "sira": 24,
+      "sira": 32,
       "banka": "Ziraat Katılım",
       "baslik": "Kampanyadan faydalanabilmek için işlemlerin Bankkart ile",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/pazaramada-6-taksit",
       "slug": "pazaramada-6-taksit",
       "son_tarama": "2026-08-18",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=3, taksit=6, tutar, yapi=tutar+taksit",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=3, taksit=6, tutar=1b+, yapi=tutar+taksit",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
         "taksit=3",
         "taksit=6",
-        "tutar",
+        "tutar=1b+",
         "uzunluk=orta",
         "yapi=tutar+taksit"
       ],
@@ -688,7 +891,7 @@
       "cok_benzer": null
     },
     {
-      "sira": 25,
+      "sira": 33,
       "banka": "Türkiye Emlak Katılım",
       "baslik": "Paraf ile Casper.com.tr'de Peşin Fiyatına 6 Taksit Fırsatı!",
       "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-caspercomtrde-pesin-fiyatina-6-taksit-firsati",
@@ -710,27 +913,29 @@
       "cok_benzer": null
     },
     {
-      "sira": 26,
+      "sira": 34,
       "banka": "Ziraat Katılım",
-      "baslik": "Sağlık Hizmetleri, Sağlık Ürünleri",
-      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/saglik-sektorunde-5-taksit",
-      "slug": "saglik-sektorunde-5-taksit",
+      "baslik": "10 Temmuz 2026 - 7 Ağustos 2026",
+      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/qr-ile-odemelerinize-toplam-100-tl-bankkart-lira-2",
+      "slug": "qr-ile-odemelerinize-toplam-100-tl-bankkart-lira-2",
       "son_tarama": "2026-08-01",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=4, taksit=5, tutar, yapi=tutar+taksit",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=bankkart lira, tarih, tarih_coklu, yapi=tarih",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
-        "taksit=4",
-        "taksit=5",
-        "tutar",
+        "odul=bankkart lira",
+        "tarih",
+        "tarih_coklu",
         "uzunluk=orta",
-        "yapi=tutar+taksit"
+        "yapi=tarih"
       ],
-      "kume_uyeleri": [],
+      "kume_uyeleri": [
+        "qr-ile-odemelerinize-toplam-100-tl-bankkart-lira-3"
+      ],
       "muhtemel_kopya": null,
       "cok_benzer": null
     },
     {
-      "sira": 27,
+      "sira": 35,
       "banka": "Türkiye Emlak Katılım",
       "baslik": "Paraf ile Damat Tween’de 6 Aya Varan Taksit Fırsatı!",
       "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-damat-tweende-6-aya-varan-taksit-firsati",
@@ -750,27 +955,27 @@
       "cok_benzer": null
     },
     {
-      "sira": 28,
+      "sira": 36,
       "banka": "Ziraat Katılım",
-      "baslik": "250 bin TL - 1 milyon TL arası peşin işlemler 4 taksite",
-      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/secili-okullarda-pesin-odemelerinize-5e-varan-taksit",
-      "slug": "secili-okullarda-pesin-odemelerinize-5e-varan-taksit",
-      "son_tarama": "2026-08-18",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=4, taksit=5, taksit=6, yapi=taksit",
+      "baslik": "Sağlık Hizmetleri, Sağlık Ürünleri",
+      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/saglik-sektorunde-5-taksit",
+      "slug": "saglik-sektorunde-5-taksit",
+      "son_tarama": "2026-08-01",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=4, taksit=5, tutar=1b+, yapi=tutar+taksit",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
         "taksit=4",
         "taksit=5",
-        "taksit=6",
-        "uzunluk=kisa",
-        "yapi=taksit"
+        "tutar=1b+",
+        "uzunluk=orta",
+        "yapi=tutar+taksit"
       ],
       "kume_uyeleri": [],
       "muhtemel_kopya": null,
       "cok_benzer": null
     },
     {
-      "sira": 29,
+      "sira": 37,
       "banka": "Türkiye Emlak Katılım",
       "baslik": "Paraf ile D’S Damat’ta 6 Aya Varan Taksit Fırsatı!",
       "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-ds-damatta-6-aya-varan-taksit-firsati",
@@ -790,38 +995,38 @@
       "cok_benzer": null
     },
     {
-      "sira": 30,
+      "sira": 38,
       "banka": "Ziraat Katılım",
-      "baslik": "Peşin fiyatına taksit imkanları tek seferde yapacağınız",
-      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/trendyolda-6ya-varan-taksit",
-      "slug": "trendyolda-6ya-varan-taksit",
-      "son_tarama": "2026-08-01",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=3, taksit=6, tutar, yapi=tutar+taksit",
+      "baslik": "250 bin TL - 1 milyon TL arası peşin işlemler 4 taksite",
+      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/secili-okullarda-pesin-odemelerinize-5e-varan-taksit",
+      "slug": "secili-okullarda-pesin-odemelerinize-5e-varan-taksit",
+      "son_tarama": "2026-08-18",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=4, taksit=5, taksit=6, yapi=taksit",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
-        "taksit=3",
+        "taksit=4",
+        "taksit=5",
         "taksit=6",
-        "tutar",
-        "uzunluk=orta",
-        "yapi=tutar+taksit"
+        "uzunluk=kisa",
+        "yapi=taksit"
       ],
       "kume_uyeleri": [],
       "muhtemel_kopya": null,
       "cok_benzer": null
     },
     {
-      "sira": 31,
+      "sira": 39,
       "banka": "Türkiye Emlak Katılım",
       "baslik": "Paraf ile İpekyol’da 4 Taksit Fırsatı!",
       "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-ipekyolda-4-taksit-firsati",
       "slug": "paraf-ile-ipekyolda-4-taksit-firsati",
       "son_tarama": "2026-08-06",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=4, tarih, tutar, yapi=tarih+tutar+taksit",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=4, tarih, tutar=1b+, yapi=tarih+tutar+taksit",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
         "taksit=4",
         "tarih",
-        "tutar",
+        "tutar=1b+",
         "uzunluk=kisa",
         "yapi=tarih+tutar+taksit"
       ],
@@ -836,47 +1041,7 @@
       "cok_benzer": null
     },
     {
-      "sira": 32,
-      "banka": "Ziraat Katılım",
-      "baslik": "Bankkart Lira verilecektir.",
-      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/veteriner-ve-petshop-harcamalariniza-2000-tl-bankkart-lira",
-      "slug": "veteriner-ve-petshop-harcamalariniza-2000-tl-bankkart-lira",
-      "son_tarama": "2026-08-18",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=bankkart lira, tarih, tutar, yapi=tarih+tutar",
-      "yeni_ozellikler": [],
-      "yapisal_ozellikler": [
-        "odul=bankkart lira",
-        "tarih",
-        "tutar",
-        "uzunluk=orta",
-        "yapi=tarih+tutar"
-      ],
-      "kume_uyeleri": [],
-      "muhtemel_kopya": null,
-      "cok_benzer": null
-    },
-    {
-      "sira": 33,
-      "banka": "Türkiye Emlak Katılım",
-      "baslik": "Paraf ile n11'de Peşin Fiyatına 3 Aya Varan Taksit Fırsatı!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-n11de-pesin-fiyatina-3-aya-varan-taksit-firsati",
-      "slug": "paraf-ile-n11de-pesin-fiyatina-3-aya-varan-taksit-firsati",
-      "son_tarama": "2026-08-06",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=3, tarih, tutar, yapi=tarih+tutar+taksit",
-      "yeni_ozellikler": [],
-      "yapisal_ozellikler": [
-        "taksit=3",
-        "tarih",
-        "tutar",
-        "uzunluk=orta",
-        "yapi=tarih+tutar+taksit"
-      ],
-      "kume_uyeleri": [],
-      "muhtemel_kopya": null,
-      "cok_benzer": null
-    },
-    {
-      "sira": 34,
+      "sira": 40,
       "banka": "Ziraat Katılım",
       "baslik": "'tan yapacağınız araç kiralamalarında",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/enterpriseta-arac-kiralamalarinizda-30-indirim",
@@ -895,7 +1060,46 @@
       "cok_benzer": null
     },
     {
-      "sira": 35,
+      "sira": 41,
+      "banka": "Türkiye Emlak Katılım",
+      "baslik": "Paraf ile n11'de Peşin Fiyatına 3 Aya Varan Taksit Fırsatı!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-n11de-pesin-fiyatina-3-aya-varan-taksit-firsati",
+      "slug": "paraf-ile-n11de-pesin-fiyatina-3-aya-varan-taksit-firsati",
+      "son_tarama": "2026-08-06",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=3, tarih, tutar=1b+, yapi=tarih+tutar+taksit",
+      "yeni_ozellikler": [],
+      "yapisal_ozellikler": [
+        "taksit=3",
+        "tarih",
+        "tutar=1b+",
+        "uzunluk=orta",
+        "yapi=tarih+tutar+taksit"
+      ],
+      "kume_uyeleri": [],
+      "muhtemel_kopya": null,
+      "cok_benzer": null
+    },
+    {
+      "sira": 42,
+      "banka": "Ziraat Katılım",
+      "baslik": "İşlemlerin Bankkart anlaşmalı üye işyerlerinde ve Bankkart POS'undan yapılması g",
+      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/karacada-3-taksit",
+      "slug": "karacada-3-taksit",
+      "son_tarama": "2026-08-06",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=3, tutar=1b+, yapi=tutar+taksit",
+      "yeni_ozellikler": [],
+      "yapisal_ozellikler": [
+        "taksit=3",
+        "tutar=1b+",
+        "uzunluk=orta",
+        "yapi=tutar+taksit"
+      ],
+      "kume_uyeleri": [],
+      "muhtemel_kopya": null,
+      "cok_benzer": null
+    },
+    {
+      "sira": 43,
       "banka": "Türkiye Emlak Katılım",
       "baslik": "Paraf ile Nocturne’de 4 Taksit!",
       "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-nocturnede-4-taksit",
@@ -915,37 +1119,37 @@
       "cok_benzer": null
     },
     {
-      "sira": 36,
+      "sira": 44,
       "banka": "Ziraat Katılım",
-      "baslik": "Gold Statü ile; ücretsiz kayıt, otomatik yenileme, %10 oranına varan özel indiri",
-      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/halalbookingde-size-ozel-avantajli-tatiller",
-      "slug": "halalbookingde-size-ozel-avantajli-tatiller",
-      "son_tarama": "2026-08-01",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: tutar, yapi=tutar+yuzde, yuzde",
+      "baslik": "'den yapacağınız alışverişlerinizde geçerlidir. Koçtaş Mağazalarında yapacağınız",
+      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/koctasta-5-taksit",
+      "slug": "koctasta-5-taksit",
+      "son_tarama": "2026-08-18",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=5, tutar=10b+, yapi=tutar+taksit",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
-        "tutar",
-        "uzunluk=uzun",
-        "yapi=tutar+yuzde",
-        "yuzde"
+        "taksit=5",
+        "tutar=10b+",
+        "uzunluk=kisa",
+        "yapi=tutar+taksit"
       ],
       "kume_uyeleri": [],
       "muhtemel_kopya": null,
       "cok_benzer": null
     },
     {
-      "sira": 37,
+      "sira": 45,
       "banka": "Türkiye Emlak Katılım",
       "baslik": "Paraf ile PttAVM.com’da Peşin Fiyatına 2 Taksit!",
       "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-pttavmcomda-pesin-fiyatina-2-taksit",
       "slug": "paraf-ile-pttavmcomda-pesin-fiyatina-2-taksit",
       "son_tarama": "2026-08-01",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=2, tarih, tutar, yapi=tarih+tutar+taksit",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=2, tarih, tutar=1b+, yapi=tarih+tutar+taksit",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
         "taksit=2",
         "tarih",
-        "tutar",
+        "tutar=1b+",
         "uzunluk=orta",
         "yapi=tarih+tutar+taksit"
       ],
@@ -954,95 +1158,17 @@
       "cok_benzer": null
     },
     {
-      "sira": 38,
-      "banka": "Ziraat Katılım",
-      "baslik": "İşlemlerin Bankkart anlaşmalı üye işyerlerinde ve Bankkart POS'undan yapılması g",
-      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/karacada-3-taksit",
-      "slug": "karacada-3-taksit",
-      "son_tarama": "2026-08-06",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=3, tutar, yapi=tutar+taksit",
-      "yeni_ozellikler": [],
-      "yapisal_ozellikler": [
-        "taksit=3",
-        "tutar",
-        "uzunluk=orta",
-        "yapi=tutar+taksit"
-      ],
-      "kume_uyeleri": [],
-      "muhtemel_kopya": null,
-      "cok_benzer": null
-    },
-    {
-      "sira": 39,
-      "banka": "Türkiye Emlak Katılım",
-      "baslik": "Paraf ile Seçili E-Ticaret Alışverişlerinize 1.500 TL'ye varan ParafPara!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-secili-e-ticaret-alisverislerinize-1500-tlye-varan-parafpara",
-      "slug": "paraf-ile-secili-e-ticaret-alisverislerinize-1500-tlye-varan-parafpara",
-      "son_tarama": "2026-08-06",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=parafpara, tarih, tutar, yapi=tarih+tutar",
-      "yeni_ozellikler": [],
-      "yapisal_ozellikler": [
-        "odul=parafpara",
-        "tarih",
-        "tutar",
-        "uzunluk=uzun",
-        "yapi=tarih+tutar"
-      ],
-      "kume_uyeleri": [],
-      "muhtemel_kopya": null,
-      "cok_benzer": null
-    },
-    {
-      "sira": 40,
-      "banka": "Ziraat Katılım",
-      "baslik": "'den yapacağınız alışverişlerinizde geçerlidir. Koçtaş Mağazalarında yapacağınız",
-      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/koctasta-5-taksit",
-      "slug": "koctasta-5-taksit",
-      "son_tarama": "2026-08-18",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=5, tutar, yapi=tutar+taksit",
-      "yeni_ozellikler": [],
-      "yapisal_ozellikler": [
-        "taksit=5",
-        "tutar",
-        "uzunluk=kisa",
-        "yapi=tutar+taksit"
-      ],
-      "kume_uyeleri": [],
-      "muhtemel_kopya": null,
-      "cok_benzer": null
-    },
-    {
-      "sira": 41,
-      "banka": "Türkiye Emlak Katılım",
-      "baslik": "Paraf ile Seçili E-Ticaret Alışverişlerinize 2.000 TL'ye varan ParafPara!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-secili-e-ticaret-alisverislerinize-2000-tlye-varan-parafpara",
-      "slug": "paraf-ile-secili-e-ticaret-alisverislerinize-2000-tlye-varan-parafpara",
-      "son_tarama": "2026-08-06",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=parafpara, tarih, tutar, yapi=tarih+tutar",
-      "yeni_ozellikler": [],
-      "yapisal_ozellikler": [
-        "odul=parafpara",
-        "tarih",
-        "tutar",
-        "uzunluk=uzun",
-        "yapi=tarih+tutar"
-      ],
-      "kume_uyeleri": [],
-      "muhtemel_kopya": null,
-      "cok_benzer": null
-    },
-    {
-      "sira": 42,
+      "sira": 46,
       "banka": "Ziraat Katılım",
       "baslik": "Kampanyadan faydalanabilmek için işlemlerin Bankkart ile",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/porlandda-8-taksit",
       "slug": "porlandda-8-taksit",
       "son_tarama": "2026-08-18",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=8, tutar, yapi=tutar+taksit",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=8, tutar=1b+, yapi=tutar+taksit",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
         "taksit=8",
-        "tutar",
+        "tutar=1b+",
         "uzunluk=kisa",
         "yapi=tutar+taksit"
       ],
@@ -1051,7 +1177,7 @@
       "cok_benzer": null
     },
     {
-      "sira": 43,
+      "sira": 47,
       "banka": "Türkiye Emlak Katılım",
       "baslik": "Paraf ile Vestel’de 9 Aya Varan Taksit Fırsatı!",
       "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-vestelde-9-aya-varan-taksit-firsati",
@@ -1071,28 +1197,26 @@
       "cok_benzer": null
     },
     {
-      "sira": 44,
+      "sira": 48,
       "banka": "Ziraat Katılım",
-      "baslik": "10 Temmuz 2026 - 7 Ağustos 2026",
-      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/qr-ile-odemelerinize-toplam-100-tl-bankkart-lira-2",
-      "slug": "qr-ile-odemelerinize-toplam-100-tl-bankkart-lira-2",
-      "son_tarama": "2026-08-01",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=bankkart lira, tarih, yapi=tarih",
+      "baslik": "Kampanyadan faydalanabilmek için işlemlerin Bankkart ile",
+      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/schaferda-9-taksit",
+      "slug": "schaferda-9-taksit",
+      "son_tarama": "2026-08-18",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=9, tutar=10b+, yapi=tutar+taksit",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
-        "odul=bankkart lira",
-        "tarih",
+        "taksit=9",
+        "tutar=10b+",
         "uzunluk=orta",
-        "yapi=tarih"
+        "yapi=tutar+taksit"
       ],
-      "kume_uyeleri": [
-        "qr-ile-odemelerinize-toplam-100-tl-bankkart-lira-3"
-      ],
+      "kume_uyeleri": [],
       "muhtemel_kopya": null,
       "cok_benzer": null
     },
     {
-      "sira": 45,
+      "sira": 49,
       "banka": "Türkiye Emlak Katılım",
       "baslik": "Paraf ile Yargıcı Mağazalarında 4 Taksit Fırsatı!",
       "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-yargici-magazalarinda-4-taksit-firsati",
@@ -1105,84 +1229,6 @@
         "taksit=4",
         "tarih",
         "uzunluk=kisa",
-        "yapi=tarih+taksit"
-      ],
-      "kume_uyeleri": [],
-      "muhtemel_kopya": null,
-      "cok_benzer": null
-    },
-    {
-      "sira": 46,
-      "banka": "Ziraat Katılım",
-      "baslik": "Kampanyadan faydalanabilmek için işlemlerin Bankkart ile",
-      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/schaferda-9-taksit",
-      "slug": "schaferda-9-taksit",
-      "son_tarama": "2026-08-18",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=9, tutar, yapi=tutar+taksit",
-      "yeni_ozellikler": [],
-      "yapisal_ozellikler": [
-        "taksit=9",
-        "tutar",
-        "uzunluk=orta",
-        "yapi=tutar+taksit"
-      ],
-      "kume_uyeleri": [],
-      "muhtemel_kopya": null,
-      "cok_benzer": null
-    },
-    {
-      "sira": 47,
-      "banka": "Türkiye Emlak Katılım",
-      "baslik": "Seyahat Alışverişlerinize 3.500 TL'ye varan ParafPara!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/seyahat-alisverislerinize-3500-tlye-varan-parafpara",
-      "slug": "seyahat-alisverislerinize-3500-tlye-varan-parafpara",
-      "son_tarama": "2026-08-06",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=parafpara, tarih, tutar, yapi=tarih+tutar",
-      "yeni_ozellikler": [],
-      "yapisal_ozellikler": [
-        "odul=parafpara",
-        "tarih",
-        "tutar",
-        "uzunluk=uzun",
-        "yapi=tarih+tutar"
-      ],
-      "kume_uyeleri": [],
-      "muhtemel_kopya": null,
-      "cok_benzer": null
-    },
-    {
-      "sira": 48,
-      "banka": "Ziraat Katılım",
-      "baslik": "TROY kartla idefix’te yaz boyunca her 1.000 TL’ye 200 TL, toplamda 3.000 TL’ye v",
-      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/troy-kartla-idefixte-3000-tlye-varan-indirim",
-      "slug": "troy-kartla-idefixte-3000-tlye-varan-indirim",
-      "son_tarama": "2026-08-01",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: tarih, tutar, yapi=tarih+tutar",
-      "yeni_ozellikler": [],
-      "yapisal_ozellikler": [
-        "tarih",
-        "tutar",
-        "uzunluk=uzun",
-        "yapi=tarih+tutar"
-      ],
-      "kume_uyeleri": [],
-      "muhtemel_kopya": null,
-      "cok_benzer": null
-    },
-    {
-      "sira": 49,
-      "banka": "Türkiye Emlak Katılım",
-      "baslik": "Troy Apple’da vade farksız 5 aya varan taksit",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/troy-appleda-vade-farksiz-5-aya-varan-taksit",
-      "slug": "troy-appleda-vade-farksiz-5-aya-varan-taksit",
-      "son_tarama": "2026-08-06",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=parafpara, taksit=5, tarih, yapi=tarih+taksit",
-      "yeni_ozellikler": [],
-      "yapisal_ozellikler": [
-        "odul=parafpara",
-        "taksit=5",
-        "tarih",
-        "uzunluk=uzun",
         "yapi=tarih+taksit"
       ],
       "kume_uyeleri": [],
@@ -1210,21 +1256,20 @@
     {
       "sira": 51,
       "banka": "Türkiye Emlak Katılım",
-      "baslik": "Paraf ile Alfemo’da 8 Taksit Fırsatı!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-alfemoda-8-taksit-firsati",
-      "slug": "paraf-ile-alfemoda-8-taksit-firsati",
+      "baslik": "Pazarama’da Ayın İlk Haftası TROY Haftası!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/pazaramada-ayin-ilk-haftasi-troy-haftasi",
+      "slug": "pazaramada-ayin-ilk-haftasi-troy-haftasi",
       "son_tarama": "2026-08-06",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=parafpara, taksit=8, yapi=taksit",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: tarih, tarih_coklu, tutar=1b+, yapi=tarih+tutar",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
-        "odul=parafpara",
-        "taksit=8",
-        "uzunluk=kisa",
-        "yapi=taksit"
+        "tarih",
+        "tarih_coklu",
+        "tutar=1b+",
+        "uzunluk=uzun",
+        "yapi=tarih+tutar"
       ],
-      "kume_uyeleri": [
-        "paraf-ile-vivensede-5-taksit-firsati"
-      ],
+      "kume_uyeleri": [],
       "muhtemel_kopya": null,
       "cok_benzer": null
     },
@@ -1253,17 +1298,18 @@
     {
       "sira": 53,
       "banka": "Türkiye Emlak Katılım",
-      "baslik": "Paraf ile Copa’da 12 Aya Varan Taksit!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-copada-12-aya-varan-taksit",
-      "slug": "paraf-ile-copada-12-aya-varan-taksit",
-      "son_tarama": "2026-08-06",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=12, tarih, yapi=tarih+taksit",
+      "baslik": "RentGo'da %40 İndirim Fırsatı!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/rentgoda-40-indirim-firsati",
+      "slug": "rentgoda-40-indirim-firsati",
+      "son_tarama": "2026-08-18",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: tarih, tarih_coklu, yapi=tarih+yuzde, yuzde",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
-        "taksit=12",
         "tarih",
+        "tarih_coklu",
         "uzunluk=orta",
-        "yapi=tarih+taksit"
+        "yapi=tarih+yuzde",
+        "yuzde"
       ],
       "kume_uyeleri": [],
       "muhtemel_kopya": null,
@@ -1290,16 +1336,17 @@
     {
       "sira": 55,
       "banka": "Türkiye Emlak Katılım",
-      "baslik": "Paraf ile DemirDöküm'de 9 Taksit Fırsatı!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-demirdokumde-9-taksit-firsati",
-      "slug": "paraf-ile-demirdokumde-9-taksit-firsati",
+      "baslik": "Troy Apple’da vade farksız 5 aya varan taksit",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/troy-appleda-vade-farksiz-5-aya-varan-taksit",
+      "slug": "troy-appleda-vade-farksiz-5-aya-varan-taksit",
       "son_tarama": "2026-08-06",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=9, tarih, yapi=tarih+taksit",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=parafpara, taksit=5, tarih, yapi=tarih+taksit",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
-        "taksit=9",
+        "odul=parafpara",
+        "taksit=5",
         "tarih",
-        "uzunluk=orta",
+        "uzunluk=uzun",
         "yapi=tarih+taksit"
       ],
       "kume_uyeleri": [],
@@ -1327,19 +1374,21 @@
     {
       "sira": 57,
       "banka": "Türkiye Emlak Katılım",
-      "baslik": "Paraf ile Dyson’da 9 Aya Varan Taksit!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-dysonda-9-aya-varan-taksit",
-      "slug": "paraf-ile-dysonda-9-aya-varan-taksit",
+      "baslik": "Paraf ile Alfemo’da 8 Taksit Fırsatı!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-alfemoda-8-taksit-firsati",
+      "slug": "paraf-ile-alfemoda-8-taksit-firsati",
       "son_tarama": "2026-08-06",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=6, tarih, yapi=tarih+taksit",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=parafpara, taksit=8, yapi=taksit",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
-        "taksit=6",
-        "tarih",
-        "uzunluk=orta",
-        "yapi=tarih+taksit"
+        "odul=parafpara",
+        "taksit=8",
+        "uzunluk=kisa",
+        "yapi=taksit"
       ],
-      "kume_uyeleri": [],
+      "kume_uyeleri": [
+        "paraf-ile-vivensede-5-taksit-firsati"
+      ],
       "muhtemel_kopya": null,
       "cok_benzer": null
     },
@@ -1364,14 +1413,14 @@
     {
       "sira": 59,
       "banka": "Türkiye Emlak Katılım",
-      "baslik": "Paraf ile Evidea’da 4 Taksit Fırsatı!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-evideada-4-taksit-firsati",
-      "slug": "paraf-ile-evideada-4-taksit-firsati",
+      "baslik": "Paraf ile Copa’da 12 Aya Varan Taksit!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-copada-12-aya-varan-taksit",
+      "slug": "paraf-ile-copada-12-aya-varan-taksit",
       "son_tarama": "2026-08-06",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=4, tarih, yapi=tarih+taksit",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=12, tarih, yapi=tarih+taksit",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
-        "taksit=4",
+        "taksit=12",
         "tarih",
         "uzunluk=orta",
         "yapi=tarih+taksit"
@@ -1403,16 +1452,16 @@
     {
       "sira": 61,
       "banka": "Türkiye Emlak Katılım",
-      "baslik": "Paraf ile Gürgençler’de Vade Farksız 9 Taksit Fırsatı!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-gurgenclerde-vade-farksiz-9-taksit-firsati",
-      "slug": "paraf-ile-gurgenclerde-vade-farksiz-9-taksit-firsati",
+      "baslik": "Paraf ile DemirDöküm'de 9 Taksit Fırsatı!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-demirdokumde-9-taksit-firsati",
+      "slug": "paraf-ile-demirdokumde-9-taksit-firsati",
       "son_tarama": "2026-08-06",
       "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=9, tarih, yapi=tarih+taksit",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
         "taksit=9",
         "tarih",
-        "uzunluk=uzun",
+        "uzunluk=orta",
         "yapi=tarih+taksit"
       ],
       "kume_uyeleri": [],
@@ -1440,21 +1489,19 @@
     {
       "sira": 63,
       "banka": "Türkiye Emlak Katılım",
-      "baslik": "Paraf ile ITOPYA.COM'da Vade Farksız 6 Taksit!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-itopyacomda-vade-farksiz-6-taksit",
-      "slug": "paraf-ile-itopyacomda-vade-farksiz-6-taksit",
+      "baslik": "Paraf ile Dyson’da 9 Aya Varan Taksit!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-dysonda-9-aya-varan-taksit",
+      "slug": "paraf-ile-dysonda-9-aya-varan-taksit",
       "son_tarama": "2026-08-06",
       "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=6, tarih, yapi=tarih+taksit",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
         "taksit=6",
         "tarih",
-        "uzunluk=uzun",
+        "uzunluk=orta",
         "yapi=tarih+taksit"
       ],
-      "kume_uyeleri": [
-        "paraf-ile-vatanda-pesin-fiyatina-6-aya-varan-taksit-firsati"
-      ],
+      "kume_uyeleri": [],
       "muhtemel_kopya": null,
       "cok_benzer": null
     },
@@ -1479,16 +1526,16 @@
     {
       "sira": 65,
       "banka": "Türkiye Emlak Katılım",
-      "baslik": "Paraf ile Koçtaş’ta 5 Taksit!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-koctasta-5-taksit",
-      "slug": "paraf-ile-koctasta-5-taksit",
+      "baslik": "Paraf ile Evidea’da 4 Taksit Fırsatı!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-evideada-4-taksit-firsati",
+      "slug": "paraf-ile-evideada-4-taksit-firsati",
       "son_tarama": "2026-08-06",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=5, tarih, yapi=tarih+taksit",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=4, tarih, yapi=tarih+taksit",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
-        "taksit=5",
+        "taksit=4",
         "tarih",
-        "uzunluk=kisa",
+        "uzunluk=orta",
         "yapi=tarih+taksit"
       ],
       "kume_uyeleri": [],
@@ -1516,14 +1563,14 @@
     {
       "sira": 67,
       "banka": "Türkiye Emlak Katılım",
-      "baslik": "Paraf ile Monster Notebook’ta Peşin Fiyatına 12 Aya Varan Taksit Fırsatı!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-monster-notebookta-pesin-fiyatina-12-aya-varan-taksit-firsati",
-      "slug": "paraf-ile-monster-notebookta-pesin-fiyatina-12-aya-varan-taksit-firsati",
-      "son_tarama": "2026-08-01",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=12, tarih, yapi=tarih+taksit",
+      "baslik": "Paraf ile Gürgençler’de Vade Farksız 9 Taksit Fırsatı!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-gurgenclerde-vade-farksiz-9-taksit-firsati",
+      "slug": "paraf-ile-gurgenclerde-vade-farksiz-9-taksit-firsati",
+      "son_tarama": "2026-08-06",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=9, tarih, yapi=tarih+taksit",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
-        "taksit=12",
+        "taksit=9",
         "tarih",
         "uzunluk=uzun",
         "yapi=tarih+taksit"
@@ -1553,19 +1600,21 @@
     {
       "sira": 69,
       "banka": "Türkiye Emlak Katılım",
-      "baslik": "Paraf ile Touristica.com.tr’de Peşin Fiyatına 9 Taksit!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-touristicacomtrde-pesin-fiyatina-9-taksit",
-      "slug": "paraf-ile-touristicacomtrde-pesin-fiyatina-9-taksit",
+      "baslik": "Paraf ile ITOPYA.COM'da Vade Farksız 6 Taksit!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-itopyacomda-vade-farksiz-6-taksit",
+      "slug": "paraf-ile-itopyacomda-vade-farksiz-6-taksit",
       "son_tarama": "2026-08-06",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=9, tarih, yapi=tarih+taksit",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=6, tarih, yapi=tarih+taksit",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
-        "taksit=9",
+        "taksit=6",
         "tarih",
-        "uzunluk=orta",
+        "uzunluk=uzun",
         "yapi=tarih+taksit"
       ],
-      "kume_uyeleri": [],
+      "kume_uyeleri": [
+        "paraf-ile-vatanda-pesin-fiyatina-6-aya-varan-taksit-firsati"
+      ],
       "muhtemel_kopya": null,
       "cok_benzer": null
     },
@@ -1590,17 +1639,17 @@
     {
       "sira": 71,
       "banka": "Türkiye Emlak Katılım",
-      "baslik": "Paraf ile Yataş’ta 8 Taksit Fırsatı!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-yatasta-8-taksit-firsati",
-      "slug": "paraf-ile-yatasta-8-taksit-firsati",
+      "baslik": "Paraf ile Koçtaş’ta 5 Taksit!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-koctasta-5-taksit",
+      "slug": "paraf-ile-koctasta-5-taksit",
       "son_tarama": "2026-08-06",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=parafpara, taksit=8, yapi=taksit",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=5, tarih, yapi=tarih+taksit",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
-        "odul=parafpara",
-        "taksit=8",
-        "uzunluk=orta",
-        "yapi=taksit"
+        "taksit=5",
+        "tarih",
+        "uzunluk=kisa",
+        "yapi=tarih+taksit"
       ],
       "kume_uyeleri": [],
       "muhtemel_kopya": null,
@@ -1627,16 +1676,16 @@
     {
       "sira": 73,
       "banka": "Türkiye Emlak Katılım",
-      "baslik": "Paraf ile Yenilio’da 12 Aya Varan Taksit Fırsatı!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-yenilioda-12-aya-varan-taksit-firsati",
-      "slug": "paraf-ile-yenilioda-12-aya-varan-taksit-firsati",
-      "son_tarama": "2026-08-06",
+      "baslik": "Paraf ile Monster Notebook’ta Peşin Fiyatına 12 Aya Varan Taksit Fırsatı!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-monster-notebookta-pesin-fiyatina-12-aya-varan-taksit-firsati",
+      "slug": "paraf-ile-monster-notebookta-pesin-fiyatina-12-aya-varan-taksit-firsati",
+      "son_tarama": "2026-08-01",
       "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=12, tarih, yapi=tarih+taksit",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
         "taksit=12",
         "tarih",
-        "uzunluk=kisa",
+        "uzunluk=uzun",
         "yapi=tarih+taksit"
       ],
       "kume_uyeleri": [],
@@ -1664,17 +1713,17 @@
     {
       "sira": 75,
       "banka": "Türkiye Emlak Katılım",
-      "baslik": "Pazarama’da Ayın İlk Haftası TROY Haftası!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/pazaramada-ayin-ilk-haftasi-troy-haftasi",
-      "slug": "pazaramada-ayin-ilk-haftasi-troy-haftasi",
+      "baslik": "Paraf ile Touristica.com.tr’de Peşin Fiyatına 9 Taksit!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-touristicacomtrde-pesin-fiyatina-9-taksit",
+      "slug": "paraf-ile-touristicacomtrde-pesin-fiyatina-9-taksit",
       "son_tarama": "2026-08-06",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: tarih, tutar, yapi=tarih+tutar",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=9, tarih, yapi=tarih+taksit",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
+        "taksit=9",
         "tarih",
-        "tutar",
-        "uzunluk=uzun",
-        "yapi=tarih+tutar"
+        "uzunluk=orta",
+        "yapi=tarih+taksit"
       ],
       "kume_uyeleri": [],
       "muhtemel_kopya": null,
@@ -1701,17 +1750,17 @@
     {
       "sira": 77,
       "banka": "Türkiye Emlak Katılım",
-      "baslik": "RentGo'da %40 İndirim Fırsatı!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/rentgoda-40-indirim-firsati",
-      "slug": "rentgoda-40-indirim-firsati",
-      "son_tarama": "2026-08-18",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: tarih, yapi=tarih+yuzde, yuzde",
+      "baslik": "Paraf ile Yataş’ta 8 Taksit Fırsatı!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-yatasta-8-taksit-firsati",
+      "slug": "paraf-ile-yatasta-8-taksit-firsati",
+      "son_tarama": "2026-08-06",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: odul=parafpara, taksit=8, yapi=taksit",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
-        "tarih",
+        "odul=parafpara",
+        "taksit=8",
         "uzunluk=orta",
-        "yapi=tarih+yuzde",
-        "yuzde"
+        "yapi=taksit"
       ],
       "kume_uyeleri": [],
       "muhtemel_kopya": null,
@@ -1741,17 +1790,17 @@
     {
       "sira": 79,
       "banka": "Türkiye Emlak Katılım",
-      "baslik": "TROY ile idefix’te 3.000 TL İndirim Fırsatı!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/troy-ile-idefixte-3000-tl-indirim-firsati",
-      "slug": "troy-ile-idefixte-3000-tl-indirim-firsati",
-      "son_tarama": "2026-08-01",
-      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: tarih, tutar, yapi=tarih+tutar",
+      "baslik": "Paraf ile Yenilio’da 12 Aya Varan Taksit Fırsatı!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-yenilioda-12-aya-varan-taksit-firsati",
+      "slug": "paraf-ile-yenilioda-12-aya-varan-taksit-firsati",
+      "son_tarama": "2026-08-06",
+      "secim_gerekcesi": "yeni ozellik yok; kalan havuzun en zengin sayfasi - tasidigi: taksit=12, tarih, yapi=tarih+taksit",
       "yeni_ozellikler": [],
       "yapisal_ozellikler": [
+        "taksit=12",
         "tarih",
-        "tutar",
-        "uzunluk=uzun",
-        "yapi=tarih+tutar"
+        "uzunluk=kisa",
+        "yapi=tarih+taksit"
       ],
       "kume_uyeleri": [],
       "muhtemel_kopya": null,

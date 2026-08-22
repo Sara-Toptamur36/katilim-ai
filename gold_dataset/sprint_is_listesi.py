@@ -354,6 +354,8 @@ _TARIH_IZI = re.compile(
 )
 _TUTAR_IZI = re.compile(r"\d{1,3}(?:\.\d{3})+\s*TL")
 _YUZDE_IZI = re.compile(r"%\s?\d")
+# findall icin: yuzde DEGERLERI (kac farkli oran gectigi de bir sinyal)
+_YUZDE_ORANI = re.compile(r"%\s?(\d{1,3}(?:[.,]\d+)?)")
 _TAKSIT_IZI = re.compile(r"(\d{1,2})\s*taksit", re.IGNORECASE)
 
 # Odul birimi sozcukleri - katlanmis metinde aranir.
@@ -383,15 +385,40 @@ def _yapisal_belirtecler(metin: str) -> set[str]:
     katlanmis = turkce_ascii_kucult(metin)
     belirtecler: set[str] = {f"uzunluk={_uzunluk_bandi(len(metin))}"}
 
-    var_tarih = bool(_TARIH_IZI.search(metin))
-    var_tutar = bool(_TUTAR_IZI.search(metin))
-    var_yuzde = bool(_YUZDE_IZI.search(metin))
+    tarihler = _TARIH_IZI.findall(metin)
+    tutarlar = _TUTAR_IZI.findall(metin)
+    yuzdeler = _YUZDE_ORANI.findall(metin)
+    var_tarih, var_tutar, var_yuzde = bool(tarihler), bool(tutarlar), bool(yuzdeler)
+
     if var_tarih:
         belirtecler.add("tarih")
-    if var_tutar:
-        belirtecler.add("tutar")
+        # Sayfada BIRDEN FAZLA tarih izi olmasi (baslangic + bitis +
+        # odul yukleme tarihi gibi) tek tarihli bir sayfadan farkli bir
+        # cikarim problemidir. Bu bir SAYIMDIR, anlamsal tarih ayristirma
+        # DEGIL: "1-31 Agustos 2026" tek iz olarak gecer.
+        if len(tarihler) > 1:
+            belirtecler.add("tarih_coklu")
     if var_yuzde:
         belirtecler.add("yuzde")
+
+    # TUTAR BUYUKLUK BANDI: "200 TL odul" ile "1.000.000 TL finansman"
+    # ayni belirtec olmamali - ilk surumde ikisi de sadece "tutar"di ve
+    # siralama aralarindaki farki goremiyordu.
+    for ham_tutar in tutarlar:
+        try:
+            deger = int(ham_tutar.replace(".", "").replace(" ", "").removesuffix("TL"))
+        except ValueError:
+            continue
+        for esik, ad in ((1_000_000, "1m+"), (100_000, "100b+"), (10_000, "10b+"),
+                         (1_000, "1b+")):
+            if deger >= esik:
+                belirtecler.add(f"tutar={ad}")
+                break
+    # KADEMELI ODUL: uc ya da daha fazla farkli tutar tasiyan sayfa
+    # ("300 TL / 750 TL / 1.750 TL / 3.000 TL") duz bir sayfadan farkli
+    # bir cikarim problemidir.
+    if len({t.strip() for t in tutarlar}) >= 3:
+        belirtecler.add("kademeli_tutar")
 
     for ham_sayi in set(_TAKSIT_IZI.findall(metin)):
         sayi = int(ham_sayi)

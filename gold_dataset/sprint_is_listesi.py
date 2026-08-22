@@ -65,6 +65,8 @@ import re
 from collections import defaultdict
 from pathlib import Path
 
+from extraction.normalizer import turkce_ascii_kucult
+
 KOK = Path(__file__).resolve().parent.parent
 GOLD = KOK / "gold_dataset" / "altin_veri_seti.json"
 HAM = KOK / "scraper" / "raw_data"
@@ -246,9 +248,80 @@ def _baslik(kayit: dict) -> str:
     return _slug(kayit.get("url")).replace("-", " ")[:80]
 
 
+# METIN BENZERLIGI ESIGI - "ayni kalibin baska magazasi" durumu.
+#
+# Slug kurallari ayni kampanyanin ayni adresini yakalar; ama bankalar
+# ayni kampanya metnini yalnizca magaza adi ve sayi degistirerek
+# tekrarliyor: Ziraat'in "abdullah-kigilida-2-taksit" ile
+# "desada-2-taksit" sayfalari %98 ayni. Ikisi de etiketlenirse altin
+# set ayni cumleyi iki kez tasir; biri train'e digeri test'e duserse
+# de sizinti olur (mentor raporu 5.4).
+#
+# ESIK NEREDEN GELIYOR (olculdu, 63 aday x 57 etiketli sayfa):
+#   ortanca benzerlik %42, ortalama %45
+#   >=%95: 2 aday   >=%90: 4   >=%85: 7   >=%80: 11   >=%70: 22
+# %85 ustu acik bir aykiri bolge. Temiz bir bosluk YOK, dolayisiyla bu
+# bir YARGI - bu yuzden eleme degil ISARET.
+#
+# ISARETLENEN KAYIT NE YAPILACAK: ikizinin altin kaydiyla karsilastir.
+# CIKARILAN DEGERLER ayniysa (ayni taksit sayisi, ayni odul) kayit
+# olcume hicbir sey katmaz, atlanir. Degerler farkliysa etiketlenebilir.
+COK_BENZER_ESIGI = 0.85
+
+
+def _cok_benzer_ikiz(metin: str, banka: str, etiketli_metinler: dict) -> tuple[str, float] | None:
+    """Ayni bankanin etiketli sayfalari icinde en benzerini bulur.
+
+    YALNIZCA AYNI BANKA: kalip metni bankaya ozeldir ve olcumde en
+    benzer eslesmelerin TAMAMI ayni bankadan cikti. Bankaya kisitlamak
+    hem daha dogru hem de karsilastirma sayisini buyuk olcude azaltir.
+    """
+    import difflib
+
+    if len(metin) < 200:
+        return None
+    en_iyi: tuple[str, float] | None = None
+    for kayit_id, (kayit_banka, kayit_metni) in etiketli_metinler.items():
+        if kayit_banka != banka:
+            continue
+        olcer = difflib.SequenceMatcher(None, metin, kayit_metni)
+        # Ucuz on elemeler: gercek oran bunlarin ustune cikamaz.
+        if olcer.real_quick_ratio() < COK_BENZER_ESIGI:
+            continue
+        if olcer.quick_ratio() < COK_BENZER_ESIGI:
+            continue
+        oran = olcer.ratio()
+        if oran >= COK_BENZER_ESIGI and (en_iyi is None or oran > en_iyi[1]):
+            en_iyi = (kayit_id, oran)
+    return en_iyi
+
+
+def _etiketli_metinler(ham: dict) -> dict[str, tuple[str, str]]:
+    """kayit_id -> (banka, katlanmis metin). Kaynak sayfasi ham veride
+    kalmamis kayitlar disarida kalir - kampanya rotasyonu."""
+    from extraction.normalizer import turkce_ascii_kucult
+
+    with open(GOLD, encoding="utf-8") as f:
+        kayitlar = json.load(f)
+    sonuc = {}
+    for k in kayitlar:
+        if k["kayit_id"].startswith(SAHTE_ONEKLER):
+            continue
+        slug = _slug(k.get("kaynak_url") or "")
+        kaynak = ham.get(slug)
+        if not kaynak:
+            continue
+        sonuc[k["kayit_id"]] = (
+            k.get("banka") or "",
+            turkce_ascii_kucult(kaynak.get("normalize_metin") or ""),
+        )
+    return sonuc
+
+
 def is_listesi_uret(hedef: int, kota: int) -> dict:
     etiketli, etiketli_adlar = _etiketli_kimlikler()
     ham = _ham_kampanyalar()
+    etiketli_metinler = _etiketli_metinler(ham)
 
     banka_ham: dict[str, list[dict]] = defaultdict(list)
     kontrol_gerek: list[dict] = []
@@ -317,6 +390,11 @@ def is_listesi_uret(hedef: int, kota: int) -> dict:
                 "muhtemel_kopya": _kopya_suphesi(
                     kayit["_slug"], baslik, etiketli, etiketli_adlar
                 ),
+                # None ise benzer ikizi yok; dolu ise (kayit_id, oran).
+                "cok_benzer": _cok_benzer_ikiz(
+                    turkce_ascii_kucult(kayit.get("normalize_metin") or ""),
+                    banka, etiketli_metinler
+                ),
             })
             alinan[banka] += 1
             eklendi = True
@@ -374,6 +452,15 @@ def main() -> None:
         print("  (TOM-001/002/003 tek sayfadan cikti). Once bunlara bakin:")
         for x in sorted(kg, key=lambda z: -z["metin_uzunlugu"])[:8]:
             print(f"    [{(x['banka'] or '')[:14]:<14}] {x['slug'][:40]:<40} {x['metin_uzunlugu']:>6} krk")
+
+    benzer = [k for k in r["liste"] if k.get("cok_benzer")]
+    if benzer:
+        print(f"\n  COK BENZER ({len(benzer)} kayit) - ayni kalibin baska magazasi.")
+        print("  Ikizinin altin kaydiyla karsilastir: CIKARILAN DEGERLER ayniysa")
+        print("  kayit olcume bir sey katmaz, atla; farkliysa etiketle:")
+        for k in sorted(benzer, key=lambda z: -z["cok_benzer"][1])[:10]:
+            kid, oran = k["cok_benzer"]
+            print(f"    {k['sira']:>3}. {k['slug'][:40]:<40} %{oran*100:.0f} <-> {kid}")
 
     supheli = [k for k in r["liste"] if k.get("muhtemel_kopya")]
     if supheli:

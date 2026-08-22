@@ -208,3 +208,45 @@ def test_bosluklu_adres_ana_listeye_GIRMEZ(rapor):
     assert [x for x in rapor["kontrol_gerek"] if " " in x["slug"]], (
         "bosluklu adres kontrol listesinde de yok - tamamen kaybolmus"
     )
+
+
+def test_cok_benzer_alani_HER_kayitta_var(rapor):
+    """Alanin yoklugu "bakilmadi" ile "temiz"i karistirir."""
+    assert all("cok_benzer" in k for k in rapor["liste"])
+
+
+def test_cok_benzer_esigin_altini_ISARETLEMEZ(rapor):
+    for k in rapor["liste"]:
+        if k["cok_benzer"]:
+            from gold_dataset.sprint_is_listesi import COK_BENZER_ESIGI
+
+            assert k["cok_benzer"][1] >= COK_BENZER_ESIGI
+
+
+def test_benzerlik_slug_kurallarini_BAGIMSIZ_dogruluyor(rapor):
+    """Iki isaret birbirinden bagimsiz uretiliyor: biri slug'a, digeri
+    METNE bakiyor. Slug kurallarinin yakaladigi kayitlarin metin
+    benzerligi de yuksek cikmali - cikmiyorsa esik ya da kurallardan
+    biri yanlistir.
+
+    NOT: muhtemel_kopya isaretli kayitlarin bir kisminin kaynak sayfasi
+    ham veride yok (TOM'un kampanyalar.html'i gibi) - onlar icin metin
+    karsilastirmasi YAPILAMAZ, bu yuzden kesisim aranir, esitlik degil.
+    """
+    kopya = {k["slug"] for k in rapor["liste"] if k.get("muhtemel_kopya")}
+    benzer = {k["slug"] for k in rapor["liste"] if k.get("cok_benzer")}
+    assert kopya & benzer, "iki isaret hic ortusmuyor - biri bozuk olabilir"
+
+
+def test_ikiz_ayni_bankadan(rapor):
+    """Kalip metni bankaya ozeldir; farkli bankadan ikiz gosterilmesi
+    olcumun yanlis kurulduguna isarettir."""
+    import json as _json
+    from pathlib import Path
+
+    kok = Path(__file__).resolve().parent.parent
+    with open(kok / "gold_dataset" / "altin_veri_seti.json", encoding="utf-8") as f:
+        banka = {k["kayit_id"]: k.get("banka") for k in _json.load(f)}
+    for k in rapor["liste"]:
+        if k["cok_benzer"]:
+            assert banka[k["cok_benzer"][0]] == k["banka"]

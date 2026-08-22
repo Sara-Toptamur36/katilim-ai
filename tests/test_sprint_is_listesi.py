@@ -57,11 +57,40 @@ def test_kontrol_gerekenler_ATILMAZ_raporlanir(rapor):
     UC kaydi (TOM-001/002/003) TEK bir "kampanyalar.html" sayfasindan
     cikarilmis. Yani kategori kalibina uyan bir sayfa pekala coklu
     kampanya sayfasi olabilir. Karar insanindir; kod yalnizca siraya
-    sokar."""
+    sokar.
+
+    DENETIM BULGUSU (22 Agustos 2026): Bu test onceden "kontrol_gerek
+    listesi BOS OLAMAZ" diye sabit veriye guveniyordu - 22 Agustos'ta
+    korpusta gercekten bulunan 20 sahte "kampanya" (Kuveyt Turk/Turkiye
+    Finans/Ziraat'in saf navigasyon/kategori sayfalari, icerikleri
+    incelenip dogrulandi) temizlenince bu sabit varsayim kirildi. Liste
+    bos olmak ZORUNDA degil - korpus temizse bos olmasi DOGRU sonuctur.
+    Asil test edilmesi gereken, gercek veriye bagli olmayan MEKANIZMANIN
+    kendisi: kalip bilinen kategori-benzeri sluglari yakaliyor mu, ve
+    korpusta o kalibla eslesen HERHANGI bir slug varsa mutlaka
+    kontrol_gerek'e giriyor mu (sessizce kaybolmuyor mu)."""
+    from gold_dataset.sprint_is_listesi import KONTROL_GEREK_KALIBI, _ham_kampanyalar
+
     assert "kontrol_gerek" in rapor
-    assert rapor["kontrol_gerek"], "kontrol listesi bos - kalip calisiyor mu?"
     for x in rapor["kontrol_gerek"]:
         assert x.get("url"), "kontrol icin URL sart - sayfa acilamazsa bakilamaz"
+
+    # Mekanizma dogru calisiyor mu (korpus durumundan BAGIMSIZ): bilinen
+    # kategori-benzeri sluglar yakalanmali, gercek kampanya sluglari
+    # yakalanmamali.
+    assert KONTROL_GEREK_KALIBI.search("kart-kampanyalari"), "kalip artik kategori sluglarini yakalamiyor"
+    assert KONTROL_GEREK_KALIBI.search("finansman-kampanyalari.aspx"), "kalip .aspx uzantili kategori sluglarini yakalamiyor"
+    assert not KONTROL_GEREK_KALIBI.search("12-aya-varan-taksit-firsati"), "kalip gercek bir kampanya sluguna yanlislikla uyuyor"
+
+    # Tamlik: korpusta kalipla eslesen bir slug VARSA, kontrol_gerek'te
+    # gorunmeli - sessizce ana listeye ya da hic bir yere girmemis olmasin.
+    kontrol_sluglar = {x["slug"] for x in rapor["kontrol_gerek"]}
+    korpustaki_kalip_eslesenler = {
+        slug for slug in _ham_kampanyalar() if KONTROL_GEREK_KALIBI.search(slug)
+    }
+    assert korpustaki_kalip_eslesenler == kontrol_sluglar, (
+        "korpustaki kalip eslesen sluglar ile kontrol_gerek listesi tutarsiz"
+    )
 
 
 def test_kota_asilmaz(rapor):

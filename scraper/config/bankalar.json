@@ -17,15 +17,11 @@
     "crawl_delay": 1,
     "not": "Rehber Bolum 13.3/Tablo 6 ile dogrulandi (28 Tem 2026). requests+BeautifulSoup ile calisir, JS gerekmez. GENISLETME (18 Agustos 2026): sitemap.xml taranarak 113 yeni kampanya URL'si bulundu - 70 tanesi /kendim-icin altinda (mevcut liste sayfasi bunlari surmuyor, muhtemelen JS sayfalama/gizli kategori), 43 tanesi /isim-icin (kurumsal/KOBI/tarim/dis-ticaret) - bu kategori hic taranmiyordu. Ayni .campaign-detail secicisi her ikisinde de calisiyor (dogrulandi). ek_detay_urlleri ile kalici olarak eklendi.",
     "ek_detay_urlleri": [
-      "https://www.kuveytturk.com.tr/isim-icin/dis-ticaret/e-ihracat/e-ihracat-kampanyalari",
       "https://www.kuveytturk.com.tr/isim-icin/dis-ticaret/e-ihracat/e-ihracat-kampanyalari/e-ihracatcilara-ozel-shipentegra-ile-yurtdisi-kargo-gonderilerinize-vade-farksiz-3-taksit",
       "https://www.kuveytturk.com.tr/isim-icin/dis-ticaret/e-ihracat/e-ihracat-kampanyalari/kuveyt-turk-ile-e-ihracat-gonderilerinizde-mil-kazanin",
-      "https://www.kuveytturk.com.tr/isim-icin/tarim-bankaciligi/tarim-ve-hayvancilik-sektorune-ozel-kampanyalar",
       "https://www.kuveytturk.com.tr/isim-icin/tarim-bankaciligi/tarim-ve-hayvancilik-sektorune-ozel-kampanyalar/12-aya-kadar-odemesiz-donemli-ve-indirimli-tarim-finansmani-kuveyt-turkte",
       "https://www.kuveytturk.com.tr/isim-icin/tarim-bankaciligi/tarim-ve-hayvancilik-sektorune-ozel-kampanyalar/mobilden-kuveyt-turklu-olan-esnaf-ve-ciftcilere-toplamda-22000-tl-hediye",
       "https://www.kuveytturk.com.tr/isim-icin/tarim-bankaciligi/tarim-ve-hayvancilik-sektorune-ozel-kampanyalar/tarimda-kuveyt-turk-ile-buyume-zamani",
-      "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/is-birlik-kampanyalari",
-      "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/kart-kampanyalari",
       "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/kart-kampanyalari/akaryakit-harcamalariniza-her-ay-ekstra-2000-mile-varan-firsat",
       "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/kart-kampanyalari/akaryakit-sektorunde-saglam-oran",
       "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/kart-kampanyalari/e-ticaret-harcamalariniza-her-ay-ekstra-2000-mile-varan-firsat",
@@ -41,14 +37,12 @@
       "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/kart-kampanyalari/saglam-tohum-kart-qr-odeme-ile-2000-tl-ye-varan-indirim-firsati",
       "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/kart-kampanyalari/toptanci-harcamalariniza-her-ay-ekstra-5000-mile-varan-firsat",
       "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/kart-kampanyalari/yapi-ve-insaat-harcamalariniza-her-ay-ekstra-5000-mile-varan-firsat",
-      "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/kobi-kampanyalari",
       "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/kobi-kampanyalari/arac-finansmani-onaylanan-kobilere-hgs-kampanyasi",
       "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/kobi-kampanyalari/e-ihracatcilara-ozel-shipentegra-ile-yurtdisi-kargo-gonderilerinize-vade-farksiz-3-taksit",
       "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/kobi-kampanyalari/ihracatiniz-fazlaysa-avantajiniz-da-fazla",
       "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/kobi-kampanyalari/kuveyt-turkten-e-ticaret-yapan-kobilere-75e-varan-kargo-indirimi",
       "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/kobi-kampanyalari/kuveyt-turkten-kfk-destekli-yatirim-finansmani",
       "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/kobi-kampanyalari/tarimda-kuveyt-turk-ile-buyume-zamani",
-      "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/musteri-ol-kampanyalari",
       "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/musteri-ol-kampanyalari/esnaf-ciftci-ve-tuzel-sirketlere-ozel-16000-tl-degerinde-finansal-urun-paketi-hediye",
       "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/musteri-ol-kampanyalari/esnaf-ciftci-ve-tuzel-sirketlerin-faturasi-bizden",
       "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/musteri-ol-kampanyalari/kuveyt-turk-veteriner-klinik-musterilerine-ozel-fugevet-dijital-yonetim-cozumlerinden-30-indirim",
@@ -56,15 +50,12 @@
       "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/musteri-ol-kampanyalari/mobilden-kuveyt-turklu-olan-esnaf-ve-ciftcilere-22000-tlye-varan-hediye",
       "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/musteri-ol-kampanyalari/mobilden-kuveyt-turklu-olan-tuzel-firmalara-22000-tlye-varan-hediye",
       "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/musteri-ol-kampanyalari/mobilden-kuveyt-turklu-tuzel-firmalara-ozel-1000-tl-hediye",
-      "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/pos-kampanyalari",
       "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/pos-kampanyalari/kuveyt-turkten-egitime-ozel-taksitli-pos-kampanyasi",
       "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/pos-kampanyalari/kuveyt-turkten-sanal-pos-kampanyasi",
       "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/pos-kampanyalari/kuveyt-turkten-yeni-musterilere-ozel-pos-kampanyasi",
-      "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/finansman-kampanyalari",
       "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/finansman-kampanyalari/diyanet-umre-finansmani-ile-vade-farksiz-3-taksit-imkani",
       "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/finansman-kampanyalari/taksitlioda-yeni-musterilere-ozel-kuveyt-turk-alisveris-finansmani-firsati",
       "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/finansman-kampanyalari/tarimda-kuveyt-turk-ile-buyume-zamani",
-      "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari",
       "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/adore-mobilyada-vade-farksiz-9-aya-varan-taksit-firsati",
       "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/almila-mobilyada-9-aya-varan-taksit-firsati",
       "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/altinyildiz-classicste-vade-farksiz-2-taksit-firsati",
@@ -122,13 +113,11 @@
       "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/yenilioya-ozel-vade-farksiz-12ye-varan-taksit-imkani",
       "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/yolcu360ta-arac-kiralamada-indirim-firsati",
       "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/yuki-motorda-vade-farksiz-12-aya-varan-taksit-firsati",
-      "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/musteri-ol-kampanyalari",
       "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/musteri-ol-kampanyalari/akademisyenlere-ozel-avantaj-paketi",
       "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/musteri-ol-kampanyalari/evlenecek-olan-veya-yeni-evli-ciftlere-kuveyt-turkten-mujde-evlilik-paketi",
       "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/musteri-ol-kampanyalari/fatura-talimatlariniza-toplam-500-tl-hediye",
       "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/musteri-ol-kampanyalari/hepsiburadada-yeni-musteriye-ozel-vade-farksiz-50000-tl-firsati",
       "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/musteri-ol-kampanyalari/yurt-disi-cikis-harci-hediye-firsati",
-      "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/seyahat-kampanyalari",
       "https://www.kuveytturk.com.tr/kendim-icin/kampus/e-ticarette-altin-kazandiran-kampanya"
     ]
   },
@@ -204,7 +193,8 @@
     ],
     "detay_link_deseni": "/kart-kampanyalari/",
     "haric_link_desenleri": [
-      "IsArchived"
+      "IsArchived",
+      "avantajli-bankkart-kampanyalari"
     ],
     "cerez_secicileri": [
       "#onetrust-accept-btn-handler",
@@ -213,7 +203,7 @@
     "icerik_secici": ".body-content",
     "sayfa_turu": "HTML",
     "crawl_delay": 1,
-    "not": "DIKKAT (Bolum 13.3): /bireysel/kampanyalar DEGIL, /kart-kampanyalari kullanilir - orasi neredeyse bos. ~70-75 kampanya, toplu link cikarma calisti (72 link bulundu). haric_link_desenleri olmadan ?IsArchived=true'lu arsiv kampanyalari, query strip edildikten sonra guncel kampanyayla ayni URL'ye donusup yanlislikla 'guncel' sayilirdi. Cogu kart kampanyasi kisa ('X taksit', orani yok) - 1000 karakter esigi altinda kalip dogrulama_kontrolu tarafindan atlanabilir, bu veri hatasi degildir."
+    "not": "DIKKAT (Bolum 13.3): /bireysel/kampanyalar DEGIL, /kart-kampanyalari kullanilir - orasi neredeyse bos. ~70-75 kampanya, toplu link cikarma calisti (72 link bulundu). haric_link_desenleri olmadan ?IsArchived=true'lu arsiv kampanyalari, query strip edildikten sonra guncel kampanyayla ayni URL'ye donusup yanlislikla 'guncel' sayilirdi. Cogu kart kampanyasi kisa ('X taksit', orani yok) - 1000 karakter esigi altinda kalip dogrulama_kontrolu tarafindan atlanabilir, bu veri hatasi degildir. DUZELTME (22 Agustos 2026): 'ziraat-katilim-avantajli-bankkart-kampanyalari' tek bir kampanya degil, alt kategori isimlerinin (Havayolu, QR ile Odeme, Market vb.) duz bir listesi - icerigi incelenip dogrulandi, haric_link_desenleri'ne eklendi."
   },
   "turkiyefinans": {
     "ad": "Türkiye Finans",
@@ -239,7 +229,19 @@
     "icerik_secici": "#content",
     "sayfa_turu": "HTML",
     "crawl_delay": 1,
-    "not": "ASPX (SharePoint) tabanli site - HTML statik oldugu dogrulandi (JS gerekmiyor). Kategori/index sayfalari (ör. diger-kampanyalar.aspx) ile gercek kampanya detay sayfalari AYNI /Sayfalar/ klasorunde ve URL deseniyle ayirt edilemiyor - ama index sayfalari icerik acisindan cok kisa (~470-1600 karakter), dogrulama_kontrolu (min 1000 karakter) COGUNU otomatik eliyor, ozel bir ayrim kodu YAZILMADI (mevcut mekanizma yeterli). #content secicisi ustte kategori menusu (kisa, ~13 satir) icerse de asil kampanya metnini/tablolarini dogru veriyor. GENISLETME (18 Agustos 2026): kampanya_listesi ONCEDEN yalnizca 'finansman-kampanyalari' kategorisini iceriyordu - sitede en az 9 ayri kategori oldugu (her biri kendi alt kampanyalarina linkliyor, ör. kart-kampanyalari altinda 'mastercard-business-kart-firsat.aspx') canli sayfa taranarak dogrulandi, digerleri eklendi. 'Biten-Kampanyalar.aspx' (3056 karakter) bilerek dahil edildi - dogrulama esigini gecebilecek kadar uzun, sona ermis kampanyalarin OZETINI icerebilir (dogal kampanya rotasyonu icin degerli, bkz. kampanya_tarihcesi.py)."
+    "not": "ASPX (SharePoint) tabanli site - HTML statik oldugu dogrulandi (JS gerekmiyor). Kategori/index sayfalari (ör. diger-kampanyalar.aspx) ile gercek kampanya detay sayfalari AYNI /Sayfalar/ klasorunde ve URL deseniyle ayirt edilemiyor - ama index sayfalari icerik acisindan cok kisa (~470-1600 karakter), dogrulama_kontrolu (min 1000 karakter) COGUNU otomatik eliyor, ozel bir ayrim kodu YAZILMADI (mevcut mekanizma yeterli). #content secicisi ustte kategori menusu (kisa, ~13 satir) icerse de asil kampanya metnini/tablolarini dogru veriyor. GENISLETME (18 Agustos 2026): kampanya_listesi ONCEDEN yalnizca 'finansman-kampanyalari' kategorisini iceriyordu - sitede en az 9 ayri kategori oldugu (her biri kendi alt kampanyalarina linkliyor, ör. kart-kampanyalari altinda 'mastercard-business-kart-firsat.aspx') canli sayfa taranarak dogrulandi, digerleri eklendi. 'Biten-Kampanyalar.aspx' (3056 karakter) bilerek dahil edildi - dogrulama esigini gecebilecek kadar uzun, sona ermis kampanyalarin OZETINI icerebilir (dogal kampanya rotasyonu icin degerli, bkz. kampanya_tarihcesi.py). DUZELTME (22 Agustos 2026): 9 kategori .aspx sayfasi (Biten-Kampanyalar dahil) gercekte TEK bir kampanya degil - ya saf navigasyon menusu ya da birden fazla kampanyanin kisa teaser'ini yan yana gosteren bir liste sayfasi (dogrulandi, icerikleri incelendi). haric_link_desenleri ile bu 9 URL kendi baslarina 'detay' sayilip kaydedilmekten cikarildi - ama kampanya_listesi'nde KALDILAR, cocuklarindaki gercek kampanya linklerini kesfetmeye devam ediyorlar (bu, 12 yeni kampanya kazandiran mekanizmanin ta kendisi).",
+    "haric_link_desenleri": [
+      "Biten-Kampanyalar.aspx",
+      "birikim-fon-kampanyalari.aspx",
+      "diger-kampanyalar.aspx",
+      "dijital-bankacilik-kampanyalari.aspx",
+      "finansman-kampanyalari.aspx",
+      "kart-kampanyalari.aspx",
+      "odeme-kampanyalari.aspx",
+      "sigorta-kampanyalari.aspx",
+      "ticari-kampanyalar.aspx",
+      "yatirim-kampanyalari.aspx"
+    ]
   },
   "emlakkatilim": {
     "ad": "Türkiye Emlak Katılım",

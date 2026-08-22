@@ -73,6 +73,15 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          # DENETIM BULGUSU (22 Agustos 2026, v0.1.1 denemesi): provenance
+          # varsayilan acikken bu action'in `digest` ciktisi bos geliyordu -
+          # hazirlik_dogrulama job'i "docker: invalid reference format"
+          # (cikis kodu 125) ile patliyordu, cunku IMAJ degiskeni sonu "@"
+          # ile bitip hicbir seye isaret etmiyordu. Bu, docker/build-push-
+          # action@v5-v6'da bilinen bir davranis (provenance attestation
+          # digest ciktisini bozabiliyor); standart cozum provenance'i
+          # kapatmak.
+          provenance: false
 
       - name: Surum kunyesi olustur
         run: |
@@ -132,7 +141,15 @@ jobs:
 
       - name: Yayinlanan imaji DIGEST ile calistir
         run: |
-          IMAJ="${{ env.KAYIT }}/${{ env.IMAJ }}@${{ needs.imaj.outputs.digest }}"
+          DIGEST="${{ needs.imaj.outputs.digest }}"
+          if [ -z "$DIGEST" ]; then
+            echo "HATA: imaj job'i bos digest uretti - 'imaj' job'inin"
+            echo "'Imaji uret ve yayinla' adiminin ciktilarini kontrol edin."
+            echo "(DENETIM BULGUSU 22 Agustos: bu daha once provenance"
+            echo "attestation'i yuzunden olmustu, bkz. o adimdaki not.)"
+            exit 1
+          fi
+          IMAJ="${{ env.KAYIT }}/${{ env.IMAJ }}@${DIGEST}"
           echo "Calistirilan: $IMAJ"
           docker run -d --name katilimai-hazirlik --network host \
             -e GERCEK_VERI_AKTIF=false \

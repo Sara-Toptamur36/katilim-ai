@@ -31,17 +31,17 @@ yeniden üretilebilir — üretim komutları [Test](#test) bölümünde.*
 | Kapsanan katılım bankası | **9 / 10** (BDDK listesi; Adil Katılım gerekçeli hariç — ürün/kampanya yayımlamıyor) |
 | Toplanan gerçek kampanya | **251** tekil kampanya (300 tarihli anlık görüntü) |
 | Değişimi yakalanan kampanya | **40 / 251** içerik güncellemesi; **25**'inde izlenen alan değişti |
-| Altın Veri Seti (elle doğrulanmış referans) | **58** kayıt + ekran görüntüsü kanıtı |
+| Altın Veri Seti (elle doğrulanmış referans) | **64** kayıt + ekran görüntüsü kanıtı (etiketleme sprinti sürüyor, hedef 200-300) |
 | Çıkarım — dolu alan doğruluğu | **%98,48** (65/66 alan) |
 | Çıkarım — boş alan doğruluğu (yanlış pozitif) | **%99,17** (120/121 alan) — 1 yanlış pozitif |
 | Çıkarım — alan bazlı makro F1 | **%98,28** (7 ölçülebilir alan; 5'i %100) |
 | Terminoloji sözlüğü | **31** kavram (geleneksel karşılığı + tanım kaynağıyla) |
 | Kapsam ölçümü (Scope Guard) | hassasiyet **24/24**, özgüllük **10/10** |
-| RAG — indekslenen parça | **817** (263 belgeden, 17 Ağustos'ta yeniden kuruldu) |
-| RAG — Recall@3 / @5 | **%93,75 / %93,75** (30 / 30 — 32 kampanya) |
-| RAG — Recall@1 | **%87,5 – %93,75** (28–30/32) — koşular arası oynuyor, aşağıya bakınız |
-| RAG — abstention doğruluğu | **%100** (5/5 alan dışı soruda cevap üretilmedi) |
-| Otomatik test | **723** test (+44 `slow`), CI her push'ta çalışır |
+| RAG — indekslenen parça | **878** (300 belgeden, 21 Ağustos'ta yeniden kuruldu) |
+| RAG — değerlendirme seti | **185** soru, 6 kategori (32'lik dar setten büyütüldü — aşağıya bakınız) |
+| RAG — Recall@5 (genel / kategori bazlı) | **%86,21** genel — tam_ad %96,88, kısmi_ad %93,33, doğal_soru %88,89, **banka_ve_konu %50,0** |
+| RAG — abstention doğruluğu | **%86,67** (13/15) — ilk kez %100 değil, bkz. aşağıda |
+| Otomatik test | **865** test (+46 `slow`), CI her push'ta çalışır |
 
 **Kayıt sayısı neden iki türlü:** Scraper eski taramaları **silmez** — değişiklik
 takibi (SHA-256 delta) bunu gerektirir. Bu yüzden diskte 300 tarihli dosya var
@@ -81,6 +81,18 @@ tekrarlandı. İki bulgu çıktı, ikisi de raporlanıyor:
 
 Yöntem, tekrar üretim çıktıları ve önerilen düzeltme (*ölçümü `exact=True` ile
 koşturmak*): [`docs/rag_tasarim_ve_olcum.md`](docs/rag_tasarim_ve_olcum.md)
+
+**21 Ağustos'ta indeks yeniden kuruldu** (18 Ağustos'taki 9-banka taramasıyla
+senkron: 263 → 300 belge, 817 → 878 parça) **ve ölçüm yöntemi büyütüldü**: 32
+soruluk dar set yerine artık 185 soru, 6 kategori. Yeni set kasıtlı olarak daha
+zor kategoriler içeriyor (**`banka_ve_konu`**: yalnızca banka adı + genel konu,
+kampanya adı verilmeden) — bu yüzden genel ortalama önceki sayılarla doğrudan
+kıyaslanmaz. `banka_ve_konu`'da Recall@1 **%0** çıktı: lexical arama kampanya
+adına dayandığı için isim verilmeyince ayırt edicilik kayboluyor. Bu bir kod
+hatası değil, §2'de zaten belgelenen dense-arama sınırının doğal sonucu — ve
+reranker ihtiyacını daha güçlü gösteriyor. Abstention da ilk kez **%100
+değil** (%86,67, 13/15) — kök nedeni henüz araştırılmadı. Ayrıntı:
+[`docs/rag_tasarim_ve_olcum.md`](docs/rag_tasarim_ve_olcum.md#yeniden-doğrulama--2021-ağustos-2026-indeks-yeniden-kuruldu--soru-seti-32den-185e-çıkarıldı)
 
 Kalan iki çıkarım hatası bilerek açık bırakıldı ve kök nedenleri belgelendi:
 `DK-002` (ödül miktarı — gold değeri doğrulandı, motor yanılıyor) ve `TF-001`

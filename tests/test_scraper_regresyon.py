@@ -71,8 +71,19 @@ def test_scraper_altin_veriyle_uyusuyor(altin):
     # negatif verirdi. Ayni duzeltme terminology/genisletme.py'de de var
     # (o modul Yagmur'un alani, oradan import edilmiyor - kucuk, kararli
     # bir tek satirlik mantik oldugu icin burada ayrica tutuluyor).
-    kelime = ilk_kelime(altin["kampanya_adi"])
-    assert kelime in ham_metin.replace("İ", "i").lower(), (
+    #
+    # DENETIM BULGUSU (18 Agustos 2026, KT-001): Altin veri setine "Taksitlio'da"
+    # DUZ kesme isaretiyle (U+0027) elle yazilmis, ama bankanin canli sayfasi
+    # TIPOGRAFIK kesme isareti kullaniyor ('U+2019 - "Taksitlio'da") - bu bir
+    # scraper/encoding hatasi DEGIL, sayfanin gercek, doğru sekilde okunmus
+    # icerigi. Iki karakter de ayni "kesme isareti" anlamina geldigi icin
+    # karsilastirmadan once tek bir forma normalize edilir.
+    def _kesme_isaretini_normalize_et(metin: str) -> str:
+        return metin.replace("’", "'").replace("‘", "'")
+
+    kelime = _kesme_isaretini_normalize_et(ilk_kelime(altin["kampanya_adi"]))
+    ham_metin_normalize = _kesme_isaretini_normalize_et(ham_metin.replace("İ", "i").lower())
+    assert kelime in ham_metin_normalize, (
         f"{altin['kayit_id']}: beklenen ifade ('{kelime}') ham metinde yok - "
         "sayfa degismis veya secici bozulmus olabilir"
     )

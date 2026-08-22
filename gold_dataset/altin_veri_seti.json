@@ -23,6 +23,7 @@
     "notlar": "SARTNAME Md. 5 ornegi - silmeyin, referans",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "odul_miktari": true,
       "finansman_tutari": true,
@@ -53,6 +54,7 @@
     "notlar": "Kampanya suresi sayfada BELIRTILMEMIS -> bos birakildi",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "odul_miktari": true,
       "kampanya_bitis": true,
@@ -85,6 +87,7 @@
     "notlar": "Masraf bilgisi sayfada yok -> bos birakildi",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "masraf_durumu": true,
       "kampanya_bitis": true,
@@ -115,6 +118,7 @@
     "notlar": "Kart kampanyasi - oran/vade YOK, bos birakildi (gizlenmedi)",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -143,9 +147,10 @@
     "ekran_goruntusu": "KT-001.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-07-28",
-    "notlar": "Kar payi orani %2,99 ama vergiler dahil maliyet %4,1910 - sayfa ikisini ayri veriyor | [11 Agu] taksit_sayisi=6 eklendi (kampanya_avantaji metninde acikca belirtiliyor)",
-    "taksit_sayisi": 6,
+    "notlar": "Kar payi orani %2,99 ama vergiler dahil maliyet %4,1910 - sayfa ikisini ayri veriyor",
+    "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "odul_miktari": true,
       "masraf_durumu": true,
@@ -176,6 +181,7 @@
     "notlar": "12-48 ay arasi, %0 ile %3,50 arasi oranlar, sigorta ürünleri sartina bağli.",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "odul_miktari": true,
       "hedef_kitle": true,
@@ -206,6 +212,7 @@
     "notlar": "Rapor Bölüm 3'ün gözlemini doğruluyor: genel tanıtım sayfası, kampanyaya özel somut oran/vade YOK - şeffaflık ilkesi gereği boş bırakıldı",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -221,7 +228,7 @@
     "kampanya_adi": "Diyanet Umre Finansmanı ile Vade Farksız 3 Taksit İmkanı!",
     "kampanya_turu": "Ihtiyac Finansmani Kampanyasi",
     "kaynak_url": "www.kuveytturk.com.tr/kampanyalar/kendim-icin/finansman-kampanyalari/diyanet-umre-finansmani-ile-vade-farksiz-3-taksit-imkani",
-    "kar_payi_orani": 0,
+    "kar_payi_orani": null,
     "maliyet_orani": null,
     "oran_periyodu": null,
     "vade_ay": 3,
@@ -236,10 +243,12 @@
     "ekran_goruntusu": "KT-004.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-07-28",
-    "notlar": "Diyanetten alınan umre tur kodu şart | [11 Agu] taksit_sayisi=3 eklendi (kampanya_avantaji metninde acikca belirtiliyor) | [19 Agu] kar_payi_orani=0 yapildi (baslikta ve kampanya_avantaji'nda acikca 'vade farksiz' - AL-002/AL-005/AL-006/VK-001/VK-002/VK-003/VK-006/KT-006 ile ayni tutarlilik kurali, gozden kacmis)",
-    "taksit_sayisi": 3,
+    "notlar": "Diyanetten alınan umre tur kodu şart",
+    "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
+      "kar_payi_orani": true,
       "odul_miktari": true,
       "masraf_durumu": true,
       "hedef_kitle": true,
@@ -271,6 +280,7 @@
     "notlar": "Bu kayıt raporun Bölüm 3'teki \"Mil\" ödül birimi gözlemini doğruluyor",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -284,7 +294,7 @@
     "kampanya_adi": "Yeni Sağlam Kart Troy'lulara Özel Vade Farksız 5 Aya Varan Taksit İmkanı!",
     "kampanya_turu": "Kart Kampanyasi",
     "kaynak_url": "www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/yeni-saglam-kart-troylulara-ozel-vade-farksiz-5-aya-varan-taksit-imkani",
-    "kar_payi_orani": 0,
+    "kar_payi_orani": null,
     "maliyet_orani": null,
     "oran_periyodu": null,
     "vade_ay": null,
@@ -299,10 +309,12 @@
     "ekran_goruntusu": "KT-006.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-07-28",
-    "notlar": "vade_ay alanı burada \"taksit sayısı\" anlamında kullanıldı, klasik kredi vadesi değil - CampaignRecord şemasıyla tam örtüşmüyor, ekiple bu ayrımı konuşmak gerekebilir | [9 Agu] vade_ay->taksit_sayisi tasindi (Vade Farksiz 5 Aya Varan Taksit Imkani); sayfada vade ifadesi yok | [11 Agu] kar_payi_orani=0 yapildi (AL-002/AL-005/TOM-002 ile ayni 'Vade Farksiz N Aya Varan Taksit' yapisi, tutarlilik icin; Yagmur onayi)",
+    "notlar": "vade_ay alanı burada \"taksit sayısı\" anlamında kullanıldı, klasik kredi vadesi değil - CampaignRecord şemasıyla tam örtüşmüyor, ekiple bu ayrımı konuşmak gerekebilir | [9 Agu] vade_ay->taksit_sayisi tasindi (Vade Farksiz 5 Aya Varan Taksit Imkani); sayfada vade ifadesi yok",
     "taksit_sayisi": 5,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
+      "kar_payi_orani": true,
       "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
@@ -333,6 +345,7 @@
     "notlar": "Kampanyadan yalnızca bir kez yararlanılabilir",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -361,9 +374,10 @@
     "ekran_goruntusu": "AL-001.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-07-28",
-    "notlar": "Kampanya iki bölümlü: 40.000 TL'lik kısım İhtiyaç Finansmanı (Pratik Finansman Kart), 100.000 TL'lik kısım kredi kartıyla vade farksız taksit - ilk kısım temel alındı | [9 Agu] vade_ay->taksit_sayisi tasindi (Secili sektorlerde vade farksiz 6 taksit); sayfada vade ifadesi yok | [11 Agu] taksit_sayisi 6 -> 4 (finansman_tutari (40.000 TL) ile ayni alt kampanyaya - Pratik Finansman Kart bolumune - sabitlendi; Yagmur onayi)",
-    "taksit_sayisi": 4,
+    "notlar": "Kampanya iki bölümlü: 40.000 TL'lik kısım İhtiyaç Finansmanı (Pratik Finansman Kart), 100.000 TL'lik kısım kredi kartıyla vade farksız taksit - ilk kısım temel alındı | [9 Agu] vade_ay->taksit_sayisi tasindi (Secili sektorlerde vade farksiz 6 taksit); sayfada vade ifadesi yok",
+    "taksit_sayisi": 6,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "vade_ay": true,
       "odul_miktari": true,
@@ -395,6 +409,7 @@
     "notlar": "ivd.gib.gov.tr üzerinden yapılan ödemeler peşin tahsil ediliyor, bu kampanya dışında | [9 Agu] vade_ay->taksit_sayisi tasindi (MTV Odemelerinize Vade Farksiz 3 Taksit); sayfada vade ifadesi yok",
     "taksit_sayisi": 3,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "vade_ay": true,
       "odul_miktari": true,
@@ -427,6 +442,7 @@
     "notlar": "Kampanya 1.000 kişiyle sınırlı; Master Gold Virtual/Standart ve Business kartlar hariç",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -458,6 +474,7 @@
     "notlar": "Ödül davet edilenin görüntülü görüşmeyle müşteri olmasına bağlı, başka kanaldan olursa ödül yok",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -489,6 +506,7 @@
     "notlar": "Katılmadan önce yapılan işlemler kapsam dışı; sadece belirli MCC kodları (eczane, diş hekimi, ortopedi vb.) geçerli | [9 Agu] vade_ay->taksit_sayisi tasindi (Saglik Harcamalarina Vade Farksiz 6 Taksit); sayfada vade ifadesi yok",
     "taksit_sayisi": 6,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "vade_ay": true,
       "odul_miktari": true,
@@ -520,6 +538,7 @@
     "notlar": "Business kartlar ve Master Gold Kart kapsam dışı | [9 Agu] vade_ay->taksit_sayisi tasindi (Egitim Harcamalarina Vade Farksiz 6 Taksit); sayfada vade ifadesi yok",
     "taksit_sayisi": 6,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "vade_ay": true,
       "odul_miktari": true,
@@ -548,9 +567,10 @@
     "ekran_goruntusu": "VK-001.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-07-28",
-    "notlar": "VKart Business ve VKart Debit kapsam dışı; müşteri başına en fazla 3 MTV ödemesi | [11 Agu] taksit_sayisi=3 eklendi (kampanya_avantaji metninde acikca belirtiliyor)",
-    "taksit_sayisi": 3,
+    "notlar": "VKart Business ve VKart Debit kapsam dışı; müşteri başına en fazla 3 MTV ödemesi",
+    "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "odul_miktari": true,
       "masraf_durumu": true,
@@ -578,9 +598,10 @@
     "ekran_goruntusu": "VK-002.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-07-28",
-    "notlar": "Sadece gib.gov.tr veya banka kanallarından yapılan ödemeler geçerli | [11 Agu] taksit_sayisi=3 eklendi (kampanya_avantaji metninde acikca belirtiliyor)",
-    "taksit_sayisi": 3,
+    "notlar": "Sadece gib.gov.tr veya banka kanallarından yapılan ödemeler geçerli",
+    "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "odul_miktari": true,
       "masraf_durumu": true,
@@ -608,9 +629,10 @@
     "ekran_goruntusu": "VK-003.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-07-28",
-    "notlar": "Müşteri başına en fazla 3 harcama taksitlendirilebilir | [11 Agu] taksit_sayisi=5 eklendi (kampanya_avantaji metninde acikca belirtiliyor)",
-    "taksit_sayisi": 5,
+    "notlar": "Müşteri başına en fazla 3 harcama taksitlendirilebilir",
+    "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "odul_miktari": true,
       "masraf_durumu": true,
@@ -641,6 +663,7 @@
     "notlar": "Tek kullanımlık kod, sadece bilet.com'da geçerli",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -672,6 +695,7 @@
     "notlar": "Ayda en fazla 5 kez / 1.000 TL indirim limiti var",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -700,9 +724,10 @@
     "ekran_goruntusu": "VK-006.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-07-28",
-    "notlar": "Sadece TROY kart, ek/sanal kartlar dahil; müşteri başına en fazla 3 harcama | [11 Agu] taksit_sayisi=5 eklendi (kampanya_avantaji metninde acikca belirtiliyor)",
-    "taksit_sayisi": 5,
+    "notlar": "Sadece TROY kart, ek/sanal kartlar dahil; müşteri başına en fazla 3 harcama",
+    "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "odul_miktari": true,
       "masraf_durumu": true,
@@ -733,6 +758,7 @@
     "notlar": "Kampanya süresiz/uzun vadeli; kar_payi_orani, vade_ay, finansman_tutari, odul_miktari alanları bu kampanya türüne uygun değil - bilerek boş bırakıldı (komisyon indirimi, faiz/ödül değil)",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -766,6 +792,7 @@
     "notlar": "Odul parasal degil (1 aylik tabii Premium uyelik) - odul_miktari/odul_birimi semaya uymadigi icin bos birakildi, detay kampanya_avantaji alaninda. Musteri basina 1 kez",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -796,9 +823,10 @@
     "ekran_goruntusu": "TF-001.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-07-28",
-    "notlar": "Somut oran verilmiyor - rapor Bölüm 3'ün gözlemine örnek | [11 Agu] erteleme_suresi_ay=3 eklendi (kampanya_avantaji ve ham metinde acikca belirtiliyor)",
+    "notlar": "Somut oran verilmiyor - rapor Bölüm 3'ün gözlemine örnek",
     "taksit_sayisi": null,
-    "erteleme_suresi_ay": 3,
+    "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "odul_miktari": true,
@@ -831,6 +859,7 @@
     "notlar": "Tutar maaş dilimine göre kademeli (18.000-32.000 TL); en üst dilimi (20.000 TL+) alındı",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -863,6 +892,7 @@
     "notlar": "%0 orani yalnizca sigortali basvuru + skor sartina bagli; sigortasiz/dusuk skorlu farkli oran uygulanabilir",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "odul_miktari": true,
       "masraf_durumu": true,
@@ -893,6 +923,7 @@
     "notlar": "Davet edilenin Happy Bonus kredi kartı kullanmasi sart",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -924,6 +955,7 @@
     "notlar": "Bitis tarihi sayfada belirtilmemis, sureklen bir paket gibi gorunuyor - bos birakildi",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -956,6 +988,7 @@
     "notlar": "Odul iki ayri bilesenden olusuyor: kart harcamasi (2.000 TL) + fatura talimati (2.000 TL)",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -987,6 +1020,7 @@
     "notlar": "Somut bir oran/odul degil, genel masraf muafiyeti politikasi - kampanya_turu semadaki 9 turden hicbirine tam uymuyor, Belirlenemedi isaretlendi. Bitis tarihi yok, surekli hizmet gibi",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1020,6 +1054,7 @@
     "notlar": "Aile Kart, Bagimsiz Kart ve ticari/ucretsiz kartlar kapsam disi; kart 90 gun iptal edilmezse odul kalici",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1051,6 +1086,7 @@
     "notlar": "E-ticaret islemleri kapsam disi; kampanyaya onceden katilim sart",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1079,9 +1115,10 @@
     "ekran_goruntusu": "ZK-003.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-07-28",
-    "notlar": "Diger bankalardaki benzer kampanyalardan farkli olarak burada acikca 'vade farksiz' ifadesi yok - orani 0 varsaymadim | [11 Agu] taksit_sayisi=4 eklendi (kampanya_avantaji metninde acikca belirtiliyor)",
-    "taksit_sayisi": 4,
+    "notlar": "Diger bankalardaki benzer kampanyalardan farkli olarak burada acikca 'vade farksiz' ifadesi yok - orani 0 varsaymadim",
+    "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "odul_miktari": true,
@@ -1114,6 +1151,7 @@
     "notlar": "vade_ay alani burada net degil: kampanya 'mevcut 2-4 taksite +8 ekliyor' diyor (toplamda 10-12 taksit gibi), tekil bir sayi degil - bos birakildi",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1147,6 +1185,7 @@
     "notlar": "Sadece havayolu firmalarinin kendi kanallari gecerli, araci bilet siteleri haric",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1178,6 +1217,7 @@
     "notlar": "E-ticaret kapsam disi; Aile Kart/Bagimsiz Kart/ticari kartlar dahil degil",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1209,6 +1249,7 @@
     "notlar": "Odul yalnizca 4. harcamada tek seferde veriliyor, kademeli degil",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1240,6 +1281,7 @@
     "notlar": "Surdurulebilirlik/elektrikli arac temali kampanya, %20 orani odul hesaplama sekli - kar_payi_orani degil",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1271,6 +1313,7 @@
     "notlar": "Sadece ilk harcamaya uygulaniyor, oran tabanli (%10) sabit tutar degil",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1302,6 +1345,7 @@
     "notlar": "SMS ile onceden katilim sart (GIDA yazip 6026'ya)",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1333,6 +1377,7 @@
     "notlar": "SMS ile onceden katilim sart (AKARYAKIT yazip 6026'ya)",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1364,6 +1409,7 @@
     "notlar": "SMS ile onceden katilim sart (YOL yazip 6026'ya)",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1395,6 +1441,7 @@
     "notlar": "Fatura/vergi/BES odemesi ve para transferi kapsam disi",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1426,6 +1473,7 @@
     "notlar": "En ust dilimi (2.000 TL) alindi; seyahat acentesi uzerinden alinan biletler kapsam disi, dogrudan havayolu firmasi olmali",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1457,6 +1505,7 @@
     "notlar": "Cok bilesenli kampanya (mevduat+finansman+masraf muafiyeti). 98/2 katilma hesabi orani MEVDUAT urunu oldugu icin Sayfa 3 Kapsam Disi'na girmeli. Finansman indirimi (5 puan) mutlak oran degil, goreli indirim - kar_payi_orani'na yazilamadi. Turkiye Finans'in Emekliler Haftasi kampanyasiyla ayni yapi",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1491,6 +1540,7 @@
     "notlar": "Bolgeye ozel (4 il), suresi belirtilmemis; alt sinir vade 2 ay, alt sinir tutar 6.500 TL",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "odul_miktari": true,
       "masraf_durumu": true,
@@ -1522,6 +1572,7 @@
     "notlar": "Hem davet eden hem davet edilenin Paraf Kart basvurusu sart; 0,1 gram x 10 davet = 1 gram ust sinir",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1553,6 +1604,7 @@
     "notlar": "Bitis tarihi yok (surekli); odul yalnizca fiziki altin olarak teslim edilir, harcamada kullanilamaz",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1585,6 +1637,7 @@
     "notlar": "Somut oran/sayi verilmiyor, genel tanitim sayfasi - sayisal alanlar bos birakildi",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1620,6 +1673,7 @@
     "notlar": "Ayda en fazla 5 kez / 1.000 TL indirim limiti var",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1648,9 +1702,10 @@
     "ekran_goruntusu": "DK-006.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-07-28",
-    "notlar": "Kademeli sistem: 100-1.000 TL->3 taksit, 1.000-6.000 TL->6 taksit, 6.000-10.000 TL->6 taksit, 10.000 TL+ secili urun->9 taksit. En ust dilim alindi | [11 Agu] taksit_sayisi=9 eklendi (kampanya_avantaji metninde acikca belirtiliyor)",
-    "taksit_sayisi": 9,
+    "notlar": "Kademeli sistem: 100-1.000 TL->3 taksit, 1.000-6.000 TL->6 taksit, 6.000-10.000 TL->6 taksit, 10.000 TL+ secili urun->9 taksit. En ust dilim alindi",
+    "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "odul_miktari": true,
       "masraf_durumu": true,
@@ -1678,9 +1733,10 @@
     "ekran_goruntusu": "DK-007.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-07-28",
-    "notlar": "Sepet toplami 2.000 TL alt sinirdir | [11 Agu] taksit_sayisi=3 eklendi (kampanya_avantaji metninde acikca belirtiliyor)",
-    "taksit_sayisi": 3,
+    "notlar": "Sepet toplami 2.000 TL alt sinirdir",
+    "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "odul_miktari": true,
       "masraf_durumu": true,
@@ -1711,6 +1767,7 @@
     "notlar": "Nisan ayi kampanyasinin devami, onceki kazanimlar dahil; ayrica davet edilenin kendisi de 1.000 TL+ para transferiyle 500 TL kazaniyor",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1742,6 +1799,7 @@
     "notlar": "Sadece ilgili platformlarin resmi sitesi/uygulamasi uzerinden yapilan odemeler gecerli",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1773,6 +1831,7 @@
     "notlar": "Somut oran/rakam verilmiyor (risk seviyesine gore belirlenen limitler), genel tanitim niteliginde",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1806,6 +1865,7 @@
     "notlar": "Hesap 7 gun acik kalmali, erken kapatilirsa odul yok. Bu kampanyanin dayandigi Avantajli Hesap bir katilma hesabi urunu - kendi kar payi orani varsa o bilgi bu satira degil Sayfa 3 Kapsam Disi'na girmeli",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1837,6 +1897,7 @@
     "notlar": "%0,1 kur makasi bir kar payi orani degil, islem maliyeti indirimi - kar_payi_orani alanina yazilmadi, kampanya_avantaji'nda aciklandi",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1870,6 +1931,7 @@
     "notlar": "Sadece Cumartesi/Pazar, yalnizca yurt ici restoran/online yemek siparisi; once Katil butonuna basmak sart",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1901,6 +1963,7 @@
     "notlar": "4 paket var (Standart/Orta/Ust/Ekstra: 250K-1,5M TL); en dusuk paket temel alindi. Vade farki iadesi, Gunluk Kazandiran Hesabinda ilgili tutar kadar birikim VEYA kredi bakiyesi sartina bagli - karmasik, notlarda ozetlendi | [9 Agu] vade_ay->taksit_sayisi tasindi (Ozel Okul Odemelerinde 10 Taksit); sayfada vade ifadesi yok",
     "taksit_sayisi": 10,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "vade_ay": true,
       "odul_miktari": true,
@@ -1932,11 +1995,88 @@
     "notlar": "En az 5 farkli gunde market harcamasi + ekstrenin zamaninda odenmesi sart; diger market kampanyalariyla birlesse de ekstre basina max 1.250 TL",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
+    "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
       "finansman_tutari": true
+    }
+  },
+  {
+    "kayit_id": "AL-007",
+    "banka": "Albaraka Türk",
+    "kampanya_adi": "Ağustos Ayına Özel Fatura Kampanyası",
+    "kampanya_turu": "Yeni Musteri Kampanyasi",
+    "kaynak_url": "www.albaraka.com.tr/tr/kampanyalar/detay/agustos-ayina-ozel-fatura-kampanyasi",
+    "kar_payi_orani": null,
+    "maliyet_orani": null,
+    "oran_periyodu": null,
+    "vade_ay": null,
+    "finansman_tutari": null,
+    "odul_miktari": 2000,
+    "odul_birimi": "Worldpuan",
+    "kampanya_avantaji": "OFT2026 koduyla görüntülü görüşmeyle müşteri olup Albaraka World kartla verilen her otomatik fatura ödeme talimatına 500 TL, toplamda 2.000 TL Worldpuan",
+    "masraf_durumu": null,
+    "kampanya_baslangic": "2026-08-01",
+    "kampanya_bitis": "2026-08-31",
+    "hedef_kitle": "OFT2026 davet koduyla görüntülü görüşmeden ilk kez müşteri olan bireysel müşteriler",
+    "ekran_goruntusu": null,
+    "giren_kisi": null,
+    "giris_tarihi": "2026-08-21",
+    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Kampanya adi sayfada baslik satiri olmadigi icin URL slug'indan turetildi. Talimat basina 500 TL, musteri basina tavan 2.000 TL. Kampanya 1.000 kisiyle sinirli; Master Gold Virtual/Standart ve Business kartlar haric. Odul 1-5 Ekim 2026'da yuklenir.",
+    "taksit_sayisi": null,
+    "erteleme_suresi_ay": null,
+    "kanit_spanlari": {
+      "odul_miktari": "Kampanya müşteri bazındadır, bir müşteri en fazla 2.000 TL Worldpuan kazanabilir.",
+      "odul_birimi": "Kampanya müşteri bazındadır, bir müşteri en fazla 2.000 TL Worldpuan kazanabilir.",
+      "kampanya_baslangic": "Kampanya 1–31 Ağustos 2026 tarihlerinde geçerlidir.",
+      "kampanya_bitis": "Kampanya 31 Ağustos 2026 tarihine kadar geçerlidir.",
+      "hedef_kitle": "Kampanya 1-31 Ağustos 2026 tarihleri arasında “OFT2026” davet kodunu kullanarak görüntülü görüşme ile ilk kez müşterimiz olanlar için geçerlidir."
+    },
+    "alan_belirtilmemis": {
+      "kar_payi_orani": true,
+      "vade_ay": true,
+      "masraf_durumu": true,
+      "finansman_tutari": true
+    }
+  },
+  {
+    "kayit_id": "AL-008",
+    "banka": "Albaraka Türk",
+    "kampanya_adi": "Albarakalılara Özel Ücretsiz İSPARK Kampanyası",
+    "kampanya_turu": "Belirlenemedi",
+    "kaynak_url": "www.albaraka.com.tr/tr/kampanyalar/detay/albarakalilara-ozel-ucretsiz-ispark-kampanyasi-1",
+    "kar_payi_orani": null,
+    "maliyet_orani": null,
+    "oran_periyodu": null,
+    "vade_ay": null,
+    "finansman_tutari": null,
+    "odul_miktari": null,
+    "odul_birimi": null,
+    "kampanya_avantaji": "Cari hesabında 10.000 TL ve üzeri bakiyesi olan bireysel müşterilere İSPARK otoparklarında ayda 2 defa ücretsiz park (yol üstü 2 saat, bariyerli 4 saat)",
+    "masraf_durumu": null,
+    "kampanya_baslangic": "2026-01-01",
+    "kampanya_bitis": "2026-12-31",
+    "hedef_kitle": "Cari hesabında 10.000 TL ve üzerinde bakiyesi bulunan bireysel müşteriler",
+    "ekran_goruntusu": null,
+    "giren_kisi": null,
+    "giris_tarihi": "2026-08-21",
+    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Parasal odul YOK: 'ayda 2 defa ucretsiz park' hizmet avantajidir, 10.000 TL ise uygunluk esigidir - ikisi de odul_miktari DEGILDIR (bu kayit, motorun olmayan odul uydurup uydurmadigini olcer). Yalnizca binek otomobil; bazi otoparklar ve mac gunleri haric.",
+    "taksit_sayisi": null,
+    "erteleme_suresi_ay": null,
+    "kanit_spanlari": {
+      "kampanya_baslangic": "1 Ocak 2026 – 31 Aralık 2026",
+      "kampanya_bitis": "1 Ocak 2026 – 31 Aralık 2026",
+      "hedef_kitle": "cari hesabında 10.000 TL ve üzerinde bakiyesi"
+    },
+    "alan_belirtilmemis": {
+      "kar_payi_orani": true,
+      "vade_ay": true,
+      "odul_miktari": true,
+      "masraf_durumu": true,
+      "finansman_tutari": true,
+      "odul_birimi": true
     }
   }
 ]

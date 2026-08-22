@@ -85,6 +85,26 @@ ALANLAR = {
     ),
 }
 
+# --------------------------------------------------------------------------
+# SPAN KIPI (--span) icin ek desenler
+# --------------------------------------------------------------------------
+# Yukaridaki ALANLAR "hangi BOS alan doldurulmali?" sorusuna bakar. Span
+# kipi ise TERSI soruyu sorar: "bu DOLU degerin kaynaktaki gerekcesi hangi
+# cumle?" - o yuzden olculen tum alanlari kapsamasi gerekir.
+#
+# DAIRESELLIK KURALI BURADA DA GECERLI (bkz. dosya basi): desenler ham
+# metinde KAVRAM arar; regex_extractor'in bulduklarini onermez. Aday
+# cumleyi gosterir, secimi insan yapar.
+SPAN_DESENLERI = {
+    **{alan: desen for alan, (desen, _) in ALANLAR.items()},
+    "kar_payi_orani": re.compile(r"k[aâ]r\s*pay|k[aâ]r\s*oran|vade\s*farks[ıi]z|%", re.IGNORECASE),
+    "vade_ay": re.compile(r"vade|\d{1,3}\s*ay", re.IGNORECASE),
+    "odul_miktari": re.compile(r"ödül|odul|hediye|kazan|iade|puan|mil|gram", re.IGNORECASE),
+    "masraf_durumu": re.compile(r"masraf|[üu]cret|komisyon|tahsis|dosya", re.IGNORECASE),
+    "kampanya_bitis": re.compile(r"tarihleri|ge[çc]erli|son\s*g[üu]n|\d{1,2}[./]\d{1,2}[./]\d{4}", re.IGNORECASE),
+    "hedef_kitle": re.compile(r"m[üu]şteri|musteri|emekli|[çc]ift[çc]i|[öo]ğrenci|ogrenci|personel", re.IGNORECASE),
+}
+
 # Kanit cumlesi cikarirken kullanilacak pencere
 CUMLE_BOLUCU = re.compile(r"(?<=[.!?])\s+|\n")
 AZAMI_KANIT = 6
@@ -182,10 +202,68 @@ def rapor_yazdir(rapor: dict) -> None:
         )
 
 
+def span_raporu_yazdir(azami_kayit: int | None = None) -> None:
+    """DOLU degerler icin kanit cumlesi adaylari gosterir.
+
+    Cikti, `kanit_spanlari` alanina YAPISTIRILACAK bicimde uretilir.
+    Secilen cumle kaynak metinde BIREBIR gecmelidir - tests/
+    test_altin_veri_butunlugu.py bunu her kosuda dogrular, yani elle
+    "ozetlenmis" bir cumle sessizce gecemez.
+    """
+    kayitlar = _gercek_kayitlar()
+    girilmis = sum(1 for k in kayitlar if k.get("kanit_spanlari"))
+    print(chr(10) + "=" * 74)
+    print("  KANIT SPANI DOLDURMA")
+    print(f"  {len(kayitlar)} kayit | spani girilmis: {girilmis}")
+    print("  Secilen cumle kaynak metinde BIREBIR gecmeli (test dogrular).")
+    print("=" * 74)
+
+    # `azami_kayit` GOSTERILEN kayit sayisini sinirlar, taranani degil:
+    # ilk kayitlarin kaynagi siteden kaldirilmis olabilir (kampanya
+    # rotasyonu) ve girdiyi bastan kesmek bos bir rapor uretirdi.
+    gosterilen = 0
+
+    for kayit in kayitlar:
+        if azami_kayit and gosterilen >= azami_kayit:
+            break
+        if kayit.get("kanit_spanlari"):
+            continue  # zaten girilmis
+
+        scraper_kaydi = scraper_kaydini_bul(kayit)
+        if scraper_kaydi is None:
+            continue  # kampanya siteden kaldirilmis
+        metin = scraper_kaydi.get("normalize_metin") or scraper_kaydi.get("ham_metin") or ""
+
+        # Yalnizca DOLU alanlarin kaniti istenir - bos alanin kaniti olmaz
+        # (bkz. test_kanit_spani_yalnizca_DOLU_alanlara_verilir).
+        dolu = [a for a in SPAN_DESENLERI if kayit.get(a) not in (None, "", [])]
+        if not dolu:
+            continue
+
+        gosterilen += 1
+        print(chr(10) + f"  {kayit['kayit_id']}  {(kayit.get('kampanya_adi') or '')[:56]}")
+        for alan in dolu:
+            adaylar = _kanit_cumleleri(metin, SPAN_DESENLERI[alan])[:3]
+            if not adaylar:
+                continue
+            print(f"    {alan} = {kayit.get(alan)!r}")
+            for c in adaylar:
+                print(f"        | {c}")
+
+
 def main() -> int:
     ayristirici = argparse.ArgumentParser(description=__doc__)
     ayristirici.add_argument("--alan", choices=sorted(ALANLAR), help="Yalnizca bu alan")
+    ayristirici.add_argument(
+        "--span", action="store_true",
+        help="DOLU degerler icin kanit cumlesi adaylari goster (kanit_spanlari)",
+    )
+    ayristirici.add_argument("--azami", type=int, help="Span kipinde kac kayit gosterilsin")
     secim = ayristirici.parse_args()
+
+    if secim.span:
+        span_raporu_yazdir(secim.azami)
+        return 0
 
     alanlar = [secim.alan] if secim.alan else sorted(ALANLAR)
     for alan in alanlar:

@@ -63,6 +63,66 @@ SAYISAL_ALANLAR = {
 }
 TARIH_ALANLARI = {"kampanya_baslangic", "kampanya_bitis", "giris_tarihi"}
 
+# --------------------------------------------------------------------------
+# KANIT SPANI (evidence span)
+# --------------------------------------------------------------------------
+# Bir altin degerin yaninda, o degeri HAKLI CIKARAN kaynak cumlesi durur.
+# Neden gerekli: bir deger tartismali oldugunda tek yol bankanin sayfasini
+# yeniden acmaktir - sayfa degismisse (kampanya rotasyonu) gerekce tamamen
+# kaybolur. Span, etiketleme anindaki kaniti DONDURUR.
+#
+# EXCEL BICIMI - hucreye satir basina bir eslesme yazilir:
+#
+#     odul_miktari: bir müşteri en fazla 2.000 TL Worldpuan kazanabilir
+#     kampanya_bitis: Kampanya 1–31 Ağustos 2026 tarihlerinde geçerlidir
+#
+# Hucreye JSON yazdirmak insan icin iskence olurdu; bu bicim Excel'de
+# okunabilir kalir ve ayristirmasi tek satirdir.
+#
+# Secilen cumle kaynak metinde BIREBIR gecmelidir - tests/
+# test_altin_veri_butunlugu.py bunu her kosuda dogrular, yani elle
+# "ozetlenmis" bir cumle sessizce gecemez.
+SPAN_ALANI = "kanit_spanlari"
+
+# Span verilebilecek alanlar. Yazim hatasi bir spani sessizce olcum
+# disi birakirdi; taninmayan ad UYARI uretir.
+SPAN_VERILEBILIR_ALANLAR = {
+    "kar_payi_orani", "vade_ay", "finansman_tutari", "odul_miktari",
+    "odul_birimi", "taksit_sayisi", "erteleme_suresi_ay",
+    "masraf_durumu", "kampanya_bitis", "kampanya_baslangic", "hedef_kitle",
+}
+
+
+def _spanlari_ayristir(ham, kayit_id: str, uyarilar: list[str]) -> dict:
+    """"alan: cumle" satirlarini sozluge cevirir.
+
+    Bozuk satir SESSIZCE ATILMAZ - uyari uretir. Sessiz atma, etiketleyici
+    span girdigini sanirken olcumun onu hic gormemesi demek olurdu.
+    """
+    if ham is None or not str(ham).strip():
+        return {}
+
+    spanlar: dict[str, str] = {}
+    for satir in str(ham).splitlines():
+        sade = satir.strip()
+        if not sade:
+            continue
+        if ":" not in sade:
+            uyarilar.append(
+                f"[{kayit_id}] kanit_spanlari satiri 'alan: cumle' bicminde degil: {sade[:50]!r}"
+            )
+            continue
+        alan, _, cumle = sade.partition(":")
+        alan, cumle = alan.strip(), cumle.strip()
+        if alan not in SPAN_VERILEBILIR_ALANLAR:
+            uyarilar.append(f"[{kayit_id}] kanit_spanlari'nda taninmayan alan: {alan!r}")
+            continue
+        if not cumle:
+            uyarilar.append(f"[{kayit_id}] {alan} icin kanit cumlesi bos")
+            continue
+        spanlar[alan] = cumle
+    return spanlar
+
 GECERLI_PERIYOTLAR = {"aylik", "yillik", "belirsiz"}
 
 # Etiketleme oturumunda tek tek gozden gecirilmis sutunlar: burada bos
@@ -213,7 +273,9 @@ def donustur(excel_yolu: Path = EXCEL) -> tuple[list[dict], list[str]]:
         for alan, deger in ham.items():
             if alan is None:
                 continue
-            if alan in SAYISAL_ALANLAR:
+            if alan == SPAN_ALANI:
+                kayit[alan] = _spanlari_ayristir(deger, kayit_id, tum_uyarilar)
+            elif alan in SAYISAL_ALANLAR:
                 kayit[alan] = _sayiya_cevir(deger, kayit_id, alan)
             elif alan in TARIH_ALANLARI:
                 kayit[alan] = _tarihe_cevir(deger, kayit_id, alan)

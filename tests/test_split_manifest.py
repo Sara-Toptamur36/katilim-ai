@@ -13,7 +13,16 @@ def test_ornek_kayitlar_disarida_birakilir():
     girmemeli."""
     kayitlar = _gercek_kayitlari_yukle()
     assert all(k.get("giren_kisi") != "ORNEK" for k in kayitlar)
-    assert len(kayitlar) == 58  # bilinen gercek kayit sayisi
+
+    # SABIT SAYI TUTULMUYOR: burada once `== 58` yaziyordu ve etiketleme
+    # sprinti (gorev 21, hedef 200-300 kayit) her yeni kayitta bu testi
+    # kiriyordu. Sabit sayi, insanlari testi YAMAMAYA alistirir ve testin
+    # asil isini - yukleyicinin ORNEK kayitlari elemesi - golgeler.
+    # Beklenen sayi dosyanin kendisinden hesaplanir.
+    with open(_GOLD_DOSYASI, encoding="utf-8") as f:
+        beklenen = sum(1 for k in json.load(f) if k.get("giren_kisi") != "ORNEK")
+    assert len(kayitlar) == beklenen
+    assert kayitlar, "gercek kayit kalmadi - suzgec fazla mi eliyor?"
 
 
 def test_ayni_kaynak_url_iki_tarafta_birden_olmaz():

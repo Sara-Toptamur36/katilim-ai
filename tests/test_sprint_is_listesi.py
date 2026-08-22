@@ -100,15 +100,23 @@ def test_baslik_banka_adinin_kendisi_DEGIL(rapor):
     assert not kotu, f"baslik banka adiyla basliyor: {kotu[:5]}"
 
 
-def test_hedefe_ulasilamiyorsa_bu_GIZLENMEZ(rapor):
-    """Korpus dengesizligi yuzunden 200 hedefine ulasilamiyor. Rapor
-    bunu sayilarla gostermeli ki plan gercege gore yapilsin - "liste
-    uretildi" deyip sessiz kalmak yanlis guven verirdi."""
+def test_hedef_karsilaniyorsa_bu_GIZLENMEZ(rapor):
+    """Rapor, hedefe ulasilip ulasilamadigini sayilarla gostermeli ki
+    plan gercege gore yapilsin - "liste uretildi" deyip sessiz kalmak
+    yanlis guven verirdi.
+
+    NOT (22 Agustos 2026): Bu test onceden tam tersini kontrol eden bir
+    "tripwire" idi - "bugunku korpusta 200 hedefine ulasilamiyor, korpus
+    buyudugunde bu test kirilsin ki fark edilsin" diye yazilmisti. 21
+    Agustos'taki sitemap.xml taramasi 4 bankada +198 kampanya bulunca
+    tam olarak bu oldu: tripwire kirildi, is gordu. Artik korpus hedefi
+    karsiliyor (bkz. asagidaki assert) - bu test o yeni gercegi kilitler.
+    Ayni desen: bir sonraki buyuk kesif korpusu daraltirsa (banka sitesi
+    degisir, kampanyalar kaldirilir vb.) bu test yine kirilir."""
     assert rapor["listelenen"] <= rapor["hedef_yeni_kayit"]
     assert "ulasilabilir_toplam" in rapor
-    # Bugunku korpusta hedefe ulasilamiyor; ulasilabilir hale geldiginde
-    # bu test kirilir ve durumun degistigi FARK EDILIR.
-    assert rapor["ulasilabilir_toplam"] < 200, (
-        "Korpus buyumus olabilir - is listesi artik 200 hedefini karsiliyor. "
-        "docs/ ve README'deki 'denge ile hacim catisiyor' notu guncellenmeli."
+    assert rapor["ulasilabilir_toplam"] >= rapor["hedef_yeni_kayit"], (
+        "Korpus beklenenden kucuk - hedefe ulasilamiyor olabilir. "
+        "gold_dataset/sprint_is_listesi.py'deki 'DENGE ILE HACIM CATISIYOR' "
+        "bolumunu ve README'deki kapsam sayilarini kontrol edin."
     )

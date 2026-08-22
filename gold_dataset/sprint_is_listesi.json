@@ -1,10 +1,64 @@
 {
   "hedef_yeni_kayit": 200,
   "banka_basina_kota": 30,
-  "mevcut_altin_kayit": 57,
-  "listelenen": 92,
-  "ulasilabilir_toplam": 149,
+  "mevcut_altin_kayit": 58,
+  "listelenen": 177,
+  "ulasilabilir_toplam": 235,
   "kontrol_gerek": [
+    {
+      "slug": "e-ihracat-kampanyalari",
+      "banka": "Kuveyt Türk",
+      "url": "https://www.kuveytturk.com.tr/isim-icin/dis-ticaret/e-ihracat/e-ihracat-kampanyalari",
+      "metin_uzunlugu": 6236
+    },
+    {
+      "slug": "tarim-ve-hayvancilik-sektorune-ozel-kampanyalar",
+      "banka": "Kuveyt Türk",
+      "url": "https://www.kuveytturk.com.tr/isim-icin/tarim-bankaciligi/tarim-ve-hayvancilik-sektorune-ozel-kampanyalar",
+      "metin_uzunlugu": 6445
+    },
+    {
+      "slug": "is-birlik-kampanyalari",
+      "banka": "Kuveyt Türk",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/is-birlik-kampanyalari",
+      "metin_uzunlugu": 5825
+    },
+    {
+      "slug": "kart-kampanyalari",
+      "banka": "Kuveyt Türk",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari",
+      "metin_uzunlugu": 7758
+    },
+    {
+      "slug": "kobi-kampanyalari",
+      "banka": "Kuveyt Türk",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/kobi-kampanyalari",
+      "metin_uzunlugu": 7442
+    },
+    {
+      "slug": "musteri-ol-kampanyalari",
+      "banka": "Kuveyt Türk",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/musteri-ol-kampanyalari",
+      "metin_uzunlugu": 7446
+    },
+    {
+      "slug": "pos-kampanyalari",
+      "banka": "Kuveyt Türk",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/pos-kampanyalari",
+      "metin_uzunlugu": 6386
+    },
+    {
+      "slug": "finansman-kampanyalari",
+      "banka": "Kuveyt Türk",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/finansman-kampanyalari",
+      "metin_uzunlugu": 6522
+    },
+    {
+      "slug": "seyahat-kampanyalari",
+      "banka": "Kuveyt Türk",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/seyahat-kampanyalari",
+      "metin_uzunlugu": 6137
+    },
     {
       "slug": "Biten-Kampanyalar.aspx",
       "banka": "Türkiye Finans",
@@ -74,6 +128,12 @@
   ],
   "banka_ozeti": [
     {
+      "banka": "Kuveyt Türk",
+      "ham_kampanya": 109,
+      "etiketli": 6,
+      "etiketsiz": 103
+    },
+    {
       "banka": "Ziraat Katılım",
       "ham_kampanya": 108,
       "etiketli": 7,
@@ -81,45 +141,39 @@
     },
     {
       "banka": "Türkiye Emlak Katılım",
-      "ham_kampanya": 81,
+      "ham_kampanya": 84,
       "etiketli": 7,
-      "etiketsiz": 74
+      "etiketsiz": 77
     },
     {
-      "banka": "Kuveyt Türk",
-      "ham_kampanya": 13,
-      "etiketli": 3,
-      "etiketsiz": 10
+      "banka": "Dünya Katılım",
+      "ham_kampanya": 45,
+      "etiketli": 5,
+      "etiketsiz": 40
     },
     {
       "banka": "Albaraka Türk",
-      "ham_kampanya": 14,
+      "ham_kampanya": 37,
+      "etiketli": 8,
+      "etiketsiz": 29
+    },
+    {
+      "banka": "T.O.M. Katılım",
+      "ham_kampanya": 13,
+      "etiketli": 0,
+      "etiketsiz": 13
+    },
+    {
+      "banka": "Türkiye Finans",
+      "ham_kampanya": 15,
       "etiketli": 7,
-      "etiketsiz": 7
+      "etiketsiz": 8
     },
     {
       "banka": "Hayat Finans",
       "ham_kampanya": 10,
       "etiketli": 5,
       "etiketsiz": 5
-    },
-    {
-      "banka": "Dünya Katılım",
-      "ham_kampanya": 5,
-      "etiketli": 2,
-      "etiketsiz": 3
-    },
-    {
-      "banka": "T.O.M. Katılım",
-      "ham_kampanya": 3,
-      "etiketli": 0,
-      "etiketsiz": 3
-    },
-    {
-      "banka": "Türkiye Finans",
-      "ham_kampanya": 3,
-      "etiketli": 1,
-      "etiketsiz": 2
     },
     {
       "banka": "Vakıf Katılım",
@@ -129,13 +183,13 @@
     }
   ],
   "banka_basina_secilen": {
-    "Albaraka Türk": 7,
-    "Dünya Katılım": 3,
+    "Albaraka Türk": 29,
+    "Dünya Katılım": 30,
     "Hayat Finans": 5,
-    "Kuveyt Türk": 10,
-    "T.O.M. Katılım": 3,
+    "Kuveyt Türk": 30,
+    "T.O.M. Katılım": 13,
     "Türkiye Emlak Katılım": 30,
-    "Türkiye Finans": 2,
+    "Türkiye Finans": 8,
     "Vakıf Katılım": 2,
     "Ziraat Katılım": 30
   },
@@ -143,18 +197,18 @@
     {
       "sira": 1,
       "banka": "Albaraka Türk",
-      "baslik": "Ücretsiz İSPARK Otopark kampanyası ile Albaraka Türk, hayatınızı kolaylaştırmaya",
-      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/albarakalilara-ozel-ucretsiz-ispark-kampanyasi-1",
-      "slug": "albarakalilara-ozel-ucretsiz-ispark-kampanyasi-1",
-      "son_tarama": "2026-07-31"
+      "baslik": "'Albaraka Konaklama Harcamanıza %5 İndirim Kazandırıyor!' kampanyasına katılım s",
+      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/albaraka-konaklama-harcamaniza-5-indirim-kazandiriyor",
+      "slug": "albaraka-konaklama-harcamaniza-5-indirim-kazandiriyor",
+      "son_tarama": "2026-08-22"
     },
     {
       "sira": 2,
       "banka": "Dünya Katılım",
-      "baslik": "Altın Kazandıran Alışveriş Dünya Katılım’da !",
-      "url": "https://www.dunyakatilim.com.tr/kampanyalar/altin-kesemTicari",
-      "slug": "altin-kesemTicari",
-      "son_tarama": "2026-08-18"
+      "baslik": "A101 de Vade Farksız 6 Aya Varan Taksit Fırsatı!",
+      "url": "https://dunyakatilim.com.tr/kampanyalar/a-101-paraf",
+      "slug": "a-101-paraf",
+      "son_tarama": "2026-08-22"
     },
     {
       "sira": 3,
@@ -167,18 +221,18 @@
     {
       "sira": 4,
       "banka": "Kuveyt Türk",
-      "baslik": "Colin’s’de Vade Farksız 4 Aya Varan Taksit Fırsatı",
-      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/colinsde-vade-farksiz-4-aya-varan-taksit-firsati",
-      "slug": "colinsde-vade-farksiz-4-aya-varan-taksit-firsati",
-      "son_tarama": "2026-08-06"
+      "baslik": "12 Aya Kadar ödemesiz dönemli ve indirimli Tarım Finansmanı Kuveyt Türk'te! | Ku",
+      "url": "https://www.kuveytturk.com.tr/isim-icin/tarim-bankaciligi/tarim-ve-hayvancilik-sektorune-ozel-kampanyalar/12-aya-kadar-odemesiz-donemli-ve-indirimli-tarim-finansmani-kuveyt-turkte",
+      "slug": "12-aya-kadar-odemesiz-donemli-ve-indirimli-tarim-finansmani-kuveyt-turkte",
+      "son_tarama": "2026-08-22"
     },
     {
       "sira": 5,
       "banka": "T.O.M. Katılım",
-      "baslik": "Restoran harcamalarında %10 İade Kazan!",
-      "url": "https://www.tombank.com.tr/kampanyalar.html#restoran-harcamalar-nda-10-i-ade-kazan",
-      "slug": "kampanyalar.html#restoran-harcamalar-nda-10-i-ade-kazan",
-      "son_tarama": "2026-08-01"
+      "baslik": "A101’de her alışverişte %3'e varan nakit iade!",
+      "url": "https://hadiyanindakibanka.com/kampanyalar/a101de-her-alisveriste-3-nakit-iade",
+      "slug": "a101de-her-alisveriste-3-nakit-iade",
+      "son_tarama": "2026-08-22"
     },
     {
       "sira": 6,
@@ -186,15 +240,15 @@
       "baslik": "Ödeme Hizmetleri ve Nakit Yönetimi",
       "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/Paraf ile Hepsiburada’da Peşin Fiyatına 6 Aya Varan Taksit Fırsatı!",
       "slug": "Paraf ile Hepsiburada’da Peşin Fiyatına 6 Aya Varan Taksit Fırsatı!",
-      "son_tarama": "2026-08-18"
+      "son_tarama": "2026-08-22"
     },
     {
       "sira": 7,
       "banka": "Türkiye Finans",
-      "baslik": "Dijital kanallarımızdan size özel indirimleri ve avantajları takip edin.",
-      "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/default.aspx",
-      "slug": "default.aspx",
-      "son_tarama": "2026-08-01"
+      "baslik": "BES ile Hem Yarınınıza Değer Katın, Hem de 650 TL Bonus Kazanın!",
+      "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/bes-ile-yarininiza-deger-katin.aspx",
+      "slug": "bes-ile-yarininiza-deger-katin.aspx",
+      "son_tarama": "2026-08-22"
     },
     {
       "sira": 8,
@@ -215,18 +269,18 @@
     {
       "sira": 10,
       "banka": "Albaraka Türk",
-      "baslik": "Albaraka Mobil’i indirerek görüntülü görüşme ile anında Albarakalı olun, avantaj",
-      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/dijital-katilma-hesabina-ozel-paylasim-oranlari-10",
-      "slug": "dijital-katilma-hesabina-ozel-paylasim-oranlari-10",
-      "son_tarama": "2026-07-31"
+      "baslik": "Albaraka Otopark ve Vale Harcamanıza %50 İndirim Kazandırıyor! | Albaraka Türk",
+      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/albaraka-otopark-ve-vale-harcamaniza-10-indirim-kazandiriyorr",
+      "slug": "albaraka-otopark-ve-vale-harcamaniza-10-indirim-kazandiriyorr",
+      "son_tarama": "2026-08-22"
     },
     {
       "sira": 11,
       "banka": "Dünya Katılım",
-      "baslik": "⏰ Kampanya Süresi Dolmuştur!",
-      "url": "https://www.dunyakatilim.com.tr/kampanyalar/fiziki-altin",
-      "slug": "fiziki-altin",
-      "son_tarama": "2026-08-18"
+      "baslik": "Paraf İle ADV Mağazalarında 6 Taksit Fırsatı!",
+      "url": "https://dunyakatilim.com.tr/kampanyalar/adv",
+      "slug": "adv",
+      "son_tarama": "2026-08-22"
     },
     {
       "sira": 12,
@@ -239,18 +293,18 @@
     {
       "sira": 13,
       "banka": "Kuveyt Türk",
-      "baslik": "Eğitim ve Sağlık Harcamalarınızda 5 Taksit Fırsatı!",
-      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/egitim-ve-saglik-harcamalarinizda-5-taksit-firsati",
-      "slug": "egitim-ve-saglik-harcamalarinizda-5-taksit-firsati",
-      "son_tarama": "2026-07-31"
+      "baslik": "Adore Mobilya’da Vade Farksız 9 Aya Varan Taksit Fırsatı!",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/adore-mobilyada-vade-farksiz-9-aya-varan-taksit-firsati",
+      "slug": "adore-mobilyada-vade-farksiz-9-aya-varan-taksit-firsati",
+      "son_tarama": "2026-08-22"
     },
     {
       "sira": 14,
       "banka": "T.O.M. Katılım",
-      "baslik": "Tüm Marketlerde Geçerli, 1.000 TL’ye kadar iade!",
-      "url": "https://www.tombank.com.tr/kampanyalar.html#t-m-marketlerde-ge-erli-1-000-tl-ye-kadar-iade",
-      "slug": "kampanyalar.html#t-m-marketlerde-ge-erli-1-000-tl-ye-kadar-iade",
-      "son_tarama": "2026-08-01"
+      "baslik": "A101’lerde süt ürünleri harcamalarında %50 Hediye Bakiye kazan!",
+      "url": "https://hadiyanindakibanka.com/kampanyalar/a101lerde-sut-urunleri-harcamalarinda-50-hediye-bakiye-kazan",
+      "slug": "a101lerde-sut-urunleri-harcamalarinda-50-hediye-bakiye-kazan",
+      "son_tarama": "2026-08-22"
     },
     {
       "sira": 15,
@@ -263,10 +317,10 @@
     {
       "sira": 16,
       "banka": "Türkiye Finans",
-      "baslik": "Kamu Çalışanlarına Özel İhtiyaç Finansmanı*",
-      "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/kamu-calisanlarina-ozel-ihtiyac-finansmani.aspx",
-      "slug": "kamu-calisanlarina-ozel-ihtiyac-finansmani.aspx",
-      "son_tarama": "2026-08-06"
+      "baslik": "Dijital kanallarımızdan size özel indirimleri ve avantajları takip edin.",
+      "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/default.aspx",
+      "slug": "default.aspx",
+      "son_tarama": "2026-08-01"
     },
     {
       "sira": 17,
@@ -287,18 +341,18 @@
     {
       "sira": 19,
       "banka": "Albaraka Türk",
-      "baslik": "Vade farksız 40.000 TL ve uygun oranlı hoş geldin finansmanı Albaraka'da!",
-      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/dijital-musterilere-ozel-pratik-finansman-kart",
-      "slug": "dijital-musterilere-ozel-pratik-finansman-kart",
-      "son_tarama": "2026-07-31"
+      "baslik": "Albaraka Restoran Harcamanıza %10 İndirim Kazandırıyor! | Albaraka Türk",
+      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/albaraka-restoran-harcamaniza-5-indirimm-kazandiriyor",
+      "slug": "albaraka-restoran-harcamaniza-5-indirimm-kazandiriyor",
+      "son_tarama": "2026-08-22"
     },
     {
       "sira": 20,
       "banka": "Dünya Katılım",
-      "baslik": "indirimden faydalanmak için",
-      "url": "https://www.dunyakatilim.com.tr/kampanyalar/lc-waikiki",
-      "slug": "lc-waikiki",
-      "son_tarama": "2026-08-18"
+      "baslik": "Alfemo’da Peşin fiyatına 8 Taksit Fırsatı!",
+      "url": "https://dunyakatilim.com.tr/kampanyalar/alfemo",
+      "slug": "alfemo",
+      "son_tarama": "2026-08-22"
     },
     {
       "sira": 21,
@@ -311,18 +365,18 @@
     {
       "sira": 22,
       "banka": "Kuveyt Türk",
-      "baslik": "Gelir Vergisi Ödemelerinizde 3 Taksit Fırsatı!",
-      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/gelir-vergisi-odemelerinizde-3-taksit-firsati",
-      "slug": "gelir-vergisi-odemelerinizde-3-taksit-firsati",
-      "son_tarama": "2026-07-31"
+      "baslik": "Akademisyenlere Özel Avantaj Paketi",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/musteri-ol-kampanyalari/akademisyenlere-ozel-avantaj-paketi",
+      "slug": "akademisyenlere-ozel-avantaj-paketi",
+      "son_tarama": "2026-08-22"
     },
     {
       "sira": 23,
       "banka": "T.O.M. Katılım",
-      "baslik": "Özel Okul Ödemelerinde 10 Taksit, üstelik vade farksız!",
-      "url": "https://www.tombank.com.tr/kampanyalar.html#zel-okul-demelerinde-10-taksit-stelik-vade-farks-z",
-      "slug": "kampanyalar.html#zel-okul-demelerinde-10-taksit-stelik-vade-farks-z",
-      "son_tarama": "2026-08-01"
+      "baslik": "Kulübe katıl, detaylarda belirtilen koşulları sağla, restoran, akaryakıt, tüm ma",
+      "url": "https://hadiyanindakibanka.com/kampanyalar/cok-kazananlar-kulubu-kat-kat-kazandiran-kampanyalari-ile-seninle",
+      "slug": "cok-kazananlar-kulubu-kat-kat-kazandiran-kampanyalari-ile-seninle",
+      "son_tarama": "2026-08-22"
     },
     {
       "sira": 24,
@@ -334,6 +388,14 @@
     },
     {
       "sira": 25,
+      "banka": "Türkiye Finans",
+      "baslik": "Günlük Hesap’la İhtiyaç Anında Vadeni Bozma!",
+      "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/gunluk-hesap-vade-kampanyasi.aspx",
+      "slug": "gunluk-hesap-vade-kampanyasi.aspx",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 26,
       "banka": "Ziraat Katılım",
       "baslik": "arket, akaryakıt, giyim, eğitim ve sağlık",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/aile-karta-ozel-2000-tlye-varan-bankkart-lira-1",
@@ -341,15 +403,23 @@
       "son_tarama": "2026-08-01"
     },
     {
-      "sira": 26,
+      "sira": 27,
       "banka": "Albaraka Türk",
-      "baslik": "1.000 TL- 20.000 TL arası kırtasiye harcamalarınızda vade farksız 4 taksit fırsa",
-      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/kirtasiye-kampanyasi",
-      "slug": "kirtasiye-kampanyasi",
-      "son_tarama": "2026-07-31"
+      "baslik": "Dijital Portföy Yönetimi müşterilerine özel kredi kartları ile yapacağı havayolu",
+      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/albarakadan-ucuran-kampanya",
+      "slug": "albarakadan-ucuran-kampanya",
+      "son_tarama": "2026-08-22"
     },
     {
-      "sira": 27,
+      "sira": 28,
+      "banka": "Dünya Katılım",
+      "baslik": "Altın Kazandıran Alışveriş Dünya Katılım’da !",
+      "url": "https://www.dunyakatilim.com.tr/kampanyalar/altin-kesemTicari",
+      "slug": "altin-kesemTicari",
+      "son_tarama": "2026-08-18"
+    },
+    {
+      "sira": 29,
       "banka": "Hayat Finans",
       "baslik": "Masraf yok, kazanç var: Hayat’la Kazan",
       "url": "https://hayatfinans.com.tr/kampanyalar/hayatfinansla-islem-yaptikca-kazan",
@@ -357,15 +427,23 @@
       "son_tarama": "2026-08-18"
     },
     {
-      "sira": 28,
+      "sira": 30,
       "banka": "Kuveyt Türk",
-      "baslik": "Pocket SIM ile Yurt Dışında Bağlantın Kesilmesin: 1 GB Hediye İnternet ve %35 İn",
-      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/seyahat-kampanyalari/kuveyt-turk-ile-yurt-disi-seyahatlerinde-ayricaliklar-sizinle",
-      "slug": "kuveyt-turk-ile-yurt-disi-seyahatlerinde-ayricaliklar-sizinle",
-      "son_tarama": "2026-07-31"
+      "baslik": "Akaryakıt Harcamalarınıza Her Ay Ekstra 2.000 Mil'e Varan Fırsat!",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/kart-kampanyalari/akaryakit-harcamalariniza-her-ay-ekstra-2000-mile-varan-firsat",
+      "slug": "akaryakit-harcamalariniza-her-ay-ekstra-2000-mile-varan-firsat",
+      "son_tarama": "2026-08-22"
     },
     {
-      "sira": 29,
+      "sira": 31,
+      "banka": "T.O.M. Katılım",
+      "baslik": "Hadi Alışveriş Kredisi ile Klima, Süpürge ve Televizyonlarda Vade Farksız 12 Tak",
+      "url": "https://hadiyanindakibanka.com/kampanyalar/hadi-alisveris-kredisi-ile-klima-supurge-ve-televizyonlarda-vade-farksiz-12-taksit",
+      "slug": "hadi-alisveris-kredisi-ile-klima-supurge-ve-televizyonlarda-vade-farksiz-12-taksit",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 32,
       "banka": "Türkiye Emlak Katılım",
       "baslik": "Beyaz Eşya ve Elektronik Alışverişlerinize 5.000 TL'ye varan ParafPara!",
       "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/beyaz-esya-ve-elektronik-alisverislerinize-5000-tlye-varan-parafpara",
@@ -373,7 +451,15 @@
       "son_tarama": "2026-08-06"
     },
     {
-      "sira": 30,
+      "sira": 33,
+      "banka": "Türkiye Finans",
+      "baslik": "Kamu Çalışanlarına Özel İhtiyaç Finansmanı*",
+      "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/kamu-calisanlarina-ozel-ihtiyac-finansmani.aspx",
+      "slug": "kamu-calisanlarina-ozel-ihtiyac-finansmani.aspx",
+      "son_tarama": "2026-08-06"
+    },
+    {
+      "sira": 34,
       "banka": "Ziraat Katılım",
       "baslik": "arket, akaryakıt, giyim, eğitim ve sağlık",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/aile-karta-ozel-2000-tlye-varan-bankkart-lira-2",
@@ -381,15 +467,23 @@
       "son_tarama": "2026-08-11"
     },
     {
-      "sira": 31,
+      "sira": 35,
       "banka": "Albaraka Türk",
-      "baslik": "Albaraka Mobil üzerinden kredi kartınız ile vereceğiniz her yeni otomatik fatura",
-      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/otomatik-fatura-odeme-talimatlariniza-toplamda-2000-tl-worldpuan-12",
-      "slug": "otomatik-fatura-odeme-talimatlariniza-toplamda-2000-tl-worldpuan-12",
-      "son_tarama": "2026-08-01"
+      "baslik": "Arzum’da indirim Albaraka’da! Eviniz için seçkin ürünlerde özel ayrıcalıkları ka",
+      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/arzumda-25-indirim",
+      "slug": "arzumda-25-indirim",
+      "son_tarama": "2026-08-22"
     },
     {
-      "sira": 32,
+      "sira": 36,
+      "banka": "Dünya Katılım",
+      "baslik": "Carter's Mağazalarında 4 Taksit Fırsatı!",
+      "url": "https://dunyakatilim.com.tr/kampanyalar/carter-s",
+      "slug": "carter-s",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 37,
       "banka": "Hayat Finans",
       "baslik": "Xiaomi Ürünlerinde Finansman Avantajı",
       "url": "https://hayatfinans.com.tr/kampanyalar/xiaomi-urunlerinde-finansman-avantaji",
@@ -397,15 +491,23 @@
       "son_tarama": "2026-08-06"
     },
     {
-      "sira": 33,
+      "sira": 38,
       "banka": "Kuveyt Türk",
-      "baslik": "13.500 TL Hediye’de Neler Var?",
-      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/musteri-ol-kampanyalari/kuveyt-turk-kampuse-gelenlere-toplamda-13500-tl-hediye",
-      "slug": "kuveyt-turk-kampuse-gelenlere-toplamda-13500-tl-hediye",
-      "son_tarama": "2026-07-31"
+      "baslik": "Akaryakıt Sektöründe Sağlam Oran!",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/kart-kampanyalari/akaryakit-sektorunde-saglam-oran",
+      "slug": "akaryakit-sektorunde-saglam-oran",
+      "son_tarama": "2026-08-22"
     },
     {
-      "sira": 34,
+      "sira": 39,
+      "banka": "T.O.M. Katılım",
+      "baslik": "Hadi Black Kredi Kartı ile Restoderm’de %30 İndirim!",
+      "url": "https://hadiyanindakibanka.com/kampanyalar/hadi-black-karti-ile-restoderm-alisverislerinde-30-indirim",
+      "slug": "hadi-black-karti-ile-restoderm-alisverislerinde-30-indirim",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 40,
       "banka": "Türkiye Emlak Katılım",
       "baslik": "Biletinial’da %20 indirim!",
       "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/biletinialda-20-indirim",
@@ -413,7 +515,15 @@
       "son_tarama": "2026-08-01"
     },
     {
-      "sira": 35,
+      "sira": 41,
+      "banka": "Türkiye Finans",
+      "baslik": "Katılım Hesabınızı Şimdi Açın, Daha Yüksek Getiri Oranlarından Yararlanın!",
+      "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/katilim-hesabi-kampanyasi.aspx",
+      "slug": "katilim-hesabi-kampanyasi.aspx",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 42,
       "banka": "Ziraat Katılım",
       "baslik": "tarihleri arasında farklı günlerde ve tek seferde yapacağınız",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/akaryakit-harcamalariniza-400-tl-bankkart-lira-3",
@@ -421,31 +531,55 @@
       "son_tarama": "2026-08-11"
     },
     {
-      "sira": 36,
+      "sira": 43,
       "banka": "Albaraka Türk",
-      "baslik": "TROY kredi kartlarınız ile yapacağınız 1.000 TL- 100.000 TL arası sağlık harcama",
-      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/saglik-harcamalarina-vade-farksiz-6-taksit-kampanyasi1-2",
-      "slug": "saglik-harcamalarina-vade-farksiz-6-taksit-kampanyasi1-2",
-      "son_tarama": "2026-08-11"
+      "baslik": "Siz de hemen Albaraka kredi kartları ile bilet.com mobil uygulaması üzerinden yu",
+      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/2026/biletcom-ucak-bileti-kampanyasi",
+      "slug": "biletcom-ucak-bileti-kampanyasi",
+      "son_tarama": "2026-08-22"
     },
     {
-      "sira": 37,
+      "sira": 44,
+      "banka": "Dünya Katılım",
+      "baslik": "Casper.com.tr'de Peşin Fiyatına 6 Taksit Fırsatı!",
+      "url": "https://dunyakatilim.com.tr/kampanyalar/casper-com-tr-de-pesin-fiyatina-6-taksit-firsati",
+      "slug": "casper-com-tr-de-pesin-fiyatina-6-taksit-firsati",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 45,
       "banka": "Kuveyt Türk",
-      "baslik": "'den müşterimiz olan bireysel müşterilerimize özel avantajlı oranlarla, birikiml",
-      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/musteri-ol-kampanyalari/kuveyt-turk-mobilden-musterimiz-olun-ozel-kur-firsatini-kacirmayin",
-      "slug": "kuveyt-turk-mobilden-musterimiz-olun-ozel-kur-firsatini-kacirmayin",
-      "son_tarama": "2026-07-31"
+      "baslik": "Almila Mobilya’da 9 Aya Varan Taksit Fırsatı!",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/almila-mobilyada-9-aya-varan-taksit-firsati",
+      "slug": "almila-mobilyada-9-aya-varan-taksit-firsati",
+      "son_tarama": "2026-08-22"
     },
     {
-      "sira": 38,
+      "sira": 46,
+      "banka": "T.O.M. Katılım",
+      "baslik": "Hafta sonu restoran harcamalarında %7,5 iade! Üstelik Çok kazananlar Kulübü’ne ö",
+      "url": "https://hadiyanindakibanka.com/kampanyalar/hafta-sonu-restoran-harcamalarinda-7-5-iade-ustelik-cok-kazananlar-kulubune-ozel-15-iade",
+      "slug": "hafta-sonu-restoran-harcamalarinda-7-5-iade-ustelik-cok-kazananlar-kulubune-ozel-15-iade",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 47,
       "banka": "Türkiye Emlak Katılım",
-      "baslik": "Emlak Katılım Paraf’tan tabii Premium Üyeliği Hediye!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/emlak-katilim-paraftan-tabii-premium-uyeligi-hediye",
-      "slug": "emlak-katilim-paraftan-tabii-premium-uyeligi-hediye",
-      "son_tarama": "2026-08-01"
+      "baslik": "Emlak Katılım Paraf 5.000 TL ve Üzeri Harcamanıza 2.500 TL Hediye!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/emlak-katilim-paraf-5000-tl-ve-uzeri-harcamaniza-2500-tl-hediye",
+      "slug": "emlak-katilim-paraf-5000-tl-ve-uzeri-harcamaniza-2500-tl-hediye",
+      "son_tarama": "2026-08-22"
     },
     {
-      "sira": 39,
+      "sira": 48,
+      "banka": "Türkiye Finans",
+      "baslik": "Mastercard Business Kart’a özel fırsatlar MasterKOBİ’de!",
+      "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/mastercard-business-kart-firsat.aspx",
+      "slug": "mastercard-business-kart-firsat.aspx",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 49,
       "banka": "Ziraat Katılım",
       "baslik": "Sektör: Yapı Sektörü ve İklimlendirme",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/alarko-carrierda-6-taksit",
@@ -453,31 +587,55 @@
       "son_tarama": "2026-08-01"
     },
     {
-      "sira": 40,
+      "sira": 50,
       "banka": "Albaraka Türk",
-      "baslik": "“OFT2026” koduyla görüntülü görüşme ile müşterimiz olun, Albaraka World kredi ka",
-      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/temmuz-ayina-ozel-fatura-kampanyasi",
-      "slug": "temmuz-ayina-ozel-fatura-kampanyasi",
+      "baslik": "Albaraka Mobil’i indirerek görüntülü görüşme ile anında Albarakalı olun, avantaj",
+      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/dijital-katilma-hesabina-ozel-paylasim-oranlari-10",
+      "slug": "dijital-katilma-hesabina-ozel-paylasim-oranlari-10",
       "son_tarama": "2026-07-31"
     },
     {
-      "sira": 41,
+      "sira": 51,
+      "banka": "Dünya Katılım",
+      "baslik": "Paraf İle Damat Tween’de 6 Taksit Fırsatı!",
+      "url": "https://dunyakatilim.com.tr/kampanyalar/damat-tween",
+      "slug": "damat-tween",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 52,
       "banka": "Kuveyt Türk",
-      "baslik": "Mobilden Kuveyt Türklü Olanlara Toplamda 7.250 TL Hediye!",
-      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/musteri-ol-kampanyalari/mobilden-kuveyt-turklu-olanlara-toplamda-7250-tl-hediye",
-      "slug": "mobilden-kuveyt-turklu-olanlara-toplamda-7250-tl-hediye",
-      "son_tarama": "2026-07-31"
+      "baslik": "Altınyıldız Classics'te Vade Farksız 2 Taksit Fırsatı",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/altinyildiz-classicste-vade-farksiz-2-taksit-firsati",
+      "slug": "altinyildiz-classicste-vade-farksiz-2-taksit-firsati",
+      "son_tarama": "2026-08-22"
     },
     {
-      "sira": 42,
-      "banka": "Türkiye Emlak Katılım",
-      "baslik": "Emlak Katılım Paraf’tan Trendyol Plus Üyelik Ücretiniz İade!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/emlak-katilim-paraftan-trendyol-plus-uyelik-ucretiniz-iade",
-      "slug": "emlak-katilim-paraftan-trendyol-plus-uyelik-ucretiniz-iade",
+      "sira": 53,
+      "banka": "T.O.M. Katılım",
+      "baslik": "Restoran harcamalarında %10 İade Kazan!",
+      "url": "https://www.tombank.com.tr/kampanyalar.html#restoran-harcamalar-nda-10-i-ade-kazan",
+      "slug": "kampanyalar.html#restoran-harcamalar-nda-10-i-ade-kazan",
       "son_tarama": "2026-08-01"
     },
     {
-      "sira": 43,
+      "sira": 54,
+      "banka": "Türkiye Emlak Katılım",
+      "baslik": "Emlak Katılım Paraf’tan tabii Premium Üyeliği Hediye!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/emlak-katilim-paraftan-tabii-premium-uyeligi-hediye",
+      "slug": "emlak-katilim-paraftan-tabii-premium-uyeligi-hediye",
+      "son_tarama": "2026-08-01"
+    },
+    {
+      "sira": 55,
+      "banka": "Türkiye Finans",
+      "baslik": "​​​​​​​​Hesabınızı şubeye gitmeden Mobil’den açın, size özel avantaj paketinin s",
+      "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/tuzel-onbarding-avantaj-paketi.aspx",
+      "slug": "tuzel-onbarding-avantaj-paketi.aspx",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 56,
       "banka": "Ziraat Katılım",
       "baslik": "İşleminiz esnasında satış yetkilisine taksit talebinizi hatırlatmanızda fayda bu",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/alfemoda-5-taksit",
@@ -485,23 +643,55 @@
       "son_tarama": "2026-08-06"
     },
     {
-      "sira": 44,
-      "banka": "Kuveyt Türk",
-      "baslik": "Sağlam Kart Sahipleri Halalbooking'de de Avantajlı!",
-      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/saglam-kart-sahipleri-halalbookingde-de-avantajli",
-      "slug": "saglam-kart-sahipleri-halalbookingde-de-avantajli",
-      "son_tarama": "2026-08-11"
+      "sira": 57,
+      "banka": "Albaraka Türk",
+      "baslik": "Vade farksız 40.000 TL ve uygun oranlı hoş geldin finansmanı Albaraka'da!",
+      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/dijital-musterilere-ozel-pratik-finansman-kart",
+      "slug": "dijital-musterilere-ozel-pratik-finansman-kart",
+      "son_tarama": "2026-07-31"
     },
     {
-      "sira": 45,
-      "banka": "Türkiye Emlak Katılım",
-      "baslik": "Enterprise Araç Kiralamalarında %35 İndirim Fırsatı!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/enterprise-arac-kiralamalarinda-35-indirim-firsati",
-      "slug": "enterprise-arac-kiralamalarinda-35-indirim-firsati",
+      "sira": 58,
+      "banka": "Dünya Katılım",
+      "baslik": "Paraf ile Demirdöküm’de 9 Aya Varan Taksit Fırsatı!",
+      "url": "https://dunyakatilim.com.tr/kampanyalar/demirdokum",
+      "slug": "demirdokum",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 59,
+      "banka": "Kuveyt Türk",
+      "baslik": "Araç Finansmanı Onaylanan KOBİ’lere HGS Kampanyası",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/kobi-kampanyalari/arac-finansmani-onaylanan-kobilere-hgs-kampanyasi",
+      "slug": "arac-finansmani-onaylanan-kobilere-hgs-kampanyasi",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 60,
+      "banka": "T.O.M. Katılım",
+      "baslik": "Tüm Marketlerde Geçerli, 1.000 TL’ye kadar iade!",
+      "url": "https://www.tombank.com.tr/kampanyalar.html#t-m-marketlerde-ge-erli-1-000-tl-ye-kadar-iade",
+      "slug": "kampanyalar.html#t-m-marketlerde-ge-erli-1-000-tl-ye-kadar-iade",
       "son_tarama": "2026-08-01"
     },
     {
-      "sira": 46,
+      "sira": 61,
+      "banka": "Türkiye Emlak Katılım",
+      "baslik": "Emlak Katılım Paraf’tan Trendyol Plus Üyelik Ücretiniz İade!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/emlak-katilim-paraftan-trendyol-plus-uyelik-ucretiniz-iade",
+      "slug": "emlak-katilim-paraftan-trendyol-plus-uyelik-ucretiniz-iade",
+      "son_tarama": "2026-08-01"
+    },
+    {
+      "sira": 62,
+      "banka": "Türkiye Finans",
+      "baslik": "Yeni Yatırım Hesabınıza Sıfır Komisyon Oranı",
+      "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/yeni-yatirim-hesabiniza-sifir-komisyon.aspx",
+      "slug": "yeni-yatirim-hesabiniza-sifir-komisyon.aspx",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 63,
       "banka": "Ziraat Katılım",
       "baslik": "1.000 TL ve üzeri alışverişlerinizde peşin fiyatına 3 taksit,",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/amazonda-9a-varan-taksit",
@@ -509,23 +699,47 @@
       "son_tarama": "2026-08-01"
     },
     {
-      "sira": 47,
-      "banka": "Kuveyt Türk",
-      "baslik": "Yakınlarını Kuveyt Türk'e Davet Et Toplamda 5.000 TL'ye Varan Hediye Kazan!",
-      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/musteri-ol-kampanyalari/yakinlarini-kuveyt-turke-davet-et-toplamda-5000-tlye-varan-hediye-kazan",
-      "slug": "yakinlarini-kuveyt-turke-davet-et-toplamda-5000-tlye-varan-hediye-kazan",
-      "son_tarama": "2026-07-31"
+      "sira": 64,
+      "banka": "Albaraka Türk",
+      "baslik": "Eflatun Kredi Kart ile Kozmetik Harcamalarına 200 TL'ye varan Worldpuan!",
+      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/eflatun-kredi-kart-ile-kozmetik-harcamalarina-200-tlye-varan-worldpuan",
+      "slug": "eflatun-kredi-kart-ile-kozmetik-harcamalarina-200-tlye-varan-worldpuan",
+      "son_tarama": "2026-08-22"
     },
     {
-      "sira": 48,
-      "banka": "Türkiye Emlak Katılım",
-      "baslik": "Giyim ve Kozmetik Alışverişlerinize 1.000 TL ParafPara!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/giyim-ve-kozmetik-alisverislerinize-1000-tl-parafpara",
-      "slug": "giyim-ve-kozmetik-alisverislerinize-1000-tl-parafpara",
+      "sira": 65,
+      "banka": "Dünya Katılım",
+      "baslik": "Divarese’de 4 Taksit Fırsatı!",
+      "url": "https://dunyakatilim.com.tr/kampanyalar/divarese",
+      "slug": "divarese",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 66,
+      "banka": "Kuveyt Türk",
+      "baslik": "Avansas’da Vade Farksız 5 Aya Varan Taksit Fırsatı!",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/avansasda-vade-farksiz-5-aya-varan-taksit-firsati",
+      "slug": "avansasda-vade-farksiz-5-aya-varan-taksit-firsati",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 67,
+      "banka": "T.O.M. Katılım",
+      "baslik": "Özel Okul Ödemelerinde 10 Taksit, üstelik vade farksız!",
+      "url": "https://www.tombank.com.tr/kampanyalar.html#zel-okul-demelerinde-10-taksit-stelik-vade-farks-z",
+      "slug": "kampanyalar.html#zel-okul-demelerinde-10-taksit-stelik-vade-farks-z",
       "son_tarama": "2026-08-01"
     },
     {
-      "sira": 49,
+      "sira": 68,
+      "banka": "Türkiye Emlak Katılım",
+      "baslik": "Your browser does not support the audio element.",
+      "url": "https://www.emlakkatilim.com.tr/tr/kurumsal/kampanyalar/emlak-konut-asansor-emlak-katilim-isbirligi",
+      "slug": "emlak-konut-asansor-emlak-katilim-isbirligi",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 69,
       "banka": "Ziraat Katılım",
       "baslik": "Atasun Optik mağazalarından, atasunoptik.com.tr",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/atasun-optikte-6-taksit",
@@ -533,23 +747,47 @@
       "son_tarama": "2026-08-18"
     },
     {
-      "sira": 50,
+      "sira": 70,
+      "banka": "Albaraka Türk",
+      "baslik": "Siz de hemen Hızlı Çiçek mobil uygulamasından sevdiklerinizi mutlu edecek hediye",
+      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/2026/hizli-cicek-25-indirim-kampanyasi",
+      "slug": "hizli-cicek-25-indirim-kampanyasi",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 71,
+      "banka": "Dünya Katılım",
+      "baslik": "Dyson’da Peşin Fiyatına 9 Aya Varan Taksit Fırsatı!",
+      "url": "https://dunyakatilim.com.tr/kampanyalar/dyson",
+      "slug": "dyson",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 72,
       "banka": "Kuveyt Türk",
-      "baslik": "Yeni Müşterilere Özel İhtiyaç Kart'ta %1,99 Oran Fırsatı!",
-      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/musteri-ol-kampanyalari/yeni-musterilere-ozel-ihtiyac-kartta-199-oran-firsati",
-      "slug": "yeni-musterilere-ozel-ihtiyac-kartta-199-oran-firsati",
-      "son_tarama": "2026-07-31"
+      "baslik": "Barçın Spor’da 4 Taksit Fırsatı!",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/barcin-sporda-4-taksit-firsati",
+      "slug": "barcin-sporda-4-taksit-firsati",
+      "son_tarama": "2026-08-22"
     },
     {
-      "sira": 51,
+      "sira": 73,
+      "banka": "T.O.M. Katılım",
+      "baslik": "PEGASUS Koduyla TOM Bank Hadi Müşterisi Ol, Pegasus harcamalarından 3.500 TL’ye ",
+      "url": "https://hadiyanindakibanka.com/kampanyalar/pegasus-davet-koduyla-tom-bank-hadi-musterisi-ol-pegasus-harcamalarindan-3-500-tlye-varan-iade-kazan",
+      "slug": "pegasus-davet-koduyla-tom-bank-hadi-musterisi-ol-pegasus-harcamalarindan-3-500-tlye-varan-iade-kazan",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 74,
       "banka": "Türkiye Emlak Katılım",
-      "baslik": "Giyim ve Kozmetik Alışverişlerinize 1.300 TL ParafPara!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/giyim-ve-kozmetik-alisverislerinize-1300-tl-parafpara",
-      "slug": "giyim-ve-kozmetik-alisverislerinize-1300-tl-parafpara",
-      "son_tarama": "2026-08-18"
+      "baslik": "Enterprise Araç Kiralamalarında %35 İndirim Fırsatı!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/enterprise-arac-kiralamalarinda-35-indirim-firsati",
+      "slug": "enterprise-arac-kiralamalarinda-35-indirim-firsati",
+      "son_tarama": "2026-08-01"
     },
     {
-      "sira": 52,
+      "sira": 75,
       "banka": "Ziraat Katılım",
       "baslik": "10 Temmuz – 7 Ağustos 2026",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/bagimsiz-karta-ozel-5000-tlye-varan-bankkart-lira-1",
@@ -557,15 +795,47 @@
       "son_tarama": "2026-08-01"
     },
     {
-      "sira": 53,
+      "sira": 76,
+      "banka": "Albaraka Türk",
+      "baslik": "Seyahatlerinizde konforu ve ayrıcalığı bir arada yaşayın! İstanbul Havalimanı’nd",
+      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/istanbul-havalimani-hizli-gecis-kampanyasi",
+      "slug": "istanbul-havalimani-hizli-gecis-kampanyasi",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 77,
+      "banka": "Dünya Katılım",
+      "baslik": "Paraf ile Evidea’da 4 Taksit Fırsatı!",
+      "url": "https://dunyakatilim.com.tr/kampanyalar/evidea",
+      "slug": "evidea",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 78,
+      "banka": "Kuveyt Türk",
+      "baslik": "Bella Maison'da %25 İndirim Fırsatı!",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/bella-maisonda-25-indirim-firsati",
+      "slug": "bella-maisonda-25-indirim-firsati",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 79,
+      "banka": "T.O.M. Katılım",
+      "baslik": "Toplam 1500 TL hoş geldin hediyesi! TOM1500 koduyla müşterimiz ol, 1500 TL senin",
+      "url": "https://hadiyanindakibanka.com/kampanyalar/toplam-1500-tl-hos-geldin-hediyesi-tom1500-koduyla-musterimiz-ol-1500-tl-senin-olsun",
+      "slug": "toplam-1500-tl-hos-geldin-hediyesi-tom1500-koduyla-musterimiz-ol-1500-tl-senin-olsun",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 80,
       "banka": "Türkiye Emlak Katılım",
-      "baslik": "Giyim ve Kozmetik Alışverişlerinize 2.000 TL ParafPara!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/giyim-ve-kozmetik-alisverislerinize-2000-tl-parafpara",
-      "slug": "giyim-ve-kozmetik-alisverislerinize-2000-tl-parafpara",
+      "baslik": "Giyim ve Kozmetik Alışverişlerinize 1.000 TL ParafPara!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/giyim-ve-kozmetik-alisverislerinize-1000-tl-parafpara",
+      "slug": "giyim-ve-kozmetik-alisverislerinize-1000-tl-parafpara",
       "son_tarama": "2026-08-01"
     },
     {
-      "sira": 54,
+      "sira": 81,
       "banka": "Ziraat Katılım",
       "baslik": "ğitim, sağlık, spor ve kültür- sanat",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/bagimsiz-karta-ozel-5000-tlye-varan-bankkart-lira-2",
@@ -573,15 +843,47 @@
       "son_tarama": "2026-08-11"
     },
     {
-      "sira": 55,
-      "banka": "Türkiye Emlak Katılım",
-      "baslik": "Giyim ve Kozmetik Alışverişlerinize 2.500 TL ParafPara!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/giyim-ve-kozmetik-alisverislerinize-2500-tl-parafpara",
-      "slug": "giyim-ve-kozmetik-alisverislerinize-2500-tl-parafpara",
-      "son_tarama": "2026-08-11"
+      "sira": 82,
+      "banka": "Albaraka Türk",
+      "baslik": "Espressolab’de Elmas ve Platin müşterilerimize özel haftada 1 kahve hediyesi!",
+      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/2026/kahve-keyfiniz-albarakadan",
+      "slug": "kahve-keyfiniz-albarakadan",
+      "son_tarama": "2026-08-22"
     },
     {
-      "sira": 56,
+      "sira": 83,
+      "banka": "Dünya Katılım",
+      "baslik": "⏰ Kampanya Süresi Dolmuştur!",
+      "url": "https://www.dunyakatilim.com.tr/kampanyalar/fiziki-altin",
+      "slug": "fiziki-altin",
+      "son_tarama": "2026-08-18"
+    },
+    {
+      "sira": 84,
+      "banka": "Kuveyt Türk",
+      "baslik": "Beymen’de Vade Farksız 4 Aya Varan Taksit Fırsatı",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/beymende-vade-farksiz-4-aya-varan-taksit-firsati",
+      "slug": "beymende-vade-farksiz-4-aya-varan-taksit-firsati",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 85,
+      "banka": "T.O.M. Katılım",
+      "baslik": "Tüm market harcamalarında seçimini yap %5 iade kazan! Çok kazananlar Kulübü Üyel",
+      "url": "https://hadiyanindakibanka.com/kampanyalar/tum-market-harcamalarinda-secimini-yap-5-iade-kazan",
+      "slug": "tum-market-harcamalarinda-secimini-yap-5-iade-kazan",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 86,
+      "banka": "Türkiye Emlak Katılım",
+      "baslik": "Giyim ve Kozmetik Alışverişlerinize 1.300 TL ParafPara!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/giyim-ve-kozmetik-alisverislerinize-1300-tl-parafpara",
+      "slug": "giyim-ve-kozmetik-alisverislerinize-1300-tl-parafpara",
+      "son_tarama": "2026-08-18"
+    },
+    {
+      "sira": 87,
       "banka": "Ziraat Katılım",
       "baslik": "Sektör: Yapı Sektörü ve İklimlendirme",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/bauhausta-3-taksit",
@@ -589,15 +891,47 @@
       "son_tarama": "2026-08-06"
     },
     {
-      "sira": 57,
-      "banka": "Türkiye Emlak Katılım",
-      "baslik": "Hızlı Çiçek’te Tüm İndirimlere Ek %20 İndirim Fırsatı!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/hizli-cicekte-tum-indirimlere-ek-20-indirim-firsati",
-      "slug": "hizli-cicekte-tum-indirimlere-ek-20-indirim-firsati",
-      "son_tarama": "2026-08-06"
+      "sira": 88,
+      "banka": "Albaraka Türk",
+      "baslik": "1.000 TL- 20.000 TL arası kırtasiye harcamalarınızda vade farksız 4 taksit fırsa",
+      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/kirtasiye-kampanyasi",
+      "slug": "kirtasiye-kampanyasi",
+      "son_tarama": "2026-07-31"
     },
     {
-      "sira": 58,
+      "sira": 89,
+      "banka": "Dünya Katılım",
+      "baslik": "Gürgençler’de Peşin Fiyatına 9 Aya Varan Taksit Fırsatı!",
+      "url": "https://dunyakatilim.com.tr/kampanyalar/gurgencler",
+      "slug": "gurgencler",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 90,
+      "banka": "Kuveyt Türk",
+      "baslik": "Brandy’s Mağazalarında Vade Farksız 3 Aya Varan Taksit Fırsatı",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/brandys-magazalarinda-vade-farksiz-3-aya-varan-taksit-firsati",
+      "slug": "brandys-magazalarinda-vade-farksiz-3-aya-varan-taksit-firsati",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 91,
+      "banka": "T.O.M. Katılım",
+      "baslik": "Hadi Black Kredi Kartı ile MTV Ödemelerinde Vade Farksız 3 taksit fırsatını kaçı",
+      "url": "https://hadiyanindakibanka.com/kampanyalar/vergi-kampanyasi",
+      "slug": "vergi-kampanyasi",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 92,
+      "banka": "Türkiye Emlak Katılım",
+      "baslik": "Giyim ve Kozmetik Alışverişlerinize 2.000 TL ParafPara!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/giyim-ve-kozmetik-alisverislerinize-2000-tl-parafpara",
+      "slug": "giyim-ve-kozmetik-alisverislerinize-2000-tl-parafpara",
+      "son_tarama": "2026-08-01"
+    },
+    {
+      "sira": 93,
       "banka": "Ziraat Katılım",
       "baslik": "anlaşmalı Baymak bayilerinden",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/baymakta-9-taksit",
@@ -605,15 +939,39 @@
       "son_tarama": "2026-08-18"
     },
     {
-      "sira": 59,
-      "banka": "Türkiye Emlak Katılım",
-      "baslik": "Marina Mayo’da Tüm Ürünlerde %15 İndirim!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/marina-mayoda-tum-urunlerde-15-indirim",
-      "slug": "marina-mayoda-tum-urunlerde-15-indirim",
-      "son_tarama": "2026-08-06"
+      "sira": 94,
+      "banka": "Albaraka Türk",
+      "baslik": "Dijital Portföy Yönetimi müşterilerine özel kredi kartları ile yapacağı 10.000 T",
+      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/2026/konaklama-harcamaniza-10-indirim",
+      "slug": "konaklama-harcamaniza-10-indirim",
+      "son_tarama": "2026-08-22"
     },
     {
-      "sira": 60,
+      "sira": 95,
+      "banka": "Dünya Katılım",
+      "baslik": "İder Mobilya’da 7 Taksite %15 indirim Fırsatı!",
+      "url": "https://dunyakatilim.com.tr/kampanyalar/ider",
+      "slug": "ider",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 96,
+      "banka": "Kuveyt Türk",
+      "baslik": "Civil’de Vade Farksız 4 Aya Varan Taksit Fırsatı",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/civilde-vade-farksiz-4-aya-varan-taksit-firsati",
+      "slug": "civilde-vade-farksiz-4-aya-varan-taksit-firsati",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 97,
+      "banka": "Türkiye Emlak Katılım",
+      "baslik": "Giyim ve Kozmetik Alışverişlerinize 2.500 TL ParafPara!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/giyim-ve-kozmetik-alisverislerinize-2500-tl-parafpara",
+      "slug": "giyim-ve-kozmetik-alisverislerinize-2500-tl-parafpara",
+      "son_tarama": "2026-08-11"
+    },
+    {
+      "sira": 98,
       "banka": "Ziraat Katılım",
       "baslik": "Sektör: Mobilya ve Dekorasyon",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/bellonada-5-taksit",
@@ -621,15 +979,39 @@
       "son_tarama": "2026-08-06"
     },
     {
-      "sira": 61,
-      "banka": "Türkiye Emlak Katılım",
-      "baslik": "Market Alışverişlerinize 2.000 TL ParafPara Hediye!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/market-alisverislerinize-2000-tl-parafpara-hediye",
-      "slug": "market-alisverislerinize-2000-tl-parafpara-hediye",
-      "son_tarama": "2026-08-11"
+      "sira": 99,
+      "banka": "Albaraka Türk",
+      "baslik": "Macrocenter.com.tr'de Albaraka müşterilerine özel ayrıcalıklar sizi bekliyor.",
+      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/macrocentercomtrde-10-indirim",
+      "slug": "macrocentercomtrde-10-indirim",
+      "son_tarama": "2026-08-22"
     },
     {
-      "sira": 62,
+      "sira": 100,
+      "banka": "Dünya Katılım",
+      "baslik": "İncehesap.Com'da Peşin Fiyatına 3 Taksit Fırsatı!",
+      "url": "https://dunyakatilim.com.tr/kampanyalar/incehesap",
+      "slug": "incehesap",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 101,
+      "banka": "Kuveyt Türk",
+      "baslik": "Colin’s’de Vade Farksız 4 Aya Varan Taksit Fırsatı",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/colinsde-vade-farksiz-4-aya-varan-taksit-firsati",
+      "slug": "colinsde-vade-farksiz-4-aya-varan-taksit-firsati",
+      "son_tarama": "2026-08-06"
+    },
+    {
+      "sira": 102,
+      "banka": "Türkiye Emlak Katılım",
+      "baslik": "Hızlı Çiçek’te Tüm İndirimlere Ek %20 İndirim Fırsatı!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/hizli-cicekte-tum-indirimlere-ek-20-indirim-firsati",
+      "slug": "hizli-cicekte-tum-indirimlere-ek-20-indirim-firsati",
+      "son_tarama": "2026-08-06"
+    },
+    {
+      "sira": 103,
       "banka": "Ziraat Katılım",
       "baslik": "’da yapacağınız alışverişlerinizde",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/benettonda-2-taksit",
@@ -637,15 +1019,39 @@
       "son_tarama": "2026-08-06"
     },
     {
-      "sira": 63,
-      "banka": "Türkiye Emlak Katılım",
-      "baslik": "Market Alışverişlerinize 700 TL ParafPara!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/market-alisverislerinize-700-tl-parafpara",
-      "slug": "market-alisverislerinize-700-tl-parafpara",
-      "son_tarama": "2026-08-01"
+      "sira": 104,
+      "banka": "Albaraka Türk",
+      "baslik": "Madam Coco’da özel ayrıcalık. Albaraka ayrıcalığıyla seçkin ürünler sizi bekliyo",
+      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/madame-cocoda-350-tl-indirim",
+      "slug": "madame-cocoda-350-tl-indirim",
+      "son_tarama": "2026-08-22"
     },
     {
-      "sira": 64,
+      "sira": 105,
+      "banka": "Dünya Katılım",
+      "baslik": "İpekyol’da 4 Taksit Fırsatı!",
+      "url": "https://dunyakatilim.com.tr/kampanyalar/ipekyol",
+      "slug": "ipekyol",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 106,
+      "banka": "Kuveyt Türk",
+      "baslik": "Columbia’da Vade Farksız 6 Aya Varan Taksit Fırsatı",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/columbiada-vade-farksiz-6-aya-varan-taksit-firsati",
+      "slug": "columbiada-vade-farksiz-6-aya-varan-taksit-firsati",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 107,
+      "banka": "Türkiye Emlak Katılım",
+      "baslik": "Marina Mayo’da Tüm Ürünlerde %15 İndirim!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/marina-mayoda-tum-urunlerde-15-indirim",
+      "slug": "marina-mayoda-tum-urunlerde-15-indirim",
+      "son_tarama": "2026-08-06"
+    },
+    {
+      "sira": 108,
       "banka": "Ziraat Katılım",
       "baslik": "yapacağınız alışverişlerinizde",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/bridgestoneda-5-taksit",
@@ -653,15 +1059,39 @@
       "son_tarama": "2026-08-18"
     },
     {
-      "sira": 65,
-      "banka": "Türkiye Emlak Katılım",
-      "baslik": "Market Alışverişlerinize 800 TL ParafPara!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/market-alisverislerinize-800-tl-parafpara",
-      "slug": "market-alisverislerinize-800-tl-parafpara",
+      "sira": 109,
+      "banka": "Albaraka Türk",
+      "baslik": "Albaraka Mobil üzerinden kredi kartınız ile vereceğiniz her yeni otomatik fatura",
+      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/otomatik-fatura-odeme-talimatlariniza-toplamda-2000-tl-worldpuan-12",
+      "slug": "otomatik-fatura-odeme-talimatlariniza-toplamda-2000-tl-worldpuan-12",
       "son_tarama": "2026-08-01"
     },
     {
-      "sira": 66,
+      "sira": 110,
+      "banka": "Dünya Katılım",
+      "baslik": "ITOPYA.COM'da Vade Farksız 6 Taksit Fırsatı!",
+      "url": "https://dunyakatilim.com.tr/kampanyalar/itopya",
+      "slug": "itopya",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 111,
+      "banka": "Kuveyt Türk",
+      "baslik": "Demirdöküm’de 12 Taksit Fırsatı!",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/demirdokumde-12-taksit-firsati",
+      "slug": "demirdokumde-12-taksit-firsati",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 112,
+      "banka": "Türkiye Emlak Katılım",
+      "baslik": "Market Alışverişlerinize 2.000 TL ParafPara Hediye!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/market-alisverislerinize-2000-tl-parafpara-hediye",
+      "slug": "market-alisverislerinize-2000-tl-parafpara-hediye",
+      "son_tarama": "2026-08-11"
+    },
+    {
+      "sira": 113,
       "banka": "Ziraat Katılım",
       "baslik": "da yapacağınız alışverişlerinizde peşin fiyatına",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/chakrada-6-taksit-0",
@@ -669,15 +1099,39 @@
       "son_tarama": "2026-08-06"
     },
     {
-      "sira": 67,
-      "banka": "Türkiye Emlak Katılım",
-      "baslik": "Market Alışverişlerinize 800 TL ParafPara Hediye!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/market-alisverislerinize-800-tl-parafpara-hediye",
-      "slug": "market-alisverislerinize-800-tl-parafpara-hediye",
-      "son_tarama": "2026-08-11"
+      "sira": 114,
+      "banka": "Albaraka Türk",
+      "baslik": "Yurtdışında internetsiz kalmamanız için %35 Pocket eSIM indirimi Albaraka Mobil’",
+      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/pocket-esimden-35-indirim",
+      "slug": "pocket-esimden-35-indirim",
+      "son_tarama": "2026-08-22"
     },
     {
-      "sira": 68,
+      "sira": 115,
+      "banka": "Dünya Katılım",
+      "baslik": "DKart Debit'le Jack & Jones’da Harcadıkça Kazanın!",
+      "url": "https://dunyakatilim.com.tr/kampanyalar/jack-jones",
+      "slug": "jack-jones",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 116,
+      "banka": "Kuveyt Türk",
+      "baslik": "Desa Grup’ta Vade Farksız 2 Taksit Fırsatı",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/desa-grupta-vade-farksiz-2-taksit-firsati",
+      "slug": "desa-grupta-vade-farksiz-2-taksit-firsati",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 117,
+      "banka": "Türkiye Emlak Katılım",
+      "baslik": "Market Alışverişlerinize 700 TL ParafPara!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/market-alisverislerinize-700-tl-parafpara",
+      "slug": "market-alisverislerinize-700-tl-parafpara",
+      "son_tarama": "2026-08-01"
+    },
+    {
+      "sira": 118,
       "banka": "Ziraat Katılım",
       "baslik": "Sektör: Mobilya ve Dekorasyon",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/cilek-mobilyada-9-taksit",
@@ -685,15 +1139,39 @@
       "son_tarama": "2026-08-01"
     },
     {
-      "sira": 69,
-      "banka": "Türkiye Emlak Katılım",
-      "baslik": "Metatechtr’de Peşin Fiyatına 9 aya varan taksit ve 6.000 TL’ye varan ParafPara!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/metatechtrde-pesin-fiyatina-9-aya-varan-taksit-ve-6000-tlye-varan-parafpara",
-      "slug": "metatechtrde-pesin-fiyatina-9-aya-varan-taksit-ve-6000-tlye-varan-parafpara",
-      "son_tarama": "2026-08-06"
+      "sira": 119,
+      "banka": "Albaraka Türk",
+      "baslik": "Yurtdışında internetsiz kalmamanız için %50 Roamy eSIM indirimi Albaraka Mobil’d",
+      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/roamy-esimden-50-indirim",
+      "slug": "roamy-esimden-50-indirim",
+      "son_tarama": "2026-08-22"
     },
     {
-      "sira": 70,
+      "sira": 120,
+      "banka": "Dünya Katılım",
+      "baslik": "’de Paraf POS’larından yapılacak alışverişlerde 5 taksit imkanı sunulacaktır.",
+      "url": "https://dunyakatilim.com.tr/kampanyalar/kip",
+      "slug": "kip",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 121,
+      "banka": "Kuveyt Türk",
+      "baslik": "Divarese’de Vade Farksız 4 Aya Varan Taksit Fırsatı!",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/divaresede-vade-farksiz-4-aya-varan-taksit-firsati",
+      "slug": "divaresede-vade-farksiz-4-aya-varan-taksit-firsati",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 122,
+      "banka": "Türkiye Emlak Katılım",
+      "baslik": "Market Alışverişlerinize 800 TL ParafPara!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/market-alisverislerinize-800-tl-parafpara",
+      "slug": "market-alisverislerinize-800-tl-parafpara",
+      "son_tarama": "2026-08-01"
+    },
+    {
+      "sira": 123,
       "banka": "Ziraat Katılım",
       "baslik": "yapacağınız alışverişlerinizde",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/dagide-2-taksit",
@@ -701,15 +1179,39 @@
       "son_tarama": "2026-08-06"
     },
     {
-      "sira": 71,
+      "sira": 124,
+      "banka": "Albaraka Türk",
+      "baslik": "Seyahatlerinizde konforu ve ayrıcalığı bir arada yaşayın! Sabiha Gökçen Havalima",
+      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/sabiha-gokcen-havalimani-hizli-gecis-kampanyasi",
+      "slug": "sabiha-gokcen-havalimani-hizli-gecis-kampanyasi",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 125,
+      "banka": "Dünya Katılım",
+      "baslik": "Paraf ile Koçtaş'ta 5 Taksit Fırsatı!",
+      "url": "https://dunyakatilim.com.tr/kampanyalar/koctas",
+      "slug": "koctas",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 126,
+      "banka": "Kuveyt Türk",
+      "baslik": "Doğtaş Grubu'nda 5 Aya Varan Taksit İmkanı!",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/dogtas-grubunda-5-aya-varan-taksit-imkani",
+      "slug": "dogtas-grubunda-5-aya-varan-taksit-imkani",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 127,
       "banka": "Türkiye Emlak Katılım",
-      "baslik": "Mobilya, Dekorasyon ve Yapı Marketi Alışverişinize 1.250 TL'ye Varan ParafPara!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/mobilya-dekorasyon-ve-yapi-marketi-alisverisinize-1250-tlye-varan-parafpara",
-      "slug": "mobilya-dekorasyon-ve-yapi-marketi-alisverisinize-1250-tlye-varan-parafpara",
+      "baslik": "Market Alışverişlerinize 800 TL ParafPara Hediye!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/market-alisverislerinize-800-tl-parafpara-hediye",
+      "slug": "market-alisverislerinize-800-tl-parafpara-hediye",
       "son_tarama": "2026-08-11"
     },
     {
-      "sira": 72,
+      "sira": 128,
       "banka": "Ziraat Katılım",
       "baslik": "fırsatından faydalanabilirsiniz.",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/decathlonda-4-taksit",
@@ -717,15 +1219,39 @@
       "son_tarama": "2026-08-06"
     },
     {
-      "sira": 73,
-      "banka": "Türkiye Emlak Katılım",
-      "baslik": "Mobilya, Dekorasyon ve Yapı Marketi Alışverişinize 4.000 TL'ye Varan ParafPara!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/mobilya-dekorasyon-ve-yapi-marketi-alisverisinize-4000-tlye-varan-parafpara",
-      "slug": "mobilya-dekorasyon-ve-yapi-marketi-alisverisinize-4000-tlye-varan-parafpara",
-      "son_tarama": "2026-08-01"
+      "sira": 129,
+      "banka": "Albaraka Türk",
+      "baslik": "TROY kredi kartlarınız ile yapacağınız 1.000 TL- 100.000 TL arası sağlık harcama",
+      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/saglik-harcamalarina-vade-farksiz-6-taksit-kampanyasi1-2",
+      "slug": "saglik-harcamalarina-vade-farksiz-6-taksit-kampanyasi1-2",
+      "son_tarama": "2026-08-11"
     },
     {
-      "sira": 74,
+      "sira": 130,
+      "banka": "Dünya Katılım",
+      "baslik": "DKart Debit'le Koton’da Harcadıkça Kazanın!",
+      "url": "https://dunyakatilim.com.tr/kampanyalar/koton",
+      "slug": "koton",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 131,
+      "banka": "Kuveyt Türk",
+      "baslik": "E-İhracatçılara Özel ShipEntegra ile Yurtdışı Kargo Gönderilerinize Vade Farksız",
+      "url": "https://www.kuveytturk.com.tr/isim-icin/dis-ticaret/e-ihracat/e-ihracat-kampanyalari/e-ihracatcilara-ozel-shipentegra-ile-yurtdisi-kargo-gonderilerinize-vade-farksiz-3-taksit",
+      "slug": "e-ihracatcilara-ozel-shipentegra-ile-yurtdisi-kargo-gonderilerinize-vade-farksiz-3-taksit",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 132,
+      "banka": "Türkiye Emlak Katılım",
+      "baslik": "Metatechtr’de Peşin Fiyatına 9 aya varan taksit ve 6.000 TL’ye varan ParafPara!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/metatechtrde-pesin-fiyatina-9-aya-varan-taksit-ve-6000-tlye-varan-parafpara",
+      "slug": "metatechtrde-pesin-fiyatina-9-aya-varan-taksit-ve-6000-tlye-varan-parafpara",
+      "son_tarama": "2026-08-06"
+    },
+    {
+      "sira": 133,
       "banka": "Ziraat Katılım",
       "baslik": "yapacağınız alışverişlerinizde",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/desada-2-taksit",
@@ -733,15 +1259,39 @@
       "son_tarama": "2026-08-06"
     },
     {
-      "sira": 75,
-      "banka": "Türkiye Emlak Katılım",
-      "baslik": "Modanisa’da Tüm İndirimlere Ek %15 İndirim Fırsatı!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/modanisada-tum-indirimlere-ek-15-indirim-firsati",
-      "slug": "modanisada-tum-indirimlere-ek-15-indirim-firsati",
-      "son_tarama": "2026-08-01"
+      "sira": 134,
+      "banka": "Albaraka Türk",
+      "baslik": "“Seçkin Fırsatlar” ile hayatın her alanından avantajlar sizi bekliyor! Albaraka ",
+      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/seckin-firsatlar",
+      "slug": "seckin-firsatlar",
+      "son_tarama": "2026-08-22"
     },
     {
-      "sira": 76,
+      "sira": 135,
+      "banka": "Dünya Katılım",
+      "baslik": "indirimden faydalanmak için",
+      "url": "https://www.dunyakatilim.com.tr/kampanyalar/lc-waikiki",
+      "slug": "lc-waikiki",
+      "son_tarama": "2026-08-18"
+    },
+    {
+      "sira": 136,
+      "banka": "Kuveyt Türk",
+      "baslik": "E-Ticaret Harcamalarınıza Her Ay Ekstra 2.000 Mil'e Varan Fırsat!",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/kart-kampanyalari/e-ticaret-harcamalariniza-her-ay-ekstra-2000-mile-varan-firsat",
+      "slug": "e-ticaret-harcamalariniza-her-ay-ekstra-2000-mile-varan-firsat",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 137,
+      "banka": "Türkiye Emlak Katılım",
+      "baslik": "Mobilya, Dekorasyon ve Yapı Marketi Alışverişinize 1.250 TL'ye Varan ParafPara!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/mobilya-dekorasyon-ve-yapi-marketi-alisverisinize-1250-tlye-varan-parafpara",
+      "slug": "mobilya-dekorasyon-ve-yapi-marketi-alisverisinize-1250-tlye-varan-parafpara",
+      "son_tarama": "2026-08-11"
+    },
+    {
+      "sira": 138,
       "banka": "Ziraat Katılım",
       "baslik": "Sektör: Mobilya ve Dekorasyon",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/divanevde-8-taksit",
@@ -749,15 +1299,39 @@
       "son_tarama": "2026-08-01"
     },
     {
-      "sira": 77,
-      "banka": "Türkiye Emlak Katılım",
-      "baslik": "Paraf ile A101’de Vade Farksız 6 Aya Varan Taksit Fırsatı!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-a101de-vade-farksiz-6-aya-varan-taksit-firsati",
-      "slug": "paraf-ile-a101de-vade-farksiz-6-aya-varan-taksit-firsati",
-      "son_tarama": "2026-08-06"
+      "sira": 139,
+      "banka": "Albaraka Türk",
+      "baslik": "“OFT2026” koduyla görüntülü görüşme ile müşterimiz olun, Albaraka World kredi ka",
+      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/temmuz-ayina-ozel-fatura-kampanyasi",
+      "slug": "temmuz-ayina-ozel-fatura-kampanyasi",
+      "son_tarama": "2026-07-31"
     },
     {
-      "sira": 78,
+      "sira": 140,
+      "banka": "Dünya Katılım",
+      "baslik": "Minycenter Mağazalarında 4 Taksit Fırsatı!",
+      "url": "https://dunyakatilim.com.tr/kampanyalar/minycenter",
+      "slug": "minycenter",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 141,
+      "banka": "Kuveyt Türk",
+      "baslik": "E-Ticaret Pazaryeri Satıcılarına Özel Vade Farksız 3 Taksit!",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/kart-kampanyalari/e-ticaret-pazaryeri-saticilarina-ozel-vade-farksiz-3-taksit",
+      "slug": "e-ticaret-pazaryeri-saticilarina-ozel-vade-farksiz-3-taksit",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 142,
+      "banka": "Türkiye Emlak Katılım",
+      "baslik": "Mobilya, Dekorasyon ve Yapı Marketi Alışverişinize 4.000 TL'ye Varan ParafPara!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/mobilya-dekorasyon-ve-yapi-marketi-alisverisinize-4000-tlye-varan-parafpara",
+      "slug": "mobilya-dekorasyon-ve-yapi-marketi-alisverisinize-4000-tlye-varan-parafpara",
+      "son_tarama": "2026-08-01"
+    },
+    {
+      "sira": 143,
       "banka": "Ziraat Katılım",
       "baslik": "Sektör: Mobilya ve Dekorasyon",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/dogtasta-6-taksit",
@@ -765,15 +1339,39 @@
       "son_tarama": "2026-08-06"
     },
     {
-      "sira": 79,
-      "banka": "Türkiye Emlak Katılım",
-      "baslik": "Paraf ile ADV mağazalarında 1.000 TL ParafPara",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-adv-magazalarinda-1000-tl-parafpara",
-      "slug": "paraf-ile-adv-magazalarinda-1000-tl-parafpara",
-      "son_tarama": "2026-08-06"
+      "sira": 144,
+      "banka": "Albaraka Türk",
+      "baslik": "Tatlı ikramı, ana yemek siparişi sonrasında geçerlidir.",
+      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/2026/the-house-cafelerde-tatli-ikrami",
+      "slug": "the-house-cafelerde-tatli-ikrami",
+      "son_tarama": "2026-08-22"
     },
     {
-      "sira": 80,
+      "sira": 145,
+      "banka": "Dünya Katılım",
+      "baslik": "Monster Notebook’ta Peşin Fiyatına 12 Aya Varan Taksit Fırsatı!",
+      "url": "https://dunyakatilim.com.tr/kampanyalar/monster",
+      "slug": "monster",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 146,
+      "banka": "Kuveyt Türk",
+      "baslik": "E-Ticarette Altın Kazandıran Kampanya | Kuveyt Türk Katılım Bankası",
+      "url": "https://www.kuveytturk.com.tr/kendim-icin/kampus/e-ticarette-altin-kazandiran-kampanya",
+      "slug": "e-ticarette-altin-kazandiran-kampanya",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 147,
+      "banka": "Türkiye Emlak Katılım",
+      "baslik": "Modanisa’da Tüm İndirimlere Ek %15 İndirim Fırsatı!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/modanisada-tum-indirimlere-ek-15-indirim-firsati",
+      "slug": "modanisada-tum-indirimlere-ek-15-indirim-firsati",
+      "son_tarama": "2026-08-01"
+    },
+    {
+      "sira": 148,
       "banka": "Ziraat Katılım",
       "baslik": "peşin fiyatına 9 taksit fırsatından yararlanabilirsiniz.",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/dysonda-9-taksit",
@@ -781,15 +1379,39 @@
       "son_tarama": "2026-08-11"
     },
     {
-      "sira": 81,
+      "sira": 149,
+      "banka": "Albaraka Türk",
+      "baslik": "Neye ihtiyacın olduğunu en iyi Albaraka Türk bilir! Alışverişlerinde Trend Kredi",
+      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/trend-4-gb-internet-kampanyasi",
+      "slug": "trend-4-gb-internet-kampanyasi",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 150,
+      "banka": "Dünya Katılım",
+      "baslik": "Network’te 4 Taksit Fırsatı!",
+      "url": "https://dunyakatilim.com.tr/kampanyalar/network",
+      "slug": "network",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 151,
+      "banka": "Kuveyt Türk",
+      "baslik": "EasyCep‘te Vade Farksız 9 Aya Varan Taksit Fırsatı!",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/easycepte-vade-farksiz-9-aya-varan-taksit-firsati",
+      "slug": "easycepte-vade-farksiz-9-aya-varan-taksit-firsati",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 152,
       "banka": "Türkiye Emlak Katılım",
-      "baslik": "Paraf ile ADV Mağazalarında 6 Taksit!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-adv-magazalarinda-6-taksit",
-      "slug": "paraf-ile-adv-magazalarinda-6-taksit",
+      "baslik": "Paraf ile A101’de Vade Farksız 6 Aya Varan Taksit Fırsatı!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-a101de-vade-farksiz-6-aya-varan-taksit-firsati",
+      "slug": "paraf-ile-a101de-vade-farksiz-6-aya-varan-taksit-firsati",
       "son_tarama": "2026-08-06"
     },
     {
-      "sira": 82,
+      "sira": 153,
       "banka": "Ziraat Katılım",
       "baslik": "fırsatından faydalanabilirsiniz.",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/e-bebekte-8-taksit",
@@ -797,15 +1419,39 @@
       "son_tarama": "2026-08-01"
     },
     {
-      "sira": 83,
+      "sira": 154,
+      "banka": "Albaraka Türk",
+      "baslik": "Eğer uygulama telefonunuzda yüklü değilse önce uygulama indirin; sonrasında ilgi",
+      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/2026/uberde-ilk-yolculukta-80-indirim",
+      "slug": "uberde-ilk-yolculukta-80-indirim",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 155,
+      "banka": "Dünya Katılım",
+      "baslik": "Kampanyadan faydalanabilmek için toplamda minimum 5.000 TL harcama yapılması ger",
+      "url": "https://dunyakatilim.com.tr/kampanyalar/paraf",
+      "slug": "paraf",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 156,
+      "banka": "Kuveyt Türk",
+      "baslik": "Eğitim Harcamalarınıza 5 Taksit İmkanı",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/egitim-harcamalariniza-5-taksit-imkani",
+      "slug": "egitim-harcamalariniza-5-taksit-imkani",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 157,
       "banka": "Türkiye Emlak Katılım",
-      "baslik": "Paraf ile Alfemo’da 8 Taksit Fırsatı!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-alfemoda-8-taksit-firsati",
-      "slug": "paraf-ile-alfemoda-8-taksit-firsati",
+      "baslik": "Paraf ile ADV mağazalarında 1.000 TL ParafPara",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-adv-magazalarinda-1000-tl-parafpara",
+      "slug": "paraf-ile-adv-magazalarinda-1000-tl-parafpara",
       "son_tarama": "2026-08-06"
     },
     {
-      "sira": 84,
+      "sira": 158,
       "banka": "Ziraat Katılım",
       "baslik": "üye işyerlerinden tek seferde yapacağınız",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/e-ticaret-alisverislerinize-toplam-500-tl-bankkart-lira-2",
@@ -813,15 +1459,39 @@
       "son_tarama": "2026-08-01"
     },
     {
-      "sira": 85,
+      "sira": 159,
+      "banka": "Albaraka Türk",
+      "baslik": "Yola çıkmak artık çok kolay! Albaraka Mobil’den kampanya kodunuzu alın, yurt dış",
+      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/yolcu-360-yurt-disi-ucak-bileti",
+      "slug": "yolcu-360-yurt-disi-ucak-bileti",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 160,
+      "banka": "Dünya Katılım",
+      "baslik": "Pazarama’da Peşin Fiyatına 6 Taksit Fırsatı!",
+      "url": "https://dunyakatilim.com.tr/kampanyalar/pazarama-paraf",
+      "slug": "pazarama-paraf",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 161,
+      "banka": "Kuveyt Türk",
+      "baslik": "Eğitim ve Sağlık Harcamalarınızda 5 Taksit Fırsatı!",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/egitim-ve-saglik-harcamalarinizda-5-taksit-firsati",
+      "slug": "egitim-ve-saglik-harcamalarinizda-5-taksit-firsati",
+      "son_tarama": "2026-07-31"
+    },
+    {
+      "sira": 162,
       "banka": "Türkiye Emlak Katılım",
-      "baslik": "Paraf ile Casper.com.tr'de Peşin Fiyatına 6 Taksit Fırsatı!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-caspercomtrde-pesin-fiyatina-6-taksit-firsati",
-      "slug": "paraf-ile-caspercomtrde-pesin-fiyatina-6-taksit-firsati",
+      "baslik": "Paraf ile ADV Mağazalarında 6 Taksit!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-adv-magazalarinda-6-taksit",
+      "slug": "paraf-ile-adv-magazalarinda-6-taksit",
       "son_tarama": "2026-08-06"
     },
     {
-      "sira": 86,
+      "sira": 163,
       "banka": "Ziraat Katılım",
       "baslik": "üye işyerlerinden tek seferde yapacağınız",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/e-ticaret-alisverislerinize-toplam-500-tl-bankkart-lira-3",
@@ -829,15 +1499,39 @@
       "son_tarama": "2026-08-11"
     },
     {
-      "sira": 87,
+      "sira": 164,
+      "banka": "Albaraka Türk",
+      "baslik": "Yola çıkmak artık çok kolay! Albaraka Mobil’den kampanya kodunuzu alın, yurt içi",
+      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/yolcu-360-yurt-ici-ucak-bileti",
+      "slug": "yolcu-360-yurt-ici-ucak-bileti",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 165,
+      "banka": "Dünya Katılım",
+      "baslik": "Ramsey’de 5 Taksit Fırsatı!",
+      "url": "https://dunyakatilim.com.tr/kampanyalar/ramsey",
+      "slug": "ramsey",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 166,
+      "banka": "Kuveyt Türk",
+      "baslik": "Elçi Tur’dan Kuveyt Türk Müşterilerine Özel Yaz Fırsatı",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/elci-turdan-kuveyt-turk-musterilerine-ozel-yaz-firsati",
+      "slug": "elci-turdan-kuveyt-turk-musterilerine-ozel-yaz-firsati",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 167,
       "banka": "Türkiye Emlak Katılım",
-      "baslik": "Paraf ile Copa’da 12 Aya Varan Taksit!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-copada-12-aya-varan-taksit",
-      "slug": "paraf-ile-copada-12-aya-varan-taksit",
+      "baslik": "Paraf ile Alfemo’da 8 Taksit Fırsatı!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-alfemoda-8-taksit-firsati",
+      "slug": "paraf-ile-alfemoda-8-taksit-firsati",
       "son_tarama": "2026-08-06"
     },
     {
-      "sira": 88,
+      "sira": 168,
       "banka": "Ziraat Katılım",
       "baslik": "Sektör: Yapı Sektörü ve İklimlendirme",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/eca-kombide-12-taksit",
@@ -845,15 +1539,39 @@
       "son_tarama": "2026-08-01"
     },
     {
-      "sira": 89,
+      "sira": 169,
+      "banka": "Albaraka Türk",
+      "baslik": "Yoyo mobil uygulaması indirilir ve üyelik bulunmuyorsa üyelik oluşturmak için il",
+      "url": "https://www.albaraka.com.tr/tr/kampanyalar/detay/2026/yoyoda-40-gastroclub-indirim",
+      "slug": "yoyoda-40-gastroclub-indirim",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 170,
+      "banka": "Dünya Katılım",
+      "baslik": "Tahsile Çek, müşterilerin ödeme almak amacıyla bankaya bıraktıkları çeklerin işl",
+      "url": "https://dunyakatilim.com.tr/kampanyalar/tahsile-cek",
+      "slug": "tahsile-cek",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 171,
+      "banka": "Kuveyt Türk",
+      "baslik": "Enplus ile 3 Aya Varan Vade Farksız Taksit İmkanı!",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/enplus-ile-3-aya-varan-vade-farksiz-taksit-imkani",
+      "slug": "enplus-ile-3-aya-varan-vade-farksiz-taksit-imkani",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 172,
       "banka": "Türkiye Emlak Katılım",
-      "baslik": "Paraf ile Damat Tween’de 2.000 TL ParafPara!",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-damat-tweende-2000-tl-parafpara",
-      "slug": "paraf-ile-damat-tweende-2000-tl-parafpara",
+      "baslik": "Paraf ile Casper.com.tr'de Peşin Fiyatına 6 Taksit Fırsatı!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-caspercomtrde-pesin-fiyatina-6-taksit-firsati",
+      "slug": "paraf-ile-caspercomtrde-pesin-fiyatina-6-taksit-firsati",
       "son_tarama": "2026-08-06"
     },
     {
-      "sira": 90,
+      "sira": 173,
       "banka": "Ziraat Katılım",
       "baslik": "Elektrikli Araç Şarj İstasyonları üye işyerlerinde",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/elektrikli-arac-sarj-istasyonlarinda-750-tl-bankkart-lira-1",
@@ -861,15 +1579,31 @@
       "son_tarama": "2026-08-11"
     },
     {
-      "sira": 91,
-      "banka": "Türkiye Emlak Katılım",
-      "baslik": "Paraf ile Damat Tween’de 3.000 TL ParafPara",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-damat-tweende-3000-tl-parafpara",
-      "slug": "paraf-ile-damat-tweende-3000-tl-parafpara",
-      "son_tarama": "2026-08-01"
+      "sira": 174,
+      "banka": "Dünya Katılım",
+      "baslik": "Paraf Kart’la alışverişe başla, TOD ayrıcalığını ücretsiz yaşa!",
+      "url": "https://dunyakatilim.com.tr/kampanyalar/tod-paraf",
+      "slug": "tod-paraf",
+      "son_tarama": "2026-08-22"
     },
     {
-      "sira": 92,
+      "sira": 175,
+      "banka": "Kuveyt Türk",
+      "baslik": "Esnaf, Çiftçi ve Tüzel Şirketlere Özel 16.000 TL Değerinde Finansal Ürün Paketi ",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/isim-icin/musteri-ol-kampanyalari/esnaf-ciftci-ve-tuzel-sirketlere-ozel-16000-tl-degerinde-finansal-urun-paketi-hediye",
+      "slug": "esnaf-ciftci-ve-tuzel-sirketlere-ozel-16000-tl-degerinde-finansal-urun-paketi-hediye",
+      "son_tarama": "2026-08-22"
+    },
+    {
+      "sira": 176,
+      "banka": "Türkiye Emlak Katılım",
+      "baslik": "Paraf ile Copa’da 12 Aya Varan Taksit!",
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-copada-12-aya-varan-taksit",
+      "slug": "paraf-ile-copada-12-aya-varan-taksit",
+      "son_tarama": "2026-08-06"
+    },
+    {
+      "sira": 177,
       "banka": "Ziraat Katılım",
       "baslik": "Sektör: Beyaz Eşya ve Ev Aletleri",
       "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/enplusta-4-taksit",

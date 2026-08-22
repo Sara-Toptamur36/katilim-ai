@@ -100,6 +100,25 @@ ALARM_VERMESI_BEKLENEN_SAYFALAR = {
     # kural gecerli) flaglenmeye devam etmeli.
     "hayatfinans_kampanyalar_bana-bunu-al-is-ortagim-ile-troy-magaza-firsatlari",
     "hayatfinans_kampanyalar_xiaomi-urunlerinde-finansman-avantaji",
+    # Turkiye Finans (18 Agustos 2026 genisletmesi - config'e eklenen 9 yeni
+    # kategori sayfasi sonrasi bulundu): "Iş Bankasi, Yapı Kredi ve PTT
+    # ATM'sinden komisyonsuz..." - ATM agi ortakligi acikliyor. "Kredi"
+    # burada REKABETCI BASKA BIR BANKANIN OZEL ADI (Yapı Kredi Bankasi),
+    # katilim bankasinin kendi terminolojisi degil - istisna listesi bunu
+    # ayirt edemiyor (Yagmur'a bildirildi, tutarlilik_kontrolu.py'de ozel
+    # isim/rakip banka istisnasi eklenmesi degerlendirilebilir).
+    "turkiyefinans_tr-tr_kampanyalar_Sayfalar_emeklilere-nakit-promosyon",
+    "turkiyefinans_tr-tr_kampanyalar_Sayfalar_masrafsiz-bankacilik",
+    # Ayni "Yapı Kredi" ATM ortakligi cumlesi + zaten bilinen "resmi olarak
+    # Ihtiyac Kredisi olarak da nitelendirilmekte" kalibi (yukaridaki
+    # ihtiyac-finansmani sayfalariyla ayni ilke).
+    "turkiyefinans_tr-tr_kampanyalar_Sayfalar_turkiye-finans-avantajlariyla-mobilden-tanis",
+    # "TL Katılım Mevduatı Tanışma Kampanyası" - bankanin KENDI kampanya
+    # adi; "mevduat" kokunun (kredi'nin aksine) hic mesru istisnasi
+    # tanimlanmamis - bu bilerek boyle: bankanin oz markalamasinda bile
+    # "mevduat" gecmesi, katilim terminolojisine tam uyumun ne kadar
+    # kirilgan oldugunu gosteren gercek bir bulgu, gizlenmemeli.
+    "turkiyefinans_tr-tr_kampanyalar_Sayfalar_katilim-hesabi-kampanyasi",
 }
 
 

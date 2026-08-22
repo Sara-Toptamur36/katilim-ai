@@ -1,6 +1,6 @@
 # Veri Kapsam Raporu (4 Eksenli)
 
-Uretim tarihi: 2026-08-18
+Uretim tarihi: 2026-08-22
 
 Mentorluk raporu II (Bolum 6.3): "veri eksikligi yalnizca toplam kampanya sayisina bakilarak analiz edilmemeli" - bu rapor banka, urun ailesi, zaman ve alan eksenlerinde ayri ayri kapsam gosterir. Yeni veri toplamaz; scraper/raw_data'daki mevcut veriyi regex ile ozetler (bkz. script docstring'i - Postgres/Docker'a bagimli DEGILDIR).
 
@@ -10,13 +10,13 @@ Mentorluk raporu II (Bolum 6.3): "veri eksikligi yalnizca toplam kampanya sayisi
 
 | Banka | Tekil kampanya | Snapshot (raw_data) | Gold kayit |
 |---|---|---|---|
-| Albaraka Türk | 14 | 16 | 6 |
+| Albaraka Türk | 14 | 16 | 8 |
 | Dünya Katılım | 5 | 15 | 7 |
 | Hayat Finans | 10 | 18 | 5 |
 | Kuveyt Türk | 13 | 15 | 7 |
 | T.O.M. Katılım | 3 | 3 | 3 |
 | Türkiye Emlak Katılım | 81 | 103 | 7 |
-| Türkiye Finans | 13 | 16 | 7 |
+| Türkiye Finans | 25 | 28 | 7 |
 | Vakıf Katılım | 3 | 3 | 8 |
 | Ziraat Katılım | 109 | 111 | 8 |
 
@@ -26,11 +26,11 @@ En son gorulen versiyon uzerinden hesaplanir (ayni kampanyanin eski snapshot'lar
 
 | Urun ailesi (kampanya_turu) | Sayi | Alan doluluk % |
 |---|---|---|
-| Kart Kampanyasi | 153 | %21.2 |
+| Kart Kampanyasi | 162 | %20.6 |
 | Belirtilmemis | 38 | %16.8 |
 | Alisveris Puani Kampanyasi | 37 | %20.0 |
+| Ihtiyac Finansmani Kampanyasi | 9 | %42.2 |
 | Konut Finansmani Kampanyasi | 7 | %31.4 |
-| Ihtiyac Finansmani Kampanyasi | 6 | %40.0 |
 | Yatirim Urunu Kampanyasi | 4 | %0.0 |
 | Yeni Musteri Kampanyasi | 3 | %40.0 |
 | Finansman Kampanyasi | 2 | %20.0 |
@@ -39,8 +39,8 @@ En son gorulen versiyon uzerinden hesaplanir (ayni kampanyanin eski snapshot'lar
 ## 3. Zaman ekseni
 
 - Ilk gorulme: 2026-07-31
-- Son gorulme: 2026-08-18
-- Kampanya basina ortalama versiyon sayisi: 1.2
+- Son gorulme: 2026-08-22
+- Kampanya basina ortalama versiyon sayisi: 1.19
 - Coklu versiyonlu (gercekten degismis) kampanya sayisi: 40
 - Bayatlik (son taramadan bu yana gecen gun): 0
 
@@ -50,8 +50,8 @@ Kar payi / vade / taksit / odul / masraf alanlarinin en son versiyonda ne siklik
 
 | Alan | Dolu | Toplam | Doluluk % |
 |---|---|---|---|
-| kar_payi_orani_percent | 37 | 251 | %14.7 |
-| vade_ay | 5 | 251 | %2.0 |
-| taksit_sayisi | 130 | 251 | %51.8 |
-| odul_miktari | 85 | 251 | %33.9 |
-| masraf_durumu | 5 | 251 | %2.0 |
+| kar_payi_orani_percent | 40 | 263 | %15.2 |
+| vade_ay | 7 | 263 | %2.7 |
+| taksit_sayisi | 130 | 263 | %49.4 |
+| odul_miktari | 87 | 263 | %33.1 |
+| masraf_durumu | 10 | 263 | %3.8 |

@@ -78,7 +78,15 @@
     "dijital": false,
     "ana_sayfa": "https://www.turkiyefinans.com.tr",
     "kampanya_listesi": [
-      "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/finansman-kampanyalari.aspx"
+      "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/finansman-kampanyalari.aspx",
+      "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/kart-kampanyalari.aspx",
+      "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/birikim-fon-kampanyalari.aspx",
+      "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/sigorta-kampanyalari.aspx",
+      "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/yatirim-kampanyalari.aspx",
+      "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/ticari-kampanyalar.aspx",
+      "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/odeme-kampanyalari.aspx",
+      "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/dijital-bankacilik-kampanyalari.aspx",
+      "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/diger-kampanyalar.aspx"
     ],
     "detay_link_deseni": "/kampanyalar/sayfalar/",
     "cerez_secicileri": [
@@ -88,7 +96,7 @@
     "icerik_secici": "#content",
     "sayfa_turu": "HTML",
     "crawl_delay": 1,
-    "not": "ASPX (SharePoint) tabanli site - HTML statik oldugu dogrulandi (JS gerekmiyor). Kategori/index sayfalari (ör. diger-kampanyalar.aspx) ile gercek kampanya detay sayfalari AYNI /Sayfalar/ klasorunde ve URL deseniyle ayirt edilemiyor - ama index sayfalari icerik acisindan cok kisa (~470 karakter), dogrulama_kontrolu (min 1000 karakter) bunlari otomatik eliyor, ozel bir ayrim kodu YAZILMADI (mevcut mekanizma yeterli). #content secicisi ustte kategori menusu (kisa, ~13 satir) icerse de asil kampanya metnini/tablolarini dogru veriyor."
+    "not": "ASPX (SharePoint) tabanli site - HTML statik oldugu dogrulandi (JS gerekmiyor). Kategori/index sayfalari (ör. diger-kampanyalar.aspx) ile gercek kampanya detay sayfalari AYNI /Sayfalar/ klasorunde ve URL deseniyle ayirt edilemiyor - ama index sayfalari icerik acisindan cok kisa (~470-1600 karakter), dogrulama_kontrolu (min 1000 karakter) COGUNU otomatik eliyor, ozel bir ayrim kodu YAZILMADI (mevcut mekanizma yeterli). #content secicisi ustte kategori menusu (kisa, ~13 satir) icerse de asil kampanya metnini/tablolarini dogru veriyor. GENISLETME (18 Agustos 2026): kampanya_listesi ONCEDEN yalnizca 'finansman-kampanyalari' kategorisini iceriyordu - sitede en az 9 ayri kategori oldugu (her biri kendi alt kampanyalarina linkliyor, ör. kart-kampanyalari altinda 'mastercard-business-kart-firsat.aspx') canli sayfa taranarak dogrulandi, digerleri eklendi. 'Biten-Kampanyalar.aspx' (3056 karakter) bilerek dahil edildi - dogrulama esigini gecebilecek kadar uzun, sona ermis kampanyalarin OZETINI icerebilir (dogal kampanya rotasyonu icin degerli, bkz. kampanya_tarihcesi.py)."
   },
   "emlakkatilim": {
     "ad": "Türkiye Emlak Katılım",

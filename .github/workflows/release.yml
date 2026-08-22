@@ -83,7 +83,7 @@ jobs:
             "imaj": "${{ env.KAYIT }}/${{ env.IMAJ }}",
             "imaj_digest": "${{ steps.uret.outputs.digest }}",
             "uretim_zamani": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-            "alembic_surumu": "$(grep -h '^revision' alembic/versions/*.py | tail -1 | cut -d\"'\" -f2)",
+            "alembic_surumu": "$(grep -h '^revision' alembic/versions/*.py | tail -1 | cut -d"'" -f2)",
             "modeller": {
               "llm": "qwen2.5:7b-instruct-q4_K_M",
               "gomme": "intfloat/multilingual-e5-base",

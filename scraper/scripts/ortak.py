@@ -86,19 +86,49 @@ def robots_kontrol_et(ana_sayfa: str) -> tuple[RobotFileParser | None, float | N
     72 kampanya sayfasinin her biri icin) robots.txt'i her seferinde
     yeniden indirmez - ilk sonucu bellekte tutar. Bu hem gereksiz agi
     trafigini onler hem de siteye karsi daha naziktir (Bolum 20).
-    """
+
+    NEDEN rp.read() DEGIL, requests+rp.parse(): DENETIM BULGUSU (18 Agustos
+    2026, hadiyanindakibanka.com/T.O.M. Hadi): rp.read() stdlib urllib'in
+    KENDI (genel/tanimlayici olmayan "Python-urllib/x.y") User-Agent'iyla
+    istek atar - bu site (ve muhtemelen baskalari) o UA'yi 403 ile
+    reddediyor. robotparser 401/403'te TUM siteyi yasakli sayar (kendi
+    belgelenmis davranisi), bu yuzden gercekte "Allow: /" diyen apacik bir
+    robots.txt'e ragmen izinli_mi() False donuyordu - siteye degil, urllib
+    UA'sinin engellenmesine tepki. Asil sayfa cekimlerimiz zaten kendi
+    saydam/dogru tanimlayici UA'mizla (USER_AGENT) calisiyor ve engellenmiyor;
+    robots.txt kontrolu de AYNI UA'yi kullanmali - bu bir yasagi asmak degil,
+    kontrolun kendisini bizim gercekten kullandigimiz istemciyle tutarli
+    hale getirmektir."""
     if ana_sayfa in _ROBOTS_CACHE:
         return _ROBOTS_CACHE[ana_sayfa]
 
-    rp = RobotFileParser()
-    rp.set_url(ana_sayfa.rstrip("/") + "/robots.txt")
+    robots_url = ana_sayfa.rstrip("/") + "/robots.txt"
     try:
-        rp.read()
-    except Exception as e:  # noqa: BLE001 - robots okunamazsa devam edemeyiz
+        yanit = requests.get(robots_url, timeout=10, headers=VARSAYILAN_HEADERS)
+    except (requests.Timeout, requests.ConnectionError) as e:
         log_yaz("genel", f"robots.txt okunamadi ({ana_sayfa}): {e}")
         sonuc = (None, None)
     else:
-        sonuc = (rp, rp.crawl_delay("*"))
+        if yanit.status_code == 404:
+            # robots.txt yok -> standart kural: her sey izinli. Bos/hic
+            # parse edilmemis bir RobotFileParser() can_fetch'te varsayilan
+            # olarak True DONMEZ (olculdu) - allow_all acikca ayarlanmali.
+            rp = RobotFileParser()
+            rp.allow_all = True
+            sonuc = (rp, None)
+        elif yanit.status_code in (401, 403):
+            # Gercek yasak (bizim saydam UA'mizla bile) - robotparser'in
+            # kendi kuraliyla tutarli: tum siteyi yasakli say.
+            rp = RobotFileParser()
+            rp.parse(["User-agent: *", "Disallow: /"])
+            sonuc = (rp, None)
+        elif yanit.ok:
+            rp = RobotFileParser()
+            rp.parse(yanit.text.splitlines())
+            sonuc = (rp, rp.crawl_delay("*"))
+        else:
+            log_yaz("genel", f"robots.txt beklenmeyen durum kodu ({ana_sayfa}): {yanit.status_code}")
+            sonuc = (None, None)
 
     _ROBOTS_CACHE[ana_sayfa] = sonuc
     return sonuc

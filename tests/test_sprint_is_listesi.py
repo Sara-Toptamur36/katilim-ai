@@ -15,13 +15,14 @@ KOK = Path(__file__).resolve().parent.parent
 GOLD = KOK / "gold_dataset" / "altin_veri_seti.json"
 
 SAHTE_ONEKLER = ("A-", "B-", "C-", "D-")
+_GOLD_DOSYASI = GOLD
 
 
 @pytest.fixture(scope="module")
 def rapor():
     from gold_dataset.sprint_is_listesi import is_listesi_uret
 
-    return is_listesi_uret(hedef=200, kota=30)
+    return is_listesi_uret(hedef=200, kota=45)
 
 
 @pytest.fixture(scope="module")
@@ -66,8 +67,9 @@ def test_kontrol_gerekenler_ATILMAZ_raporlanir(rapor):
 
 def test_kota_asilmaz(rapor):
     """Kotanin isi, setin tek bankaya kaymasini engellemek."""
-    asanlar = {b: n for b, n in rapor["banka_basina_secilen"].items() if n > 30}
-    assert not asanlar, f"kota asilmis: {asanlar}"
+    kota = rapor["banka_basina_kota"]
+    asanlar = {b: n for b, n in rapor["banka_basina_secilen"].items() if n > kota}
+    assert not asanlar, f"kota asilmis (kota={kota}): {asanlar}"
 
 
 def test_liste_tekrarsiz(rapor):
@@ -114,22 +116,23 @@ def test_hedefe_ulasilamiyorsa_bu_GIZLENMEZ(rapor):
     )
 
 
-def test_ayni_kampanya_farkli_adresle_ISARETLENIR(rapor):
-    """Slug esitligi yetmiyor - olculmus iki durum var:
+def test_ayni_kampanya_farkli_adresle_LISTEYE_GIRMEZ(rapor):
+    """Olculmus iki durum:
 
       - Dunya Katilim "Altin Kesem": altin sette `/altin-kesem`,
         ham korpusta `/altin-kesemTicari` (DK-003 ile ayni kampanya)
       - T.O.M.: `kampanyalar.html#...` parcalari, altin setteki
         TOM-001/002/003'un tam karsiligi
 
-    Ikisi de slug esitligini gecip listeye giriyordu. Isaret konmazsa
-    etiketleyici ayni kampanyayi tekrar yazar ve o kampanya olcumde
-    CIFT agirlik alir.
-    """
-    isaretli = {k["slug"]: k["muhtemel_kopya"] for k in rapor["liste"] if k.get("muhtemel_kopya")}
-    assert "altin-kesemTicari" in isaretli, "DK-003 kopyasi isaretlenmedi"
-    parcalar = [s for s in isaretli if "kampanyalar.html#" in s]
-    assert parcalar, "etiketli sayfanin URL parcalari isaretlenmedi"
+    ONCEKI SURUM BUNLARI ISARETLIYORDU ama listede birakiyordu.
+    Kume tabanli secimde artik LISTEYE HIC GIRMIYORLAR: bir uyesi
+    etiketli olan kume tumuyle duser. Isaretleme emniyet agi olarak
+    duruyor (bkz. test_emniyet_agi_calisiyor)."""
+    sluglar = {k["slug"] for k in rapor["liste"]}
+    assert "altin-kesemTicari" not in sluglar
+    assert not [s for s in sluglar if "kampanyalar.html#" in s], (
+        "etiketli sayfanin URL parcalari hala listede"
+    )
 
 
 def test_kopya_isareti_ELEMEZ_yalnizca_isaretler(rapor):
@@ -223,19 +226,20 @@ def test_cok_benzer_esigin_altini_ISARETLEMEZ(rapor):
             assert k["cok_benzer"][1] >= COK_BENZER_ESIGI
 
 
-def test_benzerlik_slug_kurallarini_BAGIMSIZ_dogruluyor(rapor):
-    """Iki isaret birbirinden bagimsiz uretiliyor: biri slug'a, digeri
-    METNE bakiyor. Slug kurallarinin yakaladigi kayitlarin metin
-    benzerligi de yuksek cikmali - cikmiyorsa esik ya da kurallardan
-    biri yanlistir.
+def test_emniyet_agi_calisiyor(rapor):
+    """Kumeleme TEK GECISLIDIR: bir sayfa, kumenin temsilcisine
+    benzemeyip baska bir etiketli sayfaya benziyor olabilir. Isaretler
+    o bosluk icin duruyor.
 
-    NOT: muhtemel_kopya isaretli kayitlarin bir kisminin kaynak sayfasi
-    ham veride yok (TOM'un kampanyalar.html'i gibi) - onlar icin metin
-    karsilastirmasi YAPILAMAZ, bu yuzden kesisim aranir, esitlik degil.
-    """
-    kopya = {k["slug"] for k in rapor["liste"] if k.get("muhtemel_kopya")}
-    benzer = {k["slug"] for k in rapor["liste"] if k.get("cok_benzer")}
-    assert kopya & benzer, "iki isaret hic ortusmuyor - biri bozuk olabilir"
+    Burada isaretin BULUNMASI degil, ISARETLENEN KAYIT SAYISININ KUCUK
+    kalmasi sinaniyor: kumeleme dogru calisiyorsa emniyet agina cok az
+    sey dusmeli. Cok sey duserse kumeleme bozulmus demektir."""
+    isaretli = [k for k in rapor["liste"]
+                if k.get("muhtemel_kopya") or k.get("cok_benzer")]
+    assert len(isaretli) <= max(3, len(rapor["liste"]) // 10), (
+        f"emniyet agina {len(isaretli)} kayit dustu - kumeleme bozulmus olabilir: "
+        + ", ".join(k["slug"] for k in isaretli[:5])
+    )
 
 
 def test_ikiz_ayni_bankadan(rapor):
@@ -250,3 +254,133 @@ def test_ikiz_ayni_bankadan(rapor):
     for k in rapor["liste"]:
         if k["cok_benzer"]:
             assert banka[k["cok_benzer"][0]] == k["banka"]
+
+
+# ---------------------------------------------------------------------------
+# KUME TABANLI SECIM
+# ---------------------------------------------------------------------------
+
+
+def test_kapsanan_kume_listeye_GIRMEZ(rapor, etiketli_sluglar):
+    """Bir uyesi zaten etiketli olan kume tumuyle duser. Onceki surumde
+    yalnizca ETIKETLI SAYFANIN KENDISI eleniyordu; kumedeki diger
+    kopyalar listede kaliyor ve ayni kalip ikinci kez etiketleniyordu."""
+    import json as _json
+
+    with open(KOK / "gold_dataset" / "sprint_is_listesi.json", encoding="utf-8") as f:
+        _json.load(f)  # dosya gecerli JSON olmali
+    for k in rapor["liste"]:
+        uyeler = set(k["kume_uyeleri"]) | {k["slug"]}
+        assert not (uyeler & etiketli_sluglar), (
+            f"{k['slug']} kumesinde zaten etiketli sayfa var: "
+            f"{sorted(uyeler & etiketli_sluglar)}"
+        )
+
+
+def test_her_kumeden_TEK_temsilci(rapor):
+    """Ayni kume iki kez listelenirse kota bosa harcanir."""
+    gorulen: set[str] = set()
+    for k in rapor["liste"]:
+        uyeler = set(k["kume_uyeleri"]) | {k["slug"]}
+        assert not (uyeler & gorulen), f"{k['slug']} kumesi ikinci kez listelenmis"
+        gorulen |= uyeler
+
+
+def test_kayit_kendi_kume_uyesi_olarak_TEKRARLANMAZ(rapor):
+    for k in rapor["liste"]:
+        assert k["slug"] not in k["kume_uyeleri"]
+
+
+def test_her_kaydin_secim_gerekcesi_VAR(rapor):
+    """Liste bir is emridir; "neden bu sayfa" sorusunun cevabi listede
+    durmali, kodun icinde degil."""
+    for k in rapor["liste"]:
+        assert k.get("banka"), f"{k['slug']} icin banka yok"
+        assert k.get("secim_gerekcesi"), f"{k['slug']} icin gerekce yok"
+        assert len(k["secim_gerekcesi"]) > 20, (
+            f"{k['slug']} gerekcesi bilgi tasimiyor: {k['secim_gerekcesi']!r}"
+        )
+
+
+def test_ilk_secimler_YENI_ozellik_getirir(rapor):
+    """Siralamanin isi cesitliligi one almak. Yapisal ozellik uzayi
+    kucuktur ve hizla doyar - ama listenin BASINDA yeni ozellik getiren
+    kayitlar olmali, yoksa siralama hic calismiyor demektir."""
+    ilk = rapor["liste"][:5]
+    assert any(k["yeni_ozellikler"] for k in ilk), (
+        "ilk bes kayittan hicbiri yeni yapisal ozellik getirmiyor"
+    )
+
+
+def test_ozellik_kapsami_BUYUR(rapor):
+    k = rapor["ozellik_kapsami"]
+    assert k["bitis"] >= k["baslangic"]
+
+
+def test_rapor_kume_sayilarini_TASIR(rapor):
+    """Raporlama sarti: toplam, banka dagilimi ve kalan benzersiz kume."""
+    assert rapor["toplam_kume"] == sum(o["kume"] for o in rapor["banka_ozeti"])
+    assert rapor["kapsanan_kume"] == sum(o["kapsanan_kume"] for o in rapor["banka_ozeti"])
+    assert rapor["aday_kume"] == sum(o["aday_kume"] for o in rapor["banka_ozeti"])
+    assert rapor["listelenen"] + sum(rapor["kalan_kume"].values()) == rapor["aday_kume"]
+    assert rapor["benzerlik_esigi"] == 0.85
+
+
+def test_benzerlik_esigi_SABIT():
+    """Esik %85 olarak sabitlendi (olculdu: 63 aday x 57 etiketli sayfada
+    ortanca benzerlik %42; %85 acik bir aykiri bolge). Degistirmek altin
+    setin bilesimini degistirir - kazara olmamali."""
+    from gold_dataset.sprint_is_listesi import COK_BENZER_ESIGI
+
+    assert COK_BENZER_ESIGI == 0.85
+
+
+def test_kalan_kume_kotadan_dolayi_BEKLETILENLERDIR(rapor):
+    """Kotaya takilip listeye giremeyen kumeler GIZLENMEZ - hacim
+    gerekirse nereden gelecegi gorunur olmali."""
+    for banka, sayi in rapor["kalan_kume"].items():
+        assert rapor["banka_basina_secilen"].get(banka, 0) == rapor["banka_basina_kota"], (
+            f"{banka} kotasi dolmadigi halde {sayi} kume beklemede"
+        )
+
+
+def test_altin_setin_KENDI_kopyalari_raporlanir(rapor, capsys):
+    """Bu test hicbir sey DOGRULAMAZ; mevcut altin setin kendi icindeki
+    kopyalari gorunur kilar.
+
+    Benzerlik korumasi is listesine SONRADAN eklendi. Ondan once
+    etiketlenmis kayitlarin bir kismi ayni kumede duruyor - ornegin
+    Emlak'in akaryakit ParafPara surumleri. Bunlar olcumde o teklife
+    fazladan agirlik verir; ayiklanip ayiklanmayacagi INSAN kararidir,
+    bu yuzden test kirilmaz, yalnizca sayiyi yazar."""
+    import collections
+    import json as _json
+
+    from gold_dataset.sprint_is_listesi import _ham_kampanyalar, _kumeleri_al
+
+    ham = _ham_kampanyalar()
+    with open(_GOLD_DOSYASI, encoding="utf-8") as f:
+        gold = [k for k in _json.load(f) if not k["kayit_id"].startswith(SAHTE_ONEKLER)]
+
+    slug_kayit = collections.defaultdict(list)
+    for k in gold:
+        slug_kayit[(k.get("kaynak_url") or "").rstrip("/").split("/")[-1]].append(k["kayit_id"])
+
+    catisan = []
+    for kumeler in _kumeleri_al(ham).values():
+        for kume in kumeler:
+            idler = sorted(i for u in kume["uyeler"] for i in slug_kayit.get(u["_slug"], []))
+            if len(idler) > 1:
+                catisan.append(idler)
+
+    kaynaksiz = sum(1 for k in gold
+                    if (k.get("kaynak_url") or "").rstrip("/").split("/")[-1] not in ham)
+    with capsys.disabled():
+        print(f"\n  Altin set: {len(gold)} kayit | kaynak sayfasi ham veride "
+              f"olmayan {kaynaksiz} (kumelenemez)")
+        if catisan:
+            fazla = sum(len(i) - 1 for i in catisan)
+            print(f"  AYNI KUMEDE BIRDEN FAZLA ALTIN KAYIT: {len(catisan)} kume, "
+                  f"{fazla} fazla kayit")
+            for idler in catisan:
+                print(f"    {', '.join(idler)}")

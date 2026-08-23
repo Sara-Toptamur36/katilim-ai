@@ -388,14 +388,94 @@ sonuç tam olarak o notun öngördüğü riskin gerçekleşmiş hâli.
 
 ---
 
+### Yeniden doğrulama — 23 Ağustos 2026 (reranker + exact mod devreye alındı, indeks 511 belge/1970 parçaya büyütüldü)
+
+`chunking/reranker.py` (cross-encoder `ms-marco-MiniLM-L-6-v2`) `chunking/retriever.py::getir`'e
+koşulsuz bağlandı ve `KATILIMAI_RAG_EXACT_MOD=true` ile Qdrant'ın brute-force
+(tam) araması kullanılarak 185 soruluk set yeniden koşuldu. Aynı zamanda
+indeks, Zeynep'in 22-23 Ağustos taramasıyla senkron biçimde yeniden kuruldu:
+**300 → 511 belge, 878 → 1970 parça**. Bu iki değişiklik (reranker/exact +
+korpus büyümesi) birlikte geldiği için sonuçlar **saf reranker etkisi değil,
+bileşik bir etki** olarak okunmalı — ayrıştırma yapılmadı, dürüstlük notu
+olarak burada belirtiliyor.
+
+#### Sonuçlar — kategori bazlı (119 sorgu, ölçüm kapsamındaki; önceki koşu 87 sorguydu — korpus büyüyünce daha fazla altın kayıt kapsam içine girdi)
+
+| | Recall@1 | Recall@3 | Recall@5 |
+|---|---|---|---|
+| **Genel** | %64,37 → **%68,07** | %79,31 → **%80,67** | %86,21 → **%88,24** |
+| tam_ad | %87,5 → %86,36 | %93,75 → %95,45 | %96,88 → %97,73 |
+| kismi_ad | %70,0 → **%80,0** | %90,0 → %95,0 | %93,33 → %95,0 |
+| dogal_soru | %77,78 → **%57,14** ⚠️ | %77,78 → **%64,29** ⚠️ | %88,89 → %92,86 |
+| banka_ve_konu | **%0,0 → %14,29** | %31,25 → %33,33 | %50,0 → %52,38 |
+
+**Abstention (alan_disi):** %86,67 (13/15) — **değişmedi.**
+**Abstention (alan_ici_kapsam_disi):** **%50,0 (5/10)** — bu kategori önceki
+ölçümde ayrı raporlanmamıştı (bkz. Bulgu 7).
+
+#### Bulgu 6 — `banka_ve_konu` iyileşti ama çözülmedi
+
+Recall@1 %0'dan %14,29'a çıktı — reranker'ın en çok kazandırdığı yer beklendiği
+gibi burası. Ama mutlak sayı hâlâ düşük: kampanya adı verilmeyen bir soruda
+doğru kaynağı **ilk sırada** bulma ihtimali 7'de 1. Recall@5'te ancak yarısı
+(%52,38) yakalanıyor. **Kök sorun çözülmedi**, yalnızca hafifledi: lexical
+bileşen hâlâ kampanya adı terimlerine ağırlık veriyor, reranker geniş aday
+havuzunu (limit×2=20-40) yeniden sıralıyor ama havuzun kendisi zaten dar
+kalıyorsa reranker doğru belgeyi bulamadığı yerden bulamaz. Bir sonraki adım
+aday havuzunu (`genis_limit`) büyütmek veya sorgu genişletme (query expansion)
+denemek olabilir — ikisi de henüz denenmedi.
+
+#### Bulgu 7 — `dogal_soru`da beklenmeyen gerileme
+
+Recall@1 %77,78 → %57,14, Recall@3 %77,78 → %64,29 — reranker'ın **kötüleştirdiği**
+tek kategori. Örneklem küçük (14 soru, sayısal olarak birkaç sorunun yön
+değiştirmesi yeter) ama yön tutarlı (hem @1 hem @3 düştü, @5'te toparlanıyor).
+Olası açıklama: cross-encoder, doğal dilde yazılmış (kampanya başlığından
+uzak) sorularda yüzeysel kelime örtüşmesine RRF'den daha fazla ağırlık
+veriyor olabilir. **Kök neden araştırılmadı** — küçük örneklem büyütülmeden
+kesin yargıya varılmamalı.
+
+#### Bulgu 8 — Abstention'ın gerçek zayıf noktası `alan_ici_kapsam_disi`, `alan_disi` değil
+
+Önceki ölçümler yalnızca `alan_disi` (uzay istasyonu, çamaşır makinesi gibi
+tamamen alakasız sorular) abstention'ını raporluyordu: %86,67. Ama soru
+setinde ayrıca **`alan_ici_kapsam_disi`** kategorisi var — katılım
+bankacılığına yakın ama kampanya kapsamı dışında sorular ("Katılım
+bankasında altın hesabı nasıl açılır?", "hesap açmak için hangi belgeler
+gerekli?", "TMSF güvencesi kapsamında mıdır?", "internet bankacılığı
+şifremi unuttum"). Bu kategoride abstention doğruluğu yalnızca **%50,0
+(5/10)** — sistem bu soruların yarısında **çekimser kalması gerekirken
+cevap üretiyor.**
+
+**Bu, `alan_disi`'nden daha ciddi bir demo riski**: jürinin "hesap nasıl
+açılır" tarzı bir soru sorması, "uzay istasyonunda yerçekimi" sormasından
+çok daha olası. Kök neden muhtemelen aynı terim-örtüşme mekanizması —
+"hesap", "katılım bankası", "belge" gibi kelimeler gerçek kampanya
+parçalarında da sık geçiyor, bu yüzden örtüşme oranı yanlışlıkla eşiği
+geçiyor. **Henüz araştırılmadı, önceliklendirilmesi gereken bir sonraki
+adım.**
+
+`alan_disi`'ndeki 2 sabit hata da hâlâ aynı: *"Çamaşır makinesi nasıl
+temizlenir?"* (örtüşme=0,667) ve *"Güneş sistemindeki gezegen sayısı
+kaçtır?"* (örtüşme=0,6) — ikisi de `ASGARI_TERIM_ORTUSMESI=0,60` eşiğini
+aşıyor çünkü sorudaki bazı kelimeler tesadüfen kampanya parçalarında da
+geçiyor. Eşiği yükseltmek bu ikisini düzeltebilir ama diğer kategorilerde
+false-negative (cevaplanabilir soruda gereksiz çekimserlik) riski taşır —
+tam koşu yapılmadan eşik değiştirilmedi.
+
+---
+
 ## 7. Bilinçli sınırlar
 
 - **LLM ile özetleme yok.** RAG, bulduğu kaynak parçalarını **birebir**
   döndürür; üzerine serbest metin üretmez. Böylece halüsinasyon yapısal
   olarak imkânsızdır — kullanıcıya gösterilen her cümle bir kaynak
   belgeden gelir. Özetleme ancak Verifier ile birlikte güvenli olur.
-- **Reranker yok.** Cross-encoder reranker retrieval kalitesini artırırdı
-  ama ek model + gecikme getirir. Hibrit arama + abstention, mevcut veri
-  büyüklüğü için yeterli ayırt ediciliği sağlıyor.
+- **Reranker devrede (23 Ağustos'tan itibaren).** Cross-encoder reranker
+  (`chunking/reranker.py`) `retriever.py::getir`'e koşulsuz bağlandı ve
+  `banka_ve_konu` kategorisinde ölçülebilir kazanç sağladı (Recall@1 %0→%14,29,
+  bkz. Bulgu 6) — ama sorunu çözmedi, yalnızca hafifletti. Aynı koşuda
+  `dogal_soru` kategorisinde beklenmeyen bir gerileme de gözlendi (Bulgu 7),
+  kök nedeni henüz araştırılmadı.
 - **Zamansal filtre yok.** Metadata'da `erisim_zamani` tutuluyor ancak
   "soru tarihinde geçerli olan sürüm" filtresi henüz uygulanmıyor.

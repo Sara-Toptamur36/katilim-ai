@@ -421,9 +421,30 @@ doğru kaynağı **ilk sırada** bulma ihtimali 7'de 1. Recall@5'te ancak yarıs
 (%52,38) yakalanıyor. **Kök sorun çözülmedi**, yalnızca hafifledi: lexical
 bileşen hâlâ kampanya adı terimlerine ağırlık veriyor, reranker geniş aday
 havuzunu (limit×2=20-40) yeniden sıralıyor ama havuzun kendisi zaten dar
-kalıyorsa reranker doğru belgeyi bulamadığı yerden bulamaz. Bir sonraki adım
-aday havuzunu (`genis_limit`) büyütmek veya sorgu genişletme (query expansion)
-denemek olabilir — ikisi de henüz denenmedi.
+kalıyorsa reranker doğru belgeyi bulamadığı yerden bulamaz.
+
+**Denendi ve geri alındı (23 Ağustos 2026, aynı gün):** `genis_limit`
+20'den 40'a çıkarıldı, 513 belge/1979 parçalık güncel indeksle yeniden
+ölçüldü. Sonuç karışık ve **net olumsuz** çıktı:
+
+| Kategori | pool=20 | pool=40 |
+|---|---|---|
+| banka_ve_konu Recall@1 | %14,29 | **%19,05** ✅ |
+| banka_ve_konu Recall@5 | %52,38 | %38,1 ❌ |
+| dogal_soru Recall@5 | %92,86 | %71,43 ❌ |
+| **Genel Recall@5** | %88,24 | %83,19 ❌ |
+
+Recall@1'de küçük bir kazanç (+4,8 puan) elde edildi ama bunun bedeli
+Recall@3/@5'te çok daha büyük bir kayıp oldu — daha geniş aday havuzu
+cross-encoder'a daha fazla dikkat dağıtıcı sunuyor ve zaten doğru
+sıralanmış adayları alt sıralara itebiliyor. Değişiklik geri alındı
+(`chunking/retriever.py::getir`, `genis_limit = max(20, limit * 2)`).
+**Sorgu genişletme henüz denenmedi** — bir sonraki gerçek aday.
+
+Yan bulgu: pool=40 koşusunda `alan_disi` abstention %86,67→%93,33'e
+çıktı (2 sabit hatadan biri kayboldu) — ama pool=20'ye dönünce ayrıca
+doğrulanmadı, muhtemelen indeksin 511→513 büyümesiyle veya havuz
+büyümesiyle ilgili yan etki, bağımsız bir bulgu değil.
 
 #### Bulgu 7 — `dogal_soru`da beklenmeyen gerileme
 
@@ -432,8 +453,39 @@ tek kategori. Örneklem küçük (14 soru, sayısal olarak birkaç sorunun yön
 değiştirmesi yeter) ama yön tutarlı (hem @1 hem @3 düştü, @5'te toparlanıyor).
 Olası açıklama: cross-encoder, doğal dilde yazılmış (kampanya başlığından
 uzak) sorularda yüzeysel kelime örtüşmesine RRF'den daha fazla ağırlık
-veriyor olabilir. **Kök neden araştırılmadı** — küçük örneklem büyütülmeden
-kesin yargıya varılmamalı.
+veriyor olabilir.
+
+**Araştırıldı (23 Ağustos 2026, aynı gün):** 20 `dogal_soru` sorusunun
+tamamı tek tek çalıştırılıp beklenen kayıtla karşılaştırıldı. Kayıp
+çıkan sorguların **hiçbiri temiz bir reranker hatası değil** — iki farklı
+kök nedene ayrışıyor:
+
+1. **Veri eskimesi (asıl ölçümde zaten dışlanıyor):** "Alışveriş yaparken
+   altın biriktirebileceğim bir ürün var mı?" sorusu DK-003'ün
+   `kaynak_url`'üne (`.../altin-kesem`) bağlıydı, ama scraper hiçbir zaman
+   bu URL'yi toplamamış — korpusta yalnızca **`altin-kesemTicari`**
+   (ayrı bir kampanya) var. `rag_degerlendirme.py` bu tür kayıtları zaten
+   `kapsam_disi_eskimis` sayacına yazıp Recall hesabından çıkarıyor, yani
+   bu doğru ölçüme hiç girmiyor.
+2. **Gerçek yapısal belirsizlik (ölçüme giriyor, ama reranker'a özgü
+   değil):** "Otel rezervasyonunda indirim sağlayan kampanya var mı?" ve
+   "Hisse senedi işlemlerinde komisyon indirimi veren banka hangisi?"
+   sorularında sistem doğru kampanyayı değil, **temalarca çok yakın başka
+   kampanyaları** buluyor (örn. "yeni-yatirim-hesabiniza-sifir-komisyon"
+   ile "dijitalden-musteri-ol-hisse-senedi-islemlerinde-75-komisyon-
+   indirimi-kazan" karışıyor). Bu, belgenin §6/Bulgu 2'de zaten kayıtlı
+   olan AL-005/AL-006 (neredeyse aynı isimli kampanyalar) sorununun aynısı
+   — korpus büyüdükçe kaçınılmaz hale gelen bir ayırt edicilik sınırı,
+   reranker'ın **yarattığı** değil, ortaya **çıkardığı** bir zayıflık.
+
+**Sonuç:** "reranker `dogal_soru`yu kötüleştirdi" iddiası kısmen yanıltıcı
+— küçük örneklemde (14 soru) birkaç sorunun yön değiştirmesi zaten
+istatistiksel olarak gürültüye yakın, ve incelenen somut örnekler
+reranker'ın kendine özgü bir hatasını değil, korpus ölçeğinin doğal
+sonucu olan kampanya-ayırt-etme zorluğunu gösteriyor. Hızlı/güvenli bir
+kod düzeltmesi yok — çözüm (varsa) sorgu genişletme veya kampanya bazlı
+ayırt edici öznitelik eklemek gibi daha büyük bir yatırım gerektirir,
+deadline'a bu kadar yakın denenmedi.
 
 #### Bulgu 8 — Abstention'ın gerçek zayıf noktası `alan_ici_kapsam_disi`, `alan_disi` değil
 
@@ -449,11 +501,31 @@ cevap üretiyor.**
 
 **Bu, `alan_disi`'nden daha ciddi bir demo riski**: jürinin "hesap nasıl
 açılır" tarzı bir soru sorması, "uzay istasyonunda yerçekimi" sormasından
-çok daha olası. Kök neden muhtemelen aynı terim-örtüşme mekanizması —
-"hesap", "katılım bankası", "belge" gibi kelimeler gerçek kampanya
-parçalarında da sık geçiyor, bu yüzden örtüşme oranı yanlışlıkla eşiği
-geçiyor. **Henüz araştırılmadı, önceliklendirilmesi gereken bir sonraki
-adım.**
+çok daha olası. Kök neden ölçüldü: tam dağılım çıkarıldı (185 sorunun
+tamamı için terim örtüşmesi hesaplandı) ve `alan_ici_kapsam_disi`'nin
+aralığı (0,50-0,83) gerçek cevaplanabilir `kismi_ad`/`banka_ve_konu`
+sorularının aralığıyla (ikisi de 0,50'den başlıyor) **iç içe** çıktı —
+yani `ASGARI_TERIM_ORTUSMESI` eşiğini tek başına ayarlamak bu sorunu
+çözemez, gerçek cevaplanabilir soruları da susturur.
+
+**Düzeltildi (23 Ağustos 2026) — ama RAG katmanında değil, niyet
+katmanında:** `agent/intent.py`'ye yeni bir `KAPSAM_DISI` niyeti eklendi
+("hesap nasıl açılır", "hangi belgeler gerekir", "en yakın şube",
+"şifremi unuttum", "TMSF", "bakiyemi nasıl öğrenirim", "limitimi nasıl
+artırabilirim" kalıpları). Bu 7 soru artık RAG'e **hiç sorulmadan**
+`agent/orchestrator.py`'de dürüst bir cevapla kapanıyor. Kalan 3 soru
+(danışma kurulu, kâr payı dağıtım sıklığı, müdarebe/müşareke tanımı)
+gerçek katılım bankacılığı kavramları olduğu için kasıtlı olarak
+KAPSAM_DISI'ye alınmadı, RAG'in mevcut mekanizmasına bırakıldı.
+
+**Ölçüm metodolojisi notu:** bu belgedeki ve `rag_degerlendirme.py`
+çıktısındaki `alan_ici_kapsam_disi` yüzdesi `chunking/retriever.py`'yi
+**doğrudan** çağırıyor, `agent/intent.py`'yi atlıyor. Yani tablodaki
+%40-50 rakamı RAG'in **izole** halini ölçüyor; gerçek uçtan uca sistemde
+(agent/orchestrator.py üzerinden) bu 10 sorudan 7'si artık hiç RAG'e
+gitmiyor ve doğru şekilde kapsam dışı sayılıyor. Gerçek uçtan uca
+abstention doğruluğunu ölçmek isteyen `agent.orchestrator.soru_isle`
+üzerinden koşmalı, `chunking.retriever.getir` üzerinden değil.
 
 `alan_disi`'ndeki 2 sabit hata da hâlâ aynı: *"Çamaşır makinesi nasıl
 temizlenir?"* (örtüşme=0,667) ve *"Güneş sistemindeki gezegen sayısı

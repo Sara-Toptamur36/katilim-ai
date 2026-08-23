@@ -6,6 +6,14 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 
 ---
 
+> **Ekip için iki temel belge:**
+> [`docs/PROJE_TANITIMI.md`](docs/PROJE_TANITIMI.md) — projenin ne olduğu,
+> hangi kararların neden alındığı, nerede olduğumuz.
+> [`docs/CALISMA_REHBERI.md`](docs/CALISMA_REHBERI.md) — kalan işlerin
+> adım adım nasıl yapılacağı, komutlar, tuzaklar, kontrol listeleri.
+
+---
+
 ## Durum
 
 | Sprint | İçerik | Durum |
@@ -34,7 +42,7 @@ yeniden üretilebilir — üretim komutları [Test](#test) bölümünde.*
 | Kapsanan katılım bankası | **9 / 10** (BDDK listesi; Adil Katılım gerekçeli hariç — ürün/kampanya yayımlamıyor) |
 | Toplanan gerçek kampanya | **251** tekil kampanya (300 tarihli anlık görüntü) |
 | Değişimi yakalanan kampanya | **40 / 251** içerik güncellemesi; **25**'inde izlenen alan değişti |
-| Altın Veri Seti (elle doğrulanmış referans) | **64** kayıt + ekran görüntüsü kanıtı (etiketleme sprinti sürüyor, hedef 200-300) |
+| Altın Veri Seti (elle doğrulanmış referans) | **103** kayıt + ekran görüntüsü kanıtı (etiketleme sprinti sürüyor, hedef 200-300) |
 | Çıkarım — dolu alan doğruluğu | **%98,48** (65/66 alan) |
 | Çıkarım — boş alan doğruluğu (yanlış pozitif) | **%99,17** (120/121 alan) — 1 yanlış pozitif |
 | Çıkarım — alan bazlı makro F1 | **%98,28** (7 ölçülebilir alan; 5'i %100) |

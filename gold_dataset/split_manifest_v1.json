@@ -1,8 +1,11 @@
 {
   "surum": "v1",
-  "olusturulma_yontemi": "banka-katmanli, kaynak_url gruplu split (gold_dataset/split_manifest_uret.py)",
+  "olusturulma_yontemi": "banka-katmanli, benzerlik-kumesi gruplu, atamasi dondurulmus split (gold_dataset/split_manifest_uret.py)",
   "test_orani_hedef": 0.2,
-  "tohum": 42,
+  "kumeleme": "uygulandi",
+  "toplam_kume": 94,
+  "onceki_surumden_korunan_kume": 94,
+  "yeni_atanan_kume": 0,
   "toplam_kayit": 103,
   "toplam_kampanya_url": 101,
   "train": [
@@ -42,12 +45,14 @@
     "KT-011",
     "KT-012",
     "KT-013",
+    "KT-014",
     "KT-016",
     "KT-017",
     "TEK-002",
     "TEK-003",
     "TEK-004",
     "TEK-005",
+    "TEK-006",
     "TEK-007",
     "TEK-009",
     "TEK-010",
@@ -98,10 +103,8 @@
     "HF-001",
     "HF-006",
     "KT-004",
-    "KT-014",
     "KT-015",
     "TEK-001",
-    "TEK-006",
     "TEK-011",
     "TF-004",
     "TF-008",
@@ -114,38 +117,56 @@
   ],
   "banka_bazinda_ozet": {
     "Albaraka Türk": {
+      "toplam_kume": 12,
+      "test_kume": 2,
       "toplam_url": 12,
       "test_url": 2
     },
     "Dünya Katılım": {
+      "toplam_kume": 9,
+      "test_kume": 2,
       "toplam_url": 9,
       "test_url": 2
     },
     "Hayat Finans": {
+      "toplam_kume": 9,
+      "test_kume": 2,
       "toplam_url": 9,
       "test_url": 2
     },
     "Kuveyt Türk": {
+      "toplam_kume": 16,
+      "test_kume": 2,
       "toplam_url": 17,
-      "test_url": 3
+      "test_url": 2
     },
     "T.O.M. Katılım": {
+      "toplam_kume": 4,
+      "test_kume": 1,
       "toplam_url": 4,
       "test_url": 1
     },
     "Türkiye Emlak Katılım": {
+      "toplam_kume": 12,
+      "test_kume": 2,
       "toplam_url": 15,
-      "test_url": 3
+      "test_url": 2
     },
     "Türkiye Finans": {
+      "toplam_kume": 8,
+      "test_kume": 2,
       "toplam_url": 8,
       "test_url": 2
     },
     "Vakıf Katılım": {
+      "toplam_kume": 10,
+      "test_kume": 2,
       "toplam_url": 10,
       "test_url": 2
     },
     "Ziraat Katılım": {
+      "toplam_kume": 14,
+      "test_kume": 3,
       "toplam_url": 17,
       "test_url": 3
     }

@@ -1,378 +1,604 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
+import { Input, Popconfirm, Button } from "antd";
 import {
-  Button,
-  Card,
-  Collapse,
-  Input,
-  Space,
-  Spin,
-  Tag,
-  Tooltip,
-  Typography,
-} from "antd";
-import {
-  ClearOutlined,
-  InfoCircleOutlined,
-  RobotOutlined,
   SendOutlined,
+  PlusOutlined,
+  DeleteOutlined,
   UserOutlined,
+  SwapOutlined,
+  CalculatorOutlined,
+  BookOutlined,
+  FilterOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  InfoCircleOutlined,
+  ClearOutlined,
 } from "@ant-design/icons";
-import { chatGonder } from "../api/client";
+import { chatGonder, tokenAl } from "../api/client";
 import ChatMesaji from "../components/ChatMesaji";
 import { useAudit } from "../context/AuditContext";
 
-const { Title, Text } = Typography;
+// LocalStorage anahtarları
+const SOHBET_ANAHTAR = "katilimai_sohbetler";
+const GECMIS_ACIK_ANAHTAR = "katilimai_gecmis_acik";
+const MAKS_SOHBET = 30;
 
-/* Kalici sohbet gecmisi — sessionStorage yerine localStorage:
-   sayfa yenilendiginde ya da baska sekmeden donuldugunde gecmis kaybolmaz.
-   Backend'in yanit uretemediginde (fallback) mesajlar kayit disi birakilmaz;
-   kullanici gecmisini gormek isteyebilir. */
-const DEPO_ANAHTARI = "katilimai-chat-gecmisi";
+// Benzersiz kimlik üretici
+function kimlikUret() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
 
-function gecmisiYukle() {
+// Zaman etiketini biçimlendiren yardımcı fonksiyon
+function zamanEtiketi(zamanDamgasi) {
+  if (!zamanDamgasi) return "";
+  const simdi = new Date();
+  const hedef = new Date(zamanDamgasi);
+  const farkMs = simdi - hedef;
+  const farkGun = Math.floor(farkMs / (1000 * 60 * 60 * 24));
+
+  if (farkGun === 0) {
+    return hedef.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
+  }
+  if (farkGun === 1) return "dün";
+  if (farkGun < 7) return `${farkGun} gün önce`;
+  return hedef.toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
+}
+
+// Örnek sorular
+const ORNEK_SORULAR = [
+  {
+    ikon: <SwapOutlined />,
+    baslik: "Kampanya karşılaştır",
+    soru: "Kuveyt Türk ve Albaraka Türk kampanyalarını karşılaştır",
+  },
+  {
+    ikon: <CalculatorOutlined />,
+    baslik: "Taksit hesapla",
+    soru: "100.000 TL, 36 ay vade, %2 kâr payı ile aylık taksit ne kadar?",
+  },
+  {
+    ikon: <BookOutlined />,
+    baslik: "Terim öğren",
+    soru: "Kâr payı oranı ne demek?",
+  },
+  {
+    ikon: <FilterOutlined />,
+    baslik: "En avantajlıyı bul",
+    soru: "En düşük kâr paylı kampanya hangisi?",
+  },
+];
+
+// localStorage'dan sohbetleri oku
+function sohbetleriOku() {
   try {
-    const ham = localStorage.getItem(DEPO_ANAHTARI);
-    return ham ? JSON.parse(ham) : [];
+    const ham = localStorage.getItem(SOHBET_ANAHTAR);
+    if (!ham) return [];
+    const veri = JSON.parse(ham);
+    return Array.isArray(veri) ? veri : [];
   } catch {
     return [];
   }
 }
 
-const ORNEK_SORULAR = [
-  "Kuveyt Türk ile Türkiye Finans kâr payı oranını karşılaştır",
-  "Kâr payı oranı ne demek?",
-  "Ziraat Katılım kart kampanyalarında taksit var mı?",
-  "500.000 TL için Kuveyt Türk ile Ziraat Katılım toplam maliyetini karşılaştır",
-];
+// localStorage'a sohbetleri yaz
+function sohbetleriYaz(sohbetler) {
+  try {
+    localStorage.setItem(SOHBET_ANAHTAR, JSON.stringify(sohbetler));
+  } catch {
+    /* localStorage dolu olabilir */
+  }
+}
 
-const ARAC_RENKLERI = {
-  rag: "blue",
-  sql: "purple",
-  calculator: "green",
-  dictionary: "orange",
-  fallback: "default",
-};
+// Geçmiş paneli varsayılan açık/kapalı durumunu oku
+function gecmisVarsayilan() {
+  try {
+    const kayitli = localStorage.getItem(GECMIS_ACIK_ANAHTAR);
+    if (kayitli !== null) return kayitli === "true";
+  } catch {
+    /* localStorage okunamazsa pencere genişliğine göre davran */
+  }
+  return window.innerWidth >= 1200;
+}
+
+// === Bekleme animasyonu (üç nokta) alt bileşeni ===
+function BeklemeBalonu({ bekleniyor }) {
+  const [saniye, setSaniye] = useState(0);
+
+  useEffect(() => {
+    if (!bekleniyor) {
+      setSaniye(0);
+      return;
+    }
+    const zamanlayici = setInterval(() => setSaniye((o) => o + 1), 1000);
+    return () => clearInterval(zamanlayici);
+  }, [bekleniyor]);
+
+  if (!bekleniyor) return null;
+
+  return (
+    <div className="sohbet-mesaj-satiri asistan">
+      {/* Asistan avatarı */}
+      <div className="sohbet-avatar asistan-avatar">NN</div>
+      <div className="sohbet-balon asistan-balon">
+        {/* Üç nokta animasyonu */}
+        <div className="bekleme-noktalar">
+          <span className="bekleme-nokta" />
+          <span className="bekleme-nokta" />
+          <span className="bekleme-nokta" />
+        </div>
+        <div className="bekleme-sayac">
+          yanıt bekleniyor… {saniye} sn
+        </div>
+        {saniye >= 15 && (
+          <div className="bekleme-isinma-notu">
+            İlk sorguda model ısınması 80 saniyeye kadar sürebilir.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function Chatbot() {
-  const [mesajlar, setMesajlar] = useState(gecmisiYukle);
+  // Tüm sohbetler ve aktif sohbet kimliği
+  const [sohbetler, setSohbetler] = useState(sohbetleriOku);
+  const [aktifId, setAktifId] = useState(() => {
+    const mevcut = sohbetleriOku();
+    return mevcut.length > 0 ? mevcut[0].id : null;
+  });
+
+  // Geçmiş paneli açık/kapalı
+  const [gecmisAcik, setGecmisAcik] = useState(gecmisVarsayilan);
+
+  // Girdi ve bekleniyor durumu
   const [girdi, setGirdi] = useState("");
   const [bekleniyor, setBekleniyor] = useState(false);
+  // Sara'nin ekledigi Audit gorunumu: acikken her asistan yanitinin
+  // altinda o sorguya ait niyet ve gecikme ozeti gorunur. Ayrintili
+  // inceleme Juri Audit Paneli'nde - burada yalnizca hizli bakis.
   const [auditAcik, setAuditAcik] = useState(false);
+
+  // Audit bağlamı
   const { auditEkle } = useAudit();
-  const mesajListesiRef = useRef(null);
-  const girdiBileseniRef = useRef(null);
 
-  /* Yeni mesaj geldiginde otomatik asagi kaydir */
+  // Mesaj listesinin altına kaydırma referansı
+  const mesajSonuRef = useRef(null);
+  const girdiFocusRef = useRef(null);
+
+  // Aktif sohbetin mesajları (türetilmiş değer)
+  const aktifSohbet = useMemo(
+    () => sohbetler.find((s) => s.id === aktifId) || null,
+    [sohbetler, aktifId]
+  );
+  const mesajlar = aktifSohbet?.mesajlar || [];
+
+  // Sohbet değişimlerini localStorage'a yaz
   useEffect(() => {
-    if (mesajListesiRef.current) {
-      mesajListesiRef.current.scrollTop = mesajListesiRef.current.scrollHeight;
-    }
-  }, [mesajlar, bekleniyor]);
+    sohbetleriYaz(sohbetler);
+  }, [sohbetler]);
 
-  /* localStorage'a yaz */
+  // Geçmiş açık/kapalı durumunu localStorage'a yaz
   useEffect(() => {
     try {
-      localStorage.setItem(DEPO_ANAHTARI, JSON.stringify(mesajlar));
-    } catch {
-      /* Depolama dolu - sessizce gec */
+      localStorage.setItem(GECMIS_ACIK_ANAHTAR, String(gecmisAcik));
+    } catch { /* yoksay */ }
+  }, [gecmisAcik]);
+
+  // Yeni mesaj eklenince alta kaydır
+  useEffect(() => {
+    mesajSonuRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [mesajlar.length, bekleniyor]);
+
+  // === Sohbet yönetim fonksiyonları ===
+
+  // Yeni sohbet oluştur
+  const yeniSohbet = useCallback(() => {
+    const yeni = { id: kimlikUret(), baslik: "Yeni sohbet", mesajlar: [], zaman: Date.now() };
+    setSohbetler((onceki) => {
+      const guncellenmis = [yeni, ...onceki].slice(0, MAKS_SOHBET);
+      return guncellenmis;
+    });
+    setAktifId(yeni.id);
+    setGirdi("");
+    setBekleniyor(false);
+  }, []);
+
+  // Sohbet seç
+  const sohbetSec = useCallback((id) => {
+    setAktifId(id);
+    setBekleniyor(false);
+    setGirdi("");
+  }, []);
+
+  // Sohbet sil
+  const sohbetSil = useCallback((id) => {
+    setSohbetler((onceki) => {
+      const kalan = onceki.filter((s) => s.id !== id);
+      // Aktif sohbet silindiyse ilkine geç veya null
+      if (id === aktifId) {
+        setAktifId(kalan.length > 0 ? kalan[0].id : null);
+      }
+      return kalan;
+    });
+  }, [aktifId]);
+
+  // Aktif sohbetin mesajlarını güncelle (yardımcı)
+  const mesajGuncelle = useCallback((guncelleyici) => {
+    setSohbetler((onceki) =>
+      onceki.map((s) => {
+        if (s.id !== aktifId) return s;
+        const yeniMesajlar = typeof guncelleyici === "function"
+          ? guncelleyici(s.mesajlar)
+          : guncelleyici;
+        // Başlığı ilk kullanıcı mesajından al
+        let baslik = s.baslik;
+        if (baslik === "Yeni sohbet") {
+          const ilkKullanici = yeniMesajlar.find((m) => m.rol === "kullanici");
+          if (ilkKullanici) baslik = ilkKullanici.metin.slice(0, 40);
+        }
+        return { ...s, mesajlar: yeniMesajlar, baslik, zaman: Date.now() };
+      })
+    );
+  }, [aktifId]);
+
+  // === Mesaj gönderme fonksiyonu ===
+  // Aktif yol: Sara'nin /chat endpoint'i su an tek seferde (non-streaming)
+  // yanit donuyor. Bu fonksiyon bunun icin yazildi.
+  // Aktif sohbetin mesajlarini siler ama sohbet kaydini korur.
+  // 'Yeni Sohbet'ten farki: gecmis listesinde yeni satir acmaz.
+  const aktifSohbetiTemizle = useCallback(() => {
+    setSohbetler((onceki) =>
+      onceki.map((s) =>
+        s.id === aktifId ? { ...s, mesajlar: [], zaman: Date.now() } : s
+      )
+    );
+  }, [aktifId]);
+
+  const gonder = useCallback(async (metin) => {
+    const soru = (metin || girdi).trim();
+    if (!soru) return;
+
+    // Aktif sohbet yoksa yenisini oluştur
+    let hedefId = aktifId;
+    if (!hedefId) {
+      const yeni = { id: kimlikUret(), baslik: soru.slice(0, 40), mesajlar: [], zaman: Date.now() };
+      setSohbetler((onceki) => [yeni, ...onceki].slice(0, MAKS_SOHBET));
+      hedefId = yeni.id;
+      setAktifId(yeni.id);
     }
-  }, [mesajlar]);
 
-  const sohbetiTemizle = () => {
-    setMesajlar([]);
-    localStorage.removeItem(DEPO_ANAHTARI);
-    girdiBileseniRef.current?.focus();
-  };
+    // Kullanıcı mesajını ekle
+    const kullaniciMesaji = { rol: "kullanici", metin: soru };
+    setSohbetler((onceki) =>
+      onceki.map((s) => {
+        if (s.id !== hedefId) return s;
+        const yeniMesajlar = [...s.mesajlar, kullaniciMesaji];
+        let baslik = s.baslik;
+        if (baslik === "Yeni sohbet") baslik = soru.slice(0, 40);
+        return { ...s, mesajlar: yeniMesajlar, baslik, zaman: Date.now() };
+      })
+    );
 
-  const gonder = async (metin) => {
-    const soru = (metin ?? girdi).trim();
-    if (!soru || bekleniyor) return;
-
-    setMesajlar((o) => [...o, { rol: "kullanici", metin: soru }]);
     setGirdi("");
     setBekleniyor(true);
 
     try {
       const yanit = await chatGonder(soru);
-      setMesajlar((o) => [
-        ...o,
-        {
-          rol: "bot",
-          metin: yanit.cevap,
-          kaynaklar: yanit.kaynaklar,
-          confidence: yanit.confidence,
-          fallback: yanit.fallback,
-          terminolojiTutarli: yanit.audit?.terminoloji_tutarli ?? null,
-          terminolojiSorunlari: yanit.audit?.terminoloji_sorunlari ?? [],
-          cagrilanArac: yanit.audit?.cagrilan_arac,
-          /* Audit detay toggle icin ham audit blogunu sakla */
-          auditHam: yanit.audit,
-        },
-      ]);
+      const botMesaji = {
+        rol: "bot",
+        metin: yanit.cevap,
+        kaynaklar: yanit.kaynaklar,
+        confidence: yanit.confidence,
+        fallback: yanit.fallback,
+        // Md. 5.5 - Terminoloji Kontrolu. Bu iki alan backend'de zaten
+        // uretiliyordu ama yalnizca audit blogunda kaliyor, kullaniciya
+        // hic gosterilmiyordu. Uc durumlu okunur (bkz. ChatMesaji.jsx):
+        // true = denetlendi/temiz, false = gelenek terim sizmis,
+        // null = bu arac icin uygulanmaz (RAG/Sozluk).
+        terminolojiTutarli: yanit.audit?.terminoloji_tutarli ?? null,
+        terminolojiSorunlari: yanit.audit?.terminoloji_sorunlari ?? [],
+        cagrilanArac: yanit.audit?.cagrilan_arac,
+        // Audit gorunumu acildiginda gosterilecek ham blok.
+        auditHam: yanit.audit ?? null,
+      };
+      setSohbetler((onceki) =>
+        onceki.map((s) => {
+          if (s.id !== hedefId) return s;
+          return { ...s, mesajlar: [...s.mesajlar, botMesaji], zaman: Date.now() };
+        })
+      );
       auditEkle(yanit.audit, soru);
     } catch {
-      setMesajlar((o) => [
-        ...o,
+      const hataMesaji = {
+        rol: "bot",
+        metin: "Üzgünüm, şu anda yanıt veremiyorum. Lütfen tekrar deneyin.",
+        hata: true,
+      };
+      setSohbetler((onceki) =>
+        onceki.map((s) => {
+          if (s.id !== hedefId) return s;
+          return { ...s, mesajlar: [...s.mesajlar, hataMesaji], zaman: Date.now() };
+        })
+      );
+    } finally {
+      setBekleniyor(false);
+    }
+  }, [girdi, aktifId, auditEkle]);
+
+  // HAZIR AMA HENUZ KULLANILMIYOR: Sara /chat/stream (SSE) endpoint'ini
+  // eklediginde onSearch={gonderStreaming} olarak degistirilecek. Rehber
+  // Sprint 3 Gun 2 fallback plani geregi, iki fonksiyon ayri tutuluyor -
+  // Sara'nin SSE'si hazir olmadan arayuz calisir durumda kalir.
+  const gonderStreaming = async () => {
+    if (!girdi.trim()) return;
+
+    const soru = girdi;
+    mesajGuncelle((onceki) => [...onceki, { rol: "kullanici", metin: soru }]);
+    setGirdi("");
+    mesajGuncelle((onceki) => [...onceki, { rol: "bot", metin: "", streaming: true }]);
+
+    try {
+      const yanit = await fetch("http://localhost:8000/chat/stream", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenAl()}`,
+        },
+        body: JSON.stringify({ soru }),
+      });
+
+      const reader = yanit.body.getReader();
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const parca = decoder.decode(value, { stream: true });
+
+        mesajGuncelle((onceki) => {
+          const kopya = [...onceki];
+          const son = { ...kopya[kopya.length - 1] };
+          son.metin += parca;
+          kopya[kopya.length - 1] = son;
+          return kopya;
+        });
+      }
+
+      mesajGuncelle((onceki) => {
+        const kopya = [...onceki];
+        kopya[kopya.length - 1] = { ...kopya[kopya.length - 1], streaming: false };
+        return kopya;
+      });
+    } catch {
+      mesajGuncelle((onceki) => [
+        ...onceki,
         {
           rol: "bot",
-          metin: "Uzgunüm, su anda yanit veremiyorum. Lutfen tekrar deneyin.",
+          metin: "Bağlantı sırasında bir sorun oluştu. Lütfen tekrar deneyin.",
           hata: true,
         },
       ]);
-    } finally {
-      setBekleniyor(false);
-      girdiBileseniRef.current?.focus();
     }
   };
 
-  const klavyeBasildi = (e) => {
-    /* Shift+Enter -> yeni satir; sadece Enter -> gonder */
+  // Enter = gönder, Shift+Enter = alt satır
+  const tusYakala = useCallback((e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       gonder();
     }
-  };
+  }, [gonder]);
 
-  const bos = mesajlar.length === 0;
+  // Örnek soru tıklandığında
+  const ornekSoruGonder = useCallback((soru) => {
+    gonder(soru);
+  }, [gonder]);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "calc(100vh - 140px)",
-        minHeight: 460,
-        gap: 0,
-      }}
-    >
-      {/* Baslik + kontroller */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          paddingBottom: 12,
-          flexShrink: 0,
-        }}
-      >
-        <Title level={3} style={{ margin: 0 }}>
-          <RobotOutlined style={{ marginRight: 8, color: "#1677ff" }} />
-          AI Asistan
-        </Title>
-        <Space>
-          <Tooltip title="Audit detaylarini goster / gizle">
+    <div className="sohbet-sayfa">
+      {/* === SOL: Sohbet geçmişi paneli === */}
+      <aside className={`sohbet-gecmis-panel ${gecmisAcik ? "acik" : "kapali"}`}>
+        <div className="sohbet-gecmis-icerik">
+          {/* Yeni Sohbet düğmesi */}
+          <button className="yeni-sohbet-dugme" onClick={yeniSohbet}>
+            <PlusOutlined />
+            <span>Yeni Sohbet</span>
+          </button>
+
+          {/* Sohbet listesi */}
+          {sohbetler.length === 0 ? (
+            <div className="sohbet-gecmis-bos">Henüz sohbet yok</div>
+          ) : (
+            <div className="sohbet-gecmis-liste">
+              {sohbetler.map((s) => (
+                <div
+                  key={s.id}
+                  className={`sohbet-gecmis-satir ${s.id === aktifId ? "aktif" : ""}`}
+                  onClick={() => sohbetSec(s.id)}
+                >
+                  <div className="sohbet-gecmis-satir-icerik">
+                    <div className="sohbet-gecmis-baslik">{s.baslik}</div>
+                    <div className="sohbet-gecmis-zaman">{zamanEtiketi(s.zaman)}</div>
+                  </div>
+                  <Popconfirm
+                    title="Silinsin mi?"
+                    onConfirm={(e) => {
+                      e?.stopPropagation();
+                      sohbetSil(s.id);
+                    }}
+                    onCancel={(e) => e?.stopPropagation()}
+                    okText="Sil"
+                    cancelText="Vazgeç"
+                  >
+                    <button
+                      className="sohbet-sil-dugme"
+                      onClick={(e) => e.stopPropagation()}
+                      aria-label="Sohbeti sil"
+                    >
+                      <DeleteOutlined />
+                    </button>
+                  </Popconfirm>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </aside>
+
+      {/* === SAĞ: Ana sohbet alanı === */}
+      <div className="sohbet-ana-alan">
+        {/* Geçmiş açma/kapama düğmesi */}
+        <div className="sohbet-ust-bar">
+          <button
+            className="gecmis-toggle-dugme"
+            onClick={() => setGecmisAcik((o) => !o)}
+            aria-label={gecmisAcik ? "Geçmişi kapat" : "Geçmişi aç"}
+            title={gecmisAcik ? "Geçmişi kapat" : "Geçmişi aç"}
+          >
+            {gecmisAcik ? <MenuFoldOutlined /> : <MenuUnfoldOutlined />}
+          </button>
+
+          {/* Sara'nin Audit gorunumu + sohbet temizleme */}
+          <div className="sohbet-ust-bar-sag">
             <Button
+              size="small"
               icon={<InfoCircleOutlined />}
               onClick={() => setAuditAcik((a) => !a)}
               type={auditAcik ? "primary" : "default"}
-              size="small"
+              title="Audit detaylarını göster / gizle"
             >
               Audit
             </Button>
-          </Tooltip>
-          <Tooltip title="Sohbet gecmisini temizle">
-            <Button
-              icon={<ClearOutlined />}
-              onClick={sohbetiTemizle}
-              size="small"
-              disabled={bos}
-              danger
+            <Popconfirm
+              title="Bu sohbetin mesajları silinsin mi?"
+              okText="Sil"
+              cancelText="Vazgeç"
+              onConfirm={aktifSohbetiTemizle}
             >
-              Temizle
-            </Button>
-          </Tooltip>
-        </Space>
-      </div>
-
-      {/* Mesaj listesi */}
-      <Card
-        ref={mesajListesiRef}
-        styles={{ body: { padding: 16, height: "100%", overflowY: "auto" } }}
-        style={{ flex: 1, minHeight: 0, overflowY: "auto" }}
-      >
-        {bos ? (
-          /* Bos durum - ornek sorular */
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              height: "100%",
-              gap: 20,
-              opacity: 0.85,
-            }}
-          >
-            <RobotOutlined style={{ fontSize: 48, color: "#1677ff" }} />
-            <Title level={4} style={{ margin: 0 }}>
-              Merhaba! Kampanyalar hakkinda sorularinizi yanitliyorum.
-            </Title>
-            <Text type="secondary" style={{ textAlign: "center", maxWidth: 480 }}>
-              Kar payi oranlarini karsilastirir, taksit hesabi yapabilir,
-              terminoloji sozlugune danisabilir veya kampanya hakkinda serbest
-              soru sorabilirsiniz.
-            </Text>
-            <Space wrap style={{ justifyContent: "center" }}>
-              {ORNEK_SORULAR.map((s, i) => (
-                <Button
-                  key={i}
-                  size="small"
-                  onClick={() => gonder(s)}
-                  disabled={bekleniyor}
-                  style={{ maxWidth: 320, whiteSpace: "normal", height: "auto", padding: "4px 8px" }}
-                >
-                  {s}
-                </Button>
-              ))}
-            </Space>
+              <Button
+                size="small"
+                danger
+                icon={<ClearOutlined />}
+                disabled={mesajlar.length === 0}
+                title="Sohbet mesajlarını temizle"
+              >
+                Temizle
+              </Button>
+            </Popconfirm>
           </div>
-        ) : (
-          <>
-            {mesajlar.map((m, i) => (
-              <div key={i} style={{ marginBottom: 16 }}>
-                {/* Mesaj baloncugu */}
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: m.rol === "kullanici" ? "row-reverse" : "row",
-                    alignItems: "flex-start",
-                    gap: 8,
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: "50%",
-                      background: m.rol === "kullanici" ? "#1677ff" : "#52c41a",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                    }}
+        </div>
+
+        {/* Mesaj akışı veya boş ekran */}
+        <div className="sohbet-mesaj-alani">
+          {mesajlar.length === 0 && !bekleniyor ? (
+            /* === BOŞ EKRAN === */
+            <div className="sohbet-bos-ekran">
+              <div className="sohbet-bos-amblem">NN</div>
+              <h2 className="sohbet-bos-baslik">Size nasıl yardımcı olabilirim?</h2>
+              <p className="sohbet-bos-aciklama">
+                Katılım bankası kampanyaları, karşılaştırma ve finansman hesaplaması hakkında soru sorun.
+              </p>
+              <div className="sohbet-ornek-grid">
+                {ORNEK_SORULAR.map((ornek, i) => (
+                  <button
+                    key={i}
+                    className="sohbet-ornek-kart"
+                    onClick={() => ornekSoruGonder(ornek.soru)}
                   >
-                    {m.rol === "kullanici" ? (
-                      <UserOutlined style={{ color: "#fff", fontSize: 14 }} />
-                    ) : (
-                      <RobotOutlined style={{ color: "#fff", fontSize: 14 }} />
+                    <span className="sohbet-ornek-ikon">{ornek.ikon}</span>
+                    <span className="sohbet-ornek-baslik">{ornek.baslik}</span>
+                    <span className="sohbet-ornek-soru">{ornek.soru}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            /* === MESAJ AKIŞI === */
+            <div className="sohbet-mesaj-listesi">
+              {mesajlar.map((m, i) => {
+                const kullaniciMi = m.rol === "kullanici";
+                return (
+                  <div
+                    key={i}
+                    className={`sohbet-mesaj-satiri ${kullaniciMi ? "kullanici" : "asistan"}`}
+                  >
+                    {/* Avatar */}
+                    {!kullaniciMi && (
+                      <div className="sohbet-avatar asistan-avatar">NN</div>
+                    )}
+                    <div className={`sohbet-balon ${kullaniciMi ? "kullanici-balon" : "asistan-balon"}`}>
+                      <ChatMesaji mesaj={m} />
+
+                      {/* Audit gorunumu acikken hizli ozet. Ayrintili
+                          inceleme Juri Audit Paneli'nde yapilir. */}
+                      {auditAcik && !kullaniciMi && m.auditHam && (
+                        <div className="sohbet-audit-ozet">
+                          <div className="sohbet-audit-satir">
+                            <InfoCircleOutlined />
+                            <span>
+                              niyet: <strong>{m.auditHam.intent ?? "—"}</strong>
+                              {m.auditHam.intent_confidence != null && (
+                                <> (güven {m.auditHam.intent_confidence})</>
+                              )}
+                              {" · "}araç: <strong>{m.auditHam.cagrilan_arac ?? "—"}</strong>
+                              {m.auditHam.latency_ms != null && (
+                                <> · {m.auditHam.latency_ms} ms</>
+                              )}
+                            </span>
+                          </div>
+                          <div className="sohbet-audit-not">
+                            Model adayları, RAG benzerlik skorları ve çıkarım
+                            çatışmaları için sol menüdeki{" "}
+                            <strong>Jüri Audit Paneli</strong>'ne bakın.
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    {kullaniciMi && (
+                      <div className="sohbet-avatar kullanici-avatar">
+                        <UserOutlined />
+                      </div>
                     )}
                   </div>
-                  <div
-                    style={{
-                      maxWidth: "80%",
-                      background: m.rol === "kullanici" ? "#1677ff" : "rgba(0,0,0,0.04)",
-                      borderRadius: 12,
-                      padding: "8px 14px",
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: m.rol === "kullanici" ? "#fff" : "inherit",
-                        whiteSpace: "pre-wrap",
-                      }}
-                    >
-                      {m.metin}
-                    </Text>
-                    {m.streaming && <span style={{ opacity: 0.6 }}>▍</span>}
-                  </div>
-                </div>
+                );
+              })}
 
-                {/* Arac etiketi */}
-                {m.cagrilanArac && (
-                  <div style={{ marginLeft: 40, marginTop: 4 }}>
-                    <Tag color={ARAC_RENKLERI[m.cagrilanArac] ?? "default"}>
-                      {m.cagrilanArac}
-                    </Tag>
-                  </div>
-                )}
+              {/* Bekleme balonu */}
+              <BeklemeBalonu bekleniyor={bekleniyor} />
 
-                {/* ChatMesaji: kaynak, terminoloji, fallback bilgileri */}
-                {m.rol === "bot" && (
-                  <div style={{ marginLeft: 40, marginTop: 4 }}>
-                    <ChatMesaji mesaj={{ ...m, metin: "" }} />
-                  </div>
-                )}
+              {/* Kaydırma hedefi */}
+              <div ref={mesajSonuRef} />
+            </div>
+          )}
+        </div>
 
-                {/* Audit detay blogu (toggle ile) */}
-                {auditAcik && m.auditHam && (
-                  <div style={{ marginLeft: 40, marginTop: 4 }}>
-                    <Collapse
-                      size="small"
-                      items={[
-                        {
-                          key: "audit",
-                          label: (
-                            <Space>
-                              <InfoCircleOutlined />
-                              <Text type="secondary" style={{ fontSize: 12 }}>
-                                Audit — niyet: {m.auditHam.intent} | gecikme:{" "}
-                                {m.auditHam.latency_ms} ms
-                              </Text>
-                            </Space>
-                          ),
-                          children: (
-                            <div style={{ fontSize: 13, background: "#fafafa", padding: "8px 12px", borderRadius: 6, border: "1px dashed #d9d9d9" }}>
-                              <Text type="secondary">
-                                📊 Bu sorguya ait detaylı <strong>Model Adayları</strong>, <strong>RAG Benzerlik Skorları</strong> ve <strong>Çıkarım Çatışmaları (Conflict Resolution)</strong> gibi bilgileri sol menüdeki <strong>Jüri Audit Paneli</strong> sekmesinden inceleyebilirsiniz.
-                              </Text>
-                            </div>
-                          ),
-                        },
-                      ]}
-                    />
-                  </div>
-                )}
-              </div>
-            ))}
-
-            {bekleniyor && (
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  marginLeft: 40,
-                }}
-              >
-                <Spin size="small" />
-                <Text type="secondary">Yanit hazirlaniyor…</Text>
-              </div>
-            )}
-          </>
-        )}
-      </Card>
-
-      {/* Girdi alani */}
-      <div
-        style={{
-          paddingTop: 12,
-          flexShrink: 0,
-          display: "flex",
-          gap: 8,
-        }}
-      >
-        <Input.TextArea
-          ref={girdiBileseniRef}
-          value={girdi}
-          onChange={(e) => setGirdi(e.target.value)}
-          onKeyDown={klavyeBasildi}
-          placeholder="Örn: Kuveyt Türk kar payi orani ne? (Enter gonder, Shift+Enter yeni satir)"
-          disabled={bekleniyor}
-          autoSize={{ minRows: 1, maxRows: 4 }}
-          style={{ flex: 1 }}
-        />
-        <Tooltip title="Gonder (Enter)">
-          <Button
-            type="primary"
-            icon={<SendOutlined />}
-            onClick={() => gonder()}
-            loading={bekleniyor}
-            disabled={!girdi.trim()}
-            style={{ height: "auto", alignSelf: "flex-end" }}
-          >
-            Gonder
-          </Button>
-        </Tooltip>
+        {/* === ALTTAKİ YAZMA ALANI === */}
+        <div className="sohbet-yazma-alani">
+          <div className="sohbet-yazma-kutu">
+            <Input.TextArea
+              ref={girdiFocusRef}
+              value={girdi}
+              onChange={(e) => setGirdi(e.target.value)}
+              onKeyDown={tusYakala}
+              placeholder="Örn: A Bankası'nın konut finansmanı oranı ne?"
+              disabled={bekleniyor}
+              autoSize={{ minRows: 1, maxRows: 4 }}
+              className="sohbet-textarea"
+            />
+            <Button
+              type="primary"
+              shape="circle"
+              icon={<SendOutlined />}
+              onClick={() => gonder()}
+              disabled={bekleniyor || !girdi.trim()}
+              className="sohbet-gonder-dugme"
+            />
+          </div>
+          <div className="sohbet-yazma-not">
+            Yanıtlar kaynak gösterir; kaynak bulunamazsa sistem cevap üretmez.
+          </div>
+        </div>
       </div>
     </div>
   );

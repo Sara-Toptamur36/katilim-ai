@@ -121,16 +121,50 @@ export default function AuditPanel() {
         </Card>
       )}
 
-      <Card
-        title="Ham Audit JSON"
-        size="small"
-        extra={<KopyalaButonu metin={JSON.stringify(sonAudit, null, 2)} />}
-        style={{ marginBottom: 24 }}
-      >
-        <pre style={{ background: "#f5f5f5", padding: 12, maxHeight: 300, overflow: "auto" }}>
-          {JSON.stringify(sonAudit, null, 2)}
-        </pre>
-      </Card>
+      {sonAudit.dogrulama && (
+        <Card
+          title="Çıkarım ve Doğrulama (Extraction Audit)"
+          size="small"
+          style={{ marginBottom: 24, borderLeft: "4px solid #52c41a" }}
+        >
+          <Descriptions size="small" column={2}>
+            <Descriptions.Item label="Doğrulama Durumu">
+              <Tag color={
+                sonAudit.dogrulama.durum === "dogrulandi" ? "green" :
+                sonAudit.dogrulama.durum === "kismi" ? "warning" : "default"
+              }>
+                {sonAudit.dogrulama.durum.toUpperCase()}
+              </Tag>
+            </Descriptions.Item>
+            <Descriptions.Item label="Kaynak">
+              {sonAudit.dogrulama.kaynak}
+            </Descriptions.Item>
+          </Descriptions>
+          {sonAudit.dogrulama.alanlar && sonAudit.dogrulama.alanlar.length > 0 && (
+            <Table
+              size="small"
+              dataSource={sonAudit.dogrulama.alanlar}
+              rowKey="alan"
+              pagination={false}
+              columns={[
+                { title: "Alan", dataIndex: "alan", key: "alan" },
+                { title: "Kullanılan Değer", dataIndex: "kullanilan_deger", key: "kullanilan_deger" },
+                {
+                  title: "Doğrulandı mı?",
+                  dataIndex: "dogrulandi_mi",
+                  key: "dogrulandi_mi",
+                  render: (v) => <Tag color={v ? "green" : "red"}>{v ? "Evet" : "Hayır"}</Tag>
+                },
+                { title: "Gerekçe", dataIndex: "gerekce", key: "gerekce" },
+              ]}
+              style={{ marginTop: 12 }}
+            />
+          )}
+          <Typography.Text type="secondary" style={{ fontSize: 12, display: "block", marginTop: 8 }}>
+            Not: Model adayları, evidence span ve conflict kararları (Regex vs NER) backend servisine eklendiğinde burada görüntülenecektir.
+          </Typography.Text>
+        </Card>
+      )}
 
       {sonAudit.retriever_sonuclari && sonAudit.retriever_sonuclari.length > 0 && (
         <Table

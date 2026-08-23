@@ -5,8 +5,14 @@ import shutil
 import tempfile
 from pathlib import Path
 
+import pytest
+
 from gold_dataset import split_manifest_uret as split_modulu
-from gold_dataset.split_manifest_uret import _gercek_kayitlari_yukle, split_uret
+from gold_dataset.split_manifest_uret import (
+    _gercek_kayitlari_yukle,
+    _url_kume_anahtarlari,
+    split_uret,
+)
 
 _GOLD_DIZINI = Path(__file__).resolve().parent.parent / "gold_dataset"
 _GOLD_DOSYASI = _GOLD_DIZINI / "altin_veri_seti.json"
@@ -117,7 +123,47 @@ def test_yeni_kayit_eklenince_eski_atamalar_degismez():
     sizan = eski_train & yeni_test
     assert not kacan, f"test'ten train'e kayan kayitlar: {sorted(kacan)}"
     assert not sizan, f"train'den test'e kayan kayitlar: {sorted(sizan)}"
-    assert genisletilmis["yeni_atanan_url"] == 12
+    # Simule URL'ler korpusta olmadigi icin kumelenemez; her biri kendi
+    # kumesi sayilir.
+    assert genisletilmis["yeni_atanan_kume"] == 12
+
+
+def test_ayni_sablon_kumesi_iki_tarafa_bolunmez():
+    """Sablon sizintisi - olculdu ve kapatildi.
+
+    URL bazli split iki AYRI kampanyayi farkli taraflara koyabiliyordu,
+    oysa metinleri neredeyse ayniydi: "Akaryakit Harcamalariniza 300 TL
+    ParafPara" (TEK-003, train) ile "Ucak Bileti Harcamalariniza 2.000 TL
+    ParafPara" (TEK-006, test) ayni kalibin iki ornegi. Motor kalibi
+    train'de gorup test'te taniyacagi icin olcum siserdi. Ayni durum
+    KT-012/KT-014'te de vardi.
+
+    Bu, mentorluk raporu II Bolum 5.4'teki sizinti uyarisinin daha ince
+    hali: ayni kampanya degil, ayni SABLON."""
+    manifest = split_uret()
+    with open(_GOLD_DOSYASI, encoding="utf-8") as f:
+        kayit_url = {k["kayit_id"]: k["kaynak_url"] for k in json.load(f)}
+
+    kume_anahtari, sorun = _url_kume_anahtarlari(sorted(set(kayit_url.values())))
+    if sorun:
+        pytest.skip(f"kumeleme yapilamadi: {sorun}")
+
+    def kumeler(kayit_idler):
+        return {kume_anahtari[kayit_url[kid]] for kid in kayit_idler}
+
+    ortak = kumeler(manifest["train"]) & kumeler(manifest["test"])
+    assert not ortak, f"ayni sablon kumesi hem train hem test'te: {sorted(ortak)}"
+
+
+def test_kumeleme_sessizce_atlanmaz():
+    """Kumeleme calismadiysa manifest bunu SOYLEMELI.
+
+    Sessiz dususte split sizintisiz GORUNUR ama degildir - uretilen
+    manifest'e bakan biri farki anlayamaz."""
+    manifest = split_uret()
+    assert "kumeleme" in manifest
+    assert manifest["kumeleme"] == "uygulandi" or \
+        manifest["kumeleme"].startswith("UYGULANAMADI - "), manifest["kumeleme"]
 
 
 def test_test_seti_bos_degil_ve_makul_oranda():

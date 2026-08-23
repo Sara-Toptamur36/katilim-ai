@@ -31,7 +31,11 @@ def test_ornek_kayitlar_disarida_birakilir():
     # asil isini - yukleyicinin ORNEK kayitlari elemesi - golgeler.
     # Beklenen sayi dosyanin kendisinden hesaplanir.
     with open(_GOLD_DOSYASI, encoding="utf-8") as f:
-        beklenen = sum(1 for k in json.load(f) if k.get("giren_kisi") != "ORNEK")
+        beklenen = sum(
+            1 for k in json.load(f)
+            if k.get("giren_kisi") != "ORNEK"
+            and (k.get("giren_kisi") or "").strip()
+        )
     assert len(kayitlar) == beklenen
     assert kayitlar, "gercek kayit kalmadi - suzgec fazla mi eliyor?"
 

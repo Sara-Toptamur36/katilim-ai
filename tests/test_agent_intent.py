@@ -57,6 +57,24 @@ def test_gercek_hesaplama_sorusu_kapsam_disiyla_karismaz():
     assert niyet == Niyet.HESAPLAMA
 
 
+def test_tanim_sorusu_karsilastirmayla_karismaz():
+    """23 Agustos 2026 duzeltmesi: 'fark ne' -> 'fark ne kadar' yapildi.
+    'X ile Y arasindaki fark nedir' bir TANIM sorusudur (terminology/
+    sozluk.json'da tanimli), gercek bir kampanya karsilastirmasi degil -
+    SOZLUK'a gitmeli, KARSILASTIRMA'ya degil."""
+    niyet, _ = niyet_tespit_et("Mudarebe ile musareke arasindaki fark nedir?")
+    assert niyet == Niyet.SOZLUK
+
+
+def test_miktar_farki_sorusu_hala_karsilastirmaya_gider():
+    """Duzeltme gercek karsilastirma sorularini kirmamali - 'fark ne kadar'
+    somut bir miktar farki soruyor, bu gercekten KARSILASTIRMA'dir."""
+    niyet, _ = niyet_tespit_et(
+        "Kuveyt Türk ile Albaraka Türk arasındaki kâr payı farkı ne kadar?"
+    )
+    assert niyet == Niyet.KARSILASTIRMA
+
+
 def test_bilinmeyen_soru_bilinmiyor_doner():
     """Belirsizlik gizlenmez - acikca BILINMIYOR + 0.0 guven doner
     (rapor Bolum 5.7/15 ile ayni seffaflik ilkesi)."""

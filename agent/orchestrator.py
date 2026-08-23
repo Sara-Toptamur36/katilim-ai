@@ -88,7 +88,7 @@ _TERMINOLOJI_BILGI_NOTU_ARACLARI = {"rag", "dictionary"}
 _VARSAYILAN_ZAMAN_ASIMI_SN = float(os.environ.get("KATILIMAI_ARAC_ZAMAN_ASIMI", "900"))
 
 
-def _arac_cagir_zaman_asimi(fonksiyon, *args, zaman_asimi_sn: float = _VARSAYILAN_ZAMAN_ASIMI_SN) -> dict[str, Any]:
+def _arac_cagir_zaman_asimi(fonksiyon, *args, zaman_asimi_sn: float | None = None) -> dict[str, Any]:
     """Arac fonksiyonunu ayri thread'de calistirip zaman asimini denetler.
 
     Donanim profili (donanim.py) GPU/CPU'ya gore otomatik ayar seciyor;
@@ -96,6 +96,12 @@ def _arac_cagir_zaman_asimi(fonksiyon, *args, zaman_asimi_sn: float = _VARSAYILA
     sessiz kilitlenmeyi onler: esik asilirsa aninda fallback mesaji doner,
     hicbir exception kaybedilmez, audit'e sebep yazilir.
     """
+    # None kontrolu: varsayilan argumani modul degiskenine baglamamak icin
+    # burada okunuyor. Boylece patch("...._VARSAYILAN_ZAMAN_ASIMI_SN", X)
+    # testlerde dogru calisir; davranis hic degismez.
+    if zaman_asimi_sn is None:
+        zaman_asimi_sn = _VARSAYILAN_ZAMAN_ASIMI_SN
+
     sonuc: dict[str, Any] = {}
     hata: list[Exception] = []
 

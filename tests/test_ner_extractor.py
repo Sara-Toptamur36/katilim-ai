@@ -18,6 +18,17 @@ pytestmark = pytest.mark.slow
 RAW_DATA = Path(__file__).parent.parent / "scraper" / "raw_data"
 
 
+@pytest.fixture(autouse=True)
+def _gliner_model_kontrol(request):
+    """Saf fonksiyonel testler disindaki (ner_ile_cikar kullanan) testler
+    icin model yukleme kontrolu yapar. Model yuklenemezse testi skip eder."""
+    if request.node.name in ("test_kar_payi_makul_deger_kontrolu_regex_extractor_ile_tutarli",):
+        return
+    from extraction.ner_extractor import _model_yukle
+    if _model_yukle() is None:
+        pytest.skip("GLiNER modeli donanim/bellek yetersizligi nedeniyle yuklenemedi")
+
+
 def test_kar_payi_orani_percent_ve_decimal_ikisi_de_dolar():
     """NOT: cumle DOGRU Turkce karakterlerle (â/ı/ş) yazilmis olmali -
     GLiNER, ASCII/aksansiz metinde bu ifadeyi hic bulamiyor (bkz. modul

@@ -19,6 +19,9 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 | **Sprint 5** | Terminoloji sözlüğü genişletildi + kapsam ölçümü (karşı-örnek seti) | ✅ Tamamlandı |
 | | Rakip analizi matrisi, kampanya etki skoru | ✅ Tamamlandı |
 | | Kampanya değişim tarihçesi, Verifier sonucunun kalıcılaştırılması | ✅ Tamamlandı |
+| **Tamamlamalar** | Verifier → ajan yanıt yoluna bağlandı (karşılaştırma + toplam maliyet) | ✅ Tamamlandı |
+| | Zaman aşımı tabanlı kademeli fallback (`KATILIMAI_ARAC_ZAMAN_ASIMI`) | ✅ Tamamlandı |
+| | RAG exact arama modu (`KATILIMAI_RAG_EXACT_MOD=true`) — Recall@1 kararlı | ✅ Tamamlandı |
 
 ### Ölçülebilir durum
 
@@ -151,8 +154,8 @@ PostgreSQL                 Semantik parcalama → Embedding
                     ↓        └─ hibrit arama (yogun+seyrek, RRF)
                     ↓           + abstention + citation
     Response Generator → Terminoloji Kontrolu                [✓]
-    → Verifier (modul hazir, cikarimda kullaniliyor;
-      ajan yanit yoluna henuz baglanmadi)                    [~]
+    → Zaman asimi tabanlı fallback (KATILIMAI_ARAC_ZAMAN_ASIMI) [✓]
+    → Verifier (karsilastirma + toplam maliyet yoluna baglandi) [✓]
                     ↓
     Dashboard · Chatbot · Juri Audit Paneli                  [✓]
 ```
@@ -525,8 +528,6 @@ Ayrıntı: [`complaint/kampanya_eslestirme.py`](complaint/kampanya_eslestirme.py
 Aşağıdakiler hedef mimaride yer alır ancak **bu depoda henüz tamamlanmamıştır**;
 tasarım ilkesi olarak sunulmakla birlikte uçtan uca çalışan bir özellik değildir:
 
-- **Zaman aşımına bağlı otomatik fallback:** ölçülmüş bir p95 eşiğine göre
-  deterministik katmana düşme.
 - **LLM ile yanıt özetleme:** RAG şu an bulduğu kaynak parçalarını *birebir*
   döndürür, üzerine serbest metin üretmez — bu, halüsinasyonu yapısal olarak
   imkânsız kılar. Özetleme ancak Verifier ile birlikte güvenli olur.

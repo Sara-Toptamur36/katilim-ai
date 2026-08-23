@@ -100,6 +100,62 @@ ALARM_VERMESI_BEKLENEN_SAYFALAR = {
     # kural gecerli) flaglenmeye devam etmeli.
     "hayatfinans_kampanyalar_bana-bunu-al-is-ortagim-ile-troy-magaza-firsatlari",
     "hayatfinans_kampanyalar_xiaomi-urunlerinde-finansman-avantaji",
+    # Turkiye Finans (18 Agustos 2026 genisletmesi - config'e eklenen 9 yeni
+    # kategori sayfasi sonrasi bulundu): "Iş Bankasi, Yapı Kredi ve PTT
+    # ATM'sinden komisyonsuz..." - ATM agi ortakligi acikliyor. "Kredi"
+    # burada REKABETCI BASKA BIR BANKANIN OZEL ADI (Yapı Kredi Bankasi),
+    # katilim bankasinin kendi terminolojisi degil - istisna listesi bunu
+    # ayirt edemiyor (Yagmur'a bildirildi, tutarlilik_kontrolu.py'de ozel
+    # isim/rakip banka istisnasi eklenmesi degerlendirilebilir).
+    "turkiyefinans_tr-tr_kampanyalar_Sayfalar_emeklilere-nakit-promosyon",
+    "turkiyefinans_tr-tr_kampanyalar_Sayfalar_masrafsiz-bankacilik",
+    # Ayni "Yapı Kredi" ATM ortakligi cumlesi + zaten bilinen "resmi olarak
+    # Ihtiyac Kredisi olarak da nitelendirilmekte" kalibi (yukaridaki
+    # ihtiyac-finansmani sayfalariyla ayni ilke).
+    "turkiyefinans_tr-tr_kampanyalar_Sayfalar_turkiye-finans-avantajlariyla-mobilden-tanis",
+    # "TL Katılım Mevduatı Tanışma Kampanyası" - bankanin KENDI kampanya
+    # adi; "mevduat" kokunun (kredi'nin aksine) hic mesru istisnasi
+    # tanimlanmamis - bu bilerek boyle: bankanin oz markalamasinda bile
+    # "mevduat" gecmesi, katilim terminolojisine tam uyumun ne kadar
+    # kirilgan oldugunu gosteren gercek bir bulgu, gizlenmemeli.
+    "turkiyefinans_tr-tr_kampanyalar_Sayfalar_katilim-hesabi-kampanyasi",
+    # T.O.M. Katilim'in "Hadi" mikrositesi (tombankhadi, 18 Agustos 2026'da
+    # eklendi): HER sayfanin sonunda "Ilginizi Cekebilir" onizleme bloğu
+    # var, bu blok "Hadi Alisveris Kredisi ile Klima, Supurge ve
+    # Televizyonlarda Vade Farksiz 12 Taksit" adli BASKA bir kampanyanin
+    # adini sizdiriyor - Albaraka'nin capraz-kampanya kirlenmesiyle
+    # (preprocessing/kapsam.py) AYNI desen, sadece bu mikrositede henuz
+    # ayri bir temizlik tetikleyicisi yok (dar kapsamli, tum sayfalarda
+    # tek ve ayni sizinti - ölçek buyurse kapsam.py'ye eklenebilir).
+    "tombankhadi_kampanyalar_a101de-her-alisveriste-3-nakit-iade",
+    "tombankhadi_kampanyalar_a101lerde-sut-urunleri-harcamalarinda-50-hediye-bakiye-kazan",
+    "tombankhadi_kampanyalar_cok-kazananlar-kulubu-kat-kat-kazandiran-kampanyalari-ile-seninle",
+    "tombankhadi_kampanyalar_hadi-black-karti-ile-restoderm-alisverislerinde-30-indirim",
+    "tombankhadi_kampanyalar_hafta-sonu-restoran-harcamalarinda-7-5-iade-ustelik-cok-kazananlar-kulubune-ozel-15-iade",
+    "tombankhadi_kampanyalar_pegasus-davet-koduyla-tom-bank-hadi-musterisi-ol-pegasus-harcamalarindan-3-500-tlye-varan-iade-kazan",
+    "tombankhadi_kampanyalar_toplam-1500-tl-hos-geldin-hediyesi-tom1500-koduyla-musterimiz-ol-1500-tl-senin-olsun",
+    "tombankhadi_kampanyalar_tum-market-harcamalarinda-secimini-yap-5-iade-kazan",
+    "tombankhadi_kampanyalar_vergi-kampanyasi",
+    # Bu sayfanin KENDI kampanya adi zaten "Hadi Alisveris Kredisi" -
+    # bankanin oz urun ismi, yukaridaki sizinti degil dogrudan kaynak.
+    "tombankhadi_kampanyalar_hadi-alisveris-kredisi-ile-klima-supurge-ve-televizyonlarda-vade-farksiz-12-taksit",
+    # Sitemap genisletmesi (18 Agustos 2026) sonrasi bulunan yeni desenler:
+    # Albaraka - "aradaki fark kullanicIya kredi olarak iade edilmeyecektir"
+    # (genel "hesaba alacak yazma" anlaminda "kredi", borc/finansman degil -
+    # Ingilizce'deki "account credit" ile ayni kullanim).
+    "albaraka_tr_kampanyalar_detay_2026_uberde-ilk-yolculukta-80-indirim",
+    # Kuveyt Turk KOBI/tarim kampanyalari - "basvuru sahibinin kredi
+    # degerlendirme sonucuna gore" - "kredi degerlendirmesi" (risk/underwriting
+    # sureci), zaten mesru sayilan "kredi skoru/notu" ile AYNI terim ailesi
+    # (tutarlilik_kontrolu.py'nin guvenli_sonraki_kelime_onekleri listesine
+    # "degerlendirme" eklenmesi Yagmur'a onerildi, henuz eklenmedi).
+    "kuveytturk_kampanyalar_isim-icin_kobi-kampanyalari_kuveyt-turkten-kfk-destekli-yatirim-finansmani",
+    "kuveytturk_kampanyalar_isim-icin_kobi-kampanyalari_tarimda-kuveyt-turk-ile-buyume-zamani",
+    "kuveytturk_kampanyalar_kendim-icin_finansman-kampanyalari_tarimda-kuveyt-turk-ile-buyume-zamani",
+    # "Alisveris Kredisi" burada da (T.O.M./Hadi'deki gibi) bir URUN ADI -
+    # Kuveyt Turk'un kendi odeme secenegi markalamasi, katilim terminolojisi
+    # ihlali degil dogrudan kaynak metindeki resmi urun ismi.
+    "kuveytturk_kampanyalar_kendim-icin_musteri-ol-kampanyalari_evlenecek-olan-veya-yeni-evli-ciftlere-kuveyt-turkten-mujde-evlilik-paketi",
 }
 
 

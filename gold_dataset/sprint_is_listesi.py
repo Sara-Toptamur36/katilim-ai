@@ -54,18 +54,25 @@ kampanya olabilir. Karar, T.O.M. ornegindeki gibi, insanindir.
 --------------------------------------------------------------------------
 DENGE ILE HACIM CATISIYOR - OLCULMUS GERCEK
 --------------------------------------------------------------------------
-Ham korpus banka bazinda cok dengesizdir (bkz. ciktidaki tablo): iki
-banka toplam kampanyalarin buyuk cogunlugunu olusturur, iki banka ise
-3'er kampanyaya sahiptir. Bu yuzden "200-300 kayit" ve "bankalar arasi
-denge" AYNI ANDA saglanamaz:
+Ham korpus banka bazinda dengesizdir (bkz. ciktidaki tablo). Bu yuzden
+"200-300 kayit" ve "bankalar arasi denge" AYNI ANDA saglanamaz:
 
   - Tam denge istenirse tavan, en az kampanyaya sahip bankanin sayisidir
-  - Hacim istenirse set kacinilmaz olarak iki bankaya kayar
+  - Hacim istenirse set kacinilmaz olarak en buyuk bankalara kayar
 
 Bu script ikisinin arasini KOTA ile bulur: her bankadan en fazla `--kota`
 kampanya onerilir. Kota disinda kalanlar listeye girmez; boylece hedef
 sayiya ulasilirken tek bir bankanin sayfa uslubu olcumu domine etmez.
 Kalan dengesizlik ciktida ACIKCA yazilir - gizlenmez.
+
+GUNCELLEME (22 Agustos 2026): 21 Agustos'taki sitemap.xml taramasi 4
+bankada +198 kampanya bulunca dengesizligin sekli degisti - "iki banka
+cogunluk, iki banka 3'er kampanya" artik dogru degil (bkz. ciktidaki
+guncel tablo: en kucuk banka bile artik 3'ten fazla, ama en buyuk uc
+banka 80-109 arasinda). Kota=30 ile ulasilabilir toplam artik 200
+hedefini asiyor (bkz. tests/test_sprint_is_listesi.py::
+test_hedef_karsilaniyorsa_bu_GIZLENMEZ) - yani darbogaz artik korpus
+hacmi degil, ETIKETLEME SURESI.
 
 Kullanim:
     python -m gold_dataset.sprint_is_listesi
@@ -291,6 +298,14 @@ def _baslik(kayit: dict) -> str:
             continue
         if sade[0].islower():
             continue  # cumle ortasi
+        # CUMLE SONU BAGLACI = SATIR YARIM KALMIS. Olculdu: korpus
+        # buyudukten sonra "Paraf ile A101 Magazalarinda ve" ve
+        # "Hizli Cicek mobil uygulamasindan dilediginiz urunu sepete
+        # ekleyin," gibi satirlar baslik seciliyordu - ikisi de slug'la
+        # ortusuyor ama kampanyayi TANITMIYOR, cumlenin ortasindan
+        # kesilmis.
+        if sade.rstrip().endswith((" ve", " ile", " veya", ",", ";", ":")):
+            continue
         satir_kelimeleri = {
             k for k in re.split(r"[^a-z0-9]+", kucuk) if len(k) >= 4
         }
@@ -1061,9 +1076,15 @@ def main() -> None:
             print("  Kota YOK; havuzdaki her benzersiz kume zaten listede.")
             print("  Aradaki fark ancak YENI VERI TOPLAYARAK kapanir.")
     elif sum(r["kalan_kume"].values()):
-        print(f"\n  200 hedefi karsilaniyor. Kotaya takilip listeye giremeyen "
-              f"{sum(r['kalan_kume'].values())} benzersiz kume var;\n  hacim daha da "
-              f"gerekirse kota yukseltilebilir (denge bedeliyle).")
+        kalan = sum(r["kalan_kume"].values())
+        # NEDEN LISTEYE GIREMEDILER: kota mi, hedef mi? Ikisi farkli sey ve
+        # farkli cozumleri var. Ilk surum kota YOKKEN bile "kotaya takildi"
+        # diyordu - okuyan yanlis dugmeye basardi.
+        sebep = ("banka kotasina takildi" if r["banka_basina_kota"] is not None
+                 else f"hedef ({r['hedef_yeni_kayit']}) doldugu icin siraya alinmadi")
+        print(f"\n  Hedef karsilaniyor. Listeye giremeyen {kalan} benzersiz "
+              f"kume {sebep};\n  daha fazla hacim gerekirse --hedef "
+              f"yukseltilebilir.")
 
     kg = r["kontrol_gerek"]
     if kg:

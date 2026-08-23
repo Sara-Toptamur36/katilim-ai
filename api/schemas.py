@@ -234,6 +234,27 @@ class MusteriSesiOrnekYanit(BaseModel):
     ornekler: list[MusteriSesiOrnek]
 
 
+class MusteriSesiYogunlukYanit(BaseModel):
+    """GET /musteri-sesi/yogunluk-ozeti yaniti.
+
+    GERCEK `sikayetler` tablosunu okur (complaint/toplama.py::yogunluk_ozeti).
+    Sentetik veri seti (MusteriSesiOrnekYanit) ile KARISTIRILMAZ - bu uc
+    nokta izin kapisi (complaint/izin_kapisi.py) acilana kadar hep
+    `toplam_sikayet: 0` doner; bu bir hata degil, dogru bos durumdur.
+
+    KIRMIZI CIZGI (Rehber_Zeynep_Veri.md): "Sikayet orani" denmez - musteri/
+    islem paydasi yoksa oran degildir. Bu yuzden `olcu` alani hep
+    "gozlenen_yogunluk"dur, hicbir yerde yuzde/oran uretilmez.
+    """
+
+    olcu: str = "gozlenen_yogunluk"
+    aciklama: str = (
+        "Adetlerdir, oran DEGILDIR - musteri/islem paydasi bilinmiyor."
+    )
+    toplam_sikayet: int
+    temalar: dict[str, int]
+
+
 class ChatIstek(BaseModel):
     soru: str = Field(..., min_length=1, max_length=500)
 

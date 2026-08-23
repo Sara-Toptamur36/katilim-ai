@@ -61,11 +61,60 @@ def test_kontrol_gerekenler_ATILMAZ_raporlanir(rapor):
     UC kaydi (TOM-001/002/003) TEK bir "kampanyalar.html" sayfasindan
     cikarilmis. Yani kategori kalibina uyan bir sayfa pekala coklu
     kampanya sayfasi olabilir. Karar insanindir; kod yalnizca siraya
-    sokar."""
+    sokar.
+
+    DENETIM BULGUSU (22 Agustos 2026): Bu test onceden "kontrol_gerek
+    listesi BOS OLAMAZ" diye sabit veriye guveniyordu - 22 Agustos'ta
+    korpusta gercekten bulunan 20 sahte "kampanya" (Kuveyt Turk/Turkiye
+    Finans/Ziraat'in saf navigasyon/kategori sayfalari, icerikleri
+    incelenip dogrulandi) temizlenince bu sabit varsayim kirildi. Liste
+    bos olmak ZORUNDA degil - korpus temizse bos olmasi DOGRU sonuctur.
+    Asil test edilmesi gereken, gercek veriye bagli olmayan MEKANIZMANIN
+    kendisi: kalip bilinen kategori-benzeri sluglari yakaliyor mu, ve
+    korpusta o kalibla eslesen HERHANGI bir slug varsa mutlaka
+    kontrol_gerek'e giriyor mu (sessizce kaybolmuyor mu)."""
+    from gold_dataset.sprint_is_listesi import KONTROL_GEREK_KALIBI, _ham_kampanyalar
+
     assert "kontrol_gerek" in rapor
-    assert rapor["kontrol_gerek"], "kontrol listesi bos - kalip calisiyor mu?"
     for x in rapor["kontrol_gerek"]:
         assert x.get("url"), "kontrol icin URL sart - sayfa acilamazsa bakilamaz"
+
+    # Mekanizma dogru calisiyor mu (korpus durumundan BAGIMSIZ): bilinen
+    # kategori-benzeri sluglar yakalanmali, gercek kampanya sluglari
+    # yakalanmamali.
+    assert KONTROL_GEREK_KALIBI.search("kart-kampanyalari"), "kalip artik kategori sluglarini yakalamiyor"
+    assert KONTROL_GEREK_KALIBI.search("finansman-kampanyalari.aspx"), "kalip .aspx uzantili kategori sluglarini yakalamiyor"
+    assert not KONTROL_GEREK_KALIBI.search("12-aya-varan-taksit-firsati"), "kalip gercek bir kampanya sluguna yanlislikla uyuyor"
+
+    # Tamlik: korpusta kalipla eslesen bir slug VARSA, kontrol_gerek'te
+    # gorunmeli - sessizce ana listeye ya da hic bir yere girmemis olmasin.
+    # KONTROL LISTESINE IKI SEBEPLE GIRILIR, esitlik testi birini
+    # biliyordu ve digeri "tutarsizlik" gibi gorunuyordu:
+    #   (a) kategori kalibina uyan slug ("default.aspx"),
+    #   (b) ADRESINDE BOSLUK olan slug - Emlak Katilim'in
+    #       ".../kampanya/Paraf ile Hepsiburada'da ... Firsati!" adresi
+    #       kampanya sayfasi yerine bankanin ANA SAYFASINI donduruyor.
+    # Ikisi de "insan baksin" demek; ikisi de listede olmali.
+    kontrol_sluglar = {x["slug"] for x in rapor["kontrol_gerek"]}
+    gecerli_sebepler = {
+        slug for slug in _ham_kampanyalar()
+        if KONTROL_GEREK_KALIBI.search(slug) or " " in slug
+    }
+    # (i) Listede GECERSIZ bir sey olmamali.
+    assert kontrol_sluglar <= gecerli_sebepler, (
+        "kontrol_gerek'te ne kalip ne bosluk sebebi olan slug var: "
+        f"{sorted(kontrol_sluglar - gecerli_sebepler)[:5]}"
+    )
+    # (ii) Sebebi olan hicbir sayfa SESSIZCE kaybolmamali. Tek istisna:
+    # kumesi zaten etiketli olanlar - onlar icin yapilacak is kalmadi.
+    etiketli = {
+        (k.get("kaynak_url") or "").rstrip("/").split("/")[-1]
+        for k in json.load(open(GOLD, encoding="utf-8"))
+    }
+    kaybolanlar = gecerli_sebepler - kontrol_sluglar - etiketli
+    assert not kaybolanlar, (
+        f"kontrol sebebi olan sayfalar listeye girmemis: {sorted(kaybolanlar)[:5]}"
+    )
 
 
 def test_kota_asilmaz(rapor):
@@ -114,26 +163,35 @@ def test_baslik_banka_adinin_kendisi_DEGIL(rapor):
     assert not kotu, f"baslik banka adiyla basliyor: {kotu[:5]}"
 
 
-def test_hedefe_ulasilamiyorsa_bu_GIZLENMEZ(rapor):
-    """Korpus dengesizligi yuzunden 200 hedefine ulasilamiyor. Rapor
-    bunu sayilarla gostermeli ki plan gercege gore yapilsin - "liste
-    uretildi" deyip sessiz kalmak yanlis guven verirdi."""
+def test_hedef_karsilaniyorsa_bu_GIZLENMEZ(rapor):
+    """Rapor, hedefe ulasilip ulasilamadigini sayilarla gostermeli ki
+    plan gercege gore yapilsin - "liste uretildi" deyip sessiz kalmak
+    yanlis guven verirdi.
+
+    NOT (22 Agustos 2026): Bu test onceden tam tersini kontrol eden bir
+    "tripwire" idi - "bugunku korpusta 200 hedefine ulasilamiyor, korpus
+    buyudugunde bu test kirilsin ki fark edilsin" diye yazilmisti. 21
+    Agustos'taki sitemap.xml taramasi 4 bankada +198 kampanya bulunca
+    tam olarak bu oldu: tripwire kirildi, is gordu. Artik korpus hedefi
+    karsiliyor (bkz. asagidaki assert) - bu test o yeni gercegi kilitler.
+    Ayni desen: bir sonraki buyuk kesif korpusu daraltirsa (banka sitesi
+    degisir, kampanyalar kaldirilir vb.) bu test yine kirilir."""
     assert rapor["listelenen"] <= rapor["hedef_yeni_kayit"]
     assert "ulasilabilir_toplam" in rapor
-    # HEDEF ARTIK KARSILANIYOR - ve bu, testin ONCEKI halinin kirilmasiyla
-    # fark edildi. Once kota (30) tavani 166'da tutuyordu; kota kaldirildi
-    # ve kaynak sayfalar JS ile yeniden tarandi. Tazelenmis metinler daha
-    # dolu oldugu icin kumeleme, eskiden ayni gorunen sayfalari ayirt
-    # edebiliyor - benzersiz kume sayisi artti.
+    # HEDEF ARTIK KARSILANIYOR. Iki bagimsiz gelisme ayni sonuca goturdu:
+    # (1) kota kaldirildi ve kaynak sayfalar JS ile yeniden tarandi -
+    #     tazelenmis metinler daha dolu oldugu icin kumeleme, eskiden ayni
+    #     gorunen sayfalari ayirt edebiliyor;
+    # (2) sitemap taramasiyla korpusa yeni kampanyalar eklendi.
     #
     # Sart TERSINE cevrildi: bundan sonra hedefin ALTINA dusmek fark
-    # edilmeli. Duserse ya kayitlar silinmis ya da kumeleme fazla eliyor
-    # demektir; ikisi de sessiz kalmamali.
-    assert rapor["ulasilabilir_toplam"] >= 200, (
-        f"Ulasilabilir toplam 200'un ALTINA dustu: "
-        f"{rapor['ulasilabilir_toplam']} (mevcut {rapor['mevcut_altin_kayit']} "
-        f"+ kuyruk {rapor['listelenen']}). Kayit silinmis ya da kumeleme "
-        "fazla eliyor olabilir."
+    # edilmeli. Karsilastirma SABIT 200 degil, hedef parametresi uzerinden
+    # yapilir - hedef degisirse test onunla birlikte hareket eder.
+    assert rapor["ulasilabilir_toplam"] >= rapor["hedef_yeni_kayit"], (
+        f"Ulasilabilir toplam hedefin ALTINA dustu: "
+        f"{rapor['ulasilabilir_toplam']} < {rapor['hedef_yeni_kayit']} "
+        f"(mevcut {rapor['mevcut_altin_kayit']} + kuyruk {rapor['listelenen']}). "
+        "Kayit silinmis ya da kumeleme fazla eliyor olabilir."
     )
 
 
@@ -385,10 +443,17 @@ def test_kalan_kume_kotadan_dolayi_BEKLETILENLERDIR(rapor):
     """Kotaya takilip listeye giremeyen kumeler GIZLENMEZ - hacim
     gerekirse nereden gelecegi gorunur olmali."""
     for banka, sayi in rapor["kalan_kume"].items():
-        assert rapor["banka_basina_kota"] is not None, (
-            f"kota YOKKEN {banka} icin {sayi} kume beklemede kalmis - "
-            "havuzun tamami listeye girmeliydi"
-        )
+        # KOTA DISINDA IKINCI BIR SEBEP VAR: hedef dolmus olabilir.
+        # Korpus sitemap taramasiyla buyudukten sonra aday sayisi hedefi
+        # (200) astı; kota olmadan da kume beklemede kalabiliyor. Ilk
+        # surum bunu "havuzun tamami listeye girmeliydi" diye hata
+        # sayiyordu.
+        if rapor["banka_basina_kota"] is None:
+            assert rapor["listelenen"] >= rapor["hedef_yeni_kayit"], (
+                f"kota YOK ve hedef dolmamisken {banka} icin {sayi} kume "
+                "beklemede kalmis - havuzun tamami listeye girmeliydi"
+            )
+            continue
         assert rapor["banka_basina_secilen"].get(banka, 0) == rapor["banka_basina_kota"], (
             f"{banka} kotasi dolmadigi halde {sayi} kume beklemede"
         )

@@ -73,6 +73,14 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          # NOT (22 Agustos 2026): v0.1.1 denemesinde hazirlik_dogrulama
+          # "invalid reference format" (cikis 125) ile patlamisti; ilk
+          # supheli bu attestation'di ("digest bos gelebilir" bilinen bir
+          # davranis). provenance: false yine de makul bir varsayilan
+          # (daha kucuk/basit imaj) ama v0.1.2'de asil kok nedenin BASKA
+          # bir sey oldugu anlasildi (bkz. hazirlik_dogrulama adimindaki
+          # not) - bu satir tek basina sorunu cozmedi.
+          provenance: false
 
       - name: Surum kunyesi olustur
         run: |
@@ -83,7 +91,7 @@ jobs:
             "imaj": "${{ env.KAYIT }}/${{ env.IMAJ }}",
             "imaj_digest": "${{ steps.uret.outputs.digest }}",
             "uretim_zamani": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-            "alembic_surumu": "$(grep -h '^revision' alembic/versions/*.py | tail -1 | cut -d\"'\" -f2)",
+            "alembic_surumu": "$(grep -h '^revision' alembic/versions/*.py | tail -1 | cut -d"'" -f2)",
             "modeller": {
               "llm": "qwen2.5:7b-instruct-q4_K_M",
               "gomme": "intfloat/multilingual-e5-base",
@@ -132,7 +140,23 @@ jobs:
 
       - name: Yayinlanan imaji DIGEST ile calistir
         run: |
-          IMAJ="${{ env.KAYIT }}/${{ env.IMAJ }}@${{ needs.imaj.outputs.digest }}"
+          DIGEST="${{ needs.imaj.outputs.digest }}"
+          if [ -z "$DIGEST" ]; then
+            echo "HATA: imaj job'i bos digest uretti - 'imaj' job'inin"
+            echo "'Imaji uret ve yayinla' adiminin ciktilarini kontrol edin."
+            exit 1
+          fi
+          # DENETIM BULGUSU (22 Agustos 2026, v0.1.2 denemesi): asil kok
+          # neden buydu - env.IMAJ = ${{ github.repository }}-api,
+          # GitHub'in ORIJINAL buyuk/kucuk harfli adini korur
+          # ("Sara-Toptamur36/katilim-ai-api"). Docker/OCI repository
+          # adlari KUCUK HARF ZORUNLU; imaj push adimi (docker/metadata-
+          # action) bunu sessizce kucultuyor, ama burada ham env.IMAJ
+          # kullanilinca "docker: invalid reference format: repository
+          # name (...) must be lowercase" ile patliyordu (cikis kodu
+          # 125). Yerelde birebir dogrulandi. `,,` bash parametre
+          # genisletmesiyle kucuk harfe ceviriliyor.
+          IMAJ="$(echo "${{ env.KAYIT }}/${{ env.IMAJ }}" | tr '[:upper:]' '[:lower:]')@${DIGEST}"
           echo "Calistirilan: $IMAJ"
           docker run -d --name katilimai-hazirlik --network host \
             -e GERCEK_VERI_AKTIF=false \

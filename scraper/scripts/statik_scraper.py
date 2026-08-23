@@ -297,11 +297,21 @@ def banka_tara(banka_kod: str, ayar: dict) -> dict:
     ozet: dict[str, list] = {"basarili": [], "atlandi": [], "hatali": []}
 
     try:
-        linkler = kampanya_linklerini_topla(ayar)
+        linkler = set(kampanya_linklerini_topla(ayar))
     except Exception as e:  # noqa: BLE001
         ortak.log_yaz(banka_kod, f"LISTE SAYFASI HATASI: {e}")
         ozet["hatali"].append({"url": ayar["kampanya_listesi"], "hata": str(e)})
         return ozet
+
+    # ek_detay_urlleri (config, opsiyonel): sitemap.xml gibi kaynaklarla
+    # kesfedilmis ama banka sitesinin KENDI liste/menu sayfasindan link
+    # verilmedigi icin kampanya_linklerini_topla'nin YAKALAYAMADIGI detay
+    # URL'leri. Bulgu (18 Agustos 2026, Dunya Katilim): 44 gercek perakende
+    # ortakligi kampanyasi (Trendyol, Koton, Vestel vb.) yalnizca sitemap'te
+    # vardi, /kampanyalar liste sayfasi bunlarin hicbirine link vermiyordu.
+    # Buraya eklenince delta kontrolu ve tum diger mekanizmalar normal
+    # linkler gibi calisir - tek seferlik, kaybolan bir script degil.
+    linkler |= set(ayar.get("ek_detay_urlleri", []))
 
     ortak.log_yaz(banka_kod, f"{len(linkler)} kampanya linki bulundu")
 

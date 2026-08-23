@@ -46,7 +46,9 @@ def karsilastirma_bicimi(metin: str) -> str:
     buyuk I harfini duz i degil, gorunmez birlesik nokta karakteriyle
     kucultur - bu yuzden once elle degistirilir.
     """
-    return metin.replace("’", "'").replace("İ", "i").lower()
+    return (metin.replace("’", "'")
+            .replace("‘", "'")
+            .replace("İ", "i").lower())
 
 
 def ilk_kelime(metin: str) -> str:

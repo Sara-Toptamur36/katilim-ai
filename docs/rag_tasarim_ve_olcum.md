@@ -313,6 +313,81 @@ Tek başına (2) yetmiyor: ısıtmasız denemede 90 sn bile aşıldı ve istek
 
 ---
 
+### Yeniden doğrulama — 20/21 Ağustos 2026 (indeks yeniden kuruldu + soru seti 32'den 185'e çıkarıldı)
+
+İndeks yeniden kuruldu: **300 belge → 878 parça** (17 Ağustos'ta 263 → 817).
+Zeynep'in 18 Ağustos'ta yaptığı 9-banka yeniden taramasından beri (251 tekil
+kampanya, 300 anlık görüntü) indeks 3 gündür bayattı; bu adım onu senkronladı.
+
+Aynı zamanda ölçüm yöntemi **kökten değişti**: önceki tüm ölçümler Altın Veri
+Seti'nin 32 kampanya adından türetilmiş dar bir sorgu setine dayanıyordu.
+`gold_dataset/rag_soru_seti.json` artık **185 soru**, 6 kategoriye ayrılmış:
+
+| Kategori | Soru sayısı | Ne test ediyor |
+|---|---|---|
+| tam_ad | 58 | Kampanyanın tam adı sorgu |
+| kismi_ad | 54 | Kampanya adının bir kısmı |
+| banka_ve_konu | 28 | **Yalnızca banka adı + genel konu — kampanya adı YOK** |
+| dogal_soru | 20 | Doğal dilde, serbest formda soru |
+| alan_disi | 15 | Cevaplanamamalı (abstention testi) |
+| alan_ici_kapsam_disi | 10 | Alan içi ama bu script'in mevcut sürümünde henüz ayrı raporlanmıyor |
+
+> **Önceki sayılarla doğrudan karşılaştırma yapılmaz.** 32 soruluk eski set
+> yalnızca "tam_ad"a yakın, en kolay kategoriydi. 185 soruluk set kasıtlı
+> olarak daha zor kategoriler (özellikle `banka_ve_konu`) içeriyor — bu
+> yüzden genel ortalamanın düşük görünmesi bir kod gerilemesi değil, ölçüm
+> setinin daha gerçekçi/zor hâle gelmesidir. Aşağıdaki sonuçlar yeni
+> metodolojinin **ilk ölçümüdür**, referans bu tarihten itibaren buradan
+> alınır.
+
+**Ölçüm kapsamı:** 185 sorudan yalnızca 87'sinin beklenen belgesi hâlâ
+indekste (73'ü kampanya rotasyonu nedeniyle kapsam dışı — aynı "veri
+eskimesini retrieval hatası saymayalım" ilkesi, bkz. §6).
+
+#### Sonuçlar — kategori bazlı (87 sorgu, ölçüm kapsamındaki)
+
+| | Recall@1 | Recall@3 | Recall@5 |
+|---|---|---|---|
+| **Genel** | **%64,37** | **%79,31** | **%86,21** |
+| tam_ad | %87,5 (28/32) | %93,75 (30/32) | %96,88 (31/32) |
+| kismi_ad | %70,0 (21/30) | %90,0 (27/30) | %93,33 (28/30) |
+| dogal_soru | %77,78 (7/9) | %77,78 (7/9) | %88,89 (8/9) |
+| **banka_ve_konu** | **%0,0 (0/16)** | %31,25 (5/16) | %50,0 (8/16) |
+
+**Abstention (alan_disi):** %86,67 (13/15) — **ilk kez %100 değil.**
+
+#### Bulgu 4 — `banka_ve_konu` gerçek bir zayıflık ortaya çıkardı
+
+Bu kategoride soru kampanya adını hiç içermiyor — örnek: *"Albaraka Türk
+ihtiyaç finansmanı"* (beklenen: `vade-farksiz-kampanyasi`). Sistemin
+Recall@1'i burada **%0**: lexical arama kampanya adına dayandığı için isim
+verilmeyince ayırt edicilik neredeyse kayboluyor, @5'te bile ancak %50'ye
+çıkıyor.
+
+**Bu bir kod hatası değil, tam olarak §2'de kendi belgelediğimiz tasarım
+tercihinin sınırı:** lexical (BM25) bileşen banka adı/ürün terimleri gibi
+ayırt edici kelimelere ağırlık veriyor; kampanya adı verilmeyen bir soruda
+bu avantaj kayboluyor ve sistem büyük ölçüde dense (anlamsal) aramaya
+kalıyor — ki §2'nin başında zaten dense aramanın tek başına ayırt edici
+olmadığını ölçmüştük. Yani bu kategori, retrieval'in henüz çözmediği
+gerçek bir sınırı doğru şekilde açığa çıkarmış oluyor.
+
+**Doğru müdahale:** Bulgu 2'de önerilen cross-encoder reranker'ın kazanç
+tavanı bu kategoriyle birlikte yeniden hesaplanmalı — artık yalnızca "2
+kayıt" değil, `banka_ve_konu`'nun @1'deki tam başarısızlığı da kapsıyor.
+Bu, sıradaki iş listesinde reranker'ın önceliğini yükseltir.
+
+#### Bulgu 5 — Abstention ilk kez kusurlu çıktı (%100 → %86,67)
+
+Önceki tüm ölçümler 5 alan dışı soruyla yapılmıştı; 15 soruluk daha geniş
+örneklemde 2 soru yanlışlıkla "kaynak bulundu" sayıldı. Hangi 2 soru
+olduğu ve kök nedeni **henüz araştırılmadı** — bu belgeye eklenmesi
+gereken bir sonraki adım budur; §5'teki 0,60 eşiğinin küçük bir örneklemle
+(6+5 soru) kalibre edildiği zaten dürüstlük notu olarak yazılmıştı, bu
+sonuç tam olarak o notun öngördüğü riskin gerçekleşmiş hâli.
+
+---
+
 ## 7. Bilinçli sınırlar
 
 - **LLM ile özetleme yok.** RAG, bulduğu kaynak parçalarını **birebir**

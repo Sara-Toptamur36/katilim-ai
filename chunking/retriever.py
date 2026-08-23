@@ -26,6 +26,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from chunking.banka_tespit import banka_tespit
 from chunking.embedding import sorguyu_vektore_cevir
 from chunking.qdrant_baglanti import (
     VARSAYILAN_KOLEKSIYON,
@@ -118,6 +119,8 @@ def getir(
     banka: str | None = None,
     hedef_tarih: str | None = None,
     exact: bool | None = None,
+    banka_otomatik: bool | None = None,
+    yeniden_sirala: bool | None = None,
 ) -> RetrieverSonucu:
     """Soruya en ilgili parcalari getirir; kaynak yetersizse bunu bildirir.
 
@@ -136,32 +139,88 @@ def getir(
     degismesi buyuk indekslerde kacinilamaz. Olcum tutarli olmasi icin bu
     bayrak `true` verilmelidir. Uretim yolunda (hizli yanit onemli) exact
     gereksizdir - yalnizca olcum/test doneminde kullanilir.
+
+    `banka_otomatik` sorguda gecen banka adinin metadata filtresine
+    cevrilip cevrilmeyecegini belirler (bkz. chunking/banka_tespit.py -
+    `banka_ve_konu` kategorisinin Recall@5 %50 sorununun dogrudan
+    hedefi). `banka` parametresi ACIKCA verilmisse otomatik tespit
+    devreye GIRMEZ - cagiranin karari her zaman ustundur.
+
+    VARSAYILAN KAPALI - BILINCLI KARAR (23 Agustos 2026): bu katmanin
+    retrieval kalitesine katkisi HENUZ OLCULMEDI. Depodaki kural, bir
+    kalite degisikliginin olcum olmadan varsayilan yola girmemesidir;
+    tam da bu kuralin atlanmasi yuzunden cross-encoder reranker aylardir
+    olculmeden devrede (bkz. docs/rag_tasarim_ve_olcum.md). Ayni hatayi
+    tekrarlamamak icin varsayilan `false`.
+
+    OLCUM YOLU: `KATILIMAI_BANKA_OTOMATIK=true` ile
+    `python -m scraper.scripts.rag_degerlendirme` kosulur ve
+    `banka_ve_konu` kategorisinin Recall@5'i kapali kosuyla
+    karsilastirilir. Kazanc dogrulanirsa varsayilan `true` yapilir.
+
+    `yeniden_sirala` cross-encoder reranker'i acar/kapatir. None verilirse
+    KATILIMAI_RERANK okunur, varsayilan ACIK.
+
+    NEDEN BAYRAKLI (metodoloji): bu iki katman da retrieval sonucunu
+    degistirir. Kapatilabilir olmadiklari surece "katkisi ne kadar?"
+    sorusu OLCULEMEZ - depodaki her kalite karari olcumle alindi
+    (bkz. docs/rag_tasarim_ve_olcum.md), bu ikisi de ayni cubuga tabi.
+    scraper/scripts/rag_degerlendirme.py bu bayraklarla A/B kosar.
     """
     import os
+
     if exact is None:
         exact = os.environ.get("KATILIMAI_RAG_EXACT_MOD", "false").lower() == "true"
+    if banka_otomatik is None:
+        banka_otomatik = os.environ.get("KATILIMAI_BANKA_OTOMATIK", "false").lower() == "true"
+    if yeniden_sirala is None:
+        yeniden_sirala = os.environ.get("KATILIMAI_RERANK", "true").lower() == "true"
 
     if not qdrant_hazir_mi():
         return RetrieverSonucu(sebep="Vektor veritabanina (Qdrant) erisilemiyor")
 
-    terimler = _ayirt_edici_terimler(soru)
+    # --- Banka adi: aramadan filtreye ------------------------------------
+    tespit_edilen_banka: str | None = None
+    arama_sorgusu = soru
+    if banka is None and banka_otomatik:
+        tespit_edilen_banka, arama_sorgusu = banka_tespit(soru)
+        banka = tespit_edilen_banka
+
+    terimler = _ayirt_edici_terimler(arama_sorgusu)
     if not terimler:
         return RetrieverSonucu(sebep="Soruda aranabilir bir terim bulunamadi")
 
-    # Ilk asamada RRF ile daha genis bir aday havuzu (örn. 20) aliyoruz
-    genis_limit = max(20, limit * 2)
-    parcalar = hibrit_ara(
-        yogun_sorgu=sorguyu_vektore_cevir(soru),
-        seyrek_sorgu=seyrek_vektor_uret(soru),
-        limit=genis_limit,
-        koleksiyon=koleksiyon,
-        filtre=coklu_filtre(banka=banka, hedef_tarih=hedef_tarih),
-        exact=exact,
-    )
-    
+    def _ara(filtre_bankasi: str | None, sorgu_metni: str) -> list[dict]:
+        # Ilk asamada RRF ile daha genis bir aday havuzu (ör. 20) aliyoruz
+        genis_limit = max(20, limit * 2)
+        return hibrit_ara(
+            yogun_sorgu=sorguyu_vektore_cevir(sorgu_metni),
+            seyrek_sorgu=seyrek_vektor_uret(sorgu_metni),
+            limit=genis_limit,
+            koleksiyon=koleksiyon,
+            filtre=coklu_filtre(banka=filtre_bankasi, hedef_tarih=hedef_tarih),
+            exact=exact,
+        )
+
+    parcalar = _ara(banka, arama_sorgusu)
+
+    # GERI DUSME: otomatik tespit yanlis bir bankaya daraltmis olabilir
+    # (ör. indeks payload'indaki yazim bu listeyle uyusmuyorsa filtre HIC
+    # nokta eslemez). Boyle bir durumda sessizce "kaynak yok" demek yerine
+    # filtresiz aramayi tekrarlariz - otomatik tespit sistemi hicbir
+    # kosulda mevcut davranistan KOTU hale getirmemelidir.
+    if not parcalar and tespit_edilen_banka is not None:
+        tespit_edilen_banka = None
+        banka = None
+        arama_sorgusu = soru
+        terimler = _ayirt_edici_terimler(soru)
+        parcalar = _ara(None, soru)
+
     # Ikinci asamada (Reranker) sonuclari capraz kodlayiciyla siralayip kesiyoruz
-    if parcalar:
+    if parcalar and yeniden_sirala:
         parcalar = rerank(soru, parcalar, top_k=limit)
+    else:
+        parcalar = parcalar[:limit]
 
     if not parcalar:
         return RetrieverSonucu(sebep="Arama hicbir sonuc dondurmedi")
@@ -172,6 +231,15 @@ def getir(
         yeterli = len(eslesen) >= 1
     else:
         yeterli = ortusme >= ASGARI_TERIM_ORTUSMESI
+
+    # Banka metadata ile eslesti - kanit listesinde gorunmeli.
+    # ABSTENTION ACISINDAN: banka adi artik sorgu terimleri arasinda DEGIL
+    # (filtreye tasindi), bu yuzden ortusme oranini SEYRELTMEZ. Bu dogru
+    # davranis: "Kuveyt Türk kart" sorusunda banka kosulu metinle degil
+    # metadata ile, kesin olarak saglanmistir - onu metinde de aramak ayni
+    # kosulu iki kez talep etmek olurdu.
+    if tespit_edilen_banka is not None:
+        eslesen = [f"{tespit_edilen_banka} (metadata)", *eslesen]
 
     return RetrieverSonucu(
         parcalar=parcalar,
@@ -187,4 +255,3 @@ def getir(
             )
         ),
     )
-

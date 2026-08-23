@@ -44,3 +44,7 @@ models/
 # --- Gecici veri ---
 *.tmp
 .cache/
+
+# Qdrant yerel dosya modu indeksi (QDRANT_YEREL_YOL) - uretilebilir veri,
+# depoya girmez. Yeniden kurmak icin: python -m chunking.indeksleyici
+.qdrant_yerel/

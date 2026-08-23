@@ -50,7 +50,7 @@ html5lib==1.1
 
 # --- Test ---
 pytest==9.0.2
-httpx2==0.28.1
+httpx==0.28.1
 
 # --- NLP / Bilgi Cikarimi / RAG (NLP ekibi) ---
 # Not: pydantic ve requests yukarida zaten tanimli, tekrar eklenmedi.

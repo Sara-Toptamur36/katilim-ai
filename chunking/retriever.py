@@ -148,16 +148,16 @@ def getir(
     if not terimler:
         return RetrieverSonucu(sebep="Soruda aranabilir bir terim bulunamadi")
 
-    # Ilk asamada RRF ile daha genis bir aday havuzu aliyoruz.
+    # Ilk asamada RRF ile daha genis bir aday havuzu (örn. 20) aliyoruz.
     #
-    # 20'DEN 40'A BUYUTULDU (23 Agustos 2026, olculdu): banka_ve_konu
-    # kategorisinde (kampanya adi verilmeyen sorular) Recall@1 reranker
-    # eklendikten sonra bile %14,29'da kaliyordu - dogru belge havuza HIC
-    # girmiyorsa reranker onu bulamadigi yerden bulamaz. Havuz 40'a
-    # cikarilinca lexical/dense aramanin daha zayif sirlayabildigi ama
-    # yine de aday olan belgelerin reranker'a ulasma sansi artiyor. Bkz.
-    # docs/rag_tasarim_ve_olcum.md Bulgu 6.
-    genis_limit = max(40, limit * 2)
+    # DENENDI VE GERI ALINDI (23 Agustos 2026, olculdu): 40'a cikarilinca
+    # banka_ve_konu Recall@1 %14,29->%19,05 iyilesti AMA ayni kategoride
+    # Recall@5 %52,38->%38,1'e, dogal_soru Recall@5 %92,86->%71,43'e,
+    # GENEL Recall@5 %88,24->%83,19'a geriledi. Daha genis havuz cross-
+    # encoder'a daha fazla dikkat dagitici aday sunuyor ve @1'deki kucuk
+    # kazanci @3/@5'te daha buyuk bir kayipla odetiyor - net etki olumsuz.
+    # Bkz. docs/rag_tasarim_ve_olcum.md Bulgu 6.
+    genis_limit = max(20, limit * 2)
     parcalar = hibrit_ara(
         yogun_sorgu=sorguyu_vektore_cevir(soru),
         seyrek_sorgu=seyrek_vektor_uret(soru),

@@ -71,6 +71,38 @@ KayitGetirici = Callable[[str], list]
 _TERMINOLOJI_BILGI_NOTU_ARACLARI = {"rag", "dictionary"}
 
 
+def _yanit_guveni(arac: str, sonuc: dict, kaynaklar: list) -> float:
+    """Yanit guven skoru. RAG'de ARAMA KALITESINDEN, digerlerinde ikili.
+
+    NEDEN AYRIM VAR (olculdu): skor "1.0 if basarili else 0.0" idi.
+    "bu kampanya icin ne dusunuyorsun" sorusunda en iyi kaynak benzerligi
+    0,50 (bir kategori sayfasi), en kotusu 0,33 oldugu halde ekranda guven
+    %100 gorunuyordu. "Bir sey buldum" ile "buldugum sey alakali" ayni sey
+    degildir; ikisini ayirmayan bir skor kullaniciyi yaniltir.
+
+    Diger araclarda (SQL / hesaplama / sozluk / toplam maliyet) ikili skor
+    DOGRUDUR: deterministik calisirlar, basariliysa sonuc kesindir ve orada
+    "benzerlik" diye bir kavram yoktur - oraya sahte bir sureklilik
+    uydurmak, RAG'deki sorunun aynisini ters yonde yaratirdi.
+    """
+    if not sonuc.get("basarili"):
+        return 0.0
+    if arac != "rag":
+        return 1.0
+
+    skorlar = []
+    for k in kaynaklar:
+        skor = k.get("similarity_score") if isinstance(k, dict) else getattr(k, "similarity_score", None)
+        if skor is not None:
+            skorlar.append(float(skor))
+    # Skor yoksa duserek 1.0'a donmek yerine ikili davranisi koru: kaynak
+    # var ama benzerlik tasimıyorsa bu bir olcum eksikligidir, guvensizlik
+    # isareti degil.
+    if not skorlar:
+        return 1.0
+    return round(max(skorlar), 4)
+
+
 def soru_isle(soru: str, kayit_getirici: KayitGetirici, rag_araci=None) -> dict:
     """Bir kullanici sorusunu isler, cevap + Juri Audit Paneli icin
     gereken tum izlenebilirlik alanlarini doner (rapor Bolum 10.2).
@@ -144,7 +176,7 @@ def soru_isle(soru: str, kayit_getirici: KayitGetirici, rag_araci=None) -> dict:
     return {
         "cevap": sonuc["cevap"],
         "kaynaklar": kaynaklar,
-        "confidence": 1.0 if sonuc.get("basarili") else 0.0,
+        "confidence": _yanit_guveni(arac, sonuc, kaynaklar),
         "fallback": not sonuc.get("basarili", False),
         "audit_ekstra": {
             "intent": niyet.value,

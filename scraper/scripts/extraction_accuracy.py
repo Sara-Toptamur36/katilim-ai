@@ -71,6 +71,10 @@ ALAN_ESLEME = {
     "finansman_tutari": "finansman_tutari",
     "taksit_sayisi": "taksit_sayisi",
     "erteleme_suresi_ay": "erteleme_suresi_ay",
+    "kampanya_turu": "kampanya_turu",
+    "hedef_kitle": "hedef_kitle",
+    "kampanya_baslangic": "kampanya_baslangic",
+    "kampanya_bitis": "kampanya_bitis",
 }
 
 TOLERANS = 0.01  # ondalik yuvarlama farkini tolere et (ör. 2.990001 vs 2.99)
@@ -134,8 +138,17 @@ def prf_hesapla(sayac: dict[str, int]) -> dict[str, float | int | None]:
 
 
 def _degerler_esit_mi(beklenen, bulunan) -> bool:
+    if beklenen is None and bulunan is None:
+        return True
+    if beklenen is None or bulunan is None:
+        return False
     if isinstance(beklenen, (int, float)) and isinstance(bulunan, (int, float)):
         return abs(beklenen - bulunan) <= TOLERANS
+    if isinstance(beklenen, str) and isinstance(bulunan, str):
+        return (
+            beklenen.strip().replace("İ", "i").lower()
+            == bulunan.strip().replace("İ", "i").lower()
+        )
     return beklenen == bulunan
 
 

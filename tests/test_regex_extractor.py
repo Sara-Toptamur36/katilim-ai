@@ -38,6 +38,23 @@ def test_kar_paysiz_ifadesini_sifir_oran_olarak_isaretler():
     assert r["kar_payi_orani_decimal"] == 0.0
 
 
+def test_vade_farksiz_ifadesi_kar_payi_orani_olarak_cikmaz():
+    # "Vade farksiz 6 taksit" bir kart taksit ozelligidir, finansman kar payi degildir
+    r = kaydi_cikar("Sağlık harcamalarınıza vade farksız 6 taksit fırsatı.")
+    assert r["kar_payi_orani_percent"] is None
+    assert r["taksit_sayisi"] == 6
+
+
+def test_nakit_iade_ve_indirim_kar_payi_sanilmaz():
+    r = kaydi_cikar("Tüm harcamalarınızda %10 nakit iade kazanın.")
+    assert r["kar_payi_orani_percent"] is None
+    assert r["nakit_iade_orani"] == 10.0
+
+    r2 = kaydi_cikar("Decathlon alışverişlerinizde %25 indirim!")
+    assert r2["kar_payi_orani_percent"] is None
+    assert r2["indirim_orani_percent"] == 25.0
+
+
 def test_makul_olmayan_yuzdeyi_kar_payi_olarak_atamaz():
     # Baglam kelimesi "kar pay" yakininda olsa bile %40 gibi bu urun
     # sinifi icin imkansiz bir deger atanmamali (mojibake/yanlis

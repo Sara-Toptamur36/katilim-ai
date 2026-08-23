@@ -98,11 +98,40 @@ RE_KAR_PAYI_BAGLAM_ONCE = _katlanmis_derle(
 RE_KAR_PAYSIZ = _katlanmis_derle(r"k[aâ]r\s*pays[ıi]z", re.IGNORECASE)
 # "0 kar payli" gibi yuzde isareti OLMADAN sifir oran ifadeleri de var.
 RE_KAR_PAYI_SIFIR = _katlanmis_derle(r"\b0\s*k[aâ]r\s*pay\w*", re.IGNORECASE)
-# "Vade farksiz" (katilim bankaciliginda "vade farki" gelenek faiz kavramina
-# karsilik gelir - farksiz olmasi kar payi oraninin o islem icin 0 oldugu
-# anlamina gelir). Gercek veride en yaygin sifir-oran ifadesi budur (62
-# Altin Veri Seti kaydindan 13'unde gorulmustur).
-RE_VADE_FARKSIZ = _katlanmis_derle(r"vade\s*farks[ıi]z", re.IGNORECASE)
+# RE_VADE_FARKSIZ KALDIRILDI (23 Agustos 2026, kart precision duzeltmesi).
+#
+# GEREKCE (olculdu - extraction_accuracy_raporu.md): "vade farksiz 6 taksit"
+# bir KART kampanyasi ifadesidir - finansman kar payi orani DEGILDIR.
+# Altin veri setinde bu ifadeyi tasiyan 13 kaydin tamami card_kampanyasi
+# turunde ve altin etiketleyenler kar_payi_orani'ni "kaynakta belirtilmemis"
+# isaret etmis. Motor ile gold sozlesmesi catisiyor; motor %33 precision
+# uretiyordu (40 yanlis pozitifin 13'u buradan). "Vade farksiz" kart taksit
+# ozelligini belirtir (vade farki = geleneksel bankaciliktaki faiz eki;
+# farksiz = ek uygulama yok), ama bu finansman kar payi oraniyla AYNI SEY
+# DEGILDIR - domain analizi gold etiketleyenlerle tutarli.
+#
+# "Kar paysiz" (RE_KAR_PAYSIZ) ve "0 kar payli" (RE_KAR_PAYI_SIFIR) kurallari
+# KORUNUYOR: bunlar dogru sekilde sifir kar payli finansman kampanyalarini
+# yakaliyor (ornekleri altin veride dogrulanmis: AL-002, VK-001 vb.).
+
+# Nakit iade / indirim orani - Sartname Md. 5.3 "Indirim Orani" alani.
+# NEDEN GEREKLI: "%10 nakit iade" ve "%30 indirim" ifadelerinin gidecek
+# bir alan yoktu; kucuk guvenli fallback (RE_KAR_PAYI_GENEL, 0.6) bunlari
+# kar_payi_orani'na sokuyordu - olculdu: HF-010, ZK-016 yanlis pozitif.
+# Artik bu ifadeler AYRI bir alana (nakit_iade_orani / indirim_orani_percent)
+# cikarilir ve kar payi mantigi bu baglamda CALISTIRILMAZ.
+RE_NAKIT_IADE = _katlanmis_derle(
+    r"%\s*\d{1,2}(?:[.,]\d{1,4})?"
+    r"(?:[^%\n]{0,30}(?:nakit\s*iade|cashback|geri\s*iade))"
+    r"|(?:nakit\s*iade|cashback)[^%\n]{0,30}%\s*\d{1,2}(?:[.,]\d{1,4})?",
+    re.IGNORECASE,
+)
+RE_INDIRIM_ORANI = _katlanmis_derle(
+    r"%\s*\d{1,2}(?:[.,]\d{1,4})?"
+    r"(?:[^%\n]{0,25}indirim)"
+    r"|(?:indirim)[^%\n]{0,25}%\s*\d{1,2}(?:[.,]\d{1,4})?",
+    re.IGNORECASE,
+)
 # Dusuk guvenli fallback: kisa kampanya basliklarinda "kar payi" kelimesi
 # hic gecmeden sadece "%X oranla" denebiliyor. Bu durumda, yakininda ucret/
 # masraf/maliyet baglami YOKSA genel yuzdeyi kar payi say (dusuk guven).
@@ -681,6 +710,8 @@ def kaydi_cikar(ham_metin: str) -> dict:
         "kampanya_bitis": None,
         "kampanya_turu": None,
         "hedef_kitle": None,
+        "nakit_iade_orani": None,
+        "indirim_orani_percent": None,
     }
     izler: dict[str, tuple[str, float]] = {}  # alan -> (kaynak_span, guven)
 
@@ -711,22 +742,32 @@ def kaydi_cikar(ham_metin: str) -> dict:
             alanlar["kar_payi_orani_decimal"] = 0.0
             alanlar["kar_payi_orani_percent"] = 0.0
             izler["kar_payi_orani_percent"] = ("kâr paysız / 0 kâr paylı", 0.85)
-        elif RE_VADE_FARKSIZ.search(katlanmis):
-            # "Vade farksiz" katilim bankaciliginda o islem icin kar payi
-            # oraninin 0 oldugu anlamina gelir (Extraction Accuracy raporu +
-            # terminology/sozluk.json'daki sifir_oran_ifadesi kavramiyla
-            # tutarli). Dogrudan "kar paysiz" kadar yuksek guvenli degil
-            # (0.8 < 0.85) - farkli bir ifade oldugu icin.
-            alanlar["kar_payi_orani_decimal"] = 0.0
-            alanlar["kar_payi_orani_percent"] = 0.0
-            izler["kar_payi_orani_percent"] = ("vade farksız", 0.8)
         else:
+            # RE_VADE_FARKSIZ BURADA ARTIK YOK (23 Agustos 2026).
+            # Bkz. desen tanimlari bolumu - kart taksit ifadesi, finansman
+            # kar payi degildir.
             for gm in RE_KAR_PAYI_GENEL.finditer(katlanmis):
                 if _ucret_baglaminda_mi(ham_metin, gm.start(), gm.end()):
                     continue
                 if _oran_tablosu_baglaminda_mi(ham_metin, gm.start(), gm.end()):
                     continue
-                if _kar_payi_ata(alanlar, izler, _ham_span(ham_metin, gm), 0.6):
+                # Nakit iade veya indirim baglamindasak kar payi DEGIL -
+                # bu yuzden nakit_iade_orani / indirim_orani_percent'e
+                # cikarip kar_payi_orani'na GIRME.
+                span_ham = _ham_span(ham_metin, gm)
+                if RE_NAKIT_IADE.search(katlanmis[max(0, gm.start()-50):gm.end()+50]):
+                    yuzde = yuzdeye_cevir(span_ham)
+                    if yuzde is not None:
+                        alanlar["nakit_iade_orani"] = yuzde
+                        izler["nakit_iade_orani"] = (span_ham, 0.8)
+                    continue  # kar_payi'na girme
+                if RE_INDIRIM_ORANI.search(katlanmis[max(0, gm.start()-50):gm.end()+50]):
+                    yuzde = yuzdeye_cevir(span_ham)
+                    if yuzde is not None:
+                        alanlar["indirim_orani_percent"] = yuzde
+                        izler["indirim_orani_percent"] = (span_ham, 0.75)
+                    continue  # kar_payi'na girme
+                if _kar_payi_ata(alanlar, izler, span_ham, 0.6):
                     break
 
     # --- Finansman tutari ----------------------------------------------

@@ -77,7 +77,7 @@ _HESAPLAMA_ANAHTAR_KELIMELER = [
 ]
 _KARSILASTIRMA_ANAHTAR_KELIMELER = [
     "karsilastir", "hangisi daha", "en dusuk", "en avantajli",
-    "en iyi", "hangi banka", "fark ne", " mi yoksa ",
+    "en iyi", "hangi banka", "fark ne kadar", " mi yoksa ",
 ]
 # KARSILASTIRMA'dan AYRI: yalnizca alan bazli siralama degil, gercek bir
 # anapara icin AMORTISMAN hesabi gerektirir (calculator/calculator.py::
@@ -118,16 +118,16 @@ _NIYET_KELIMELERI = {
     Niyet.SOZLUK: _SOZLUK_ANAHTAR_KELIMELER,
 }
 
-# BILINEN SINIRLAMA (23 Agustos 2026, olculdu, DUZELTILMEDI): "X ile Y
-# arasindaki fark nedir" gibi TANIM sorulari KARSILASTIRMA'nin "fark ne"
-# kalibiyla SOZLUK'un "nedir" kalibi arasinda esitlik yaratir; dict sirasinda
-# KARSILASTIRMA once geldigi icin kazanir (ornek: "Mudarebe ile musareke
-# arasindaki fark nedir?" -> KARSILASTIRMA, oysa ikisi de terminology/
-# sozluk.json'da tanimli gercek SOZLUK adaylaridir). Duzeltme
-# _KARSILASTIRMA_ANAHTAR_KELIMELER veya oncelik sirasini degistirmeyi
-# gerektirir - bu, KARSILASTIRMA'nin bugun DOGRU calisan diger sorularini
-# kirma riski tasidigi icin ayri bir olcum turuyle (tum niyet testleri
-# yeniden kosularak) ele alinmali, buraya alelacele yama yapilmadi.
+# DUZELTILDI (23 Agustos 2026): "X ile Y arasindaki fark nedir" gibi TANIM
+# sorulari onceden KARSILASTIRMA'nin "fark ne" kalibiyla SOZLUK'un "nedir"
+# kalibi arasinda esitlik yaratiyordu; dict sirasinda KARSILASTIRMA once
+# geldigi icin kazaniyordu (ornek: "Mudarebe ile musareke arasindaki fark
+# nedir?" -> yanlislikla KARSILASTIRMA, oysa ikisi de terminology/
+# sozluk.json'da tanimli gercek SOZLUK adaylaridir). Kok neden "fark ne"
+# kalibinin gercekte HICBIR teste/gercek soruya dayanmadan eklenmis
+# olmasiydi (grep dogruladi) - bu yuzden "fark ne kadar" ile
+# DEGISTIRILDI: gercek miktar sorularini ("...arasindaki fark ne kadar?")
+# hala yakalar ama "fark nedir" tanim sorusuyla artik CAKISMAZ.
 
 
 # Bulanik eslesme esigi. OLCULDU: "karsilatin" ("karsilastir" yazim hatasi)

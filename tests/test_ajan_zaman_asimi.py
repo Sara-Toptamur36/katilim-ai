@@ -66,6 +66,13 @@ def test_soru_isle_zaman_asimi_fallback_donduruyor():
     """
     from agent.orchestrator import soru_isle
 
+    def _mock_rag_basarisiz(soru, kayit_getirici):
+        return {
+            "basarili": False,
+            "cevap": "Qdrant baglantisi kurulamadi (test ortami).",
+            "kaynaklar": [],
+        }
+
     with patch("agent.orchestrator._VARSAYILAN_ZAMAN_ASIMI_SN", 0.05):
         with patch("agent.orchestrator.hesaplama_aracini_cagir", _mock_gecikme(0.5)):
             with patch("agent.intent.niyet_tespit_et") as mock_niyet:
@@ -75,7 +82,7 @@ def test_soru_isle_zaman_asimi_fallback_donduruyor():
                 mock_kayit = MagicMock()
                 mock_kayit.return_value = []
 
-                sonuc = soru_isle("500000 TL 12 ay", mock_kayit)
+                sonuc = soru_isle("500000 TL 12 ay", mock_kayit, rag_araci=_mock_rag_basarisiz)
 
     # Fallback olmali - sessiz kilitlenme yok
     assert sonuc["fallback"] is True

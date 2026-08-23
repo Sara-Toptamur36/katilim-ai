@@ -148,8 +148,16 @@ def getir(
     if not terimler:
         return RetrieverSonucu(sebep="Soruda aranabilir bir terim bulunamadi")
 
-    # Ilk asamada RRF ile daha genis bir aday havuzu (örn. 20) aliyoruz
-    genis_limit = max(20, limit * 2)
+    # Ilk asamada RRF ile daha genis bir aday havuzu aliyoruz.
+    #
+    # 20'DEN 40'A BUYUTULDU (23 Agustos 2026, olculdu): banka_ve_konu
+    # kategorisinde (kampanya adi verilmeyen sorular) Recall@1 reranker
+    # eklendikten sonra bile %14,29'da kaliyordu - dogru belge havuza HIC
+    # girmiyorsa reranker onu bulamadigi yerden bulamaz. Havuz 40'a
+    # cikarilinca lexical/dense aramanin daha zayif sirlayabildigi ama
+    # yine de aday olan belgelerin reranker'a ulasma sansi artiyor. Bkz.
+    # docs/rag_tasarim_ve_olcum.md Bulgu 6.
+    genis_limit = max(40, limit * 2)
     parcalar = hibrit_ara(
         yogun_sorgu=sorguyu_vektore_cevir(soru),
         seyrek_sorgu=seyrek_vektor_uret(soru),

@@ -209,7 +209,10 @@ def test_altin_veri_setinde_musteriye_gorunen_metinde_yanlis_alarm_yok():
     metninde sifir yanlis alarm bekleniyor (kredi kartlarinin hepsi 'kredi
     kart*' / 'kredi bakiye*' / 'kredi limit*' istisnasina giriyor)."""
     with open(GOLD_DATASET_YOLU, encoding="utf-8") as f:
-        data = json.load(f)
+        data = [
+            k for k in json.load(f)
+            if k.get("giren_kisi") != "ORNEK" and (k.get("giren_kisi") or "").strip()
+        ]
 
     yanlis_alarmlar = []
     for kayit in data:

@@ -494,11 +494,21 @@ def test_en_avantajli_kompozit_kriteri_uctan_uca_calisir():
 # /chat  -  audit blogu sozlesmesi
 # ---------------------------------------------------------------------------
 
+_SAHTE_RAG_YANITI = {
+    "basarili": False,
+    "cevap": "Test ortaminda RAG mock'lanmistir.",
+    "kaynaklar": [],
+    "sebep": "sahte_rag",
+}
+
 
 def test_chat_yanit_verir():
-    yanit = client.post(
-        "/chat", json={"soru": "A Bankasi'nin konut orani ne?"}, headers=GECERLI_BASLIK
-    )
+    from unittest.mock import patch
+
+    with patch("agent.orchestrator.rag_aracini_cagir", side_effect=lambda soru, kg=None: _SAHTE_RAG_YANITI):
+        yanit = client.post(
+            "/chat", json={"soru": "A Bankasi'nin konut orani ne?"}, headers=GECERLI_BASLIK
+        )
     assert yanit.status_code == 200
     assert "cevap" in yanit.json()
 
@@ -506,7 +516,10 @@ def test_chat_yanit_verir():
 def test_chat_audit_blogu_tum_alanlari_icerir():
     """KRITIK: Havin'in Juri Audit Paneli bu alan adlarina gore kurulur
     (rapor Bolum 10.2). Alanlar Sprint 1'de bos olabilir ama VAR olmalidir."""
-    yanit = client.post("/chat", json={"soru": "test"}, headers=GECERLI_BASLIK)
+    from unittest.mock import patch
+
+    with patch("agent.orchestrator.rag_aracini_cagir", side_effect=lambda soru, kg=None: _SAHTE_RAG_YANITI):
+        yanit = client.post("/chat", json={"soru": "test"}, headers=GECERLI_BASLIK)
     audit = yanit.json()["audit"]
 
     beklenen = [
@@ -547,7 +560,10 @@ def test_chat_terminoloji_bilgisi_uctan_uca_iletilir():
 
 def test_chat_yanitinda_kaynak_ve_confidence_alanlari_var():
     """Provenance sozlesmesi (rapor Bolum 9)."""
-    yanit = client.post("/chat", json={"soru": "test"}, headers=GECERLI_BASLIK).json()
+    from unittest.mock import patch
+
+    with patch("agent.orchestrator.rag_aracini_cagir", side_effect=lambda soru, kg=None: _SAHTE_RAG_YANITI):
+        yanit = client.post("/chat", json={"soru": "test"}, headers=GECERLI_BASLIK).json()
     assert "kaynaklar" in yanit
     assert isinstance(yanit["kaynaklar"], list)
     assert "confidence" in yanit

@@ -1,0 +1,1067 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Taslak Kayıt Doğrulama</title>
+<style>
+:root{--g:#f4f6f4;--s:#fff;--s2:#eaefec;--i:#111d1b;--i2:#44514e;--i3:#6c7a76;
+ --l:#dbe2df;--a:#0f6b62;--iyi:#1d6b3a;--uyari:#8a5a0b;--kotu:#8a2e1f;
+ --iyi-s:#dcecdf;--uyari-s:#f5e9d4;--kotu-s:#f7e3df}
+@media(prefers-color-scheme:dark){:root{--g:#0c1312;--s:#131d1b;--s2:#1a2624;
+ --i:#e7edea;--i2:#a9b8b4;--i3:#7d8d89;--l:#233230;--a:#54b8aa;
+ --iyi:#77c78f;--uyari:#d3a259;--kotu:#e0806e;
+ --iyi-s:#16301f;--uyari-s:#33260f;--kotu-s:#3a1e18}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--g);color:var(--i);font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+.üst{position:sticky;top:0;background:var(--g);border-bottom:1px solid var(--l);
+ padding:14px 22px;z-index:9;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+h1{font-size:1.15rem;margin:0}
+.sayac{color:var(--i3);font-size:.86rem}
+.cip{font:inherit;font-size:.83rem;padding:5px 12px;border-radius:100px;cursor:pointer;
+ border:1px solid var(--l);background:var(--s);color:var(--i2)}
+.cip[aria-pressed=true]{background:var(--a);border-color:var(--a);color:var(--g)}
+.sarma{max-width:1240px;margin:0 auto;padding:20px 22px 70px}
+.uyarı{background:var(--uyari-s);border-left:3px solid var(--uyari);padding:13px 17px;
+ border-radius:0 6px 6px 0;margin-bottom:22px;color:var(--i2);font-size:.9rem}
+.uyarı b{color:var(--i)}
+.kart{background:var(--s);border:1px solid var(--l);border-radius:8px;margin-bottom:22px;overflow:hidden}
+.kh{display:flex;gap:12px;align-items:baseline;padding:13px 18px;background:var(--s2);
+ border-bottom:1px solid var(--l);flex-wrap:wrap}
+.kid{font-family:ui-monospace,monospace;font-weight:600;color:var(--a)}
+.kh h2{font-size:1rem;margin:0;flex:1;font-weight:600}
+.url{font-size:.8rem;color:var(--i3);text-decoration:none}
+.url:hover{color:var(--a)}
+.gövde{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0}
+.sol{border-right:1px solid var(--l);max-height:560px;overflow:auto;background:var(--s2)}
+.sol img{width:100%;display:block}
+.sag{padding:16px 18px;min-width:0}
+table.alanlar{width:100%;border-collapse:collapse;font-size:.87rem;margin-bottom:10px}
+.alanlar td{padding:4px 8px;border-bottom:1px solid var(--l);vertical-align:top}
+.alanlar .a{color:var(--i3);white-space:nowrap;width:11rem;font-family:ui-monospace,monospace;font-size:.8rem}
+.alanlar .d{font-weight:500}
+.bos{font-size:.82rem;color:var(--i3);margin:8px 0}
+.spanlar{background:var(--s2);border-radius:6px;padding:10px 12px;margin:10px 0}
+.baslik{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--i3);margin-bottom:6px}
+.sp{font-size:.82rem;margin-bottom:5px;display:flex;gap:8px}
+.spa{font-family:ui-monospace,monospace;color:var(--a);white-space:nowrap}
+.spc{color:var(--i2)}
+ul.kontrol{list-style:none;padding:0;margin:10px 0;font-size:.82rem}
+ul.kontrol li{padding:3px 9px;border-radius:4px;margin-bottom:3px}
+.k-iyi{background:var(--iyi-s);color:var(--iyi)}
+.k-uyari{background:var(--uyari-s);color:var(--uyari)}
+.k-kotu{background:var(--kotu-s);color:var(--kotu)}
+.not{font-size:.8rem;color:var(--i3);margin:8px 0 0}
+@media(max-width:900px){.gövde{grid-template-columns:1fr}.sol{border-right:none;border-bottom:1px solid var(--l)}}
+</style></head><body>
+<div class="üst">
+  <h1>Taslak Kayıt Doğrulama</h1>
+  <span class="sayac" id="sayac"></span>
+  <button class="cip" data-f="*" aria-pressed="true">Tümü</button>
+  <button class="cip" data-f="uyari">Bakılacaklar</button>
+  <button class="cip" data-f="kotu">Sorunlu</button>
+</div>
+<div class="sarma">
+<p class="uyarı"><b>Bu sayfa imzayı kolaylaştırır, gereksiz kılmaz.</b>
+Yeşil satırlar makinenin kontrol edebildikleri — kanıt cümlesi kaynakta geçiyor mu,
+değerler kendi içinde tutarlı mı. Hiçbiri "değer doğru" demez. Değerin doğruluğu
+soldaki ekran görüntüsüne bakmakla anlaşılır. Onayladığınız kayıtların
+<code>giren_kisi</code> alanını Excel'de doldurun.</p>
+
+<article class="kart" id="AL-007" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">AL-007</span>
+    <h2>Ağustos Ayına Özel Fatura Kampanyası</h2>
+    <a class="url" href="https://www.albaraka.com.tr/tr/kampanyalar/detay/agustos-ayina-ozel-fatura-kampanyasi"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/AL-007.png"
+           alt="AL-007 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Albaraka Türk</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Yeni Musteri Kampanyasi</td></tr><tr><td class="a">odul_miktari</td><td class="d">2000</td></tr><tr><td class="a">odul_birimi</td><td class="d">Worldpuan</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2026-08-01</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-08-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">OFT2026 davet koduyla görüntülü görüşmeden ilk kez müşteri olan bireysel müşteriler</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">OFT2026 koduyla görüntülü görüşmeyle müşteri olup Albaraka World kartla verilen her otomatik fatura ödeme talimatına 500 TL, toplamda 2.000 TL Worldpuan</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, taksit_sayisi, erteleme_suresi_ay, finansman_tutari, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">odul_miktari</span><span class="spc">Kampanya müşteri bazındadır, bir müşteri en fazla 2.000 TL Worldpuan kazanabilir.</span></div><div class="sp"><span class="spa">odul_birimi</span><span class="spc">Kampanya müşteri bazındadır, bir müşteri en fazla 2.000 TL Worldpuan kazanabilir.</span></div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">Kampanya 1–31 Ağustos 2026 tarihlerinde geçerlidir.</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">Kampanya 31 Ağustos 2026 tarihine kadar geçerlidir.</span></div><div class="sp"><span class="spa">hedef_kitle</span><span class="spc">Kampanya 1-31 Ağustos 2026 tarihleri arasında “OFT2026” davet kodunu kullanarak görüntülü görüşme ile ilk kez müşterimiz olanlar için geçerlidir.</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">5 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Kampanya adi sayfada baslik satiri olmadigi icin URL slug&#x27;indan turetildi. Talimat basina 500 TL, musteri basina tavan 2.000 TL. Kampanya 1.000 kisiyle sinirli; Master Gold Virtual/Standart ve Business kartlar haric. Odul 1-5 Ekim 2026&#x27;da yuklenir.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="AL-008" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">AL-008</span>
+    <h2>Albarakalılara Özel Ücretsiz İSPARK Kampanyası</h2>
+    <a class="url" href="https://www.albaraka.com.tr/tr/kampanyalar/detay/albarakalilara-ozel-ucretsiz-ispark-kampanyasi-1"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/AL-008.png"
+           alt="AL-008 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Albaraka Türk</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Belirlenemedi</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2026-01-01</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-12-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Cari hesabında 10.000 TL ve üzerinde bakiyesi bulunan bireysel müşteriler</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Cari hesabında 10.000 TL ve üzeri bakiyesi olan bireysel müşterilere İSPARK otoparklarında ayda 2 defa ücretsiz park (yol üstü 2 saat, bariyerli 4 saat)</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, taksit_sayisi, erteleme_suresi_ay, finansman_tutari, odul_miktari, odul_birimi, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">1 Ocak 2026 – 31 Aralık 2026</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">1 Ocak 2026 – 31 Aralık 2026</span></div><div class="sp"><span class="spa">hedef_kitle</span><span class="spc">cari hesabında 10.000 TL ve üzerinde bakiyesi</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">3 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Parasal odul YOK: &#x27;ayda 2 defa ucretsiz park&#x27; hizmet avantajidir, 10.000 TL ise uygunluk esigidir - ikisi de odul_miktari DEGILDIR (bu kayit, motorun olmayan odul uydurup uydurmadigini olcer). Yalnizca binek otomobil; bazi otoparklar ve mac gunleri haric.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="AL-009" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">AL-009</span>
+    <h2>Dijital Katılma Hesabına Özel Paylaşım Oranları</h2>
+    <a class="url" href="https://www.albaraka.com.tr/tr/kampanyalar/detay/dijital-katilma-hesabina-ozel-paylasim-oranlari-10"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/AL-009.png"
+           alt="AL-009 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Albaraka Türk</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Yatirim Urunu Kampanyasi</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2026-04-01</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-12-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Albaraka Mobil&#x27;den görüntülü görüşmeyle ilk kez müşteri olan ve TL Katılma Hesabı açan gerçek kişiler</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Albaraka Mobil&#x27;den açılan TL Dijital Katılma Hesabında 98/2 kâr paylaşım oranı (asgari 250 TL)</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, taksit_sayisi, erteleme_suresi_ay, finansman_tutari, odul_miktari, odul_birimi, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">1 Nisan – 31 Aralık 2026</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">1 Nisan – 31 Aralık 2026</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">2 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. kar_payi_orani BILEREK BOS: &#x27;98/2 kar paylasim orani&#x27; bir yuzde DEGIL, paylasim seklidir (musteriye 98, bankaya 2). Bu kayit, motorun 98&#x27;i oran sanip sanmadigini olcer. Ad sayfada baslik satiri olmadigi icin URL slug&#x27;indan turetildi.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="AL-010" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">AL-010</span>
+    <h2>Kırtasiye Kampanyası</h2>
+    <a class="url" href="https://www.albaraka.com.tr/tr/kampanyalar/detay/kirtasiye-kampanyasi"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/AL-010.png"
+           alt="AL-010 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Albaraka Türk</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">taksit_sayisi</td><td class="d">4</td></tr><tr><td class="a">finansman_tutari</td><td class="d">20000</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2026-06-01</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-09-30</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Albaraka Mobil&#x27;den kampanyaya katılan, World özellikli bireysel kredi kartı sahipleri</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">World kredi kartıyla 1.000-20.000 TL arası kırtasiye harcamasına vade farksız 4 taksit; ilk 2.000 katılımcı ile sınırlı</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, erteleme_suresi_ay, odul_miktari, odul_birimi, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">taksit_sayisi</span><span class="spc">1.000 TL- 20.000 TL arası kırtasiye harcamalarınızda vade farksız 4 taksit fırsatını kaçırmayın!</span></div><div class="sp"><span class="spa">finansman_tutari</span><span class="spc">1.000 TL- 20.000 TL arası kırtasiye harcamalarınızda vade farksız 4 taksit fırsatını kaçırmayın!</span></div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">1 Haziran - 30 Eylül 2026</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">1 Haziran - 30 Eylül 2026</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">4 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. MCC 5942/5943 harcamalari icin gecerli. Business ve Master Gold kart haric.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="AL-011" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">AL-011</span>
+    <h2>Otomatik Fatura Ödeme Talimatlarınıza Toplamda 2.000 TL Worldpuan</h2>
+    <a class="url" href="https://www.albaraka.com.tr/tr/kampanyalar/detay/otomatik-fatura-odeme-talimatlariniza-toplamda-2000-tl-worldpuan-12"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/AL-011.png"
+           alt="AL-011 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Albaraka Türk</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">odul_miktari</td><td class="d">2000</td></tr><tr><td class="a">odul_birimi</td><td class="d">Worldpuan</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2026-08-01</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-08-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Albaraka Mobil&#x27;den kampanyaya katılan bireysel müşteriler (World özellikli kart gerekli)</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Albaraka Mobil&#x27;den verilen her yeni otomatik fatura ödeme talimatına 200 TL, toplamda 2.000 TL&#x27;ye varan Worldpuan</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, taksit_sayisi, erteleme_suresi_ay, finansman_tutari, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">odul_miktari</span><span class="spc">Albaraka Mobil üzerinden kredi kartınız ile vereceğiniz her yeni otomatik fatura ödeme talimatınıza 200 TL, toplamda 2.000 TL&#x27;ye varan Worldpuan kazanma fırsatı!</span></div><div class="sp"><span class="spa">odul_birimi</span><span class="spc">Albaraka Mobil üzerinden kredi kartınız ile vereceğiniz her yeni otomatik fatura ödeme talimatınıza 200 TL, toplamda 2.000 TL&#x27;ye varan Worldpuan kazanma fırsatı!</span></div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">Kampanya 1-31 Ağustos 2026 tarihlerinde geçerlidir.</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">Kampanya 1-31 Ağustos 2026 tarihlerinde geçerlidir.</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">4 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. DIKKAT - AL-007 ile KARISTIRILMASIN: ikisi de Agustos 2026 fatura kampanyasi ve ikisinin de tavani 2.000 TL Worldpuan, ama AL-007 talimat basina 500 TL veriyor ve yalnizca goruntulu gorusmeyle yeni musteri olanlar icin (OFT2026 kodu); bu kayit talimat basina 200 TL ve mevcut musteriler icin. Ayri sayfalar, ayri kosullar. Insan dogrulamasinda </p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="AL-012" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">AL-012</span>
+    <h2>Dijital Müşterilere Özel Pratik Finansman Kart</h2>
+    <a class="url" href="https://www.albaraka.com.tr/tr/kampanyalar/detay/dijital-musterilere-ozel-pratik-finansman-kart"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/AL-012.png"
+           alt="AL-012 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Albaraka Türk</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Yeni Musteri Kampanyasi</td></tr><tr><td class="a">vade_ay</td><td class="d">6</td></tr><tr><td class="a">taksit_sayisi</td><td class="d">4</td></tr><tr><td class="a">erteleme_suresi_ay</td><td class="d">3</td></tr><tr><td class="a">finansman_tutari</td><td class="d">40000</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2026-01-01</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-12-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Albaraka Mobil&#x27;den görüntülü görüşmeyle ilk kez Albaraka müşterisi olanlar</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Görüntülü görüşmeyle ilk kez müşteri olanlara vade farksız 40.000 TL veya özel oranlı Pratik Finansman Kart</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, odul_miktari, odul_birimi, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">finansman_tutari</span><span class="spc">Vade farksız 40.000 TL ve uygun oranlı hoş geldin finansmanı Albaraka&#x27;da!</span></div><div class="sp"><span class="spa">vade_ay</span><span class="spc">’lı olan dijital müşterilerimize özel; vade farksız, azami 40.000 TL limitli, 3 aya varan ödemesiz dönem ve 4 taksit imkânı ile birlikte toplam 6 aya varan vade imkanıyla sunulan Pratik Fina</span></div><div class="sp"><span class="spa">taksit_sayisi</span><span class="spc">’lı olan dijital müşterilerimize özel; vade farksız, azami 40.000 TL limitli, 3 aya varan ödemesiz dönem ve 4 taksit imkânı ile birlikte toplam 6 aya varan vade imkanıyla sunulan Pratik Fina</span></div><div class="sp"><span class="spa">erteleme_suresi_ay</span><span class="spc">’lı olan dijital müşterilerimize özel; vade farksız, azami 40.000 TL limitli, 3 aya varan ödemesiz dönem ve 4 taksit imkânı ile birlikte toplam 6 aya varan vade imkanıyla sunulan Pratik Fina</span></div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">01.01.2026 - 31.12.2026</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">01.01.2026 - 31.12.2026</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">6 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. kar_payi_orani BILEREK BOS: sayfadaki %5 / %3,90 / %3,85 oranlari PRATIK FINANSMAN KARTA DEGIL, ayni sayfada tanitilan &#x27;hos geldin finansmani&#x27;nin vade kademelerine aittir. Kartin kendisi VADE FARKSIZ. DUZELTME (23 Agustos 2026): vade_ay, taksit_sayisi ve erteleme_suresi_ay etiketlenirken KACIRILMISTI - ucu de tek cumlede yaziyor (&#x27;3 aya varan</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="DK-008" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">DK-008</span>
+    <h2>Yeni Müşterilere Özel Altına Altın Hediye</h2>
+    <a class="url" href="https://www.dunyakatilim.com.tr/kampanyalar/fiziki-altin"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/DK-008.png"
+           alt="DK-008 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Dünya Katılım</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Yeni Musteri Kampanyasi</td></tr><tr><td class="a">odul_miktari</td><td class="d">0.25</td></tr><tr><td class="a">odul_birimi</td><td class="d">Gram</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2026-01-13</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-03-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">1 Ocak 2026&#x27;dan itibaren müşteri olan ve kampanya döneminde fiziki altın siparişi veren gerçek kişiler</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Fiziki altın siparişine ürün türüne göre 0,10-0,25 gram altın hediye</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, taksit_sayisi, erteleme_suresi_ay, finansman_tutari, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">odul_miktari</span><span class="spc">Tam altın siparişinize → 0,25 gram altın hediye</span></div><div class="sp"><span class="spa">odul_birimi</span><span class="spc">Tam altın siparişinize → 0,25 gram altın hediye</span></div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">13.01.2026-31.03.2026 tarihleri arasında</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">13.01.2026-31.03.2026 tarihleri arasında</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">4 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. SAYFA &#x27;Kampanya Suresi Dolmustur&#x27; diyor - kampanya bitmis, ama metin cikarim icin gecerli bir ornek. odul_miktari en YUKSEK kademedir (tam altin/bilezik); 1 gram siparise 0,10 gram.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="DK-009" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">DK-009</span>
+    <h2>LC Waikiki&#x27;de 3.000 TL ve Üzeri Alışverişe 300 TL İndirim</h2>
+    <a class="url" href="https://www.dunyakatilim.com.tr/kampanyalar/lc-waikiki"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/DK-009.png"
+           alt="DK-009 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Dünya Katılım</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">odul_miktari</td><td class="d">300</td></tr><tr><td class="a">odul_birimi</td><td class="d">TL</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2026-06-15</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-07-15</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Dünya Katılım TROY logolu banka ve kredi kartı sahipleri (sanal kartlar dahil)</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">TROY kartla LC Waikiki&#x27;de tek seferde 3.000 TL üzeri alışverişe anında 300 TL indirim</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, taksit_sayisi, erteleme_suresi_ay, finansman_tutari, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">Kampanya 15 Haziran 2026 saat 00.01 – 15 Temmuz 2026 saat 23.59 arasında geçerlidir.</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">Kampanya 15 Haziran 2026 saat 00.01 – 15 Temmuz 2026 saat 23.59 arasında geçerlidir.</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">2 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Toplam tavan YOK, her 3.000 TL+ islemde tekrar kazanilir; odul_miktari ISLEM BASINA tutardir. Havalimani/yurtdisi magazalari ve self-servis kasalar haric.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="HF-006" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">HF-006</span>
+    <h2>Bana Bunu Al İş Ortağım ile Troy Mağazalarında Finansman Fırsatı!</h2>
+    <a class="url" href="https://www.hayatfinans.com.tr/kampanyalar/bana-bunu-al-is-ortagim-ile-troy-magaza-firsatlari"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/HF-006.png"
+           alt="HF-006 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Hayat Finans</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Finansman Kampanyasi</td></tr><tr><td class="a">taksit_sayisi</td><td class="d">3</td></tr><tr><td class="a">finansman_tutari</td><td class="d">80000</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-08-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Hayat Finans müşterileri (Bana Bunu Al İş Ortağım)</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Troy fiziksel mağazalarında 3 aya varan taksit; kampanya üst limiti 80.000 TL</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, erteleme_suresi_ay, odul_miktari, odul_birimi, masraf_durumu, kampanya_baslangic</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">taksit_sayisi</span><span class="spc">3 aya varan taksit fırsatı</span></div><div class="sp"><span class="spa">finansman_tutari</span><span class="spc">Kampanya üst limiti 80.000TL&#x27;dir.</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">Kampanya 31 Ağustos 2026 tarihine kadar geçerlidir.</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">3 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Baslangic tarihi sayfada belirtilmemis. Yalnizca fiziksel magazalar.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="HF-007" data-durum="uyari">
+  <header class="kh">
+    <span class="kid">HF-007</span>
+    <h2>Hayat Finans Müşterilerine GastroClub Ayrıcalıkları</h2>
+    <a class="url" href="https://hayatfinans.com.tr/kampanyalar/hayat-finans-ile-gastroclub-ayricaliklari"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/HF-007.png"
+           alt="HF-007 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Hayat Finans</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Hayat Finans müşterileri (mobil uygulamadan GastroClub üyeliği oluşturanlar)</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Ücretsiz GastroClub üyeliğiyle 1.200&#x27;ü aşkın anlaşmalı işletmede %10-%50 indirim</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, taksit_sayisi, erteleme_suresi_ay, finansman_tutari, odul_miktari, odul_birimi, masraf_durumu, kampanya_baslangic, kampanya_bitis</p>
+      
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-uyari">kanıt cümlesi girilmemiş (1 dolu alan var)</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. kar_payi_orani BILEREK BOS: %10-%50 anlasmali isyeri INDIRIMIDIR, kar payi orani degil. Kampanya tarihi sayfada YOK.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="HF-008" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">HF-008</span>
+    <h2>Hayat Finans&#x27;la İşlem Yaptıkça Kazan</h2>
+    <a class="url" href="https://hayatfinans.com.tr/kampanyalar/hayatfinansla-islem-yaptikca-kazan"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/HF-008.png"
+           alt="HF-008 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Hayat Finans</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2026-07-02</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-12-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Hayat Finans müşterileri</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Para transferi, banka kartı harcaması, fatura ödeme, döviz işlemi ve Biz Kart başvurusundan Hayat Pay cüzdanına nakit ödül</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, taksit_sayisi, erteleme_suresi_ay, finansman_tutari, odul_miktari, odul_birimi, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">2 Temmuz - 31 Aralık 2026</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">2 Temmuz - 31 Aralık 2026</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">2 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. odul_miktari BILEREK BOS: kampanyanin tek bir odul tutari yok. Bes ayri islem turunun ayri tavanlari var (transfer ayda 100 TL, doviz ayda 200 TL, banka karti ayda 100 TL, fatura basina 20-30 TL, ilk otomatik odemeye 100 TL) ve toplam tavan sayfada verilmiyor. Motorun buradan tek bir sayi cekip cekmedigini olcen zor ornek.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="HF-010" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">HF-010</span>
+    <h2>Biz Kart ile Yemek Harcamalarına 1.000 TL&#x27;ye Varan Nakit İade</h2>
+    <a class="url" href="https://hayatfinans.com.tr/kampanyalar/biz-kart-yemek-harcamasi-nakit-iade-kampanyasi"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/HF-010.png"
+           alt="HF-010 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Hayat Finans</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">odul_miktari</td><td class="d">1000</td></tr><tr><td class="a">odul_birimi</td><td class="d">TL</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2026-02-06</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-08-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Hayat Finans bireysel müşterilerinin yakınlarına verdiği Biz Kart sahipleri</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Biz Kart ile yemek sektörü harcamalarının %10&#x27;u nakit iade; günlük en fazla 100 TL, aylık 1.000 TL</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, taksit_sayisi, erteleme_suresi_ay, finansman_tutari, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">odul_miktari</span><span class="spc">aylık toplamda ise 1.000 TL’ye kadar nakit iade</span></div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">6 Şubat - 31 Ağustos 2026</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">6 Şubat - 31 Ağustos 2026</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">3 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. odul_miktari AYLIK tavandir (gunluk tavan 100 TL). kar_payi_orani BILEREK BOS: %10 nakit iade oranidir.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="KT-008" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">KT-008</span>
+    <h2>Colin&#x27;s&#x27;de Vade Farksız 4 Aya Varan Taksit Fırsatı</h2>
+    <a class="url" href="https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/colinsde-vade-farksiz-4-aya-varan-taksit-firsati"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/KT-008.png"
+           alt="KT-008 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Kuveyt Türk</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">taksit_sayisi</td><td class="d">4</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2026-08-06</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-12-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Kuveyt Türk bireysel kredi kartı sahipleri (sanal ve ek kartlar dahil)</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Colin&#x27;s web sitesi ve mağazalarındaki alışverişlerde vade farksız 4 aya varan taksit</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, erteleme_suresi_ay, finansman_tutari, odul_miktari, odul_birimi, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">taksit_sayisi</span><span class="spc">vade farksız 4 aya varan taksit imkanı</span></div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">6.08.2026 - 31.12.2026</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">6.08.2026 - 31.12.2026</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">3 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Ticari kartlar kampanya disi. Ust limit belirtilmemis.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="KT-009" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">KT-009</span>
+    <h2>Eğitim ve Sağlık Harcamalarınızda 5 Taksit Fırsatı</h2>
+    <a class="url" href="https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/egitim-ve-saglik-harcamalarinizda-5-taksit-firsati"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/KT-009.png"
+           alt="KT-009 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Kuveyt Türk</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">taksit_sayisi</td><td class="d">5</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2024-06-21</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2027-12-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Sağlam Kart ve Özel Bankacılık World Elite Kart sahipleri (bireysel harcamalar)</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Sağlam Kart ile 1.000 TL üzeri eğitim/sağlık harcamalarını mobilden vade farksız 2-5 taksite bölme</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, erteleme_suresi_ay, finansman_tutari, odul_miktari, odul_birimi, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">taksit_sayisi</span><span class="spc">üzerinden vade farksız bir şekilde 2 ila 5 taksite bölebilirsiniz.</span></div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">21.06.2024 - 31.12.2027</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">21.06.2024 - 31.12.2027</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">3 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. 1.000 TL alt esik. Ekstre basina en fazla 2 islem (Biz Bize 6, Ozel Bankacilik 10). Taksitlendirme otomatik degil, elle yapiliyor.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="KT-010" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">KT-010</span>
+    <h2>Gelir Vergisi Ödemelerinizde 3 Taksit Fırsatı</h2>
+    <a class="url" href="https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/gelir-vergisi-odemelerinizde-3-taksit-firsati"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/KT-010.png"
+           alt="KT-010 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Kuveyt Türk</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">taksit_sayisi</td><td class="d">3</td></tr><tr><td class="a">finansman_tutari</td><td class="d">300000</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2026-07-01</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-07-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Sağlam Kart, Miles&amp;Smiles ve Özel Bankacılık World Elite kredi kartı sahipleri</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">SMS/mobil katılım sonrası 1.000-300.000 TL arası gelir vergisi ödemelerine vade farksız 3 taksit</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, erteleme_suresi_ay, odul_miktari, odul_birimi, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">taksit_sayisi</span><span class="spc">1.000 TL - 300.000 TL arasındaki gelir vergisi ödemelerine vade farksız 3 taksit uygulanır.</span></div><div class="sp"><span class="spa">finansman_tutari</span><span class="spc">1.000 TL - 300.000 TL arasındaki gelir vergisi ödemelerine vade farksız 3 taksit uygulanır.</span></div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">1.07.2026 - 31.07.2026</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">1.07.2026 - 31.07.2026</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">4 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Musteri basina en fazla 2 islem; kampanya 75.000 kisi ile sinirli. Katilim ONAY VERGI SMS&#x27;i ile.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="KT-011" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">KT-011</span>
+    <h2>Kuveyt Türk ile Yurt Dışı Seyahatlerinde Ayrıcalıklar</h2>
+    <a class="url" href="https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/seyahat-kampanyalari/kuveyt-turk-ile-yurt-disi-seyahatlerinde-ayricaliklar-sizinle"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/KT-011.png"
+           alt="KT-011 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Kuveyt Türk</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2026-02-02</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-12-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Kuveyt Türk Sağlam Nakit ve Sağlam Kart sahipleri</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">PocketSIM eSIM&#x27;de 1 GB hediye internet ve %35 indirim kodu, yurt dışı harcamalarda avantajlı döviz marjı</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, taksit_sayisi, erteleme_suresi_ay, finansman_tutari, odul_miktari, odul_birimi, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">2.02.2026 - 31.12.2026</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">2.02.2026 - 31.12.2026</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">2 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. TUM SAYISAL ALANLAR BILEREK BOS: %35 bir PocketSIM INDIRIM KODU oranidir (kar payi degil), 1 GB parasal odul degildir. Motorun %35&#x27;i kar_payi_orani sanip sanmadigini olcen kayit.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="KT-012" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">KT-012</span>
+    <h2>Kuveyt Türk Kampüs&#x27;e Gelenlere Toplamda 13.500 TL Hediye</h2>
+    <a class="url" href="https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/musteri-ol-kampanyalari/kuveyt-turk-kampuse-gelenlere-toplamda-13500-tl-hediye"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/KT-012.png"
+           alt="KT-012 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Kuveyt Türk</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Yeni Musteri Kampanyasi</td></tr><tr><td class="a">odul_miktari</td><td class="d">13500</td></tr><tr><td class="a">odul_birimi</td><td class="d">TL</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2025-06-23</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-12-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Kuveyt Türk Mobil&#x27;den müşteri olan kampüslü (öğrenci) müşteriler</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Kampüs&#x27;e katılanlara davet kodu, kart harcamaları ve ilk e-ticaret harcamasından toplamda 13.500 TL hediye</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, taksit_sayisi, erteleme_suresi_ay, finansman_tutari, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">odul_miktari</span><span class="spc">Kuveyt Türk Kampüs&#x27;e katılanlar davet kodu, kart harcamaları ve ilk E-Ticaret harcaması kampanyalarından toplamda 13.500 TL Hediye!</span></div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">23.06.2025 - 31.12.2026</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">23.06.2025 - 31.12.2026</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">3 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. SEMSIYE SAYFA: alt kampanyalarin toplamini duyuruyor (davet 10.500 + hos geldin 500 + kart harcamasi 1.500 + yurt disi cikis harci). odul_miktari basliktaki TOPLAMDIR. Katilim 30.000 kisi ile sinirli.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="KT-013" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">KT-013</span>
+    <h2>Kuveyt Türk Mobil&#x27;den Müşterimiz Olun Özel Kur Fırsatı</h2>
+    <a class="url" href="https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/musteri-ol-kampanyalari/kuveyt-turk-mobilden-musterimiz-olun-ozel-kur-firsatini-kacirmayin"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/KT-013.png"
+           alt="KT-013 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Kuveyt Türk</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Yatirim Urunu Kampanyasi</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2026-05-15</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-09-01</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Kuveyt Türk Mobil&#x27;den müşteri olan bireysel müşteriler</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Mobilden müşteri olan bireysel müşterilere döviz ve kıymetli maden işlemlerinde özel kur</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, taksit_sayisi, erteleme_suresi_ay, finansman_tutari, odul_miktari, odul_birimi, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">15.05.2026 - 1.09.2026</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">15.05.2026 - 1.09.2026</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">2 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. TUM SAYISAL ALANLAR BILEREK BOS: sayfa &#x27;avantajli kur&#x27; ve &#x27;ozel oranlar&#x27; diyor, tek bir sayi vermiyor. Kurlar mobil uygulamada musteriye ozel tanimlaniyor.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="KT-014" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">KT-014</span>
+    <h2>Mobilden Kuveyt Türklü Olanlara Toplamda 7.250 TL Hediye</h2>
+    <a class="url" href="https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/musteri-ol-kampanyalari/mobilden-kuveyt-turklu-olanlara-toplamda-7250-tl-hediye"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/KT-014.png"
+           alt="KT-014 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Kuveyt Türk</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Yeni Musteri Kampanyasi</td></tr><tr><td class="a">odul_miktari</td><td class="d">7250</td></tr><tr><td class="a">odul_birimi</td><td class="d">TL</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2024-02-01</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-12-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Kuveyt Türk Mobil veya Self Nokta&#x27;dan müşteri olan bireysel müşteriler</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Mobilden müşteri olanlara kart harcaması, fatura talimatı ve davet kodundan toplamda 7.250 TL</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, taksit_sayisi, erteleme_suresi_ay, finansman_tutari, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">odul_miktari</span><span class="spc">Mobilden Kuveyt Türklü Olun Toplamda 7.250 TL Kazanın!</span></div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">1.02.2024 - 31.12.2026</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">1.02.2024 - 31.12.2026</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">3 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. SEMSIYE SAYFA: davet 5.500 + fatura talimati 500 + yurt disi cikis harci iadesi. odul_miktari basliktaki TOPLAMDIR. Kampus surumuyle (13.500 TL) ayni yapida ama farkli kitle ve farkli tutar - metin benzerligi %35, ayri kampanyalar.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="KT-015" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">KT-015</span>
+    <h2>Sağlam Kart Sahipleri Halalbooking&#x27;de de Avantajlı</h2>
+    <a class="url" href="https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/saglam-kart-sahipleri-halalbookingde-de-avantajli"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/KT-015.png"
+           alt="KT-015 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Kuveyt Türk</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">taksit_sayisi</td><td class="d">9</td></tr><tr><td class="a">odul_miktari</td><td class="d">1000</td></tr><tr><td class="a">odul_birimi</td><td class="d">TL</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2025-07-30</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-12-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Kuveyt Türk Sağlam Kart sahipleri</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Halalbooking tatil harcamalarında 9 aya varan taksit ve ilk kayıtta 1.000 TL indirim (10.000 TL üzeri rezervasyonda)</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, erteleme_suresi_ay, finansman_tutari, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">taksit_sayisi</span><span class="spc">31 Aralık 2026 tarihine kadar yapacağınız tatil harcamalarınızda 9 aya varan taksit avantajından yararlanabilir, Halalbooking’e kaydolurken 1.000 TL değerinde indirim kazanabilirsiniz.</span></div><div class="sp"><span class="spa">odul_miktari</span><span class="spc">31 Aralık 2026 tarihine kadar yapacağınız tatil harcamalarınızda 9 aya varan taksit avantajından yararlanabilir, Halalbooking’e kaydolurken 1.000 TL değerinde indirim kazanabilirsiniz.</span></div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">30.07.2025 - 31.12.2026</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">30.07.2025 - 31.12.2026</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">4 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. 1.000 TL indirim yalnizca ILK KAYITTA ve 10.000 TL uzeri rezervasyonda gecerli - o tutar bir ESIKTIR, odul degil.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="KT-016" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">KT-016</span>
+    <h2>Yakınlarını Kuveyt Türk&#x27;e Davet Et Toplamda 5.000 TL&#x27;ye Varan Hediye Kazan</h2>
+    <a class="url" href="https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/musteri-ol-kampanyalari/yakinlarini-kuveyt-turke-davet-et-toplamda-5000-tlye-varan-hediye-kazan"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/KT-016.png"
+           alt="KT-016 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Kuveyt Türk</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Yeni Musteri Kampanyasi</td></tr><tr><td class="a">odul_miktari</td><td class="d">5000</td></tr><tr><td class="a">odul_birimi</td><td class="d">TL</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2025-06-15</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-12-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Mevcut Kuveyt Türk müşterileri (davet kodu paylaşanlar)</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Davet koduyla müşteri olan her yakın için 500 TL, toplamda 5.000 TL&#x27;ye kadar; davet edilene de 500 TL harcama iadesi</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, taksit_sayisi, erteleme_suresi_ay, finansman_tutari, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">15.06.2025 - 31.12.2026</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">15.06.2025 - 31.12.2026</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">2 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. odul_miktari DAVET EDENIN tavanidir (5.000 TL); davet edilen ayrica 500 TL alir. Bu kampanya KT-012 ve KT-014&#x27;teki semsiye sayfalarin bir BILESENI - ayri sayfasi oldugu icin ayri kayit.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="KT-017" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">KT-017</span>
+    <h2>Yeni Müşterilere Özel İhtiyaç Kart&#x27;ta %1,99 Oran Fırsatı</h2>
+    <a class="url" href="https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/musteri-ol-kampanyalari/yeni-musterilere-ozel-ihtiyac-kartta-199-oran-firsati"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/KT-017.png"
+           alt="KT-017 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Kuveyt Türk</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Ihtiyac Finansmani Kampanyasi</td></tr><tr><td class="a">kar_payi_orani</td><td class="d">1.99</td></tr><tr><td class="a">oran_periyodu</td><td class="d">aylik</td></tr><tr><td class="a">vade_ay</td><td class="d">12</td></tr><tr><td class="a">erteleme_suresi_ay</td><td class="d">2</td></tr><tr><td class="a">finansman_tutari</td><td class="d">100000</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2025-10-22</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-12-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Kuveyt Türk Mobil&#x27;den görüntülü görüşmeyle son 30 gün içinde müşteri olanlar</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Görüntülü görüşmeyle yeni müşteri olanlara 100.000 TL&#x27;ye kadar %1,99 oranla 12 aya varan, 2 ay ertelemeli İhtiyaç Kart</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> taksit_sayisi, odul_miktari, odul_birimi, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">kar_payi_orani</span><span class="spc">2 ay ertelemeli İhtiyaç Kart, yeni müşterilere özel 100.000 TL’ye kadar %1,99 oranla 12 aya varan taksit fırsatı sunuyor!</span></div><div class="sp"><span class="spa">vade_ay</span><span class="spc">2 ay ertelemeli İhtiyaç Kart, yeni müşterilere özel 100.000 TL’ye kadar %1,99 oranla 12 aya varan taksit fırsatı sunuyor!</span></div><div class="sp"><span class="spa">finansman_tutari</span><span class="spc">2 ay ertelemeli İhtiyaç Kart, yeni müşterilere özel 100.000 TL’ye kadar %1,99 oranla 12 aya varan taksit fırsatı sunuyor!</span></div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">22.10.2025 - 31.12.2026</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">22.10.2025 - 31.12.2026</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">5 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. 100.000 TL ustu basvurularda liste fiyati uygulaniyor, yani 100.000 TL kampanyanin TAVANI. oran_periyodu &#x27;aylik&#x27;: %1,99 yillik olsaydi piyasa disi dusuk olurdu.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="TOM-004" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">TOM-004</span>
+    <h2>Toplam 1.500 TL Hoş Geldin Hediyesi (TOM1500)</h2>
+    <a class="url" href="https://hadiyanindakibanka.com/kampanyalar/toplam-1500-tl-hos-geldin-hediyesi-tom1500-koduyla-musterimiz-ol-1500-tl-senin-olsun"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/TOM-004.png"
+           alt="TOM-004 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">T.O.M. Katılım</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Yeni Musteri Kampanyasi</td></tr><tr><td class="a">odul_miktari</td><td class="d">1500</td></tr><tr><td class="a">odul_birimi</td><td class="d">TL</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2026-08-20</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-08-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">TOM1500 davet koduyla görüntülü görüşmeyle ilk kez TOM Bank müşterisi olanlar</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">TOM1500 davet koduyla ilk kez müşteri olanlara, Hadi Black kartla 1.000 TL üzeri beş harcamada kademeli olarak toplam 1.500 TL Hediye Bakiye</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, taksit_sayisi, erteleme_suresi_ay, finansman_tutari, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">odul_miktari</span><span class="spc">1.500 TL Hediye Bakiye</span></div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">20.8.2026 – 31.8.2026</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">20.8.2026 – 31.8.2026</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">3 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Odul KADEMELI: 1.000 TL uzeri her harcamada sirasiyla 100/200/300/400/500 TL; odul_miktari TOPLAM TAVANDIR. 1.000 TL bir ALT ESIKTIR, finansman tutari degil. Kampanya kisiye ozel - yalnizca secili kitleye duyurulmus.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="TOM-005" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">TOM-005</span>
+    <h2>Hadi Alışveriş Kredisi ile Klima, Süpürge ve Televizyonlarda Vade Farksız 12 Taksit</h2>
+    <a class="url" href="https://hadiyanindakibanka.com/kampanyalar/hadi-alisveris-kredisi-ile-klima-supurge-ve-televizyonlarda-vade-farksiz-12-taksit"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/TOM-005.png"
+           alt="TOM-005 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">T.O.M. Katılım</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Finansman Kampanyasi</td></tr><tr><td class="a">taksit_sayisi</td><td class="d">12</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2026-08-08</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-08-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Hadi Taksitli Kredi limiti yeterli olan TOM Bank müşterileri</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">A101 Ekstra&#x27;da 5.000 TL üzeri klima/süpürge/televizyon alışverişlerinde vade farksız 12 aya varan taksit</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, erteleme_suresi_ay, finansman_tutari, odul_miktari, odul_birimi, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">taksit_sayisi</span><span class="spc">Peşin fiyatına taksit sayısı sadece 12 taksite kadar sınırlıdır.</span></div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">08 Ağustos - 31 Ağustos 2026</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">08 Ağustos - 31 Ağustos 2026</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">3 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Taksit kademeleri 3-6-9-12; en yuksek kademe yazildi. 5.000 TL ALT ESIKTIR, finansman tutari degil. Yalnizca A101 Ekstra ve yalnizca klima/supurge/televizyon kategorisi.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="TOM-006" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">TOM-006</span>
+    <h2>MTV Ödemelerinde Vade Farksız 3 Taksit</h2>
+    <a class="url" href="https://hadiyanindakibanka.com/kampanyalar/vergi-kampanyasi"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/TOM-006.png"
+           alt="TOM-006 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">T.O.M. Katılım</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">taksit_sayisi</td><td class="d">3</td></tr><tr><td class="a">finansman_tutari</td><td class="d">30000</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2026-07-01</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-08-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Hadi Black Kredi Kartı sahipleri (uygulamadan kampanyaya katılanlar)</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Hadi Black kartla 1.000-30.000 TL arası vergi ödemelerinde vade farksız 3 taksit</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, erteleme_suresi_ay, odul_miktari, odul_birimi, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">taksit_sayisi</span><span class="spc">Kampanya kapsamında vergi ödemesi kategorisinde tek seferde gerçekleştirilen 1.000 TL ile 30.000 TL arasındaki işlemler vade farksız 3 taksite bölünür.</span></div><div class="sp"><span class="spa">finansman_tutari</span><span class="spc">Kampanya kapsamında vergi ödemesi kategorisinde tek seferde gerçekleştirilen 1.000 TL ile 30.000 TL arasındaki işlemler vade farksız 3 taksite bölünür.</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">2 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Ekstre donemi basina EN FAZLA BIR vergi odemesi taksitlendirilir. Katilim islemden ONCE uygulamadan yapilmali.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="TEK-009" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">TEK-009</span>
+    <h2>Beyaz Eşya ve Elektronik Alışverişlerinize 3.000 TL&#x27;ye Varan ParafPara</h2>
+    <a class="url" href="https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/beyaz-esya-ve-elektronik-alisverislerinize-3000-tlye-varan-parafpara"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/TEK-009.png"
+           alt="TEK-009 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Türkiye Emlak Katılım</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">odul_miktari</td><td class="d">3000</td></tr><tr><td class="a">odul_birimi</td><td class="d">ParafPara</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2026-07-01</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-07-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Emlak Katılım Paraf ve Paraf Premium kart sahipleri (sanal ve ek kartlar dahil)</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">SMS ile katılıp beyaz eşya/elektronik/bilgisayar harcamasına tutara göre 300-3.000 TL ParafPara</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, taksit_sayisi, erteleme_suresi_ay, finansman_tutari, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">odul_miktari</span><span class="spc">Beyaz Eşya ve Elektronik Alışverişlerinize 3.000 TL&#x27;ye varan ParafPara!</span></div><div class="sp"><span class="spa">odul_birimi</span><span class="spc">Beyaz Eşya ve Elektronik Alışverişlerinize 3.000 TL&#x27;ye varan ParafPara!</span></div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">Kampanya 1-31 Temmuz 2026 tarihleri arasında geçerlidir.</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">Kampanya 1-31 Temmuz 2026 tarihleri arasında geçerlidir.</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">4 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Dort kademeli odul; musteri yalnizca BIRINI kazanir, odul_miktari en yuksek kademedir. Pazar yeri e-ticaret haric.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="TEK-010" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">TEK-010</span>
+    <h2>Biletinial&#x27;da %20 İndirim</h2>
+    <a class="url" href="https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/biletinialda-20-indirim"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/TEK-010.png"
+           alt="TEK-010 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Türkiye Emlak Katılım</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-12-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Emlak Katılım Paraf, Paraf Premium ve Debit kart sahipleri</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">emlak20 kupon koduyla Biletinial etkinlik biletlerinde %20 indirim</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, taksit_sayisi, erteleme_suresi_ay, finansman_tutari, odul_miktari, odul_birimi, masraf_durumu, kampanya_baslangic</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">Kampanya, 31.12.2026 tarihine kadar alınacak etkinlik biletlerinde geçerlidir.</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">1 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. odul_miktari BILEREK BOS: indirim yalnizca YUZDE olarak veriliyor, TL tavani yok. kar_payi_orani da bos: %20 kupon indirimidir. Sepete en fazla 9 bilet. Baslangic tarihi yok.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="TEK-011" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">TEK-011</span>
+    <h2>Emlak Katılım Paraf&#x27;tan tabii Premium Üyeliği Hediye</h2>
+    <a class="url" href="https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/emlak-katilim-paraftan-tabii-premium-uyeligi-hediye"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/TEK-011.png"
+           alt="TEK-011 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Türkiye Emlak Katılım</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2026-07-01</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-07-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Emlak Katılım Paraf ve Paraf Premium kart sahipleri (sanal ve ek kartlar dahil)</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Paraf kartla yapılan tabii Premium üyelik ödemesinin ilgili ay ücreti karta iade</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, taksit_sayisi, erteleme_suresi_ay, finansman_tutari, odul_miktari, odul_birimi, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">Kampanya 01.07.2026 – 31.07.2026 tarihleri arasında geçerlidir.</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">Kampanya 01.07.2026 – 31.07.2026 tarihleri arasında geçerlidir.</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">2 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. odul_miktari BILEREK BOS: &#x27;ilgili ayin uyelik ucreti kadar iade&#x27; deniyor, TUTAR YAZMIYOR. Trendyol Plus kaydiyla (75 TL acikca yazili) karsilastirmali cift olusturur.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="TEK-012" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">TEK-012</span>
+    <h2>Emlak Katılım Paraf&#x27;tan Trendyol Plus Üyelik Ücretiniz İade</h2>
+    <a class="url" href="https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/emlak-katilim-paraftan-trendyol-plus-uyelik-ucretiniz-iade"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/TEK-012.png"
+           alt="TEK-012 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Türkiye Emlak Katılım</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">odul_miktari</td><td class="d">75</td></tr><tr><td class="a">odul_birimi</td><td class="d">TL</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2026-07-01</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-07-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Emlak Katılım Paraf ve Paraf Premium kart sahipleri</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Paraf kartla yapılan Trendyol Plus üyelik ödemesindeki 75 TL üyelik ücreti karta iade</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, taksit_sayisi, erteleme_suresi_ay, finansman_tutari, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">odul_miktari</span><span class="spc">Emlak Katılım Paraf ve Emlak Katılım Paraf Premium kartınız ile 01.07.2026 – 31.07.2026 tarihleri arasında yapacağınız Trendyol Plus üyelik ödemenize ilişkin 75 TL tutarındaki üyelik ücreti kartınıza iade olarak yansıtılacaktır.</span></div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">01.07.2026 – 31.07.2026</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">01.07.2026 – 31.07.2026</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">3 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. tabii Premium kaydiyla ayni yapi ama burada tutar (75 TL) ACIKCA yazili; orada yazmiyor ve o alan bos birakildi.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="TEK-013" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">TEK-013</span>
+    <h2>Enterprise Araç Kiralamalarında %35 İndirim Fırsatı</h2>
+    <a class="url" href="https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/enterprise-arac-kiralamalarinda-35-indirim-firsati"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/TEK-013.png"
+           alt="TEK-013 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Türkiye Emlak Katılım</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-12-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Emlak Katılım Paraf kart sahipleri</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Banka iş birliği sayfasından Enterprise online araç kiralamalarında liste fiyatı üzerinden %35 indirim</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, taksit_sayisi, erteleme_suresi_ay, finansman_tutari, odul_miktari, odul_birimi, masraf_durumu, kampanya_baslangic</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">Liste fiyatı üzerinden %35 indirim kampanyası 31.12.2026 tarihine kadar Türkiye’deki tüm Enterprise ofislerinde online kiralamalarda geçerlidir.</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">1 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. odul_miktari ve kar_payi_orani BILEREK BOS: %35 bir liste fiyati indirimidir, TL tavani yok. Baslangic tarihi yok.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="TEK-014" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">TEK-014</span>
+    <h2>Giyim ve Kozmetik Alışverişlerinize 1.300 TL ParafPara</h2>
+    <a class="url" href="https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/giyim-ve-kozmetik-alisverislerinize-1300-tl-parafpara"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/TEK-014.png"
+           alt="TEK-014 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Türkiye Emlak Katılım</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">odul_miktari</td><td class="d">1300</td></tr><tr><td class="a">odul_birimi</td><td class="d">ParafPara</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2026-08-01</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-08-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Emlak Katılım Paraf kart sahipleri</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">GIYIM2 SMS katılımıyla giyim/kozmetik harcamasına 500-1.250 TL, mobil/QR ödemede +50 TL, en fazla 1.300 TL ParafPara</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, taksit_sayisi, erteleme_suresi_ay, finansman_tutari, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">odul_miktari</span><span class="spc">bir müşteri kampanyaya bir kez katılabilir ve en fazla 1.300 TL ParafPara kazanabilir.</span></div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">Kampanya 1-31 Ağustos 2026 tarihleri arasında geçerlidir.</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">Kampanya 1-31 Ağustos 2026 tarihleri arasında geçerlidir.</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">3 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. 1.300 TL = en yuksek barem (1.250) + mobil/QR ekstrasi (50). Uc kademe: 500/800/1.250. AYNI AILEDEN IKI SURUM DAHA VAR (Temmuz 1.000 TL ve Temmuz 2.000 TL) ama metinleri bu kayda %89-92 benzedigi icin etiketlenmedi - ucu birden altin sete girseydi ayni teklif olcumde uc kat agirlik alir, train/test&#x27;e dagilirsa sizinti olurdu. Bu surum secildi</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="TEK-015" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">TEK-015</span>
+    <h2>Hızlı Çiçek&#x27;te Tüm İndirimlere Ek %20 İndirim Fırsatı</h2>
+    <a class="url" href="https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/hizli-cicekte-tum-indirimlere-ek-20-indirim-firsati"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/TEK-015.png"
+           alt="TEK-015 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Türkiye Emlak Katılım</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-12-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Emlak Katılım Paraf, Paraf Premium ve Debit kart sahipleri</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">EKB20 kupon koduyla Hızlı Çiçek&#x27;te tüm indirimlere ek %20 indirim</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, taksit_sayisi, erteleme_suresi_ay, finansman_tutari, odul_miktari, odul_birimi, masraf_durumu, kampanya_baslangic</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">Kampanya 31.12.2026 tarihine kadar geçerlidir.</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">1 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Sayisal alanlar BILEREK BOS: %20 kupon indirimidir, TL tavani yok. Baslangic tarihi YOK.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="TEK-016" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">TEK-016</span>
+    <h2>Marina Mayo&#x27;da Tüm Ürünlerde %15 İndirim</h2>
+    <a class="url" href="https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/marina-mayoda-tum-urunlerde-15-indirim"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/TEK-016.png"
+           alt="TEK-016 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Türkiye Emlak Katılım</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-12-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Emlak Katılım Paraf, Paraf Premium ve Debit kart sahipleri</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">emlak15 kupon koduyla Marina Mayo&#x27;da tüm ürünlerde %15 indirim (tek kullanımlık)</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, taksit_sayisi, erteleme_suresi_ay, finansman_tutari, odul_miktari, odul_birimi, masraf_durumu, kampanya_baslangic</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">Kampanya, 31.12.2026 tarihine kadar geçerlidir.</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">1 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Sayisal alanlar BILEREK BOS: %15 kupon indirimidir. Baslangic tarihi YOK.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="TF-008" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">TF-008</span>
+    <h2>Kamu Çalışanlarına Özel İhtiyaç Finansmanı</h2>
+    <a class="url" href="https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/kamu-calisanlarina-ozel-ihtiyac-finansmani.aspx"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/TF-008.png"
+           alt="TF-008 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Türkiye Finans</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Ihtiyac Finansmani Kampanyasi</td></tr><tr><td class="a">vade_ay</td><td class="d">36</td></tr><tr><td class="a">erteleme_suresi_ay</td><td class="d">3</td></tr><tr><td class="a">finansman_tutari</td><td class="d">400000</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Kamu çalışanları</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Kamu çalışanlarına 50.000-400.000 TL arası ihtiyaç finansmanı, kişiye özel kâr payı oranı ve 3 ay ödeme öteleme</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, taksit_sayisi, odul_miktari, odul_birimi, masraf_durumu, kampanya_baslangic, kampanya_bitis</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">finansman_tutari</span><span class="spc">Kampanya kapsamında 50.000 TL – 400.000 TL arasındaki ihtiyaçlarını için finansman başvurusu yapabilirsiniz.</span></div><div class="sp"><span class="spa">erteleme_suresi_ay</span><span class="spc">Finansman geri ödemelerinizde ilk taksiniz için 3 ay öteleme hakkınızı kullanabilir</span></div><div class="sp"><span class="spa">vade_ay</span><span class="spc">İhtiyaç Finansmanına uygulanacak maksimum vade süresi 36 aydır.</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">3 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. kar_payi_orani BILEREK BOS: &#x27;size ozel kar payi oranlari&#x27; deniyor ama SAYI verilmiyor. Kampanya tarihi de sayfada YOK. DUZELTME (23 Agustos 2026): vade_ay etiketlenirken KACIRILDI - sayfa &#x27;maksimum vade suresi 36 aydir&#x27; diyor. Vade KADEMELI: 125.000 TL&#x27;ye kadar 36 ay, 125.000-250.000 TL arasi 24 ay, 250.000 TL uzeri 12 ay. Alan tek sayi tuttu</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="VK-009" data-durum="uyari">
+  <header class="kh">
+    <span class="kid">VK-009</span>
+    <h2>Tamamla Kazan</h2>
+    <a class="url" href="https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/tamamla-kazan"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/VK-009.png"
+           alt="VK-009 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Vakıf Katılım</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Belirlenemedi</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Vakıf Katılım bireysel müşterileri</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Ay boyunca en az 6 kriteri tamamlayan bireysel müşteriler, seçtikleri bir avantajdan yararlanır</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, taksit_sayisi, erteleme_suresi_ay, finansman_tutari, odul_miktari, odul_birimi, masraf_durumu, kampanya_baslangic, kampanya_bitis</p>
+      
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-uyari">kanıt cümlesi girilmemiş (1 dolu alan var)</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. TUM SAYISAL ALANLAR BILEREK BOS: sayfadaki tek sayi &#x27;en az 6 kriter&#x27; olup katilim sartidir, taksit/odul degil. Odul tutari sayfada yok (mobil uygulamada gosteriliyor). Kampanya suresiz - her ay basinda kriterler sifirlaniyor.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="VK-010" data-durum="uyari">
+  <header class="kh">
+    <span class="kid">VK-010</span>
+    <h2>VClub Dünyası Artık Vakıf Katılım Mobil&#x27;de</h2>
+    <a class="url" href="https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/vclub-dunyasi-artik-vakif-katilim-mobilde"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/VK-010.png"
+           alt="VK-010 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Vakıf Katılım</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Aktif Vakıf Katılım kredi veya banka kartı kullanan müşteriler</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">VClub sadakat programı ile süpermarket, seyahat, giyim, teknoloji, kafe ve restoranlarda müşteriye özel indirimler</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, taksit_sayisi, erteleme_suresi_ay, finansman_tutari, odul_miktari, odul_birimi, masraf_durumu, kampanya_baslangic, kampanya_bitis</p>
+      
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-uyari">kanıt cümlesi girilmemiş (1 dolu alan var)</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. TUM SAYISAL ALANLAR BILEREK BOS: sayfa indirim orani VERMIYOR (&#x27;musteri ozelinde degisiklik gosterebilmektedir&#x27;). Tarih de yok. GastroClub is birligi - HF-007 ile ayni platform, farkli banka.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="ZK-009" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">ZK-009</span>
+    <h2>A101&#x27;de Peşin Fiyatına 6 Aya Varan Taksit</h2>
+    <a class="url" href="https://www.ziraatkatilim.com.tr/kart-kampanyalari/a101de-6-taksit"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/ZK-009.png"
+           alt="ZK-009 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Ziraat Katılım</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">taksit_sayisi</td><td class="d">6</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2025-07-10</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-08-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Ziraat Katılım Bankkart kredi kartı sahipleri (ücretsiz ve ticari kartlar hariç)</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Bankkart kredi kartıyla A101 mağaza ve web sitesinde 300 TL üzeri alışverişte peşin fiyatına 6 aya varan taksit</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, erteleme_suresi_ay, finansman_tutari, odul_miktari, odul_birimi, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">taksit_sayisi</span><span class="spc">alışverişlerinizde peşin fiyatına 6 aya varan taksit fırsatından faydalanabilirsiniz.</span></div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">10-07-2025 - 31-08-2026</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">10-07-2025 - 31-08-2026</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">3 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. 300 TL alt esik, finansman tutari degil. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayit, statik tarayicinin EKSIK yakaladigi anlik goruntuden etiketlendigi icin bos kalmisti. Sayfa JS ile yeniden tarandi (gold_dataset/kaynak_tazele.py) ve &#x27;Kampanya Donemi&#x27; blogu goruldu.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="ZK-010" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">ZK-010</span>
+    <h2>Abdullah Kiğılı&#x27;da 2 Taksit</h2>
+    <a class="url" href="https://www.ziraatkatilim.com.tr/kart-kampanyalari/abdullah-kigilida-2-taksit"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/ZK-010.png"
+           alt="ZK-010 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Ziraat Katılım</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">taksit_sayisi</td><td class="d">2</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2025-04-01</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-08-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Ziraat Katılım Bankkart kredi kartı sahipleri (ücretsiz ve ticari kartlar hariç)</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Bankkart kredi kartıyla Abdullah Kiğılı alışverişlerinde 2 taksit</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, erteleme_suresi_ay, finansman_tutari, odul_miktari, odul_birimi, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">taksit_sayisi</span><span class="spc">2 taksitli</span></div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">01-04-2025 - 31-08-2026</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">01-04-2025 - 31-08-2026</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">3 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Alt/ust harcama siniri sayfada YOK. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayit, statik tarayicinin EKSIK yakaladigi anlik goruntuden etiketlendigi icin bos kalmisti. Sayfa JS ile yeniden tarandi (gold_dataset/kaynak_tazele.py) ve &#x27;Kampanya Donemi&#x27; blogu goruldu.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="ZK-011" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">ZK-011</span>
+    <h2>Aile Kart&#x27;a Özel 2.000 TL&#x27;ye Varan Bankkart Lira</h2>
+    <a class="url" href="https://www.ziraatkatilim.com.tr/kart-kampanyalari/aile-karta-ozel-2000-tlye-varan-bankkart-lira-1"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/ZK-011.png"
+           alt="ZK-011 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Ziraat Katılım</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">odul_miktari</td><td class="d">2000</td></tr><tr><td class="a">odul_birimi</td><td class="d">Bankkart Lira</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2026-07-10</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-08-07</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Ziraat Katılım Bankkart Aile kredi kartı sahibi asıl kart sahipleri</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Aile kredi kartıyla market/akaryakıt/giyim/eğitim/sağlık harcamalarına %5-%10 Bankkart Lira, en fazla 2.000 TL</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, taksit_sayisi, erteleme_suresi_ay, finansman_tutari, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">odul_miktari</span><span class="spc">en fazla 2.000 TL</span></div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">10 Temmuz– 7 Ağustos 2026</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">10 Temmuz– 7 Ağustos 2026</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">3 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. kar_payi_orani BILEREK BOS: %5 ve %10 NAKIT IADE oranidir, kar payi orani degil. Bireysel/ticari/ucretsiz kartlar haric.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="ZK-012" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">ZK-012</span>
+    <h2>Alarko Carrier&#x27;da 6 Taksit</h2>
+    <a class="url" href="https://www.ziraatkatilim.com.tr/kart-kampanyalari/alarko-carrierda-6-taksit"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/ZK-012.png"
+           alt="ZK-012 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Ziraat Katılım</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">taksit_sayisi</td><td class="d">6</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2025-04-01</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-08-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Ziraat Katılım Bankkart kredi kartı sahipleri (ücretsiz ve ticari kartlar hariç)</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Bankkart kredi kartıyla Alarko Carrier alışverişlerinde 6 taksit</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, erteleme_suresi_ay, finansman_tutari, odul_miktari, odul_birimi, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">taksit_sayisi</span><span class="spc">6 taksitli</span></div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">01-04-2025 - 31-08-2026</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">01-04-2025 - 31-08-2026</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">3 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Harcama siniri sayfada YOK. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayit, statik tarayicinin EKSIK yakaladigi anlik goruntuden etiketlendigi icin bos kalmisti. Sayfa JS ile yeniden tarandi (gold_dataset/kaynak_tazele.py) ve &#x27;Kampanya Donemi&#x27; blogu goruldu.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="ZK-013" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">ZK-013</span>
+    <h2>Alfemo&#x27;da 5 Taksit</h2>
+    <a class="url" href="https://www.ziraatkatilim.com.tr/kart-kampanyalari/alfemoda-5-taksit"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/ZK-013.png"
+           alt="ZK-013 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Ziraat Katılım</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">taksit_sayisi</td><td class="d">5</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2025-11-27</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-08-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Ziraat Katılım Bankkart kredi kartı sahipleri (ücretsiz ve ticari kartlar hariç)</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Bankkart kredi kartıyla Alfemo alışverişlerinde 5 taksit</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, erteleme_suresi_ay, finansman_tutari, odul_miktari, odul_birimi, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">taksit_sayisi</span><span class="spc">5 taksitli</span></div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">27-11-2025 - 31-08-2026</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">27-11-2025 - 31-08-2026</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">3 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Harcama siniri sayfada YOK. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayit, statik tarayicinin EKSIK yakaladigi anlik goruntuden etiketlendigi icin bos kalmisti. Sayfa JS ile yeniden tarandi (gold_dataset/kaynak_tazele.py) ve &#x27;Kampanya Donemi&#x27; blogu goruldu.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="ZK-014" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">ZK-014</span>
+    <h2>Amazon&#x27;da 9&#x27;a Varan Taksit</h2>
+    <a class="url" href="https://www.ziraatkatilim.com.tr/kart-kampanyalari/amazonda-9a-varan-taksit"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/ZK-014.png"
+           alt="ZK-014 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Ziraat Katılım</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">taksit_sayisi</td><td class="d">9</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2025-11-13</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-08-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Ziraat Katılım Bankkart kredi kartı sahipleri (ücretsiz ve ticari kartlar hariç)</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Bankkart kredi kartıyla amazon.com.tr&#x27;de tutara göre peşin fiyatına 3, 6 veya 9 taksit</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, erteleme_suresi_ay, finansman_tutari, odul_miktari, odul_birimi, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">taksit_sayisi</span><span class="spc">Seçili ürünlerde yapacağınız 10.000 TL ve üzeri alışverişlerinizde peşin fiyatına 9 taksit fırsatından faydalanabilirsiniz.</span></div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">13-11-2025 - 31-08-2026</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">13-11-2025 - 31-08-2026</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">3 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Uc kademe (3/6/9); 9 taksit yalnizca SECILI URUNLERDE ve 10.000 TL uzeri. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayit, statik tarayicinin EKSIK yakaladigi anlik goruntuden etiketlendigi icin bos kalmisti. Sayfa JS ile yeniden tarandi (gold_dataset/kaynak_tazele.py) ve &#x27;Kampanya Donemi&#x27; blogu goruldu.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="ZK-015" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">ZK-015</span>
+    <h2>Atasun Optik&#x27;te 6 Taksit</h2>
+    <a class="url" href="https://www.ziraatkatilim.com.tr/kart-kampanyalari/atasun-optikte-6-taksit"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/ZK-015.png"
+           alt="ZK-015 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Ziraat Katılım</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">taksit_sayisi</td><td class="d">6</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2026-08-11</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-08-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Ziraat Katılım Bankkart kredi kartı sahipleri (ücretsiz ve ticari kartlar hariç)</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Bankkart kredi kartıyla Atasun Optik&#x27;te 4.000 TL üzeri işlemlerde peşin fiyatına 6 taksit</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, erteleme_suresi_ay, finansman_tutari, odul_miktari, odul_birimi, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">taksit_sayisi</span><span class="spc">peşin fiyatına 6 taksit</span></div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">11-08-2026 - 31-08-2026</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">11-08-2026 - 31-08-2026</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">3 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. 4.000 TL bir ALT ESIKTIR, finansman tutari degil. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayit, statik tarayicinin EKSIK yakaladigi anlik goruntuden etiketlendigi icin bos kalmisti. Sayfa JS ile yeniden tarandi (gold_dataset/kaynak_tazele.py) ve &#x27;Kampanya Donemi&#x27; blogu goruldu.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="ZK-016" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">ZK-016</span>
+    <h2>Bağımsız Kart&#x27;a Özel 5.000 TL&#x27;ye Varan Bankkart Lira</h2>
+    <a class="url" href="https://www.ziraatkatilim.com.tr/kart-kampanyalari/bagimsiz-karta-ozel-5000-tlye-varan-bankkart-lira-1"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/ZK-016.png"
+           alt="ZK-016 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Ziraat Katılım</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">odul_miktari</td><td class="d">5000</td></tr><tr><td class="a">odul_birimi</td><td class="d">Bankkart Lira</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2026-07-10</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-08-07</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Ziraat Katılım Bankkart Bağımsız kredi kartı sahipleri</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Bağımsız kredi kartıyla eğitim/sağlık/spor/kültür-sanat harcamalarına %10, toplamda 5.000 TL Bankkart Lira</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, taksit_sayisi, erteleme_suresi_ay, finansman_tutari, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">odul_miktari</span><span class="spc">tüm harcamalara %10, toplamda 5.000 TL Bankkart Lira!</span></div><div class="sp"><span class="spa">odul_birimi</span><span class="spc">tüm harcamalara %10, toplamda 5.000 TL Bankkart Lira!</span></div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">10 Temmuz – 7 Ağustos 2026</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">10 Temmuz – 7 Ağustos 2026</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">4 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. kar_payi_orani BILEREK BOS: %10 nakit iade oranidir. Bir sonraki donemi (8 Agustos - 7 Eylul) ayri sayfada duruyor ama metin neredeyse ayni - etiketlenmedi.</p>
+    </div>
+  </div>
+</article>
+
+<article class="kart" id="ZK-017" data-durum="iyi">
+  <header class="kh">
+    <span class="kid">ZK-017</span>
+    <h2>BAUHAUS&#x27;ta 3 Taksit</h2>
+    <a class="url" href="https://www.ziraatkatilim.com.tr/kart-kampanyalari/bauhausta-3-taksit"
+       target="_blank" rel="noopener noreferrer">kaynağı aç ↗</a>
+  </header>
+  <div class="gövde">
+    <div class="sol">
+      <img loading="lazy" src="ekran_goruntuleri/ZK-017.png"
+           alt="ZK-017 ekran görüntüsü">
+    </div>
+    <div class="sag">
+      <table class="alanlar"><tr><td class="a">banka</td><td class="d">Ziraat Katılım</td></tr><tr><td class="a">kampanya_turu</td><td class="d">Kart Kampanyasi</td></tr><tr><td class="a">taksit_sayisi</td><td class="d">3</td></tr><tr><td class="a">kampanya_baslangic</td><td class="d">2025-04-01</td></tr><tr><td class="a">kampanya_bitis</td><td class="d">2026-08-31</td></tr><tr><td class="a">hedef_kitle</td><td class="d">Ziraat Katılım Bankkart kredi kartı sahipleri (ücretsiz ve ticari kartlar hariç)</td></tr><tr><td class="a">kampanya_avantaji</td><td class="d">Bankkart kredi kartıyla BAUHAUS alışverişlerinde 3 taksit</td></tr></table>
+      <p class="bos"><strong>Boş bırakılan:</strong> kar_payi_orani, oran_periyodu, vade_ay, erteleme_suresi_ay, finansman_tutari, odul_miktari, odul_birimi, masraf_durumu</p>
+      <div class="spanlar"><div class="baslik">Kanıt cümleleri</div><div class="sp"><span class="spa">taksit_sayisi</span><span class="spc">3 taksit</span></div><div class="sp"><span class="spa">kampanya_baslangic</span><span class="spc">01-04-2025 - 31-08-2026</span></div><div class="sp"><span class="spa">kampanya_bitis</span><span class="spc">01-04-2025 - 31-08-2026</span></div></div>
+      <ul class="kontrol"><li class="k-iyi">ekran görüntüsü var</li><li class="k-iyi">3 kanıt cümlesi kaynakta birebir geçiyor</li><li class="k-iyi">sayısal değerlerin hepsi metinde görünüyor</li></ul>
+      <p class="not">TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Harcama siniri sayfada YOK. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayit, statik tarayicinin EKSIK yakaladigi anlik goruntuden etiketlendigi icin bos kalmisti. Sayfa JS ile yeniden tarandi (gold_dataset/kaynak_tazele.py) ve &#x27;Kampanya Donemi&#x27; blogu goruldu.</p>
+    </div>
+  </div>
+</article>
+</div>
+<script>
+const kartlar=[...document.querySelectorAll('.kart')],sayac=document.getElementById('sayac');
+function ciz(f){let n=0;kartlar.forEach(k=>{const g=f==='*'||k.dataset.durum===f;
+ k.style.display=g?'':'none';if(g)n++});sayac.textContent=n+' / '+kartlar.length+' kayıt';}
+document.querySelectorAll('.cip').forEach(b=>b.addEventListener('click',()=>{
+ document.querySelectorAll('.cip').forEach(o=>o.setAttribute('aria-pressed',String(o===b)));
+ ciz(b.dataset.f);}));
+ciz('*');
+</script></body></html>

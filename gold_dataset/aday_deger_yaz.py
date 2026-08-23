@@ -67,9 +67,15 @@ DAMGA = "MAKINE ADAYI - dogrulanmadi, imzasiz, olcum disi"
 YASAK_SUTUNLAR = frozenset({"giren_kisi", "giris_tarihi", "kayit_id",
                             "banka", "kaynak_url", "ekran_goruntusu"})
 
-# Deger yazilabilecek alanlar - hepsi span ister.
+# Deger yazilabilecek alanlar - SPAN_ISTEMEYEN disindakiler span ister.
+#
+# maliyet_orani BURADA YOK: excel_to_json'un SPAN_VERILEBILIR_ALANLAR
+# listesinde yer almadigi icin ona kanit spani yazilamiyor. Span
+# dogrulanamayan bir alana deger yazmak, bu betigin tek koruma
+# mekanizmasini o alan icin devre disi birakirdi. Alan gerekirse once
+# excel_to_json tarafinda span verilebilir hale getirilmeli.
 IZINLI_ALANLAR = frozenset({
-    "kar_payi_orani", "maliyet_orani", "oran_periyodu", "vade_ay",
+    "kar_payi_orani", "oran_periyodu", "vade_ay",
     "finansman_tutari", "odul_miktari", "odul_birimi", "kampanya_avantaji",
     "masraf_durumu", "kampanya_baslangic", "kampanya_bitis", "hedef_kitle",
     "taksit_sayisi", "erteleme_suresi_ay", "kampanya_turu",

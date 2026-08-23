@@ -122,7 +122,9 @@ def getir(
     """Soruya en ilgili parcalari getirir; kaynak yetersizse bunu bildirir.
 
     `banka` verilirse arama o bankaya daraltilir (metadata filtresi).
-    `hedef_tarih` verilirse o tarihte aktif olan kayitlara (valid_at) filtrelenir.
+    `hedef_tarih` SU AN CALISMAZ - baktigi valid_at alanlari indeks
+    payload'inda yok, verilirse arama BOS doner. Ayrintili gerekce ve
+    secilen alternatif icin bkz. qdrant_baglanti.coklu_filtre.
 
     `exact` parametresi Qdrant'in yaklasik HNSW aramasi yerine tam tarama
     (brute-force) kullanip kullanmayacagini belirler. None verilirse

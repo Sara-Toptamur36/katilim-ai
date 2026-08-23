@@ -285,6 +285,36 @@ def hibrit_ara(
 
 def coklu_filtre(banka: str | None = None, hedef_tarih: str | None = None):
     """Banka ve/veya tarihe (valid_at) gore Qdrant filtresi uretir.
+
+    ==================================================================
+    UYARI - `hedef_tarih` SU AN CALISMAZ, ACMAYIN
+    ==================================================================
+    Denetlendi (23 Agustos 2026): bu parametre `valid_at_start` ve
+    `valid_at_end` alanlarina bakiyor, ama INDEKS PAYLOAD'INDA BU
+    ALANLAR YOK. Indeksleyicinin yazdigi alanlar tam olarak sunlar
+    (bkz. chunking/parcalayici.py):
+
+        metin · banka · kaynak_url · kampanya_adi · erisim_zamani
+
+    Qdrant'ta payload'da bulunmayan bir anahtara `must` kosulu HICBIR
+    noktayi eslestirmez. Yani `hedef_tarih` verilirse arama BOS doner
+    ve RAG her soruya "yeterli kaynak bulamadim" der - demoyu
+    duzeltmek yerine tamamen bozar.
+
+    Ayrica `erisim_zamani` TARAMA zamanidir, kampanya gecerlilik
+    tarihi degil; onu tarih filtresi olarak kullanmak da yanlis olur.
+
+    SECILEN YOL: filtrelemek yerine ISARETLEMEK. Kaynak her zaman
+    donuyor, suresi dolmussa kullaniciya "sureli dolmus" rozetiyle
+    gosteriliyor (bkz. agent/router.py::_guncellik_belirle ve
+    api/schemas.py::Kaynak.guncellik). Gerekce: tarih yanlis
+    cikarilmissa filtre GECERLI bir kampanyayi sessizce gorunmez
+    yapar - juri demosunda fark edilmesi en zor hata turu budur.
+
+    Bu parametreyi calisir hale getirmek isteyen once indeksleyiciye
+    gecerlilik tarihlerini eklemeli ve indeksi yeniden kurmalidir.
+    ==================================================================
+
     
     hedef_tarih (YYYY-MM-DD): Kampanyanin bu tarihte aktif oldugunu kontrol eder.
     (valid_at baslangicindan buyuk, bitisinden kucuk vs. - eger tek bir tarih alaniysa ona esitlik veya aralik)

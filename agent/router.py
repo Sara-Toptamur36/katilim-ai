@@ -466,6 +466,45 @@ def _erisim_zamanini_tarihe_cevir(erisim_zamani: str | None) -> str | None:
         return None
 
 
+def _guncellik_belirle(kampanya_bitis, bugun=None) -> str:
+    """Kaynak bugun itibariyla gecerli mi?
+
+    Bilinmiyorsa "bilinmiyor" doner - "aktif" VARSAYILMAZ. Tarihi
+    bilinmeyen bir kampanyayi gecerli saymak, kullaniciya soylemedigimiz
+    bir sey iddia etmek olurdu.
+    """
+    from datetime import date as _date
+
+    if kampanya_bitis is None:
+        return "bilinmiyor"
+    bugun = bugun or _date.today()
+    if isinstance(kampanya_bitis, str):
+        try:
+            kampanya_bitis = _date.fromisoformat(kampanya_bitis[:10])
+        except ValueError:
+            return "bilinmiyor"
+    return "suresi_dolmus" if kampanya_bitis < bugun else "aktif"
+
+
+def _kampanya_kaydini_bul(
+    kayit_getirici: Callable[[str], list] | None, banka: str | None, kaynak_url: str | None
+):
+    """RAG parcasinin ustverisine karsilik gelen kampanya KAYDI.
+
+    Eskiden yalnizca id donuyordu (`_kampanya_id_bul`); kaydin kendisi
+    gerekli hale geldi cunku kaynagin guncelligi de kayittaki
+    `kampanya_bitis` alanindan okunuyor. Vektor indeksinde tarih
+    TUTULMUYOR - payload yalnizca metin/banka/kaynak_url/kampanya_adi/
+    erisim_zamani tasiyor.
+    """
+    if kayit_getirici is None or not banka or not kaynak_url:
+        return None
+    for kayit in kayit_getirici(banka):
+        if getattr(kayit, "kaynak_url", None) == kaynak_url:
+            return kayit
+    return None
+
+
 def _kampanya_id_bul(
     kayit_getirici: Callable[[str], list] | None, banka: str | None, kaynak_url: str | None
 ) -> int | None:
@@ -481,12 +520,8 @@ def _kampanya_id_bul(
     testleri) None doner - bu SESSIZ bir eksiklik degildir, cagiran taraf
     bilerek id istemiyor demektir.
     """
-    if kayit_getirici is None or not banka or not kaynak_url:
-        return None
-    for kayit in kayit_getirici(banka):
-        if getattr(kayit, "kaynak_url", None) == kaynak_url:
-            return getattr(kayit, "id", None)
-    return None
+    kayit = _kampanya_kaydini_bul(kayit_getirici, banka, kaynak_url)
+    return getattr(kayit, "id", None) if kayit is not None else None
 
 
 def rag_aracini_cagir(
@@ -532,13 +567,18 @@ def rag_aracini_cagir(
     for i, parca in enumerate(sonuc.parcalar, 1):
         ustveri = parca.get("ustveri") or {}
         satirlar.append(f"{i}. {ustveri.get('metin', '')}")
+        # Kayit BIR KEZ bulunur; hem id hem guncellik ondan okunur.
+        kampanya_kaydi = _kampanya_kaydini_bul(
+            kayit_getirici, ustveri.get("banka"), ustveri.get("kaynak_url")
+        )
+        kampanya_bitis = getattr(kampanya_kaydi, "kampanya_bitis", None)
         kaynaklar.append(
             {
                 "banka": ustveri.get("banka"),
                 "kampanya_adi": ustveri.get("kampanya_adi"),
-                "kampanya_id": _kampanya_id_bul(
-                    kayit_getirici, ustveri.get("banka"), ustveri.get("kaynak_url")
-                ),
+                "kampanya_id": getattr(kampanya_kaydi, "id", None),
+                "kampanya_bitis": kampanya_bitis,
+                "guncellik": _guncellik_belirle(kampanya_bitis),
                 "kaynak_url": ustveri.get("kaynak_url"),
                 # DENETIM BULGUSU (11 Agu): bu iki alan Kaynak semasinda vardi
                 # ama burada hic set edilmiyordu, Pydantic sessizce None

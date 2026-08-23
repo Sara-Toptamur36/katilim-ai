@@ -108,6 +108,8 @@ export const ZAMAN_EKSENI = {
   ilkGorulme: "31 Temmuz 2026",
   sonGorulme: "22 Ağustos 2026",
   bayatlikGun: 1,
+  ortalamaVersiyon: 1.1,
+  degisenKampanya: 26,
 };
 
 // Alan bazinda veri doluluk - PostgreSQL'den, tekil kampanya bazinda.

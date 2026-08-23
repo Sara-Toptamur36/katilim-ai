@@ -12,7 +12,7 @@ Kaynak: On Degerlendirme Raporu Bolum 15 (CampaignRecord) + sartname Md. 5.3
 
 from datetime import date
 from enum import Enum
-from typing import Any
+from typing import Literal, Any
 
 from pydantic import BaseModel, Field
 
@@ -335,6 +335,31 @@ class Kaynak(BaseModel):
     similarity_score: float | None = None
     metin: str | None = Field(
         None, description="Kaynak parcanin birebir metni (RAG yanitlarinda dolu)"
+    )
+    kampanya_bitis: date | None = Field(
+        None,
+        description=(
+            "Kampanyanin bitis tarihi (biliniyorsa). Kaynak GIZLENMEZ - "
+            "kullaniciya gosterilir ve suresi dolmussa isaretlenir."
+        ),
+    )
+    guncellik: Literal["aktif", "suresi_dolmus", "bilinmiyor"] = Field(
+        "bilinmiyor",
+        description=(
+            "Kaynagin bugun itibariyla gecerliligi.\n"
+            "\n"
+            "NEDEN FILTRE DEGIL ISARET (karar, 23 Agustos 2026): retriever'da "
+            "bir `hedef_tarih` filtresi vardi ama IKI YONDEN de calismiyordu - "
+            "hicbir cagiran gecmiyordu ve baktigi `valid_at_start`/"
+            "`valid_at_end` alanlari indeks payload'inda HIC YOKTU (payload "
+            "yalnizca metin/banka/kaynak_url/kampanya_adi/erisim_zamani "
+            "tasiyor), yani acilsaydi her soruya 'kaynak bulamadim' derdi.\n"
+            "\n"
+            "Filtre yerine ISARET secildi: tarih cikarimi yanlissa filtre "
+            "GECERLI bir kampanyayi sessizce gorunmez yapar - juri demosunda "
+            "fark edilmesi en zor hata turu. Isaret ise hicbir seyi gizlemez; "
+            "kullanici kaynagi ve 'suresi dolmus' uyarisini birlikte gorur."
+        ),
     )
 
 

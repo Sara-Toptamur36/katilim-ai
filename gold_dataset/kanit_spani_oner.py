@@ -74,13 +74,29 @@ def _sayi_bicimleri(deger) -> list[str]:
 
 
 def _tarih_bicimleri(iso: str) -> list[str]:
-    """'2026-08-31' -> ['31.08.2026', '31-08-2026', '31 Ağustos 2026', ...]"""
+    """'2026-08-31' -> ['31.08.2026', '31-08-2026', '31 Ağustos 2026', ...]
+
+    KARMA BASAMAK: banka sayfalari gun ve ayi ayni sekilde yazmiyor -
+    KT-004'un kaynaginda "13.08.2024 - 1.01.2027" geciyor (gun tek, ay cift
+    basamakli). Yalnizca "01.01.2027" ve "1.1.2027" uretilseydi bu tarih
+    "metinde bulunamadi" sayilir, etiket dogru oldugu halde kanitsiz
+    kalirdi. Basamak ve ayrac kombinasyonlari bu yuzden acik acik uretilir."""
     try:
         y, a, g = (int(x) for x in iso.split("-"))
     except (ValueError, AttributeError):
         return []
-    return [f"{g:02d}.{a:02d}.{y}", f"{g:02d}-{a:02d}-{y}", f"{g}.{a}.{y}",
-            f"{g} {AYLAR[a-1]} {y}", f"{g} {AYLAR[a-1]}"]
+
+    gun_yazimlari = {f"{g:02d}", str(g)}
+    ay_yazimlari = {f"{a:02d}", str(a)}
+    bicimler = {
+        f"{gun}{ayrac}{ay}{ayrac}{y}"
+        for gun in gun_yazimlari
+        for ay in ay_yazimlari
+        for ayrac in (".", "-", "/")
+    }
+    bicimler.update(f"{gun} {AYLAR[a-1]} {y}" for gun in gun_yazimlari)
+    bicimler.update(f"{gun} {AYLAR[a-1]}" for gun in gun_yazimlari)
+    return sorted(bicimler, key=len, reverse=True)
 
 
 def _adaylar(metin: str, bicimler: list[str]) -> list[str]:

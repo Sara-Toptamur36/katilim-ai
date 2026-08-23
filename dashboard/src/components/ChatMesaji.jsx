@@ -138,6 +138,24 @@ export default function ChatMesaji({ mesaj }) {
                 )}
               </div>
               <div style={{ marginBottom: 8 }}>
+                {/* KAYNAK GIZLENMEZ, ISARETLENIR.
+                    Retriever'da bir tarih filtresi vardi ama calismiyordu
+                    (hicbir cagiran gecmiyordu ve baktigi valid_at alanlari
+                    indekste hic yoktu). Filtre yerine isaret secildi: yanlis
+                    cikarilmis tek bir tarih, GECERLI bir kampanyayi sessizce
+                    gorunmez yapabilirdi - juride fark edilmesi en zor hata.
+                    Burada kullanici hem kaynagi hem uyariyi birlikte gorur. */}
+                {k.guncellik === "suresi_dolmus" && (
+                  <Tag color="red" style={{ fontWeight: 600 }}>
+                    ⚠ Süresi dolmuş{k.kampanya_bitis ? ` — ${k.kampanya_bitis}` : ""}
+                  </Tag>
+                )}
+                {k.guncellik === "aktif" && k.kampanya_bitis && (
+                  <Tag color="green">Geçerli — {k.kampanya_bitis} tarihine kadar</Tag>
+                )}
+                {k.guncellik === "bilinmiyor" && (
+                  <Tag color="default">Geçerlilik tarihi bilinmiyor</Tag>
+                )}
                 {k.chunk_id && <Tag color="default">Chunk ID: {k.chunk_id}</Tag>}
                 {k.belge_tarihi && <Tag color="cyan">Tarih: {k.belge_tarihi}</Tag>}
                 {k.erisim_zamani && <Tag color="geekblue">Erişim: {new Date(k.erisim_zamani).toLocaleDateString("tr-TR")}</Tag>}

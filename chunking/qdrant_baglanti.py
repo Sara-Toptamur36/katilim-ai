@@ -27,6 +27,15 @@ import requests
 QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:6333")
 VARSAYILAN_KOLEKSIYON = os.environ.get("QDRANT_KOLEKSIYON", "kampanya_parcalari")
 
+# YEREL DOSYA MODU (sunucusuz). Tanimliysa Qdrant sunucusu yerine bu
+# klasore yazilir - Docker/servis kurulamayan makinelerde (ornegin GPU'suz
+# Windows demo makinesi) RAG yolunu acik tutar. OLCULDU: yerel mod hibrit
+# koleksiyonu (yogun + seyrek, Modifier.IDF dahil) tam destekliyor.
+#
+# Tanimli DEGILSE davranis DEGISMEZ: QDRANT_URL uzerinden sunucuya baglanir.
+# Uretimde ve CI'da bu degisken bos birakilir.
+QDRANT_YEREL_YOL = os.environ.get("QDRANT_YEREL_YOL", "").strip()
+
 _istemci = None
 _DURUM_CACHE: dict[str, Any] = {}
 _DURUM_CACHE_SURESI_SN = 30.0
@@ -39,6 +48,12 @@ def qdrant_hazir_mi() -> bool:
     ayni: servis kapaliyken her cagrida ayri ayri baglanti-reddi beklemesi
     odenmesin.
     """
+    # Yerel dosya modunda ortada bir servis yok - klasor yazilabiliyorsa
+    # hazir sayilir. HTTP kontrolu yapilirsa her zaman False donerdi ve
+    # RAG yolu bosuna kapali kalirdi.
+    if QDRANT_YEREL_YOL:
+        return True
+
     simdi = time.monotonic()
     son = _DURUM_CACHE.get("zaman")
     if son is not None and (simdi - son) < _DURUM_CACHE_SURESI_SN:
@@ -59,7 +74,10 @@ def istemci_al():
     if _istemci is None:
         from qdrant_client import QdrantClient
 
-        _istemci = QdrantClient(url=QDRANT_URL)
+        if QDRANT_YEREL_YOL:
+            _istemci = QdrantClient(path=QDRANT_YEREL_YOL)
+        else:
+            _istemci = QdrantClient(url=QDRANT_URL)
     return _istemci
 
 

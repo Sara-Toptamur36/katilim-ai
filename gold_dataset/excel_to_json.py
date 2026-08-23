@@ -237,6 +237,107 @@ def _sayiya_cevir(deger, kayit_id: str, alan: str) -> float | int | None:
         raise DogrulamaHatasi(f"[{kayit_id}] {alan}: sayiya cevrilemedi: {metin!r}")
 
 
+# ---------------------------------------------------------------------------
+# TARIH BEKCISI - "kaynakta yok" iddiasini kaynaga sorar
+# ---------------------------------------------------------------------------
+# Bu kor nokta IKI KEZ isirdi:
+#   * Ziraat sayfalari tarihi "Kampanya Donemi" basligi altinda veriyor;
+#     statik tarama o blogu yakalamamisti ve 7 kayit tarihsiz kaldi.
+#   * Vakif sayfalari "Kampanya Gecerlilik Tarihi" diyor; ilk denetim
+#     kalibi bu yazimi bilmedigi icin VK-009, VK-010 ve TF-005 gozden
+#     kacti - TF-005'in notunda "bitis tarihi sayfada belirtilmemis"
+#     yaziyordu, oysa yaziyordu.
+#
+# Ders: "kaynakta yok" bir IDDIADIR ve kaynaga sorulabilir. Bu kontrol
+# tam da onu yapar - tarih alanlari BOS olan bir kayitta, kaynak metinde
+# hem tarih hem de donem ifadesi varsa uyarir.
+#
+# HATA DEGIL UYARI URETIR: cerez politikasi metinlerinde de tarih gecer
+# (olculdu: DK-001 ve DK-004'te "17/08/2026" cerez aciklamasindan
+# geliyor). Karar yine insanindir; kod yalnizca bakilacak yeri gosterir.
+_DONEM_IFADESI = re.compile(
+    r"kampanya\s+d[oö]nemi|kampanya\s+tarihleri|tarihleri\s+aras[iı]nda"
+    r"|tarihine\s+kadar|ge[çc]erlilik\s+tarihi|kampanya\s+s[uü]resi",
+    re.IGNORECASE,
+)
+
+
+# Cerez/gizlilik metinlerinde de tarih gecer ama kampanyayla ilgisi
+# yoktur. Olculdu: Dunya Katilim sayfalarinda "17/08/2026" tarihi
+# "cerez ... sona erme tarihine kadar" aciklamasindan geliyor ve
+# DK-001 ile DK-004'te KALICI yanlis alarm uretiyordu. Surekli uyaran
+# bir kontrol okunmaz hale gelir - gercek uyari da gorulmez.
+_CEREZ_BAGLAMI = re.compile(
+    r"[çc]erez|cookie|taray[iı]c[iı]|gizlilik politikas|kvkk", re.IGNORECASE)
+
+
+def _tarih_izi(metin: str) -> list[str]:
+    """Metindeki tarihler - CEREZ metnindekiler haric."""
+    from extraction.normalizer import TR_AY_ADLARI
+
+    kalip = re.compile(
+        r"\d{1,2}[-./]\d{1,2}[-./]\d{4}"
+        r"|\d{1,2}\s+(?:" + "|".join(TR_AY_ADLARI) + r")\s+\d{4}",
+        re.IGNORECASE,
+    )
+    bulunan = set()
+    for m in kalip.finditer(metin):
+        # Tarihin yakin cevresi cerez metniyse sayma.
+        cevre = metin[max(0, m.start() - 220):m.end() + 220]
+        if _CEREZ_BAGLAMI.search(cevre):
+            continue
+        bulunan.add(m.group(0).strip())
+    return sorted(bulunan)
+
+
+def tarih_bekcisi(kayitlar: list[dict]) -> list[str]:
+    """Tarihi bos kayitlarin kaynaginda tarih var mi?"""
+    # SESSIZ BASARISIZLIK TUZAGI (olculdu): bu betik
+    # `python gold_dataset/excel_to_json.py` seklinde calistirildiginda
+    # sys.path[0] repo koku DEGIL, gold_dataset/ klasoru olur ve
+    # `gold_dataset.sprint_is_listesi` importu ImportError verir. Ilk
+    # surum bunu sessizce yutuyordu - kontrol hic calismiyor ama cikti
+    # "Uyari yok" diyordu, yani her sey yolunda GORUNUYORDU.
+    #
+    # Cozum iki parcali: kokU path'e ekle, ve yine de basarisiz olursa
+    # SESSIZ KALMA - kontrolun atlandigini SOYLE.
+    kok = str(Path(__file__).resolve().parent.parent)
+    if kok not in sys.path:
+        sys.path.insert(0, kok)
+
+    try:
+        from gold_dataset.sprint_is_listesi import _ham_kampanyalar, _slug
+    except ImportError as hata:
+        return [f"[tarih bekcisi] KONTROL ATLANDI - modul yuklenemedi: {hata}"]
+
+    try:
+        ham = _ham_kampanyalar()
+    except Exception as hata:  # noqa: BLE001
+        return [f"[tarih bekcisi] KONTROL ATLANDI - korpus okunamadi: "
+                f"{type(hata).__name__}"]
+    if not ham:
+        return ["[tarih bekcisi] KONTROL ATLANDI - scraper korpusu bos"]
+
+    uyarilar = []
+    for k in kayitlar:
+        if k.get("kampanya_baslangic") or k.get("kampanya_bitis"):
+            continue
+        kaynak = ham.get(_slug(k.get("kaynak_url") or ""))
+        if not kaynak:
+            continue
+        metin = kaynak.get("normalize_metin") or ""
+        if not _DONEM_IFADESI.search(metin):
+            continue
+        tarihler = _tarih_izi(metin)
+        if tarihler:
+            uyarilar.append(
+                f"[{k['kayit_id']}] kampanya tarihi BOS ama kaynakta tarih var: "
+                f"{', '.join(tarihler[:4])} - sayfayi kontrol et "
+                "(cerez metninden geliyorsa bos dogru)"
+            )
+    return uyarilar
+
+
 def _kaydi_dogrula(kayit: dict) -> list[str]:
     """Mantiksal tutarlilik kontrolleri. Hata degil, UYARI listesi doner."""
     uyarilar = []
@@ -385,6 +486,9 @@ def donustur(excel_yolu: Path = EXCEL) -> tuple[list[dict], list[str]]:
 
         tum_uyarilar.extend(_kaydi_dogrula(kayit))
         kayitlar.append(kayit)
+
+    # Kaynak korpusa BIR KEZ bakan kontrol (kayit basina degil).
+    tum_uyarilar.extend(tarih_bekcisi(kayitlar))
 
     return kayitlar, tum_uyarilar
 

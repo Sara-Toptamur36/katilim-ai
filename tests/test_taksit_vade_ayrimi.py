@@ -65,3 +65,58 @@ def test_ikisi_de_doluysa_susar():
         _kayit(kampanya_adi="Vade Farksız 3 Taksit", vade_ay=3, taksit_sayisi=3), "X-002"
     )
     assert u == []
+
+
+# ---------------------------------------------------------------------------
+# TARIH BEKCISI
+# ---------------------------------------------------------------------------
+# "Kaynakta yok" bir IDDIADIR ve kaynaga sorulabilir. Bu kor nokta iki kez
+# isirdi: Ziraat "Kampanya Donemi", Vakif "Kampanya Gecerlilik Tarihi"
+# diyor; ikisi de gozden kacti ve TF-005'in notunda "bitis tarihi sayfada
+# belirtilmemis" yaziyordu - oysa yaziyordu.
+
+
+def test_tarih_bekcisi_SESSIZCE_atlanmaz():
+    """En tehlikeli hali: kontrol calismiyor ama cikti 'Uyari yok' diyor.
+
+    Olculdu: betik `python gold_dataset/excel_to_json.py` seklinde
+    calistirildiginda sys.path[0] repo koku degil gold_dataset/ olur;
+    ilk surum ImportError'i sessizce yutup [] donuyordu. Kontrol hic
+    calismadan her sey yolunda GORUNUYORDU.
+    """
+    from gold_dataset.excel_to_json import tarih_bekcisi
+
+    # Kaynagi olan, tarihi DOLU bir kayit uyari uretmemeli...
+    import json
+    from pathlib import Path
+
+    kok = Path(__file__).resolve().parent.parent
+    with open(kok / "gold_dataset" / "altin_veri_seti.json", encoding="utf-8") as f:
+        kayitlar = json.load(f)
+
+    # ...ama ayni kaydin tarihleri BOSALTILIRSA uretmeli.
+    hedef = next(k for k in kayitlar
+                 if k["kayit_id"] == "VK-009")
+    bosaltilmis = [dict(hedef, kampanya_baslangic=None, kampanya_bitis=None)]
+    uyarilar = tarih_bekcisi(bosaltilmis)
+    assert any("VK-009" in u for u in uyarilar), (
+        "tarih bekcisi calismiyor ya da sessizce atlaniyor: " + str(uyarilar))
+    assert not any("ATLANDI" in u for u in uyarilar), (
+        "kontrol atlandi - modul/korpus yuklenememis: " + str(uyarilar))
+
+
+def test_tarih_bekcisi_CEREZ_metnini_saymaz():
+    """Cerez politikasindaki tarih kampanya tarihi degildir.
+
+    Olculdu: Dunya Katilim sayfalarinda "17/08/2026" cerez aciklamasindan
+    geliyor ve DK-001 ile DK-004'te KALICI yanlis alarm uretiyordu.
+    Surekli uyaran bir kontrol okunmaz hale gelir.
+    """
+    from gold_dataset.excel_to_json import _tarih_izi
+
+    cerez = ("Kalici cerez, tarayici kapandiktan sonra belirli bir sona erme "
+             "tarihine kadar kalici olan cerez turudur. 17/08/2026")
+    assert _tarih_izi(cerez) == [], "cerez metnindeki tarih sayilmis"
+
+    gercek = "Kampanya Gecerlilik Tarihi 22 Nisan 2026 - 31 Aralık 2026"
+    assert _tarih_izi(gercek), "gercek kampanya tarihi kacirildi"

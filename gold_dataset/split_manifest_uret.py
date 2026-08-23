@@ -50,9 +50,21 @@ TEST_ORANI = 0.2
 
 
 def _gercek_kayitlari_yukle() -> list[dict]:
+    """Split'e girecek kayitlar: ornek OLMAYAN ve IMZALI olanlar.
+
+    IMZASIZ KAYIT SPLIT'E GIRMEZ: etiketleme kuyrugundan acilan taslak
+    satirlarin butun olculen alanlari bostur ve olcumun disindadir
+    (bkz. excel_to_json, "IMZASIZ KAYIT HICBIR IDDIA TASIMAZ"). Bunlari
+    split'e almak test setini olculemeyen satirlarla doldurur - 200
+    taslak acildiginda test setinin buyuk bolumu hakkinda hicbir sey
+    soylenemeyen kayitlardan olusurdu.
+
+    Satir imzalandiginda kendiliginden split'e girer; atamasi
+    dondurulmus oldugu icin de o andan sonra taraf degistirmez."""
     with open(GOLD_DOSYASI, encoding="utf-8") as f:
         kayitlar = json.load(f)
-    return [k for k in kayitlar if k.get("giren_kisi") != "ORNEK"]
+    return [k for k in kayitlar
+            if k.get("giren_kisi") != "ORNEK" and (k.get("giren_kisi") or "").strip()]
 
 
 def _kaynak_url_gruplari(kayitlar: list[dict]) -> dict[str, list[dict]]:

@@ -271,7 +271,7 @@ def main() -> None:
         json.dump({"tarih": date.today().isoformat(),
                    "kapsanma_esigi": KAPSANMA_ESIGI,
                    "sonuclar": sonuclar}, f, ensure_ascii=False, indent=2)
-    print(f"\n  Rapor: {RAPOR.relative_to(KOK)}")
+    print(f"\n  Rapor: {RAPOR}")
     print("  NOT: ekran goruntusu KANITTIR, insan dogrulamasi DEGILDIR -")
     print("  kayitlarin 'giren_kisi' alani ve TASLAK ibaresi degistirilmedi.")
 

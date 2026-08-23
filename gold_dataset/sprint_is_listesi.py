@@ -1123,7 +1123,7 @@ def main() -> None:
 
     with open(CIKTI, "w", encoding="utf-8") as f:
         json.dump(r, f, ensure_ascii=False, indent=2)
-    print(f"\n  Tam liste: {CIKTI.relative_to(KOK)}")
+    print(f"\n  Tam liste: {CIKTI}")
 
 
 if __name__ == "__main__":

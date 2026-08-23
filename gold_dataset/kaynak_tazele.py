@@ -279,7 +279,7 @@ def main() -> None:
     with open(RAPOR, "w", encoding="utf-8") as f:
         json.dump({"tarih": datetime.now().isoformat(), "sonuclar": sonuclar},
                   f, ensure_ascii=False, indent=2)
-    print(f"\n  Rapor: {RAPOR.relative_to(KOK)}")
+    print(f"\n  Rapor: {RAPOR}")
     print("  ESKI ANLIK GORUNTULER SILINMEDI - etiketin hangi metinden")
     print("  cikarildigi geriye donuk gorulebilsin diye duruyorlar.")
 

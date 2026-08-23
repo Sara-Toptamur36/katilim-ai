@@ -268,5 +268,5 @@ ciz('*');
 
 if __name__ == "__main__":
     CIKTI.write_text(uret(), encoding="utf-8")
-    print(f"  yazildi: {CIKTI.relative_to(KOK)}")
+    print(f"  yazildi: {CIKTI}")
     print("  Tarayicida acin; onayladiginiz kayitlarin giren_kisi alanini Excel'de doldurun.")

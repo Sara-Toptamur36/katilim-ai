@@ -77,7 +77,14 @@ IZINLI_ALANLAR = frozenset({
 
 # Serbest metin alanlari: okuyucunun kendi cumlesiyle ozetledigi alanlar,
 # kaynakta birebir aranmaz. Sayisal/olculen alanlar bu listede DEGIL.
-SPAN_ISTEMEYEN = frozenset({"kampanya_avantaji", "kampanya_turu", "hedef_kitle"})
+#
+# oran_periyodu de buradadir ama farkli bir sebeple: degeri sayfadan
+# kopyalanan bir metin degil, sabit bir siniflandirmadir (aylik/yillik/
+# belirsiz). excel_to_json'un SPAN_VERILEBILIR_ALANLAR listesinde yer
+# almadigi icin span yazmak "taninmayan alan" uyarisi uretiyordu.
+SPAN_ISTEMEYEN = frozenset({
+    "kampanya_avantaji", "kampanya_turu", "hedef_kitle", "oran_periyodu",
+})
 
 
 def _kayitlari_al() -> dict[str, dict]:

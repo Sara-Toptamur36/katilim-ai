@@ -33,6 +33,26 @@ def test_imza_sutunu_asla_izinli_degil():
     assert "giren_kisi" not in IZINLI_ALANLAR
 
 
+def test_span_yazilan_alanlar_excel_to_json_ile_uyumlu():
+    """Bu betigin span yazdigi her alan, donusturucunun de TANIDIGI bir
+    alan olmali.
+
+    Olculdu: `oran_periyodu` icin span yaziliyordu ama
+    SPAN_VERILEBILIR_ALANLAR listesinde olmadigi icin her donusturmede
+    'kanit_spanlari'nda taninmayan alan' uyarisi cikiyordu. Uyarilar
+    birikince gercek sorunlar gorunmez hale gelir."""
+    from gold_dataset.aday_deger_yaz import SPAN_ISTEMEYEN
+    from gold_dataset.excel_to_json import SPAN_VERILEBILIR_ALANLAR
+
+    span_yazilanlar = IZINLI_ALANLAR - SPAN_ISTEMEYEN
+    taninmayan = span_yazilanlar - SPAN_VERILEBILIR_ALANLAR
+    assert not taninmayan, (
+        f"bu alanlara span yaziliyor ama excel_to_json tanimiyor: "
+        f"{sorted(taninmayan)} - ya SPAN_ISTEMEYEN'e ekleyin ya da "
+        "SPAN_VERILEBILIR_ALANLAR'a"
+    )
+
+
 def test_kaynakta_bulunmayan_span_degeri_reddeder():
     """SPAN ZORUNLULUGU - betigin asil koruma mekanizmasi.
 

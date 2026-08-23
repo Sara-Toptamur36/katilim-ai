@@ -27,6 +27,8 @@
     "alan_belirtilmemis": {
       "odul_miktari": true,
       "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -60,6 +62,8 @@
       "kampanya_bitis": true,
       "hedef_kitle": true,
       "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -91,7 +95,9 @@
     "alan_belirtilmemis": {
       "masraf_durumu": true,
       "kampanya_bitis": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -123,7 +129,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -135,7 +143,7 @@
     "kar_payi_orani": 2.99,
     "maliyet_orani": 4.191,
     "oran_periyodu": "aylik",
-    "vade_ay": 6,
+    "vade_ay": null,
     "finansman_tutari": 100000,
     "odul_miktari": null,
     "odul_birimi": null,
@@ -147,13 +155,17 @@
     "ekran_goruntusu": "KT-001.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-07-28",
-    "notlar": "Kar payi orani %2,99 ama vergiler dahil maliyet %4,1910 - sayfa ikisini ayri veriyor",
-    "taksit_sayisi": null,
+    "notlar": "Kar payi orani %2,99 ama vergiler dahil maliyet %4,1910 - sayfa ikisini ayri veriyor DUZELTME (23 Agustos 2026): vade_ay=6 -> taksit_sayisi=6. '6 taksite kadar %2,99 kar payi orani' - 6 TAKSIT ADEDIDIR. Kampanya adinda 'N Taksit' gecmedigi icin taksit/vade uyarisina takilmamisti; denetimde elle bulundu. Taksit ADEDI ile finansman SURESI ayni alan degildir.",
+    "taksit_sayisi": 6,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "taksit_sayisi": "Taksitlio’nun anlaşmalı olduğu mağazalarda yapacağınız 100.000 TL’ye kadar alışverişlerinizde 6 taksite kadar %2,99 avantajlı kar payı oranı ile alışveriş yapmanın tadını çıkarın!"
+    },
     "alan_belirtilmemis": {
+      "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -185,6 +197,8 @@
     "alan_belirtilmemis": {
       "odul_miktari": true,
       "hedef_kitle": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -219,6 +233,8 @@
       "odul_miktari": true,
       "masraf_durumu": true,
       "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -231,7 +247,7 @@
     "kar_payi_orani": null,
     "maliyet_orani": null,
     "oran_periyodu": null,
-    "vade_ay": 3,
+    "vade_ay": null,
     "finansman_tutari": null,
     "odul_miktari": null,
     "odul_birimi": null,
@@ -243,16 +259,20 @@
     "ekran_goruntusu": "KT-004.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-07-28",
-    "notlar": "Diyanetten alınan umre tur kodu şart",
-    "taksit_sayisi": null,
+    "notlar": "Diyanetten alınan umre tur kodu şart DUZELTME (23 Agustos 2026): vade_ay=3 -> taksit_sayisi=3. 'vade farksiz 3 taksit imkani' - sayfa taksit ADEDINI veriyor. Taksit ADEDI ile finansman SURESI ayni alan degildir.",
+    "taksit_sayisi": 3,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "taksit_sayisi": "Kampanya kapsamında Kutsal toprakları ziyaret etmek isteyen müşterilerimiz toplam umre tutarının en fazla yüzde altmışı için vade farksız 3 taksit imkanından yararlanabilir."
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
+      "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
       "hedef_kitle": true,
       "finansman_tutari": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -285,7 +305,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -318,6 +340,7 @@
       "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -350,7 +373,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -374,10 +399,12 @@
     "ekran_goruntusu": "AL-001.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-07-28",
-    "notlar": "Kampanya iki bölümlü: 40.000 TL'lik kısım İhtiyaç Finansmanı (Pratik Finansman Kart), 100.000 TL'lik kısım kredi kartıyla vade farksız taksit - ilk kısım temel alındı | [9 Agu] vade_ay->taksit_sayisi tasindi (Secili sektorlerde vade farksiz 6 taksit); sayfada vade ifadesi yok",
+    "notlar": "Kampanya iki bölümlü: 40.000 TL'lik kısım İhtiyaç Finansmanı (Pratik Finansman Kart), 100.000 TL'lik kısım kredi kartıyla vade farksız taksit - ilk kısım temel alındı | [9 Agu] vade_ay->taksit_sayisi tasindi (Secili sektorlerde vade farksiz 6 taksit); sayfada vade ifadesi yok DUZELTME (23 Agustos 2026): erteleme_suresi_ay=3 eklendi ('3 aya varan odemesiz donem') - etiketlenirken kacirilmisti.",
     "taksit_sayisi": 6,
-    "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "erteleme_suresi_ay": 3,
+    "kanit_spanlari": {
+      "erteleme_suresi_ay": "3 aya varan ödemesiz dönem ve 4 taksitli"
+    },
     "alan_belirtilmemis": {
       "vade_ay": true,
       "odul_miktari": true,
@@ -415,6 +442,7 @@
       "odul_miktari": true,
       "masraf_durumu": true,
       "finansman_tutari": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -447,7 +475,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -479,7 +509,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -511,6 +543,7 @@
       "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -543,6 +576,7 @@
       "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -555,7 +589,7 @@
     "kar_payi_orani": 0,
     "maliyet_orani": null,
     "oran_periyodu": "belirsiz",
-    "vade_ay": 3,
+    "vade_ay": null,
     "finansman_tutari": 100000,
     "odul_miktari": null,
     "odul_birimi": null,
@@ -567,13 +601,15 @@
     "ekran_goruntusu": "VK-001.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-07-28",
-    "notlar": "VKart Business ve VKart Debit kapsam dışı; müşteri başına en fazla 3 MTV ödemesi",
-    "taksit_sayisi": null,
+    "notlar": "VKart Business ve VKart Debit kapsam dışı; müşteri başına en fazla 3 MTV ödemesi DUZELTME (23 Agustos 2026): vade_ay=3 -> taksit_sayisi=3. MTV odemesi taksitlendirmesi - Kart Kampanyasi, finansman vadesi yok. Taksit ADEDI ile finansman SURESI ayni alan degildir.",
+    "taksit_sayisi": 3,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {},
     "alan_belirtilmemis": {
+      "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -586,7 +622,7 @@
     "kar_payi_orani": 0,
     "maliyet_orani": null,
     "oran_periyodu": "belirsiz",
-    "vade_ay": 3,
+    "vade_ay": null,
     "finansman_tutari": 300000,
     "odul_miktari": null,
     "odul_birimi": null,
@@ -598,13 +634,15 @@
     "ekran_goruntusu": "VK-002.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-07-28",
-    "notlar": "Sadece gib.gov.tr veya banka kanallarından yapılan ödemeler geçerli",
-    "taksit_sayisi": null,
+    "notlar": "Sadece gib.gov.tr veya banka kanallarından yapılan ödemeler geçerli DUZELTME (23 Agustos 2026): vade_ay=3 -> taksit_sayisi=3. Gelir vergisi odemesi taksitlendirmesi - Kart Kampanyasi. Taksit ADEDI ile finansman SURESI ayni alan degildir.",
+    "taksit_sayisi": 3,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {},
     "alan_belirtilmemis": {
+      "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -617,7 +655,7 @@
     "kar_payi_orani": 0,
     "maliyet_orani": null,
     "oran_periyodu": "belirsiz",
-    "vade_ay": 5,
+    "vade_ay": null,
     "finansman_tutari": 100000,
     "odul_miktari": null,
     "odul_birimi": null,
@@ -629,13 +667,15 @@
     "ekran_goruntusu": "VK-003.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-07-28",
-    "notlar": "Müşteri başına en fazla 3 harcama taksitlendirilebilir",
-    "taksit_sayisi": null,
+    "notlar": "Müşteri başına en fazla 3 harcama taksitlendirilebilir DUZELTME (23 Agustos 2026): vade_ay=5 -> taksit_sayisi=5. Saglik harcamasi taksitlendirmesi - Kart Kampanyasi. Taksit ADEDI ile finansman SURESI ayni alan degildir.",
+    "taksit_sayisi": 5,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {},
     "alan_belirtilmemis": {
+      "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -668,7 +708,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -700,7 +742,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -712,7 +756,7 @@
     "kar_payi_orani": 0,
     "maliyet_orani": null,
     "oran_periyodu": "belirsiz",
-    "vade_ay": 5,
+    "vade_ay": null,
     "finansman_tutari": 700000,
     "odul_miktari": null,
     "odul_birimi": null,
@@ -724,13 +768,15 @@
     "ekran_goruntusu": "VK-006.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-07-28",
-    "notlar": "Sadece TROY kart, ek/sanal kartlar dahil; müşteri başına en fazla 3 harcama",
-    "taksit_sayisi": null,
+    "notlar": "Sadece TROY kart, ek/sanal kartlar dahil; müşteri başına en fazla 3 harcama DUZELTME (23 Agustos 2026): vade_ay=5 -> taksit_sayisi=5. Egitim harcamasi taksitlendirmesi - Kart Kampanyasi. Taksit ADEDI ile finansman SURESI ayni alan degildir.",
+    "taksit_sayisi": 5,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {},
     "alan_belirtilmemis": {
+      "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -765,6 +811,8 @@
       "odul_miktari": true,
       "masraf_durumu": true,
       "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -799,6 +847,8 @@
       "odul_miktari": true,
       "masraf_durumu": true,
       "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -823,15 +873,18 @@
     "ekran_goruntusu": "TF-001.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-07-28",
-    "notlar": "Somut oran verilmiyor - rapor Bölüm 3'ün gözlemine örnek",
+    "notlar": "Somut oran verilmiyor - rapor Bölüm 3'ün gözlemine örnek DUZELTME (23 Agustos 2026): erteleme_suresi_ay=3 eklendi ('3 ay ertelemeli' / '3 ay oteleme') - etiketlenirken kacirilmisti.",
     "taksit_sayisi": null,
-    "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "erteleme_suresi_ay": 3,
+    "kanit_spanlari": {
+      "erteleme_suresi_ay": "​​​​​​​​​​​​Banka çalışanlarına, ​kendi çalışanlarımıza sunduğumuz sabit ve avantajlı oranlarla 3 ay ertelemeli ihtiyaç finansmanı Türkiye Finans’ta!"
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "odul_miktari": true,
       "masraf_durumu": true,
       "kampanya_bitis": true,
+      "taksit_sayisi": true,
       "odul_birimi": true
     }
   },
@@ -865,7 +918,9 @@
       "vade_ay": true,
       "masraf_durumu": true,
       "kampanya_bitis": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -896,6 +951,8 @@
     "alan_belirtilmemis": {
       "odul_miktari": true,
       "masraf_durumu": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -928,7 +985,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -940,28 +999,29 @@
     "kar_payi_orani": null,
     "maliyet_orani": null,
     "oran_periyodu": null,
-    "vade_ay": null,
-    "finansman_tutari": null,
+    "vade_ay": 24,
+    "finansman_tutari": 400000,
     "odul_miktari": 11000,
     "odul_birimi": "TL",
     "kampanya_avantaji": "Mobilden yeni müşteri olana 11.000 TL'ye varan bonus + masrafsız temel bankacılık",
-    "masraf_durumu": null,
+    "masraf_durumu": "Temel bankacılık işlemlerinde masraf yok",
     "kampanya_baslangic": null,
     "kampanya_bitis": null,
     "hedef_kitle": "Mobilden yeni müşteri olanlar",
     "ekran_goruntusu": "TF-005.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-07-28",
-    "notlar": "Bitis tarihi sayfada belirtilmemis, sureklen bir paket gibi gorunuyor - bos birakildi",
+    "notlar": "Bitis tarihi sayfada belirtilmemis, sureklen bir paket gibi gorunuyor - bos birakildi DUZELTME (23 Agustos 2026): erteleme_suresi_ay=3, finansman_tutari=400000 ve vade_ay=24 eklendi. Vade KADEMELI (250.000 TL'ye kadar 24 ay, fazlasi 12 ay); TF-008 ile ayni kural: en yuksek kademe yazilir. masraf_durumu eklendi: sayfa 'temel bankacilik islemleriniz icin masraf odemeyin' diyor. TF-007 ('Masrafsiz Bankacilik') NEREDEYSE AYNI cumleyi masraf_durumu'na yazmisti; iki kayit celisiyordu.",
     "taksit_sayisi": null,
-    "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "erteleme_suresi_ay": 3,
+    "kanit_spanlari": {
+      "erteleme_suresi_ay": "400.000 TL'ye Kadar İhtiyaç Finansmanı Kullanın, 3 Ay Öteleme Fırsatından Yararlanın!",
+      "masraf_durumu": "Üstelik temel bankacılık işlemleriniz için masraf ödemeyin."
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
-      "vade_ay": true,
-      "masraf_durumu": true,
       "kampanya_bitis": true,
-      "finansman_tutari": true
+      "taksit_sayisi": true
     }
   },
   {
@@ -993,7 +1053,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -1027,6 +1089,8 @@
       "odul_miktari": true,
       "kampanya_bitis": true,
       "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -1059,7 +1123,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -1091,7 +1157,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -1103,7 +1171,7 @@
     "kar_payi_orani": null,
     "maliyet_orani": null,
     "oran_periyodu": null,
-    "vade_ay": 4,
+    "vade_ay": null,
     "finansman_tutari": null,
     "odul_miktari": null,
     "odul_birimi": null,
@@ -1115,15 +1183,17 @@
     "ekran_goruntusu": "ZK-003.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-07-28",
-    "notlar": "Diger bankalardaki benzer kampanyalardan farkli olarak burada acikca 'vade farksiz' ifadesi yok - orani 0 varsaymadim",
-    "taksit_sayisi": null,
+    "notlar": "Diger bankalardaki benzer kampanyalardan farkli olarak burada acikca 'vade farksiz' ifadesi yok - orani 0 varsaymadim DUZELTME (23 Agustos 2026): vade_ay=4 -> taksit_sayisi=4. MTV odemesi taksitlendirmesi - Kart Kampanyasi. Taksit ADEDI ile finansman SURESI ayni alan degildir.",
+    "taksit_sayisi": 4,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {},
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
+      "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
       "finansman_tutari": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -1148,16 +1218,19 @@
     "ekran_goruntusu": "ZK-004.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-07-28",
-    "notlar": "vade_ay alani burada net degil: kampanya 'mevcut 2-4 taksite +8 ekliyor' diyor (toplamda 10-12 taksit gibi), tekil bir sayi degil - bos birakildi",
-    "taksit_sayisi": null,
+    "notlar": "vade_ay alani burada net degil: kampanya 'mevcut 2-4 taksite +8 ekliyor' diyor (toplamda 10-12 taksit gibi), tekil bir sayi degil - bos birakildi DUZELTME (23 Agustos 2026): taksit_sayisi=8 eklendi. Kampanya 2-4 taksitli islemlere +8 taksit EKLIYOR; 8, kampanyanin kendi kattigi taksit sayisidir (baslik da oyle diyor).",
+    "taksit_sayisi": 8,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "taksit_sayisi": "+8 taksit!"
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
       "finansman_tutari": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -1190,7 +1263,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -1222,7 +1297,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -1254,7 +1331,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -1286,7 +1365,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -1318,7 +1399,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -1350,7 +1433,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -1382,7 +1467,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -1414,7 +1501,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -1446,7 +1535,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -1478,7 +1569,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -1513,6 +1606,8 @@
       "masraf_durumu": true,
       "kampanya_bitis": true,
       "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -1545,6 +1640,8 @@
       "odul_miktari": true,
       "masraf_durumu": true,
       "kampanya_bitis": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -1577,7 +1674,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -1610,7 +1709,9 @@
       "vade_ay": true,
       "masraf_durumu": true,
       "kampanya_bitis": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -1646,6 +1747,8 @@
       "kampanya_bitis": true,
       "hedef_kitle": true,
       "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -1678,7 +1781,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -1690,7 +1795,7 @@
     "kar_payi_orani": 0,
     "maliyet_orani": null,
     "oran_periyodu": "belirsiz",
-    "vade_ay": 9,
+    "vade_ay": null,
     "finansman_tutari": 10000,
     "odul_miktari": null,
     "odul_birimi": null,
@@ -1702,13 +1807,15 @@
     "ekran_goruntusu": "DK-006.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-07-28",
-    "notlar": "Kademeli sistem: 100-1.000 TL->3 taksit, 1.000-6.000 TL->6 taksit, 6.000-10.000 TL->6 taksit, 10.000 TL+ secili urun->9 taksit. En ust dilim alindi",
-    "taksit_sayisi": null,
+    "notlar": "Kademeli sistem: 100-1.000 TL->3 taksit, 1.000-6.000 TL->6 taksit, 6.000-10.000 TL->6 taksit, 10.000 TL+ secili urun->9 taksit. En ust dilim alindi DUZELTME (23 Agustos 2026): vade_ay=9 -> taksit_sayisi=9. kademeli taksit (3/6/9), Alisveris Puani Kampanyasi - vade yok. Taksit ADEDI ile finansman SURESI ayni alan degildir.",
+    "taksit_sayisi": 9,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {},
     "alan_belirtilmemis": {
+      "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -1721,7 +1828,7 @@
     "kar_payi_orani": 0,
     "maliyet_orani": null,
     "oran_periyodu": "belirsiz",
-    "vade_ay": 3,
+    "vade_ay": null,
     "finansman_tutari": 2000,
     "odul_miktari": null,
     "odul_birimi": null,
@@ -1733,13 +1840,15 @@
     "ekran_goruntusu": "DK-007.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-07-28",
-    "notlar": "Sepet toplami 2.000 TL alt sinirdir",
-    "taksit_sayisi": null,
+    "notlar": "Sepet toplami 2.000 TL alt sinirdir DUZELTME (23 Agustos 2026): vade_ay=3 -> taksit_sayisi=3. 'pesin fiyatina 3 taksit', Alisveris Puani Kampanyasi. Taksit ADEDI ile finansman SURESI ayni alan degildir.",
+    "taksit_sayisi": 3,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {},
     "alan_belirtilmemis": {
+      "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -1772,7 +1881,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -1804,7 +1915,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -1838,6 +1951,8 @@
       "odul_miktari": true,
       "masraf_durumu": true,
       "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -1870,7 +1985,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -1904,6 +2021,8 @@
       "odul_miktari": true,
       "masraf_durumu": true,
       "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -1936,7 +2055,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -1968,6 +2089,7 @@
       "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -2000,7 +2122,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -2038,7 +2162,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -2076,6 +2202,8 @@
       "odul_miktari": true,
       "masraf_durumu": true,
       "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -2113,6 +2241,8 @@
       "odul_miktari": true,
       "masraf_durumu": true,
       "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -2150,6 +2280,7 @@
       "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -2188,6 +2319,7 @@
       "odul_miktari": true,
       "masraf_durumu": true,
       "finansman_tutari": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -2223,6 +2355,8 @@
       "masraf_durumu": true,
       "kampanya_bitis": true,
       "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -2261,6 +2395,7 @@
       "odul_miktari": true,
       "masraf_durumu": true,
       "finansman_tutari": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -2299,6 +2434,7 @@
       "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -2336,7 +2472,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -2371,6 +2509,8 @@
       "masraf_durumu": true,
       "kampanya_bitis": true,
       "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -2409,6 +2549,7 @@
       "odul_miktari": true,
       "masraf_durumu": true,
       "finansman_tutari": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -2444,6 +2585,8 @@
       "masraf_durumu": true,
       "kampanya_bitis": true,
       "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -2482,6 +2625,7 @@
       "odul_miktari": true,
       "masraf_durumu": true,
       "finansman_tutari": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -2519,7 +2663,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -2554,7 +2700,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -2591,6 +2739,8 @@
       "odul_miktari": true,
       "masraf_durumu": true,
       "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -2629,6 +2779,7 @@
       "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -2666,7 +2817,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -2702,7 +2855,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -2739,6 +2894,8 @@
       "odul_miktari": true,
       "masraf_durumu": true,
       "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -2812,7 +2969,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -2849,6 +3008,7 @@
       "odul_miktari": true,
       "masraf_durumu": true,
       "kampanya_bitis": true,
+      "taksit_sayisi": true,
       "odul_birimi": true
     }
   },
@@ -2885,7 +3045,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -2922,6 +3084,8 @@
       "odul_miktari": true,
       "masraf_durumu": true,
       "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -2958,6 +3122,8 @@
       "odul_miktari": true,
       "masraf_durumu": true,
       "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -2994,7 +3160,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -3031,6 +3199,8 @@
       "odul_miktari": true,
       "masraf_durumu": true,
       "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -3069,6 +3239,7 @@
       "odul_miktari": true,
       "masraf_durumu": true,
       "finansman_tutari": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -3106,7 +3277,8 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -3142,7 +3314,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -3180,6 +3354,7 @@
       "odul_miktari": true,
       "masraf_durumu": true,
       "finansman_tutari": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -3215,7 +3390,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -3251,6 +3428,8 @@
       "odul_miktari": true,
       "masraf_durumu": true,
       "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -3288,6 +3467,7 @@
     "alan_belirtilmemis": {
       "odul_miktari": true,
       "masraf_durumu": true,
+      "taksit_sayisi": true,
       "odul_birimi": true
     }
   },
@@ -3324,7 +3504,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -3362,6 +3544,7 @@
       "odul_miktari": true,
       "masraf_durumu": true,
       "finansman_tutari": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -3400,6 +3583,7 @@
       "odul_miktari": true,
       "masraf_durumu": true,
       "finansman_tutari": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -3437,7 +3621,9 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
-      "finansman_tutari": true
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
     }
   },
   {
@@ -3473,6 +3659,8 @@
       "odul_miktari": true,
       "masraf_durumu": true,
       "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -3509,6 +3697,8 @@
       "odul_miktari": true,
       "masraf_durumu": true,
       "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   },
@@ -3547,6 +3737,7 @@
       "odul_miktari": true,
       "masraf_durumu": true,
       "finansman_tutari": true,
+      "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
   }

@@ -165,17 +165,34 @@ INCELENMIS_ALANLAR = (
     # ODUL ("1.000 TL ve uzeri harcamaniza 10.000 Mil") - finansman
     # tutari degil. Hicbiri deger almadi.
     "finansman_tutari",
+    # 23 Agustos 2026: iki sutun daha olcume acildi. Denetimde bulunan
+    # durum: taksit_sayisi 80, erteleme_suresi_ay 97 kayitta NE DOLU NE
+    # BOS-ISARETLI idi - yani motor oraya uydurma bir deger yazsa bu
+    # olcume HIC girmiyordu (bedava puan).
+    #
+    # Kapatmak icin yapilanlar:
+    #   - metinde o alandan hic soz etmeyen kayitlar (taksit 59,
+    #     erteleme 79) kaynak metinle tek tek tarandi, deger yok,
+    #   - iz bulunan 12 kayit elle okundu; 4'unde deger vardi ve
+    #     dolduruldu (ZK-004, AL-001, TF-001, TF-005), 3'unde iz yan
+    #     menudeki BASKA kampanyalardan geliyordu (VK-009, VK-010,
+    #     ZK-011) - bos birakildi,
+    #   - kaynagi kaybolmus 14 kayit kampanya adi + turu + kaydin kendi
+    #     ozet alanlariyla dogrulandi,
+    #   - 9 kayitta deger YANLIS ALANDAYDI (vade_ay), taksit_sayisi'na
+    #     tasindi (bkz. _taksit_vade_karisikligi).
+    "taksit_sayisi",
+    "erteleme_suresi_ay",
 )
 
 # Semada/Excel'de VAR ama henuz bir etiketleme oturumundan gecmemis
 # sutunlar. Bos hucreleri "kaynakta yok" SAYILMAZ - olcum disidir.
 # Etiketlemesi biten sutun buradan cikarilip INCELENMIS_ALANLAR'a eklenir.
 #
-# taksit_sayisi / erteleme_suresi_ay: sutunlar 9 Agustos'ta eklendi,
-# etiketlenmeyi bekliyor (bkz. gold_dataset/etiketleme_yardimcisi.py).
 INCELENMEMIS_ALANLAR = (
-    "taksit_sayisi",
-    "erteleme_suresi_ay",
+    # 23 Agustos 2026: liste BOSALDI - taksit_sayisi ve
+    # erteleme_suresi_ay INCELENMIS_ALANLAR'a tasindi. Semadaki her
+    # olculen sutun artik yanlis pozitif olcumune giriyor.
 )
 
 

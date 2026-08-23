@@ -159,7 +159,9 @@
     "taksit_sayisi": 6,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
-      "taksit_sayisi": "Taksitlio’nun anlaşmalı olduğu mağazalarda yapacağınız 100.000 TL’ye kadar alışverişlerinizde 6 taksite kadar %2,99 avantajlı kar payı oranı ile alışveriş yapmanın tadını çıkarın!"
+      "taksit_sayisi": "Taksitlio’nun anlaşmalı olduğu mağazalarda yapacağınız 100.000 TL’ye kadar alışverişlerinizde 6 taksite kadar %2,99 avantajlı kar payı oranı ile alışveriş yapmanın tadını çıkarın!",
+      "kampanya_baslangic": "20.01.2026 - 31.12.2026",
+      "kampanya_bitis": "20.01.2026 - 31.12.2026"
     },
     "alan_belirtilmemis": {
       "vade_ay": true,
@@ -226,7 +228,10 @@
     "notlar": "Rapor Bölüm 3'ün gözlemini doğruluyor: genel tanıtım sayfası, kampanyaya özel somut oran/vade YOK - şeffaflık ilkesi gereği boş bırakıldı",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "kampanya_baslangic": "19.03.2026 - 31.12.2026",
+      "kampanya_bitis": "19.03.2026 - 31.12.2026"
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -263,7 +268,8 @@
     "taksit_sayisi": 3,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
-      "taksit_sayisi": "Kampanya kapsamında Kutsal toprakları ziyaret etmek isteyen müşterilerimiz toplam umre tutarının en fazla yüzde altmışı için vade farksız 3 taksit imkanından yararlanabilir."
+      "taksit_sayisi": "Kampanya kapsamında Kutsal toprakları ziyaret etmek isteyen müşterilerimiz toplam umre tutarının en fazla yüzde altmışı için vade farksız 3 taksit imkanından yararlanabilir.",
+      "kampanya_baslangic": "13.08.2024 - 1.01.2027"
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
@@ -300,7 +306,9 @@
     "notlar": "Bu kayıt raporun Bölüm 3'teki \"Mil\" ödül birimi gözlemini doğruluyor",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "kampanya_bitis": "30.04.2026 - 31.12.2026"
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -368,7 +376,9 @@
     "notlar": "Kampanyadan yalnızca bir kez yararlanılabilir",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "kampanya_baslangic": "20.07.2026 - 31.12.2026"
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -403,7 +413,11 @@
     "taksit_sayisi": 6,
     "erteleme_suresi_ay": 3,
     "kanit_spanlari": {
-      "erteleme_suresi_ay": "3 aya varan ödemesiz dönem ve 4 taksitli"
+      "erteleme_suresi_ay": "3 aya varan ödemesiz dönem ve 4 taksitli",
+      "kampanya_baslangic": "1 Ocak 2026 – 31 Aralık 2026",
+      "kampanya_bitis": "1 Ocak 2026 – 31 Aralık 2026",
+      "kar_payi_orani": "%0 kâr payı ile 40.000 TL’ye kadar",
+      "taksit_sayisi": "1 Ocak 2026 – 31 Aralık 2026"
     },
     "alan_belirtilmemis": {
       "vade_ay": true,
@@ -436,7 +450,11 @@
     "notlar": "ivd.gib.gov.tr üzerinden yapılan ödemeler peşin tahsil ediliyor, bu kampanya dışında | [9 Agu] vade_ay->taksit_sayisi tasindi (MTV Odemelerinize Vade Farksiz 3 Taksit); sayfada vade ifadesi yok",
     "taksit_sayisi": 3,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "kampanya_baslangic": "Kampanya 1-31 Temmuz 2026 tarihleri arasında geçerlidir.",
+      "kampanya_bitis": "Kampanya 1-31 Temmuz 2026 tarihleri arasında geçerlidir.",
+      "taksit_sayisi": "üzerinden kredi kartınızla vade farksız 3 taksit ile gerçekleştirebilirsiniz."
+    },
     "alan_belirtilmemis": {
       "vade_ay": true,
       "odul_miktari": true,
@@ -504,7 +522,9 @@
     "notlar": "Ödül davet edilenin görüntülü görüşmeyle müşteri olmasına bağlı, başka kanaldan olursa ödül yok",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "kampanya_bitis": "Kampanya 31 Aralık 2026 tarihine kadar geçerlidir."
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -538,7 +558,10 @@
     "notlar": "Katılmadan önce yapılan işlemler kapsam dışı; sadece belirli MCC kodları (eczane, diş hekimi, ortopedi vb.) geçerli | [9 Agu] vade_ay->taksit_sayisi tasindi (Saglik Harcamalarina Vade Farksiz 6 Taksit); sayfada vade ifadesi yok",
     "taksit_sayisi": 6,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "kampanya_baslangic": "1 – 31 Temmuz 2026",
+      "kampanya_bitis": "1 – 31 Temmuz 2026"
+    },
     "alan_belirtilmemis": {
       "vade_ay": true,
       "odul_miktari": true,
@@ -571,7 +594,10 @@
     "notlar": "Business kartlar ve Master Gold Kart kapsam dışı | [9 Agu] vade_ay->taksit_sayisi tasindi (Egitim Harcamalarina Vade Farksiz 6 Taksit); sayfada vade ifadesi yok",
     "taksit_sayisi": 6,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "kampanya_baslangic": "1 Temmuz 2026 -30 Eylül 2026",
+      "kampanya_bitis": "1 Temmuz 2026 -30 Eylül 2026"
+    },
     "alan_belirtilmemis": {
       "vade_ay": true,
       "odul_miktari": true,
@@ -912,7 +938,9 @@
     "notlar": "Tutar maaş dilimine göre kademeli (18.000-32.000 TL); en üst dilimi (20.000 TL+) alındı",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "odul_miktari": "​​​​​​​​​​​​​​​​​​​Emeklilere 32.000TL’ye Varan Nakit Promosyon, Bonus ve Ödül Türkiye Finans’ta! ​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​"
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1016,7 +1044,9 @@
     "erteleme_suresi_ay": 3,
     "kanit_spanlari": {
       "erteleme_suresi_ay": "400.000 TL'ye Kadar İhtiyaç Finansmanı Kullanın, 3 Ay Öteleme Fırsatından Yararlanın!",
-      "masraf_durumu": "Üstelik temel bankacılık işlemleriniz için masraf ödemeyin."
+      "masraf_durumu": "Üstelik temel bankacılık işlemleriniz için masraf ödemeyin.",
+      "finansman_tutari": "400.000 TL'ye Kadar İhtiyaç Finansmanı Kullanın, 3 Ay Öteleme Fırsatından Yararlanın!",
+      "vade_ay": "Finansman tutarının 250.000 TL’ye kadar olması durumunda maksimum 24 ay,"
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
@@ -1152,7 +1182,10 @@
     "notlar": "E-ticaret islemleri kapsam disi; kampanyaya onceden katilim sart",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "kampanya_baslangic": "10 Temmuz 2026 - 7 Ağustos 2026",
+      "kampanya_bitis": "10 Temmuz 2026 - 7 Ağustos 2026"
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1258,7 +1291,10 @@
     "notlar": "Sadece havayolu firmalarinin kendi kanallari gecerli, araci bilet siteleri haric",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "kampanya_baslangic": "10 Temmuz 2026 - 7 Ağustos 2026",
+      "kampanya_bitis": "10 Temmuz 2026 - 7 Ağustos 2026"
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1326,7 +1362,11 @@
     "notlar": "Odul yalnizca 4. harcamada tek seferde veriliyor, kademeli degil",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "kampanya_baslangic": "10 Temmuz 2026 - 7 Ağustos 2026",
+      "kampanya_bitis": "10 Temmuz 2026 - 7 Ağustos 2026",
+      "odul_miktari": "en fazla 400 TL Bankkart Lira"
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1360,7 +1400,10 @@
     "notlar": "Surdurulebilirlik/elektrikli arac temali kampanya, %20 orani odul hesaplama sekli - kar_payi_orani degil",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "kampanya_baslangic": "10 Temmuz 2026 - 7 Ağustos 2026",
+      "kampanya_bitis": "10 Temmuz 2026 - 7 Ağustos 2026"
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1394,7 +1437,10 @@
     "notlar": "Sadece ilk harcamaya uygulaniyor, oran tabanli (%10) sabit tutar degil",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "kampanya_baslangic": "Kampanya 14 Temmuz - 31 Temmuz 2026 tarihleri arasında Emlak Katılım Mobil’den gerçekleştirilen ödemeler için geçerlidir.",
+      "kampanya_bitis": "Kampanya 14 Temmuz - 31 Temmuz 2026 tarihleri arasında Emlak Katılım Mobil’den gerçekleştirilen ödemeler için geçerlidir."
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1428,7 +1474,10 @@
     "notlar": "SMS ile onceden katilim sart (GIDA yazip 6026'ya)",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "kampanya_baslangic": "Kampanya 1-31 Temmuz 2026 tarihleri arasında geçerlidir.",
+      "kampanya_bitis": "Kampanya 1-31 Temmuz 2026 tarihleri arasında geçerlidir."
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1462,7 +1511,10 @@
     "notlar": "SMS ile onceden katilim sart (AKARYAKIT yazip 6026'ya)",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "kampanya_baslangic": "Kampanya 1 -31 Temmuz 2026 tarihleri arasında geçerlidir.",
+      "kampanya_bitis": "Kampanya 1 -31 Temmuz 2026 tarihleri arasında geçerlidir."
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1810,7 +1862,9 @@
     "notlar": "Kademeli sistem: 100-1.000 TL->3 taksit, 1.000-6.000 TL->6 taksit, 6.000-10.000 TL->6 taksit, 10.000 TL+ secili urun->9 taksit. En ust dilim alindi DUZELTME (23 Agustos 2026): vade_ay=9 -> taksit_sayisi=9. kademeli taksit (3/6/9), Alisveris Puani Kampanyasi - vade yok. Taksit ADEDI ile finansman SURESI ayni alan degildir.",
     "taksit_sayisi": 9,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "kampanya_bitis": "Bitiş Tarihi: 31 Ağustos 2026"
+    },
     "alan_belirtilmemis": {
       "vade_ay": true,
       "odul_miktari": true,
@@ -1843,7 +1897,9 @@
     "notlar": "Sepet toplami 2.000 TL alt sinirdir DUZELTME (23 Agustos 2026): vade_ay=3 -> taksit_sayisi=3. 'pesin fiyatina 3 taksit', Alisveris Puani Kampanyasi. Taksit ADEDI ile finansman SURESI ayni alan degildir.",
     "taksit_sayisi": 3,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "finansman_tutari": "Peşin fiyatına 3 taksit uygulaması sepet toplamı 2.000 TL ve üzeri siparişlerde geçerlidir."
+    },
     "alan_belirtilmemis": {
       "vade_ay": true,
       "odul_miktari": true,
@@ -1876,7 +1932,10 @@
     "notlar": "Nisan ayi kampanyasinin devami, onceki kazanimlar dahil; ayrica davet edilenin kendisi de 1.000 TL+ para transferiyle 500 TL kazaniyor",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "kampanya_baslangic": "16 Haziran - 31 Ağustos 2026",
+      "odul_miktari": "Davet eden kişi, davet ettiği kişinin kampanya koşullarını sağlaması halinde kişi başı maksimum 500 TL, toplamda 50 kişi için maksimum 25.000 TL nakit ödül kazanabilir."
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1910,7 +1969,10 @@
     "notlar": "Sadece ilgili platformlarin resmi sitesi/uygulamasi uzerinden yapilan odemeler gecerli",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "kampanya_baslangic": "16 Haziran - 31 Ağustos 2026",
+      "odul_miktari": "kapsamınca kazanılabilecek maksimum nakit ödül tutarı toplamda 300 TL’dir."
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -2927,7 +2989,9 @@
       "finansman_tutari": "Vade farksız 40.000 TL ve uygun oranlı hoş geldin finansmanı Albaraka'da!",
       "vade_ay": "’lı olan dijital müşterilerimize özel; vade farksız, azami 40.000 TL limitli, 3 aya varan ödemesiz dönem ve 4 taksit imkânı ile birlikte toplam 6 aya varan vade imkanıyla sunulan Pratik Fina",
       "taksit_sayisi": "’lı olan dijital müşterilerimize özel; vade farksız, azami 40.000 TL limitli, 3 aya varan ödemesiz dönem ve 4 taksit imkânı ile birlikte toplam 6 aya varan vade imkanıyla sunulan Pratik Fina",
-      "erteleme_suresi_ay": "’lı olan dijital müşterilerimize özel; vade farksız, azami 40.000 TL limitli, 3 aya varan ödemesiz dönem ve 4 taksit imkânı ile birlikte toplam 6 aya varan vade imkanıyla sunulan Pratik Fina"
+      "erteleme_suresi_ay": "’lı olan dijital müşterilerimize özel; vade farksız, azami 40.000 TL limitli, 3 aya varan ödemesiz dönem ve 4 taksit imkânı ile birlikte toplam 6 aya varan vade imkanıyla sunulan Pratik Fina",
+      "kampanya_baslangic": "01.01.2026 - 31.12.2026",
+      "kampanya_bitis": "01.01.2026 - 31.12.2026"
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
@@ -3737,6 +3801,120 @@
       "odul_miktari": true,
       "masraf_durumu": true,
       "finansman_tutari": true,
+      "erteleme_suresi_ay": true,
+      "odul_birimi": true
+    }
+  },
+  {
+    "kayit_id": "TOM-004",
+    "banka": "T.O.M. Katılım",
+    "kampanya_adi": "Toplam 1.500 TL Hoş Geldin Hediyesi (TOM1500)",
+    "kampanya_turu": "Yeni Musteri Kampanyasi",
+    "kaynak_url": "hadiyanindakibanka.com/kampanyalar/toplam-1500-tl-hos-geldin-hediyesi-tom1500-koduyla-musterimiz-ol-1500-tl-senin-olsun",
+    "kar_payi_orani": null,
+    "maliyet_orani": null,
+    "oran_periyodu": null,
+    "vade_ay": null,
+    "finansman_tutari": null,
+    "odul_miktari": 1500,
+    "odul_birimi": "TL",
+    "kampanya_avantaji": "TOM1500 davet koduyla ilk kez müşteri olanlara, Hadi Black kartla 1.000 TL üzeri beş harcamada kademeli olarak toplam 1.500 TL Hediye Bakiye",
+    "masraf_durumu": null,
+    "kampanya_baslangic": "2026-08-20",
+    "kampanya_bitis": "2026-08-31",
+    "hedef_kitle": "TOM1500 davet koduyla görüntülü görüşmeyle ilk kez TOM Bank müşterisi olanlar",
+    "ekran_goruntusu": null,
+    "giren_kisi": null,
+    "giris_tarihi": "2026-08-23",
+    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Odul KADEMELI: 1.000 TL uzeri her harcamada sirasiyla 100/200/300/400/500 TL; odul_miktari TOPLAM TAVANDIR. 1.000 TL bir ALT ESIKTIR, finansman tutari degil. Kampanya kisiye ozel - yalnizca secili kitleye duyurulmus.",
+    "taksit_sayisi": null,
+    "erteleme_suresi_ay": null,
+    "kanit_spanlari": {
+      "odul_miktari": "1.500 TL Hediye Bakiye",
+      "kampanya_baslangic": "20.8.2026 – 31.8.2026",
+      "kampanya_bitis": "20.8.2026 – 31.8.2026"
+    },
+    "alan_belirtilmemis": {
+      "kar_payi_orani": true,
+      "vade_ay": true,
+      "masraf_durumu": true,
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
+    }
+  },
+  {
+    "kayit_id": "TOM-005",
+    "banka": "T.O.M. Katılım",
+    "kampanya_adi": "Hadi Alışveriş Kredisi ile Klima, Süpürge ve Televizyonlarda Vade Farksız 12 Taksit",
+    "kampanya_turu": "Finansman Kampanyasi",
+    "kaynak_url": "hadiyanindakibanka.com/kampanyalar/hadi-alisveris-kredisi-ile-klima-supurge-ve-televizyonlarda-vade-farksiz-12-taksit",
+    "kar_payi_orani": null,
+    "maliyet_orani": null,
+    "oran_periyodu": null,
+    "vade_ay": null,
+    "finansman_tutari": null,
+    "odul_miktari": null,
+    "odul_birimi": null,
+    "kampanya_avantaji": "A101 Ekstra'da 5.000 TL üzeri klima/süpürge/televizyon alışverişlerinde vade farksız 12 aya varan taksit",
+    "masraf_durumu": null,
+    "kampanya_baslangic": "2026-08-08",
+    "kampanya_bitis": "2026-08-31",
+    "hedef_kitle": "Hadi Taksitli Kredi limiti yeterli olan TOM Bank müşterileri",
+    "ekran_goruntusu": null,
+    "giren_kisi": null,
+    "giris_tarihi": "2026-08-23",
+    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Taksit kademeleri 3-6-9-12; en yuksek kademe yazildi. 5.000 TL ALT ESIKTIR, finansman tutari degil. Yalnizca A101 Ekstra ve yalnizca klima/supurge/televizyon kategorisi.",
+    "taksit_sayisi": 12,
+    "erteleme_suresi_ay": null,
+    "kanit_spanlari": {
+      "taksit_sayisi": "Peşin fiyatına taksit sayısı sadece 12 taksite kadar sınırlıdır.",
+      "kampanya_baslangic": "08 Ağustos - 31 Ağustos 2026",
+      "kampanya_bitis": "08 Ağustos - 31 Ağustos 2026"
+    },
+    "alan_belirtilmemis": {
+      "kar_payi_orani": true,
+      "vade_ay": true,
+      "odul_miktari": true,
+      "masraf_durumu": true,
+      "finansman_tutari": true,
+      "erteleme_suresi_ay": true,
+      "odul_birimi": true
+    }
+  },
+  {
+    "kayit_id": "TOM-006",
+    "banka": "T.O.M. Katılım",
+    "kampanya_adi": "MTV Ödemelerinde Vade Farksız 3 Taksit",
+    "kampanya_turu": "Kart Kampanyasi",
+    "kaynak_url": "hadiyanindakibanka.com/kampanyalar/vergi-kampanyasi",
+    "kar_payi_orani": null,
+    "maliyet_orani": null,
+    "oran_periyodu": null,
+    "vade_ay": null,
+    "finansman_tutari": 30000,
+    "odul_miktari": null,
+    "odul_birimi": null,
+    "kampanya_avantaji": "Hadi Black kartla 1.000-30.000 TL arası vergi ödemelerinde vade farksız 3 taksit",
+    "masraf_durumu": null,
+    "kampanya_baslangic": "2026-07-01",
+    "kampanya_bitis": "2026-08-31",
+    "hedef_kitle": "Hadi Black Kredi Kartı sahipleri (uygulamadan kampanyaya katılanlar)",
+    "ekran_goruntusu": null,
+    "giren_kisi": null,
+    "giris_tarihi": "2026-08-23",
+    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Ekstre donemi basina EN FAZLA BIR vergi odemesi taksitlendirilir. Katilim islemden ONCE uygulamadan yapilmali.",
+    "taksit_sayisi": 3,
+    "erteleme_suresi_ay": null,
+    "kanit_spanlari": {
+      "taksit_sayisi": "Kampanya kapsamında vergi ödemesi kategorisinde tek seferde gerçekleştirilen 1.000 TL ile 30.000 TL arasındaki işlemler vade farksız 3 taksite bölünür.",
+      "finansman_tutari": "Kampanya kapsamında vergi ödemesi kategorisinde tek seferde gerçekleştirilen 1.000 TL ile 30.000 TL arasındaki işlemler vade farksız 3 taksite bölünür."
+    },
+    "alan_belirtilmemis": {
+      "kar_payi_orani": true,
+      "vade_ay": true,
+      "odul_miktari": true,
+      "masraf_durumu": true,
       "erteleme_suresi_ay": true,
       "odul_birimi": true
     }

@@ -27,6 +27,15 @@ import requests
 QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:6333")
 VARSAYILAN_KOLEKSIYON = os.environ.get("QDRANT_KOLEKSIYON", "kampanya_parcalari")
 
+# YEREL DOSYA MODU (sunucusuz). Tanimliysa Qdrant sunucusu yerine bu
+# klasore yazilir - Docker/servis kurulamayan makinelerde (ornegin GPU'suz
+# Windows demo makinesi) RAG yolunu acik tutar. OLCULDU: yerel mod hibrit
+# koleksiyonu (yogun + seyrek, Modifier.IDF dahil) tam destekliyor.
+#
+# Tanimli DEGILSE davranis DEGISMEZ: QDRANT_URL uzerinden sunucuya baglanir.
+# Uretimde ve CI'da bu degisken bos birakilir.
+QDRANT_YEREL_YOL = os.environ.get("QDRANT_YEREL_YOL", "").strip()
+
 _istemci = None
 _DURUM_CACHE: dict[str, Any] = {}
 _DURUM_CACHE_SURESI_SN = 30.0
@@ -39,6 +48,12 @@ def qdrant_hazir_mi() -> bool:
     ayni: servis kapaliyken her cagrida ayri ayri baglanti-reddi beklemesi
     odenmesin.
     """
+    # Yerel dosya modunda ortada bir servis yok - klasor yazilabiliyorsa
+    # hazir sayilir. HTTP kontrolu yapilirsa her zaman False donerdi ve
+    # RAG yolu bosuna kapali kalirdi.
+    if QDRANT_YEREL_YOL:
+        return True
+
     simdi = time.monotonic()
     son = _DURUM_CACHE.get("zaman")
     if son is not None and (simdi - son) < _DURUM_CACHE_SURESI_SN:
@@ -59,7 +74,10 @@ def istemci_al():
     if _istemci is None:
         from qdrant_client import QdrantClient
 
-        _istemci = QdrantClient(url=QDRANT_URL)
+        if QDRANT_YEREL_YOL:
+            _istemci = QdrantClient(path=QDRANT_YEREL_YOL)
+        else:
+            _istemci = QdrantClient(url=QDRANT_URL)
     return _istemci
 
 
@@ -213,6 +231,7 @@ def hibrit_ara(
     koleksiyon: str = VARSAYILAN_KOLEKSIYON,
     aday_limiti: int = 20,
     filtre=None,
+    exact: bool = False,
 ) -> list[dict]:
     """Yogun + seyrek aramayi birlikte calistirip RRF ile birlestirir.
 
@@ -222,12 +241,24 @@ def hibrit_ara(
 
     `filtre` verilirse (ornegin belirli bir banka) her iki aramaya da
     uygulanir.
+
+    `exact=True`: HNSW yaklasik arama yerine tam brute-force tarama yapar.
+    Recall@1 oynamasini onlemek icin olcum/test doneminde kullanilir;
+    uretim yolunda (hizli yanit onemli) False birakilmalidir.
     """
-    from qdrant_client.models import Fusion, FusionQuery, Prefetch, SparseVector
+    from qdrant_client.models import Fusion, FusionQuery, Prefetch, SearchParams, SparseVector
 
     indeksler, degerler = seyrek_sorgu
+    arama_params = SearchParams(exact=exact) if exact else None
+
     on_aramalar = [
-        Prefetch(query=yogun_sorgu, using=YOGUN_AD, limit=aday_limiti, filter=filtre),
+        Prefetch(
+            query=yogun_sorgu,
+            using=YOGUN_AD,
+            limit=aday_limiti,
+            filter=filtre,
+            params=arama_params,
+        ),
     ]
     # Sorguda hic token yoksa (ornegin yalnizca noktalama) seyrek arama
     # anlamsizdir - Qdrant'a bos vektor gondermek yerine atlanir.
@@ -238,6 +269,7 @@ def hibrit_ara(
                 using=SEYREK_AD,
                 limit=aday_limiti,
                 filter=filtre,
+                params=arama_params,
             )
         )
 
@@ -250,11 +282,36 @@ def hibrit_ara(
     return [{"skor": s.score, "ustveri": s.payload} for s in sonuclar]
 
 
-def banka_filtresi(banka: str):
-    """Belirli bir bankaya daraltan Qdrant filtresi uretir."""
-    from qdrant_client.models import FieldCondition, Filter, MatchValue
 
-    return Filter(must=[FieldCondition(key="banka", match=MatchValue(value=banka))])
+def coklu_filtre(banka: str | None = None, hedef_tarih: str | None = None):
+    """Banka ve/veya tarihe (valid_at) gore Qdrant filtresi uretir.
+    
+    hedef_tarih (YYYY-MM-DD): Kampanyanin bu tarihte aktif oldugunu kontrol eder.
+    (valid_at baslangicindan buyuk, bitisinden kucuk vs. - eger tek bir tarih alaniysa ona esitlik veya aralik)
+    Scraper valid_at saglamadiginda erisim_zamani uzerinden de fallback yapilabilir,
+    ancak mentör isteği dogrultusunda 'valid_at' veya genel bir zaman kiyaslamasi kullanilmalidir.
+    """
+    from qdrant_client.models import FieldCondition, Filter, MatchValue, Range
+    kosullar = []
+    if banka:
+        kosullar.append(FieldCondition(key="banka", match=MatchValue(value=banka)))
+    if hedef_tarih:
+        # Geçmişe yönelik sorgularda 'valid_at' aralığı.
+        # Basitlik acisindan 'valid_at_start' <= hedef_tarih <= 'valid_at_end' seklinde eklenebilir, 
+        # ancak simdilik tek valid_at timestamp/date kontrolu (veya erisim_zamani) farz ediyoruz:
+        # 'valid_at' kaydi var mi diye filtreleyebilir veya simdilik Range ile >= lte kullanabiliriz.
+        # Asagidaki yapi, mentör raporundaki valid_at mentigini kurar:
+        kosullar.append(FieldCondition(
+            key="valid_at_start",
+            range=Range(lte=hedef_tarih)
+        ))
+        kosullar.append(FieldCondition(
+            key="valid_at_end",
+            range=Range(gte=hedef_tarih)
+        ))
+    if not kosullar:
+        return None
+    return Filter(must=kosullar)
 
 
 def koleksiyon_sayisi(koleksiyon: str = VARSAYILAN_KOLEKSIYON) -> Optional[int]:

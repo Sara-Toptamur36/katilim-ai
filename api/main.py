@@ -37,12 +37,13 @@ from fastapi.security import OAuth2PasswordRequestForm
 from agent.orchestrator import soru_isle
 from api.auth import GERCEK_JWT_AKTIF, rol_gerekli, token_dogrula, token_uret
 from complaint.tema_siniflandirici import tema_siniflandir
+from complaint.toplama import yogunluk_ozeti
 from api.db import oturum_al
 from api.kampanya_repository import id_ile_getir_db, kampanyalari_getir_db
 from api.kullanici_repository import kullanici_dogrula, kullanici_getir, kullanici_olustur
 from api.logging_config import log
 from api.mock_data import id_ile_getir, kampanyalari_getir
-from api.models import AuditKayit
+from api.models import AuditKayit, Sikayet
 from api.schemas import (
     AuditBilgisi,
     CampaignRecord,
@@ -57,6 +58,7 @@ from api.schemas import (
     MusteriSesiIstek,
     MusteriSesiOrnek,
     MusteriSesiOrnekYanit,
+    MusteriSesiYogunlukYanit,
     MusteriSesiYanit,
     CikarimAdayi,
     CikarimIstek,
@@ -612,6 +614,29 @@ def musteri_sesi_ornekler(kullanici: dict = Depends(token_dogrula)):
         for o in veri["ornekler"]
     ]
     return MusteriSesiOrnekYanit(temalar=veri["temalar"], ornekler=ornekler)
+
+
+@app.get(
+    "/musteri-sesi/yogunluk-ozeti",
+    response_model=MusteriSesiYogunlukYanit,
+    tags=["Musteri Sesi"],
+)
+def musteri_sesi_yogunluk_ozeti(kullanici: dict = Depends(token_dogrula)):
+    """Gercek `sikayetler` tablosundan tema bazli gozlenen yogunluk.
+
+    Faz 2 Hafta 1 - `campaign_experience_metrics` kapsaminda planlanan
+    ozet gorunumu (bkz. docs/adr/0001-sikayet-veri-modeli.md). Izin kapisi
+    (complaint/izin_kapisi.py) kapali oldugu surece tablo BOStur - bu
+    durumda `toplam_sikayet: 0` doner, hata FIRLATILMAZ: bos veri gecerli
+    ve dogru bir durumdur, "henuz veri yok" demek "sistem bozuk" demek
+    degildir.
+    """
+    oturum = next(oturum_al())
+    try:
+        sikayetler = oturum.query(Sikayet).all()
+    finally:
+        oturum.close()
+    return MusteriSesiYogunlukYanit(**yogunluk_ozeti(sikayetler))
 
 
 @app.get(

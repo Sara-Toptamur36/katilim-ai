@@ -1,0 +1,39 @@
+{
+  "tarih": "2026-08-23",
+  "kapsanma_esigi": 0.9,
+  "sonuclar": [
+    {
+      "kayit_id": "TOM-004",
+      "banka": "T.O.M. Katılım",
+      "url": "https://hadiyanindakibanka.com/kampanyalar/toplam-1500-tl-hos-geldin-hediyesi-tom1500-koduyla-musterimiz-ol-1500-tl-senin-olsun",
+      "dosya": "TOM-004.png",
+      "boyut_kb": 1236.9,
+      "kapsanma": 0.975,
+      "anlik_uzunluk": 4047,
+      "canli_uzunluk": 3952,
+      "durum": "tamam"
+    },
+    {
+      "kayit_id": "TOM-005",
+      "banka": "T.O.M. Katılım",
+      "url": "https://hadiyanindakibanka.com/kampanyalar/hadi-alisveris-kredisi-ile-klima-supurge-ve-televizyonlarda-vade-farksiz-12-taksit",
+      "dosya": "TOM-005.png",
+      "boyut_kb": 985.3,
+      "kapsanma": 0.948,
+      "anlik_uzunluk": 1857,
+      "canli_uzunluk": 1766,
+      "durum": "tamam"
+    },
+    {
+      "kayit_id": "TOM-006",
+      "banka": "T.O.M. Katılım",
+      "url": "https://hadiyanindakibanka.com/kampanyalar/vergi-kampanyasi",
+      "dosya": "TOM-006.png",
+      "boyut_kb": 1286.0,
+      "kapsanma": 0.961,
+      "anlik_uzunluk": 2469,
+      "canli_uzunluk": 2374,
+      "durum": "tamam"
+    }
+  ]
+}

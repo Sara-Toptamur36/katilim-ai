@@ -111,7 +111,10 @@ def test_kanit_spani_kaynak_metinde_GERCEKTEN_geciyor(kayitlar):
     Kopyalama hatasi ya da elle "ozetlenmis" bir cumle, sonradan
     dogrulanamayan bir gerekce demektir - referansin degerini yok eder.
     """
-    from extraction.normalizer import turkce_ascii_kucult
+    # TEK KAYNAK: bosluk toleransinin tanimi excel_to_json'da durur;
+    # burada kopyalanirsa iki yerde ayrisir ve testin kabul ettigiyle
+    # uretimin kabul ettigi sey birbirinden kayar.
+    from gold_dataset.excel_to_json import span_metinde_var
 
     hatalar: list[str] = []
     kontrol_edilen = 0
@@ -123,12 +126,11 @@ def test_kanit_spani_kaynak_metinde_GERCEKTEN_geciyor(kayitlar):
         metin = _ham_metin(k)
         if metin is None:
             continue  # sayfa artik yok - bu testin konusu degil
-        katlanmis = turkce_ascii_kucult(metin)
         for alan, span in spanlar.items():
             if not span:
                 continue
             kontrol_edilen += 1
-            if turkce_ascii_kucult(span) not in katlanmis:
+            if not span_metinde_var(span, metin):
                 hatalar.append(f"{k['kayit_id']}.{alan}: {span[:60]!r}")
 
     assert not hatalar, (

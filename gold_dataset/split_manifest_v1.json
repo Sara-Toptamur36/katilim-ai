@@ -3,37 +3,59 @@
   "olusturulma_yontemi": "banka-katmanli, kaynak_url gruplu split (gold_dataset/split_manifest_uret.py)",
   "test_orani_hedef": 0.2,
   "tohum": 42,
-  "toplam_kayit": 60,
-  "toplam_kampanya_url": 58,
+  "toplam_kayit": 103,
+  "toplam_kampanya_url": 101,
   "train": [
     "AL-001",
+    "AL-002",
     "AL-003",
     "AL-004",
+    "AL-005",
     "AL-006",
     "AL-007",
     "AL-008",
+    "AL-009",
+    "AL-012",
     "DK-002",
     "DK-003",
     "DK-004",
     "DK-005",
     "DK-006",
     "DK-007",
-    "HF-001",
+    "DK-009",
     "HF-002",
     "HF-003",
     "HF-004",
+    "HF-005",
+    "HF-007",
+    "HF-008",
+    "HF-010",
     "KT-001",
     "KT-002",
     "KT-003",
-    "KT-004",
+    "KT-005",
     "KT-006",
     "KT-007",
-    "TEK-001",
+    "KT-008",
+    "KT-009",
+    "KT-010",
+    "KT-011",
+    "KT-012",
+    "KT-013",
+    "KT-016",
+    "KT-017",
     "TEK-002",
     "TEK-003",
     "TEK-004",
     "TEK-005",
-    "TEK-006",
+    "TEK-007",
+    "TEK-009",
+    "TEK-010",
+    "TEK-012",
+    "TEK-013",
+    "TEK-014",
+    "TEK-015",
+    "TEK-016",
     "TF-001",
     "TF-002",
     "TF-003",
@@ -43,68 +65,89 @@
     "TOM-001",
     "TOM-002",
     "TOM-003",
+    "TOM-004",
+    "TOM-005",
     "VK-001",
+    "VK-002",
     "VK-003",
     "VK-004",
-    "VK-005",
+    "VK-006",
     "VK-007",
     "VK-008",
+    "VK-009",
     "ZK-002",
-    "ZK-003",
     "ZK-004",
     "ZK-005",
-    "ZK-006",
-    "ZK-007"
+    "ZK-007",
+    "ZK-008",
+    "ZK-009",
+    "ZK-010",
+    "ZK-011",
+    "ZK-012",
+    "ZK-013",
+    "ZK-014",
+    "ZK-015",
+    "ZK-016",
+    "ZK-017"
   ],
   "test": [
-    "AL-002",
-    "AL-005",
+    "AL-010",
+    "AL-011",
     "DK-001",
-    "HF-005",
-    "KT-005",
-    "TEK-007",
+    "DK-008",
+    "HF-001",
+    "HF-006",
+    "KT-004",
+    "KT-014",
+    "KT-015",
+    "TEK-001",
+    "TEK-006",
+    "TEK-011",
     "TF-004",
-    "VK-002",
-    "VK-006",
+    "TF-008",
+    "TOM-006",
+    "VK-005",
+    "VK-010",
     "ZK-001",
-    "ZK-008"
+    "ZK-003",
+    "ZK-006"
   ],
   "banka_bazinda_ozet": {
     "Albaraka Türk": {
-      "toplam_url": 8,
+      "toplam_url": 12,
       "test_url": 2
     },
     "Dünya Katılım": {
-      "toplam_url": 7,
-      "test_url": 1
+      "toplam_url": 9,
+      "test_url": 2
     },
     "Hayat Finans": {
-      "toplam_url": 5,
-      "test_url": 1
+      "toplam_url": 9,
+      "test_url": 2
     },
     "Kuveyt Türk": {
-      "toplam_url": 7,
-      "test_url": 1
+      "toplam_url": 17,
+      "test_url": 3
     },
     "T.O.M. Katılım": {
-      "toplam_url": 1,
-      "test_url": 0
+      "toplam_url": 4,
+      "test_url": 1
     },
     "Türkiye Emlak Katılım": {
-      "toplam_url": 7,
-      "test_url": 1
+      "toplam_url": 15,
+      "test_url": 3
     },
     "Türkiye Finans": {
-      "toplam_url": 7,
-      "test_url": 1
+      "toplam_url": 8,
+      "test_url": 2
     },
     "Vakıf Katılım": {
-      "toplam_url": 8,
+      "toplam_url": 10,
       "test_url": 2
     },
     "Ziraat Katılım": {
-      "toplam_url": 8,
-      "test_url": 2
+      "toplam_url": 17,
+      "test_url": 3
     }
   }
 }

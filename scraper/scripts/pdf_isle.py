@@ -76,9 +76,24 @@ def pdf_linklerini_bul(soup: BeautifulSoup, sayfa_url: str) -> list[str]:
     return sorted(set(linkler))
 
 
+MAX_PDF_BOYUTU = 5 * 1024 * 1024  # 5 MB
+MAX_PDF_SAYFASI = 20
+
 def pdf_indir(banka_kod: str, pdf_url: str) -> Path:
-    """PDF'yi indirip scraper/raw_data/{banka}/pdf/ klasorune yazar."""
+    """PDF'yi indirip scraper/raw_data/{banka}/pdf/ klasorune yazar.
+    Guvenlik (Sandbox): MAX_PDF_BOYUTU asilirsa indirmeyi iptal eder.
+    """
+    import requests
+    # stream=True ile alalim ki boyut buyukse tamamini indirmeyelim.
+    # Ancak ortak.istek_at_retry_ile doğrudan requests.get(stream=False) dönüyor.
+    # Burada ozel stream'li cagri yapabiliriz ya da Content-Length'i kontrol edebiliriz.
+    # Guvenlik icin ozel request yapalim:
+    # SSRF korumasi istek_at_retry_ile'de var, oradan gecmesi gerek:
     yanit = ortak.istek_at_retry_ile(pdf_url, timeout=15)
+    
+    if len(yanit.content) > MAX_PDF_BOYUTU:
+        raise ValueError(f"PDF dosya boyutu {MAX_PDF_BOYUTU} sinirini asiyor: {len(yanit.content)} bayt")
+
     klasor = ortak.RAW_DATA_DIR / banka_kod / "pdf"
     klasor.mkdir(parents=True, exist_ok=True)
 
@@ -92,13 +107,17 @@ def pdf_indir(banka_kod: str, pdf_url: str) -> Path:
 
 def pdf_metne_cevir(pdf_yolu: Path) -> str:
     """Metin tabanli PDF'den metin cikarir.
-
+    Guvenlik (Sandbox): En fazla MAX_PDF_SAYFASI kadar sayfa okur.
     Taranmis (goruntu) bir PDF verilirse extract_text() bos/anlamsiz
     doner - bu, OCR gerektigi anlamina gelir (Bolum 17.4). Bu fonksiyon
     kendisi OCR YAPMAZ; cagiran taraf donen metnin kisaligina bakarak
     karar vermelidir.
     """
     reader = PdfReader(str(pdf_yolu))
+    
+    if len(reader.pages) > MAX_PDF_SAYFASI:
+        raise ValueError(f"PDF sayfa sayisi ({len(reader.pages)}) {MAX_PDF_SAYFASI} sinirini asiyor.")
+        
     metin = ""
     for sayfa in reader.pages:
         metin += sayfa.extract_text() or ""

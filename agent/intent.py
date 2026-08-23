@@ -8,6 +8,7 @@ LLM hic baglanmadan once de test edilebilir bir cekirdek saglar ve LLM
 entegre edildiginde FALLBACK/CAPRAZ KONTROL olarak kalmaya devam eder.
 """
 
+from difflib import SequenceMatcher
 from enum import Enum
 
 
@@ -83,6 +84,42 @@ _NIYET_KELIMELERI = {
 }
 
 
+# Bulanik eslesme esigi. OLCULDU: "karsilatin" ("karsilastir" yazim hatasi)
+# 0.86 skor veriyor, alakasiz kelimeler 0.5'in altinda kaliyor. 0.82 ikisini
+# ayirir. Esigi dusurmek yanlis niyet tespitine yol acar - kullanici
+# hesaplama isterken karsilastirma araci cagrilirsa sessizce YANLIS cevap
+# uretilir, bu da cevapsiz kalmaktan kotudur.
+_BULANIK_ESIK = 0.82
+
+
+def _bulanik_eslesme_sayilari(s: str) -> dict:
+    """Tam eslesme bulunamadiginda kelime bazli bulanik arama.
+
+    NEDEN VAR (olculdu): anahtar kelimeler tam alt dize olarak araniyordu,
+    bu yuzden "karsilatin misin" gibi tek harf eksik bir yazim niyeti
+    BILINMIYOR'a dusuruyor ve soru RAG'e gidiyordu. Juri/kullanici dogal
+    yazdiginda (ek, dusme, yazim hatasi) sistem soruyu anlamiyordu.
+
+    Anahtar kac kelimeden olusuyorsa sorudan ayni uzunlukta pencereler
+    cikarilip karsilastirilir - "hangisi daha" gibi cok kelimeli anahtarlar
+    da yakalanabilsin diye.
+    """
+    kelimeler = s.split()
+    sayilar = {}
+    for niyet, anahtarlar in _NIYET_KELIMELERI.items():
+        sayi = 0
+        for anahtar in anahtarlar:
+            temiz = anahtar.strip()
+            n = len(temiz.split())
+            for i in range(len(kelimeler) - n + 1):
+                pencere = " ".join(kelimeler[i : i + n])
+                if SequenceMatcher(None, pencere, temiz).ratio() >= _BULANIK_ESIK:
+                    sayi += 1
+                    break  # ayni anahtar birden fazla sayilmasin
+        sayilar[niyet] = sayi
+    return sayilar
+
+
 def niyet_tespit_et(soru: str) -> tuple[Niyet, float]:
     """Soruyu anahtar kelime eslesmesine gore siniflandirir.
 
@@ -103,7 +140,17 @@ def niyet_tespit_et(soru: str) -> tuple[Niyet, float]:
     en_iyi_sayi = eslesme_sayilari[en_iyi_niyet]
 
     if en_iyi_sayi == 0:
-        return Niyet.BILINMIYOR, 0.0
+        # TAM eslesme yok - yazim hatasi/ek olabilir, bulanik dene.
+        bulanik = _bulanik_eslesme_sayilari(s)
+        en_iyi_niyet = max(bulanik, key=bulanik.get)
+        en_iyi_sayi = bulanik[en_iyi_niyet]
+        if en_iyi_sayi == 0:
+            return Niyet.BILINMIYOR, 0.0
+        # Bulanik eslesme DAHA DUSUK guven verir (en fazla 0.60) - tam
+        # eslesmenin taban degeri 0.65'in altinda kalir. Juri Audit
+        # Paneli'nde "bu niyet tahminle bulundu" ayrimi gorunur olsun.
+        guven = min(0.50 + (en_iyi_sayi - 1) * 0.05, 0.60)
+        return en_iyi_niyet, round(guven, 2)
 
     # Basit guven modeli: ilk eslesme 0.65, her ek eslesme +0.1, 0.95'i gecmez.
     guven = min(0.65 + (en_iyi_sayi - 1) * 0.10, 0.95)

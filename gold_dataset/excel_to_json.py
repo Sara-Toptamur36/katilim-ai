@@ -93,6 +93,29 @@ SPAN_VERILEBILIR_ALANLAR = {
 }
 
 
+def span_metinde_var(span: str, metin: str) -> bool:
+    """Kanit spani kaynak metinde geciyor mu?
+
+    BOSLUK FARKI ICERIK FARKI DEGILDIR. Olculdu: ayni sayfa statik
+    tarayiciyla duz bosluk, JS tarayicisiyla KIRILMAZ BOSLUK (U+00A0)
+    ve farkli satir sonlariyla geliyor. Sayfalar JS ile yeniden
+    tarandiginda YEDI kaydin kanit spani bir anda "kirik" gorundu -
+    oysa cumleler harfi harfine ayniydi, yalnizca bosluklar degismisti.
+
+    KURAL GEVSEMIYOR: karakter dizisi yine birebir eslesmek zorunda;
+    yalnizca ardisik bosluklar tek boslugua indirilir. "Yaklasik
+    dogru" elle yazilmis bir cumle hala GECMEZ - spanin butun degeri
+    tam da budur.
+    """
+    from extraction.normalizer import turkce_ascii_kucult
+
+    def sadelestir(metin_parcasi: str) -> str:
+        katlanmis = turkce_ascii_kucult(metin_parcasi).replace("\xa0", " ")
+        return re.sub(r"\s+", " ", katlanmis).strip()
+
+    return bool(span) and sadelestir(span) in sadelestir(metin)
+
+
 def _spanlari_ayristir(ham, kayit_id: str, uyarilar: list[str]) -> dict:
     """"alan: cumle" satirlarini sozluge cevirir.
 
@@ -142,17 +165,34 @@ INCELENMIS_ALANLAR = (
     # ODUL ("1.000 TL ve uzeri harcamaniza 10.000 Mil") - finansman
     # tutari degil. Hicbiri deger almadi.
     "finansman_tutari",
+    # 23 Agustos 2026: iki sutun daha olcume acildi. Denetimde bulunan
+    # durum: taksit_sayisi 80, erteleme_suresi_ay 97 kayitta NE DOLU NE
+    # BOS-ISARETLI idi - yani motor oraya uydurma bir deger yazsa bu
+    # olcume HIC girmiyordu (bedava puan).
+    #
+    # Kapatmak icin yapilanlar:
+    #   - metinde o alandan hic soz etmeyen kayitlar (taksit 59,
+    #     erteleme 79) kaynak metinle tek tek tarandi, deger yok,
+    #   - iz bulunan 12 kayit elle okundu; 4'unde deger vardi ve
+    #     dolduruldu (ZK-004, AL-001, TF-001, TF-005), 3'unde iz yan
+    #     menudeki BASKA kampanyalardan geliyordu (VK-009, VK-010,
+    #     ZK-011) - bos birakildi,
+    #   - kaynagi kaybolmus 14 kayit kampanya adi + turu + kaydin kendi
+    #     ozet alanlariyla dogrulandi,
+    #   - 9 kayitta deger YANLIS ALANDAYDI (vade_ay), taksit_sayisi'na
+    #     tasindi (bkz. _taksit_vade_karisikligi).
+    "taksit_sayisi",
+    "erteleme_suresi_ay",
 )
 
 # Semada/Excel'de VAR ama henuz bir etiketleme oturumundan gecmemis
 # sutunlar. Bos hucreleri "kaynakta yok" SAYILMAZ - olcum disidir.
 # Etiketlemesi biten sutun buradan cikarilip INCELENMIS_ALANLAR'a eklenir.
 #
-# taksit_sayisi / erteleme_suresi_ay: sutunlar 9 Agustos'ta eklendi,
-# etiketlenmeyi bekliyor (bkz. gold_dataset/etiketleme_yardimcisi.py).
 INCELENMEMIS_ALANLAR = (
-    "taksit_sayisi",
-    "erteleme_suresi_ay",
+    # 23 Agustos 2026: liste BOSALDI - taksit_sayisi ve
+    # erteleme_suresi_ay INCELENMIS_ALANLAR'a tasindi. Semadaki her
+    # olculen sutun artik yanlis pozitif olcumune giriyor.
 )
 
 
@@ -195,6 +235,107 @@ def _sayiya_cevir(deger, kayit_id: str, alan: str) -> float | int | None:
         return float(metin) if "." in metin else int(metin)
     except ValueError:
         raise DogrulamaHatasi(f"[{kayit_id}] {alan}: sayiya cevrilemedi: {metin!r}")
+
+
+# ---------------------------------------------------------------------------
+# TARIH BEKCISI - "kaynakta yok" iddiasini kaynaga sorar
+# ---------------------------------------------------------------------------
+# Bu kor nokta IKI KEZ isirdi:
+#   * Ziraat sayfalari tarihi "Kampanya Donemi" basligi altinda veriyor;
+#     statik tarama o blogu yakalamamisti ve 7 kayit tarihsiz kaldi.
+#   * Vakif sayfalari "Kampanya Gecerlilik Tarihi" diyor; ilk denetim
+#     kalibi bu yazimi bilmedigi icin VK-009, VK-010 ve TF-005 gozden
+#     kacti - TF-005'in notunda "bitis tarihi sayfada belirtilmemis"
+#     yaziyordu, oysa yaziyordu.
+#
+# Ders: "kaynakta yok" bir IDDIADIR ve kaynaga sorulabilir. Bu kontrol
+# tam da onu yapar - tarih alanlari BOS olan bir kayitta, kaynak metinde
+# hem tarih hem de donem ifadesi varsa uyarir.
+#
+# HATA DEGIL UYARI URETIR: cerez politikasi metinlerinde de tarih gecer
+# (olculdu: DK-001 ve DK-004'te "17/08/2026" cerez aciklamasindan
+# geliyor). Karar yine insanindir; kod yalnizca bakilacak yeri gosterir.
+_DONEM_IFADESI = re.compile(
+    r"kampanya\s+d[oö]nemi|kampanya\s+tarihleri|tarihleri\s+aras[iı]nda"
+    r"|tarihine\s+kadar|ge[çc]erlilik\s+tarihi|kampanya\s+s[uü]resi",
+    re.IGNORECASE,
+)
+
+
+# Cerez/gizlilik metinlerinde de tarih gecer ama kampanyayla ilgisi
+# yoktur. Olculdu: Dunya Katilim sayfalarinda "17/08/2026" tarihi
+# "cerez ... sona erme tarihine kadar" aciklamasindan geliyor ve
+# DK-001 ile DK-004'te KALICI yanlis alarm uretiyordu. Surekli uyaran
+# bir kontrol okunmaz hale gelir - gercek uyari da gorulmez.
+_CEREZ_BAGLAMI = re.compile(
+    r"[çc]erez|cookie|taray[iı]c[iı]|gizlilik politikas|kvkk", re.IGNORECASE)
+
+
+def _tarih_izi(metin: str) -> list[str]:
+    """Metindeki tarihler - CEREZ metnindekiler haric."""
+    from extraction.normalizer import TR_AY_ADLARI
+
+    kalip = re.compile(
+        r"\d{1,2}[-./]\d{1,2}[-./]\d{4}"
+        r"|\d{1,2}\s+(?:" + "|".join(TR_AY_ADLARI) + r")\s+\d{4}",
+        re.IGNORECASE,
+    )
+    bulunan = set()
+    for m in kalip.finditer(metin):
+        # Tarihin yakin cevresi cerez metniyse sayma.
+        cevre = metin[max(0, m.start() - 220):m.end() + 220]
+        if _CEREZ_BAGLAMI.search(cevre):
+            continue
+        bulunan.add(m.group(0).strip())
+    return sorted(bulunan)
+
+
+def tarih_bekcisi(kayitlar: list[dict]) -> list[str]:
+    """Tarihi bos kayitlarin kaynaginda tarih var mi?"""
+    # SESSIZ BASARISIZLIK TUZAGI (olculdu): bu betik
+    # `python gold_dataset/excel_to_json.py` seklinde calistirildiginda
+    # sys.path[0] repo koku DEGIL, gold_dataset/ klasoru olur ve
+    # `gold_dataset.sprint_is_listesi` importu ImportError verir. Ilk
+    # surum bunu sessizce yutuyordu - kontrol hic calismiyor ama cikti
+    # "Uyari yok" diyordu, yani her sey yolunda GORUNUYORDU.
+    #
+    # Cozum iki parcali: kokU path'e ekle, ve yine de basarisiz olursa
+    # SESSIZ KALMA - kontrolun atlandigini SOYLE.
+    kok = str(Path(__file__).resolve().parent.parent)
+    if kok not in sys.path:
+        sys.path.insert(0, kok)
+
+    try:
+        from gold_dataset.sprint_is_listesi import _ham_kampanyalar, _slug
+    except ImportError as hata:
+        return [f"[tarih bekcisi] KONTROL ATLANDI - modul yuklenemedi: {hata}"]
+
+    try:
+        ham = _ham_kampanyalar()
+    except Exception as hata:  # noqa: BLE001
+        return [f"[tarih bekcisi] KONTROL ATLANDI - korpus okunamadi: "
+                f"{type(hata).__name__}"]
+    if not ham:
+        return ["[tarih bekcisi] KONTROL ATLANDI - scraper korpusu bos"]
+
+    uyarilar = []
+    for k in kayitlar:
+        if k.get("kampanya_baslangic") or k.get("kampanya_bitis"):
+            continue
+        kaynak = ham.get(_slug(k.get("kaynak_url") or ""))
+        if not kaynak:
+            continue
+        metin = kaynak.get("normalize_metin") or ""
+        if not _DONEM_IFADESI.search(metin):
+            continue
+        tarihler = _tarih_izi(metin)
+        if tarihler:
+            uyarilar.append(
+                f"[{k['kayit_id']}] kampanya tarihi BOS ama kaynakta tarih var: "
+                f"{', '.join(tarihler[:4])} - sayfayi kontrol et "
+                "(cerez metninden geliyorsa bos dogru)"
+            )
+    return uyarilar
 
 
 def _kaydi_dogrula(kayit: dict) -> list[str]:
@@ -243,7 +384,50 @@ def _kaydi_dogrula(kayit: dict) -> list[str]:
     if not kayit.get("kaynak_url"):
         uyarilar.append(f"[{kid}] kaynak_url bos - provenance icin zorunlu")
 
+    uyarilar.extend(_taksit_vade_karisikligi(kayit, kid))
+
     return uyarilar
+
+
+# Kampanya adindaki "3 Taksit" / "5 Aya Varan Taksit" kalibi.
+_ADDA_TAKSIT = re.compile(r"(\d{1,2})\s*(?:aya varan\s*)?taksit", re.IGNORECASE)
+
+
+def _taksit_vade_karisikligi(kayit: dict, kid: str) -> list[str]:
+    """taksit_sayisi ile vade_ay ayni seyi ifade ETMEZ - ama altin sette
+    karismislar.
+
+    OLCULEN DURUM: "MTV Odemelerinde Vade Farksiz 3 Taksit" kampanyasi
+    VK-001'de vade_ay=3 olarak, ayni cumleye sahip AL-002'de ise
+    taksit_sayisi=3 olarak yazilmis. Ikisi de dogru olamaz.
+
+    NEDEN ONEMLI: vade_ay OLCULEN bir sutundur. Taksit sayisi oraya
+    yazildiginda motor ne uretirse uretsin kayitlarin bir kismi yanlis
+    sayilir - yani olcum, motorun hatasini degil ETIKETLEYICILERIN
+    ANLASMAZLIGINI olcer. Bu, en pahali hata turudur: sebep motorda
+    aranir, orada yoktur.
+
+    DOGRU AYRIM: taksit sayisi bir ADETTIR (3 taksit = 3 odeme);
+    vade ise finansmanin SURESIDIR (12 ay vade). MTV/vergi/alisveris
+    odemesinde "vade" kavrami yoktur - oralarda deger taksit_sayisi'dir.
+
+    BURASI HATA DEGIL UYARI URETIR: dokunulan kayitlar baskasinin
+    etiketidir ve bu projede altin kayit, insan dogrulamasi + ekran
+    goruntusuyle degistirilir. Kod yalnizca GORUNUR kilar; duzeltmeyi
+    kaydi giren kisi kendi kaynagina bakarak yapar.
+    """
+    ad = kayit.get("kampanya_adi") or ""
+    eslesme = _ADDA_TAKSIT.search(ad)
+    if not eslesme:
+        return []
+    sayi = int(eslesme.group(1))
+    if kayit.get("vade_ay") == sayi and kayit.get("taksit_sayisi") is None:
+        return [
+            f"[{kid}] kampanya adi '{eslesme.group(0)}' diyor ama deger "
+            f"vade_ay={sayi} olarak yazilmis; taksit_sayisi bos. Taksit "
+            "ADEDI ile finansman SURESI ayni alan degildir - kaynagi kontrol et."
+        ]
+    return []
 
 
 def donustur(excel_yolu: Path = EXCEL) -> tuple[list[dict], list[str]]:
@@ -302,6 +486,9 @@ def donustur(excel_yolu: Path = EXCEL) -> tuple[list[dict], list[str]]:
 
         tum_uyarilar.extend(_kaydi_dogrula(kayit))
         kayitlar.append(kayit)
+
+    # Kaynak korpusa BIR KEZ bakan kontrol (kayit basina degil).
+    tum_uyarilar.extend(tarih_bekcisi(kayitlar))
 
     return kayitlar, tum_uyarilar
 

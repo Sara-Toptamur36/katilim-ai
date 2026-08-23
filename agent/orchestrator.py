@@ -6,7 +6,7 @@ Verifier -> Provenance.
 
 BU DOSYANIN KAPSAMI: Intent Detection + Tool Router + bes arac
 (Hesaplama, Sozluk, Karsilastirma, Toplam Maliyet, RAG) + kademeli geri
-cekilme + Terminology Check.
+cekilme + zaman asimi fallback + Terminology Check.
 
 TERMINOLOGY CHECK - RAG'DE NEDEN FARKLI DAVRANIR: terminoloji_tutarliligini_
 kontrol_et() kendi docstring'inde "ajanin URETTIGI yanitta" gelenek terim
@@ -35,21 +35,32 @@ terime hic ihtiyaci olmayan iki arac - dogrulandi: hesaplama cevabi
 tabidir. Sozluk ve RAG, ikisi de MESRU sekilde gelenek terim
 icerebilecegi icin bilgi notu (`terminoloji_tutarli=None`) alir.
 
-VERIFIER BU ZINCIRE HENUZ BAGLI DEGIL: validation/verifier.py yazildi ve
-gercek veriyle olculdu (6/6 yanlis pozitif reddedildi, 41 gercek iddianin
-37'si onaylandi) ama su an yalnizca CIKARIM tarafindaki sayisal iddialari
-dogruluyor; ajan yanit yolunda cagrilmiyor. Bunun nedeni bu yolda
-dogrulanacak URETILMIS bir sayi olmamasi: RAG kaynak metnini birebir
-donduruyor, uzerine serbest metin uretilmiyor. LLM ile ozetleme
-eklenirse Verifier bu zincire de ONUNLA BIRLIKTE baglanmalidir.
+VERIFIER DURUMU: validation/verifier.py yazildi, gercek veriyle olculdu
+(6/6 yanlis pozitif reddedildi, 41 gercek iddianin 37'si onaylandi) ve
+agent/router.py'deki karsilastirma_aracini_cagir ile toplam_maliyet_
+aracini_cagir icinde `dogrulama` alani olarak ajan yanit yoluna BAĞLANDI.
+Hesaplama araci (calculator) saf Python - kendi girdisini dogrular,
+uydurma sayi URETMEZ, dolayisiyla Verifier o yol icin gerekli degildir.
+RAG'de None kalir ve bu DOGRUDUR: RAG kaynak parcasini BIREBIR dondurur,
+uzerine cumle uretmez - orada "sayi kaynakta var mi" kontrolu tanim geregi
+hep EVET derdi (bkz. validation/yanit_dogrulama.py docstring'i).
+
+ZAMAN ASIMI TABANLI KADEMELI FALLBACK: Arac cagrilari (ozellikle RAG -
+embedding hesaplamasi icerir) beklenmedik sekilde uzayabilir. Olculen
+p95 esikleri: GPU profil 300 sn, CPU profil 900 sn. KATILIMAI_ARAC_ZAMAN_ASIMI
+ortam degiskeniyle ezilir. Arac zaman asimina ugrarsa sistem DURMAZ -
+"zaman_asimi" sebep koduyla audit'e yazar ve kullaniciya acik bir mesaj
+doner. Sessiz kilitlenme yoktur.
 
 api/main.py, GERCEK_VERI_AKTIF bayragina gore uygun `kayit_getirici`
 fonksiyonunu bu module verir - boylece bu dosya mock/DB ayrimindan
 tamamen habersiz kalir.
 """
 
+import os
 import time
-from typing import Callable
+import threading
+from typing import Any, Callable
 
 from agent.intent import Niyet, niyet_tespit_et
 from agent.router import (
@@ -69,6 +80,79 @@ KayitGetirici = Callable[[str], list]
 # BURADA YOK - onlarin yaniti sayisal/yapisal veridir, gelenek terime hic
 # ihtiyaci olmaz; oralarda gercek bir True/False kontrolu uygulanir.
 _TERMINOLOJI_BILGI_NOTU_ARACLARI = {"rag", "dictionary"}
+
+# Zaman asimi esigi (saniye). Olculen p95: GPU=300sn, CPU=900sn.
+# KATILIMAI_ARAC_ZAMAN_ASIMI ortam degiskeniyle ezilebilir.
+_VARSAYILAN_ZAMAN_ASIMI_SN = float(os.environ.get("KATILIMAI_ARAC_ZAMAN_ASIMI", "900"))
+
+
+def _arac_cagir_zaman_asimi(fonksiyon, *args, zaman_asimi_sn: float = _VARSAYILAN_ZAMAN_ASIMI_SN) -> dict[str, Any]:
+    """Arac fonksiyonunu ayri thread'de calistirip zaman asimini denetler.
+
+    Donanim profili (donanim.py) GPU/CPU'ya gore otomatik ayar seciyor;
+    ama LLM embedding bazen beklenmedik sekilde uzayabiliyor. Bu sarmalayici
+    sessiz kilitlenmeyi onler: esik asilirsa aninda fallback mesaji doner,
+    hicbir exception kaybedilmez, audit'e sebep yazilir.
+    """
+    sonuc: dict[str, Any] = {}
+    hata: list[Exception] = []
+
+    def _calistir() -> None:
+        try:
+            sonuc.update(fonksiyon(*args))
+        except Exception as e:  # noqa: BLE001
+            hata.append(e)
+
+    thread = threading.Thread(target=_calistir, daemon=True)
+    thread.start()
+    thread.join(timeout=zaman_asimi_sn)
+
+    if thread.is_alive():
+        # Thread hala calisiyor = zaman asimi
+        return {
+            "basarili": False,
+            "cevap": (
+                "Bu islem beklenenden uzun surdu ve zaman asimina ugradi. "
+                f"Lutfen daha kisa bir soru deneyin ya da daha sonra tekrar basvurun. "
+                f"(Esik: {zaman_asimi_sn:.0f} sn)"
+            ),
+            "sebep": "zaman_asimi",
+        }
+    if hata:
+        raise hata[0]
+    return sonuc
+
+
+def _yanit_guveni(arac: str, sonuc: dict, kaynaklar: list) -> float:
+    """Yanit guven skoru. RAG'de ARAMA KALITESINDEN, digerlerinde ikili.
+
+    NEDEN AYRIM VAR (olculdu): skor "1.0 if basarili else 0.0" idi.
+    "bu kampanya icin ne dusunuyorsun" sorusunda en iyi kaynak benzerligi
+    0,50 (bir kategori sayfasi), en kotusu 0,33 oldugu halde ekranda guven
+    %100 gorunuyordu. "Bir sey buldum" ile "buldugum sey alakali" ayni sey
+    degildir; ikisini ayirmayan bir skor kullaniciyi yaniltir.
+
+    Diger araclarda (SQL / hesaplama / sozluk / toplam maliyet) ikili skor
+    DOGRUDUR: deterministik calisirlar, basariliysa sonuc kesindir ve orada
+    "benzerlik" diye bir kavram yoktur - oraya sahte bir sureklilik
+    uydurmak, RAG'deki sorunun aynisini ters yonde yaratirdi.
+    """
+    if not sonuc.get("basarili"):
+        return 0.0
+    if arac != "rag":
+        return 1.0
+
+    skorlar = []
+    for k in kaynaklar:
+        skor = k.get("similarity_score") if isinstance(k, dict) else getattr(k, "similarity_score", None)
+        if skor is not None:
+            skorlar.append(float(skor))
+    # Skor yoksa duserek 1.0'a donmek yerine ikili davranisi koru: kaynak
+    # var ama benzerlik tasimıyorsa bu bir olcum eksikligidir, guvensizlik
+    # isareti degil.
+    if not skorlar:
+        return 1.0
+    return round(max(skorlar), 4)
 
 
 def soru_isle(soru: str, kayit_getirici: KayitGetirici, rag_araci=None) -> dict:
@@ -90,19 +174,21 @@ def soru_isle(soru: str, kayit_getirici: KayitGetirici, rag_araci=None) -> dict:
     rag = rag_araci or rag_aracini_cagir
 
     if niyet == Niyet.HESAPLAMA:
-        sonuc = hesaplama_aracini_cagir(soru)
+        # Hesaplama saf Python - zaman asimi esigi gereksiz ama sarmalayici
+        # tutarli API saglar; beklenmedik bir hata varsa yine audit'e yazar.
+        sonuc = _arac_cagir_zaman_asimi(hesaplama_aracini_cagir, soru)
         arac = "calculator"
     elif niyet == Niyet.SOZLUK:
-        sonuc = sozluk_aracini_cagir(soru)
+        sonuc = _arac_cagir_zaman_asimi(sozluk_aracini_cagir, soru)
         arac = "dictionary"
     elif niyet == Niyet.TOPLAM_MALIYET:
-        sonuc = toplam_maliyet_aracini_cagir(soru, kayit_getirici)
+        sonuc = _arac_cagir_zaman_asimi(toplam_maliyet_aracini_cagir, soru, kayit_getirici)
         arac = "calculator"
     elif niyet == Niyet.KARSILASTIRMA:
-        sonuc = karsilastirma_aracini_cagir(soru, kayit_getirici)
+        sonuc = _arac_cagir_zaman_asimi(karsilastirma_aracini_cagir, soru, kayit_getirici)
         arac = "sql"
     else:
-        sonuc = rag(soru, kayit_getirici)
+        sonuc = _arac_cagir_zaman_asimi(rag, soru, kayit_getirici)
         niyet = Niyet.BILGI
         arac = "rag" if sonuc.get("basarili") else "fallback"
 
@@ -144,7 +230,7 @@ def soru_isle(soru: str, kayit_getirici: KayitGetirici, rag_araci=None) -> dict:
     return {
         "cevap": sonuc["cevap"],
         "kaynaklar": kaynaklar,
-        "confidence": 1.0 if sonuc.get("basarili") else 0.0,
+        "confidence": _yanit_guveni(arac, sonuc, kaynaklar),
         "fallback": not sonuc.get("basarili", False),
         "audit_ekstra": {
             "intent": niyet.value,

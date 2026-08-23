@@ -27,7 +27,8 @@ from pathlib import Path
 
 import pytest
 
-from scraper.scripts.gold_eslesme import KOD_HARITASI, ilk_kelime, scraper_kaydini_bul
+from scraper.scripts.gold_eslesme import (KOD_HARITASI, ilk_kelime,
+                                          karsilastirma_bicimi, scraper_kaydini_bul)
 from scraper.scripts.ortak import MIN_METIN_UZUNLUGU_TABAN
 
 GOLD = Path(__file__).parent.parent / "gold_dataset" / "altin_veri_seti.json"
@@ -72,7 +73,11 @@ def test_scraper_altin_veriyle_uyusuyor(altin):
     # (o modul Yagmur'un alani, oradan import edilmiyor - kucuk, kararli
     # bir tek satirlik mantik oldugu icin burada ayrica tutuluyor).
     kelime = ilk_kelime(altin["kampanya_adi"])
-    assert kelime in ham_metin.replace("İ", "i").lower(), (
+    # Kesme isareti ve buyuk I normallestirmesi TEK YERDE:
+    # gold_eslesme.karsilastirma_bicimi. Burada kopyalanirsa iki
+    # taraf ayrisir ve test, eslesmenin kendi kurallarindan farkli
+    # bir sey olcer.
+    assert kelime in karsilastirma_bicimi(ham_metin), (
         f"{altin['kayit_id']}: beklenen ifade ('{kelime}') ham metinde yok - "
         "sayfa degismis veya secici bozulmus olabilir"
     )
@@ -128,3 +133,35 @@ def test_her_kayitta_zorunlu_meta_alanlari_var():
             kayit = json.load(f)
         for alan in zorunlu_alanlar:
             assert alan in kayit, f"{json_dosya}: '{alan}' alani eksik"
+
+
+def test_ayni_sayfanin_EN_YENI_anlik_goruntusu_secilir(tmp_path, monkeypatch):
+    """Bir sayfanin birden fazla anlik goruntusu varsa EN YENISI secilmeli.
+
+    OLCULEN HATA: fonksiyon `adaylar[0]` donuyordu - glob'un dosya sistemi
+    sirasi, pratikte en ESKI dosya. Etiketleme araclari ise en yenisini
+    okuyor. Ayni soruya iki cevap, sessiz bir tuzak uretiyordu: tazelenmis
+    bir sayfadan yazilan kanit spani, testin baktigi eski metinde
+    bulunamayip "span kirik" sanilirdi.
+    """
+    import json as _json
+
+    from scraper.scripts import gold_eslesme
+
+    kod = "ziraatkatilim"
+    klasor = tmp_path / kod / "json"
+    klasor.mkdir(parents=True)
+    for tarih, metin in (("20260101", "ESKI metin"), ("20260822", "YENI metin")):
+        with open(klasor / f"{tarih}_{kod}_ornek.json", "w", encoding="utf-8") as f:
+            _json.dump({"url": "https://x/kart-kampanyalari/ornek-kampanya",
+                        "erisim_zamani": f"{tarih[:4]}-{tarih[4:6]}-{tarih[6:]}T09:00:00",
+                        "ham_metin": metin, "normalize_metin": metin}, f)
+
+    monkeypatch.setattr(gold_eslesme, "RAW_DATA", tmp_path)
+    bulunan = gold_eslesme.scraper_kaydini_bul({
+        "kayit_id": "ZK-999",
+        "kaynak_url": "www.ziraatkatilim.com.tr/kart-kampanyalari/ornek-kampanya",
+        "kampanya_adi": "Ornek Kampanya",
+    })
+    assert bulunan is not None, "kayit bulunamadi - KOD_HARITASI degismis olabilir"
+    assert bulunan["ham_metin"] == "YENI metin"

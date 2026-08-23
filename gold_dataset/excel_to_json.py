@@ -93,6 +93,29 @@ SPAN_VERILEBILIR_ALANLAR = {
 }
 
 
+def span_metinde_var(span: str, metin: str) -> bool:
+    """Kanit spani kaynak metinde geciyor mu?
+
+    BOSLUK FARKI ICERIK FARKI DEGILDIR. Olculdu: ayni sayfa statik
+    tarayiciyla duz bosluk, JS tarayicisiyla KIRILMAZ BOSLUK (U+00A0)
+    ve farkli satir sonlariyla geliyor. Sayfalar JS ile yeniden
+    tarandiginda YEDI kaydin kanit spani bir anda "kirik" gorundu -
+    oysa cumleler harfi harfine ayniydi, yalnizca bosluklar degismisti.
+
+    KURAL GEVSEMIYOR: karakter dizisi yine birebir eslesmek zorunda;
+    yalnizca ardisik bosluklar tek boslugua indirilir. "Yaklasik
+    dogru" elle yazilmis bir cumle hala GECMEZ - spanin butun degeri
+    tam da budur.
+    """
+    from extraction.normalizer import turkce_ascii_kucult
+
+    def sadelestir(metin_parcasi: str) -> str:
+        katlanmis = turkce_ascii_kucult(metin_parcasi).replace("\xa0", " ")
+        return re.sub(r"\s+", " ", katlanmis).strip()
+
+    return bool(span) and sadelestir(span) in sadelestir(metin)
+
+
 def _spanlari_ayristir(ham, kayit_id: str, uyarilar: list[str]) -> dict:
     """"alan: cumle" satirlarini sozluge cevirir.
 

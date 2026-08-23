@@ -120,11 +120,20 @@ def test_hedefe_ulasilamiyorsa_bu_GIZLENMEZ(rapor):
     uretildi" deyip sessiz kalmak yanlis guven verirdi."""
     assert rapor["listelenen"] <= rapor["hedef_yeni_kayit"]
     assert "ulasilabilir_toplam" in rapor
-    # Bugunku korpusta hedefe ulasilamiyor; ulasilabilir hale geldiginde
-    # bu test kirilir ve durumun degistigi FARK EDILIR.
-    assert rapor["ulasilabilir_toplam"] < 200, (
-        "Korpus buyumus olabilir - is listesi artik 200 hedefini karsiliyor. "
-        "docs/ ve README'deki 'denge ile hacim catisiyor' notu guncellenmeli."
+    # HEDEF ARTIK KARSILANIYOR - ve bu, testin ONCEKI halinin kirilmasiyla
+    # fark edildi. Once kota (30) tavani 166'da tutuyordu; kota kaldirildi
+    # ve kaynak sayfalar JS ile yeniden tarandi. Tazelenmis metinler daha
+    # dolu oldugu icin kumeleme, eskiden ayni gorunen sayfalari ayirt
+    # edebiliyor - benzersiz kume sayisi artti.
+    #
+    # Sart TERSINE cevrildi: bundan sonra hedefin ALTINA dusmek fark
+    # edilmeli. Duserse ya kayitlar silinmis ya da kumeleme fazla eliyor
+    # demektir; ikisi de sessiz kalmamali.
+    assert rapor["ulasilabilir_toplam"] >= 200, (
+        f"Ulasilabilir toplam 200'un ALTINA dustu: "
+        f"{rapor['ulasilabilir_toplam']} (mevcut {rapor['mevcut_altin_kayit']} "
+        f"+ kuyruk {rapor['listelenen']}). Kayit silinmis ya da kumeleme "
+        "fazla eliyor olabilir."
     )
 
 

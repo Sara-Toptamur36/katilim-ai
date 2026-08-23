@@ -2241,24 +2241,25 @@
     "odul_birimi": null,
     "kampanya_avantaji": "Bankkart kredi kartıyla A101 mağaza ve web sitesinde 300 TL üzeri alışverişte peşin fiyatına 6 aya varan taksit",
     "masraf_durumu": null,
-    "kampanya_baslangic": null,
-    "kampanya_bitis": null,
+    "kampanya_baslangic": "2025-07-10",
+    "kampanya_bitis": "2026-08-31",
     "hedef_kitle": "Ziraat Katılım Bankkart kredi kartı sahipleri (ücretsiz ve ticari kartlar hariç)",
     "ekran_goruntusu": null,
     "giren_kisi": null,
     "giris_tarihi": "2026-08-21",
-    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Kampanya tarihi sayfada YOK. 300 TL alt esik, finansman tutari degil.",
+    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. 300 TL alt esik, finansman tutari degil. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayit, statik tarayicinin EKSIK yakaladigi anlik goruntuden etiketlendigi icin bos kalmisti. Sayfa JS ile yeniden tarandi (gold_dataset/kaynak_tazele.py) ve 'Kampanya Donemi' blogu goruldu.",
     "taksit_sayisi": 6,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
-      "taksit_sayisi": "alışverişlerinizde peşin fiyatına 6 aya varan taksit fırsatından faydalanabilirsiniz."
+      "taksit_sayisi": "alışverişlerinizde peşin fiyatına 6 aya varan taksit fırsatından faydalanabilirsiniz.",
+      "kampanya_baslangic": "10-07-2025 - 31-08-2026",
+      "kampanya_bitis": "10-07-2025 - 31-08-2026"
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
-      "kampanya_bitis": true,
       "finansman_tutari": true,
       "odul_birimi": true
     }
@@ -2461,24 +2462,25 @@
     "odul_birimi": null,
     "kampanya_avantaji": "Bankkart kredi kartıyla Abdullah Kiğılı alışverişlerinde 2 taksit",
     "masraf_durumu": null,
-    "kampanya_baslangic": null,
-    "kampanya_bitis": null,
+    "kampanya_baslangic": "2025-04-01",
+    "kampanya_bitis": "2026-08-31",
     "hedef_kitle": "Ziraat Katılım Bankkart kredi kartı sahipleri (ücretsiz ve ticari kartlar hariç)",
     "ekran_goruntusu": null,
     "giren_kisi": null,
     "giris_tarihi": "2026-08-21",
-    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Kampanya tarihi ve alt/ust harcama siniri sayfada YOK.",
+    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Alt/ust harcama siniri sayfada YOK. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayit, statik tarayicinin EKSIK yakaladigi anlik goruntuden etiketlendigi icin bos kalmisti. Sayfa JS ile yeniden tarandi (gold_dataset/kaynak_tazele.py) ve 'Kampanya Donemi' blogu goruldu.",
     "taksit_sayisi": 2,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
-      "taksit_sayisi": "2 taksitli"
+      "taksit_sayisi": "2 taksitli",
+      "kampanya_baslangic": "01-04-2025 - 31-08-2026",
+      "kampanya_bitis": "01-04-2025 - 31-08-2026"
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
-      "kampanya_bitis": true,
       "finansman_tutari": true,
       "odul_birimi": true
     }
@@ -2749,7 +2751,7 @@
     "kar_payi_orani": null,
     "maliyet_orani": null,
     "oran_periyodu": null,
-    "vade_ay": null,
+    "vade_ay": 6,
     "finansman_tutari": 40000,
     "odul_miktari": null,
     "odul_birimi": null,
@@ -2761,15 +2763,17 @@
     "ekran_goruntusu": null,
     "giren_kisi": null,
     "giris_tarihi": "2026-08-21",
-    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. kar_payi_orani BILEREK BOS: sayfa 'uygun oranli' diyor, sayi vermiyor; oran basvuruda musteriye gore belirleniyor. Pratik Finansman Kart ile ATM'den nakit cekilemiyor.",
-    "taksit_sayisi": null,
-    "erteleme_suresi_ay": null,
+    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. kar_payi_orani BILEREK BOS: sayfadaki %5 / %3,90 / %3,85 oranlari PRATIK FINANSMAN KARTA DEGIL, ayni sayfada tanitilan 'hos geldin finansmani'nin vade kademelerine aittir. Kartin kendisi VADE FARKSIZ. DUZELTME (23 Agustos 2026): vade_ay, taksit_sayisi ve erteleme_suresi_ay etiketlenirken KACIRILMISTI - ucu de tek cumlede yaziyor ('3 aya varan odemesiz donem ve 4 taksit imkani ile birlikte toplam 6 aya varan vade'). Sayfa JS ile yeniden tarandiktan sonra goruldu; bu bir okuma hatasiydi, tarama eksigi degil. Pratik Finansman Kart ile ATM'den nakit cekilemiyor.",
+    "taksit_sayisi": 4,
+    "erteleme_suresi_ay": 3,
     "kanit_spanlari": {
-      "finansman_tutari": "Vade farksız 40.000 TL ve uygun oranlı hoş geldin finansmanı Albaraka'da!"
+      "finansman_tutari": "Vade farksız 40.000 TL ve uygun oranlı hoş geldin finansmanı Albaraka'da!",
+      "vade_ay": "’lı olan dijital müşterilerimize özel; vade farksız, azami 40.000 TL limitli, 3 aya varan ödemesiz dönem ve 4 taksit imkânı ile birlikte toplam 6 aya varan vade imkanıyla sunulan Pratik Fina",
+      "taksit_sayisi": "’lı olan dijital müşterilerimize özel; vade farksız, azami 40.000 TL limitli, 3 aya varan ödemesiz dönem ve 4 taksit imkânı ile birlikte toplam 6 aya varan vade imkanıyla sunulan Pratik Fina",
+      "erteleme_suresi_ay": "’lı olan dijital müşterilerimize özel; vade farksız, azami 40.000 TL limitli, 3 aya varan ödemesiz dönem ve 4 taksit imkânı ile birlikte toplam 6 aya varan vade imkanıyla sunulan Pratik Fina"
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
-      "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
       "odul_birimi": true
@@ -2820,7 +2824,7 @@
     "kar_payi_orani": null,
     "maliyet_orani": null,
     "oran_periyodu": null,
-    "vade_ay": null,
+    "vade_ay": 36,
     "finansman_tutari": 400000,
     "odul_miktari": null,
     "odul_birimi": null,
@@ -2832,16 +2836,16 @@
     "ekran_goruntusu": null,
     "giren_kisi": null,
     "giris_tarihi": "2026-08-21",
-    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. kar_payi_orani BILEREK BOS: 'size ozel kar payi oranlari' deniyor ama SAYI verilmiyor. Kampanya tarihi de sayfada YOK. erteleme_suresi_ay dolu olan ilk altin kayit - o sutun su an OLCUM DISI (excel_to_json INCELENMIS_ALANLAR'a bak).",
+    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. kar_payi_orani BILEREK BOS: 'size ozel kar payi oranlari' deniyor ama SAYI verilmiyor. Kampanya tarihi de sayfada YOK. DUZELTME (23 Agustos 2026): vade_ay etiketlenirken KACIRILDI - sayfa 'maksimum vade suresi 36 aydir' diyor. Vade KADEMELI: 125.000 TL'ye kadar 36 ay, 125.000-250.000 TL arasi 24 ay, 250.000 TL uzeri 12 ay. Alan tek sayi tuttugu icin EN YUKSEK kademe yazildi (finansman_tutari'nda araligin ust sinirini yazma kuraliyla ayni yaklasim). erteleme_suresi_ay dolu olan ilk altin kayit - o sutun su an OLCUM DISI (excel_to_json INCELENMIS_ALANLAR'a bak).",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": 3,
     "kanit_spanlari": {
       "finansman_tutari": "Kampanya kapsamında 50.000 TL – 400.000 TL arasındaki ihtiyaçlarını için finansman başvurusu yapabilirsiniz.",
-      "erteleme_suresi_ay": "Finansman geri ödemelerinizde ilk taksiniz için 3 ay öteleme hakkınızı kullanabilir"
+      "erteleme_suresi_ay": "Finansman geri ödemelerinizde ilk taksiniz için 3 ay öteleme hakkınızı kullanabilir",
+      "vade_ay": "İhtiyaç Finansmanına uygulanacak maksimum vade süresi 36 aydır."
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
-      "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
       "kampanya_bitis": true,
@@ -3045,24 +3049,25 @@
     "odul_birimi": null,
     "kampanya_avantaji": "Bankkart kredi kartıyla Alarko Carrier alışverişlerinde 6 taksit",
     "masraf_durumu": null,
-    "kampanya_baslangic": null,
-    "kampanya_bitis": null,
+    "kampanya_baslangic": "2025-04-01",
+    "kampanya_bitis": "2026-08-31",
     "hedef_kitle": "Ziraat Katılım Bankkart kredi kartı sahipleri (ücretsiz ve ticari kartlar hariç)",
     "ekran_goruntusu": null,
     "giren_kisi": null,
     "giris_tarihi": "2026-08-21",
-    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Kampanya tarihi ve harcama siniri sayfada YOK.",
+    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Harcama siniri sayfada YOK. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayit, statik tarayicinin EKSIK yakaladigi anlik goruntuden etiketlendigi icin bos kalmisti. Sayfa JS ile yeniden tarandi (gold_dataset/kaynak_tazele.py) ve 'Kampanya Donemi' blogu goruldu.",
     "taksit_sayisi": 6,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
-      "taksit_sayisi": "6 taksitli"
+      "taksit_sayisi": "6 taksitli",
+      "kampanya_baslangic": "01-04-2025 - 31-08-2026",
+      "kampanya_bitis": "01-04-2025 - 31-08-2026"
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
-      "kampanya_bitis": true,
       "finansman_tutari": true,
       "odul_birimi": true
     }
@@ -3155,24 +3160,25 @@
     "odul_birimi": null,
     "kampanya_avantaji": "Bankkart kredi kartıyla Alfemo alışverişlerinde 5 taksit",
     "masraf_durumu": null,
-    "kampanya_baslangic": null,
-    "kampanya_bitis": null,
+    "kampanya_baslangic": "2025-11-27",
+    "kampanya_bitis": "2026-08-31",
     "hedef_kitle": "Ziraat Katılım Bankkart kredi kartı sahipleri (ücretsiz ve ticari kartlar hariç)",
     "ekran_goruntusu": null,
     "giren_kisi": null,
     "giris_tarihi": "2026-08-21",
-    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Kampanya tarihi ve harcama siniri sayfada YOK.",
+    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Harcama siniri sayfada YOK. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayit, statik tarayicinin EKSIK yakaladigi anlik goruntuden etiketlendigi icin bos kalmisti. Sayfa JS ile yeniden tarandi (gold_dataset/kaynak_tazele.py) ve 'Kampanya Donemi' blogu goruldu.",
     "taksit_sayisi": 5,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
-      "taksit_sayisi": "5 taksitli"
+      "taksit_sayisi": "5 taksitli",
+      "kampanya_baslangic": "27-11-2025 - 31-08-2026",
+      "kampanya_bitis": "27-11-2025 - 31-08-2026"
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
-      "kampanya_bitis": true,
       "finansman_tutari": true,
       "odul_birimi": true
     }
@@ -3336,24 +3342,25 @@
     "odul_birimi": null,
     "kampanya_avantaji": "Bankkart kredi kartıyla amazon.com.tr'de tutara göre peşin fiyatına 3, 6 veya 9 taksit",
     "masraf_durumu": null,
-    "kampanya_baslangic": null,
-    "kampanya_bitis": null,
+    "kampanya_baslangic": "2025-11-13",
+    "kampanya_bitis": "2026-08-31",
     "hedef_kitle": "Ziraat Katılım Bankkart kredi kartı sahipleri (ücretsiz ve ticari kartlar hariç)",
     "ekran_goruntusu": null,
     "giren_kisi": null,
     "giris_tarihi": "2026-08-21",
-    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Uc kademe (3/6/9); 9 taksit yalnizca SECILI URUNLERDE ve 10.000 TL uzeri. Kampanya tarihi sayfada YOK.",
+    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Uc kademe (3/6/9); 9 taksit yalnizca SECILI URUNLERDE ve 10.000 TL uzeri. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayit, statik tarayicinin EKSIK yakaladigi anlik goruntuden etiketlendigi icin bos kalmisti. Sayfa JS ile yeniden tarandi (gold_dataset/kaynak_tazele.py) ve 'Kampanya Donemi' blogu goruldu.",
     "taksit_sayisi": 9,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
-      "taksit_sayisi": "Seçili ürünlerde yapacağınız 10.000 TL ve üzeri alışverişlerinizde peşin fiyatına 9 taksit fırsatından faydalanabilirsiniz."
+      "taksit_sayisi": "Seçili ürünlerde yapacağınız 10.000 TL ve üzeri alışverişlerinizde peşin fiyatına 9 taksit fırsatından faydalanabilirsiniz.",
+      "kampanya_baslangic": "13-11-2025 - 31-08-2026",
+      "kampanya_bitis": "13-11-2025 - 31-08-2026"
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
-      "kampanya_bitis": true,
       "finansman_tutari": true,
       "odul_birimi": true
     }
@@ -3373,24 +3380,25 @@
     "odul_birimi": null,
     "kampanya_avantaji": "Bankkart kredi kartıyla Atasun Optik'te 4.000 TL üzeri işlemlerde peşin fiyatına 6 taksit",
     "masraf_durumu": null,
-    "kampanya_baslangic": null,
-    "kampanya_bitis": null,
+    "kampanya_baslangic": "2026-08-11",
+    "kampanya_bitis": "2026-08-31",
     "hedef_kitle": "Ziraat Katılım Bankkart kredi kartı sahipleri (ücretsiz ve ticari kartlar hariç)",
     "ekran_goruntusu": null,
     "giren_kisi": null,
     "giris_tarihi": "2026-08-21",
-    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. 4.000 TL bir ALT ESIKTIR, finansman tutari degil. Kampanya tarihi sayfada YOK.",
+    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. 4.000 TL bir ALT ESIKTIR, finansman tutari degil. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayit, statik tarayicinin EKSIK yakaladigi anlik goruntuden etiketlendigi icin bos kalmisti. Sayfa JS ile yeniden tarandi (gold_dataset/kaynak_tazele.py) ve 'Kampanya Donemi' blogu goruldu.",
     "taksit_sayisi": 6,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
-      "taksit_sayisi": "peşin fiyatına 6 taksit"
+      "taksit_sayisi": "peşin fiyatına 6 taksit",
+      "kampanya_baslangic": "11-08-2026 - 31-08-2026",
+      "kampanya_bitis": "11-08-2026 - 31-08-2026"
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
-      "kampanya_bitis": true,
       "finansman_tutari": true,
       "odul_birimi": true
     }
@@ -3519,24 +3527,25 @@
     "odul_birimi": null,
     "kampanya_avantaji": "Bankkart kredi kartıyla BAUHAUS alışverişlerinde 3 taksit",
     "masraf_durumu": null,
-    "kampanya_baslangic": null,
-    "kampanya_bitis": null,
+    "kampanya_baslangic": "2025-04-01",
+    "kampanya_bitis": "2026-08-31",
     "hedef_kitle": "Ziraat Katılım Bankkart kredi kartı sahipleri (ücretsiz ve ticari kartlar hariç)",
     "ekran_goruntusu": null,
     "giren_kisi": null,
     "giris_tarihi": "2026-08-21",
-    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Kampanya tarihi ve harcama siniri sayfada YOK.",
+    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Harcama siniri sayfada YOK. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayit, statik tarayicinin EKSIK yakaladigi anlik goruntuden etiketlendigi icin bos kalmisti. Sayfa JS ile yeniden tarandi (gold_dataset/kaynak_tazele.py) ve 'Kampanya Donemi' blogu goruldu.",
     "taksit_sayisi": 3,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
-      "taksit_sayisi": "3 taksit"
+      "taksit_sayisi": "3 taksit",
+      "kampanya_baslangic": "01-04-2025 - 31-08-2026",
+      "kampanya_bitis": "01-04-2025 - 31-08-2026"
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
-      "kampanya_bitis": true,
       "finansman_tutari": true,
       "odul_birimi": true
     }

@@ -561,6 +561,26 @@ _ODUL_IZLERI = {
 }
 
 
+# BILINEN SINIRLILIK - YAN MENU KIRLILIGI (olculdu, 23 Agustos 2026)
+# Kaynak sayfalar JS ile yeniden tarandiktan sonra Ziraat sayfalari
+# "diger kampanyalar" yan menusunu de tasiyor. O menudeki kampanyalarin
+# taksit sayilari da metne giriyor: ZK-012 (Alarko, 6 taksit) ve ZK-017
+# (BAUHAUS, 3 taksit) sayfalarinin ikisi de {3,5,6,9,12} kumesini
+# uretiyor ve profilleri AYNILASIYOR.
+#
+# Kalip temizligi bunu cozmez: yan menu her sayfada FARKLI kampanyalari
+# listeledigi icin hicbir satir "bankanin yarisinda geciyor" esigini
+# gecmiyor.
+#
+# ETKISI OLCULDU: eleme "metin >=%85 VE profil ayni" kosuluna bagli
+# oldugu icin YANLIS ELEME URETMIYOR - farkli Ziraat kampanyalarinin
+# govde metni birbirine benzemiyor (kuyruktaki 56 Ziraat kaydinin hicbiri
+# elenmedi). Zarar yalnizca SIRALAMA kalitesinde: o sayfalarda "yeni
+# taksit degeri" sinyali gurultulu.
+#
+# Cozulecekse dogru yer burasi degil, TARAMA tarafidir: sayfanin kendi
+# icerik bolgesini hedefleyen bir secici, yan menuyu bastan disarida
+# birakir (bkz. js_scraper.GENEL_ICERIK_ADAYLARI).
 def _yapisal_belirtecler(metin: str) -> set[str]:
     """Sayfayi CESITLILIK acisindan tanimlayan belirtec kumesi.
 

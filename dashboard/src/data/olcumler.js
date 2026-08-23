@@ -1,17 +1,35 @@
+// KatilimAI - ekranda gosterilen sayilarin TEK kaynagi.
+//
+// IKI FARKLI TARIH VAR, BILEREK AYRI TUTULUYOR:
+//
+//   VERI_TARIHI  -> kampanya hacmi, banka dagilimi, alan doluluk.
+//                   PostgreSQL'den okundu, GUNCEL.
+//   OLCUM_TARIHI -> makro F1, RAG Recall, cekimserlik, test sayisi.
+//                   Belirli bir veri seti uzerinde OLCULDU.
+//
+// Ikisini tek tarihle gostermek YANILTICI olurdu: 23 Agustos'ta veri
+// 251'den 447 kampanyaya cikti (Zeynep'in sitemap taramasi), ancak
+// dogruluk olcumleri hala 251'lik set uzerinde yapilmis degerlerdir.
+// "447 kampanyada %98,28 dogruluk" demek yanlis olur - o oran o sette
+// olculmedi. Yeniden olcum yapilana kadar ayrim ekranda korunur.
+export const VERI_TARIHI = "23 Ağustos 2026";
 export const OLCUM_TARIHI = "18 Ağustos 2026";
+export const OLCUM_VERI_SETI = "251 tekil kampanya / 817 parçalık indeks";
 
 export const OLCUMLER = {
+  // --- VERI: guncel, PostgreSQL'den (VERI_TARIHI) ---
   veri: {
-    tekilKampanya: 251,
-    anlikGoruntu: 300,
-    degisenKampanya: 40,
-    alanDegisen: 25,
+    tekilKampanya: 447,
+    anlikGoruntu: 496,
     kapsananBanka: 9,
     toplamBanka: 10,
     haricBanka: "Adil Katılım",
     haricSebep: "kampanya/ürün yayını bulunmadığı için hariç",
-    goldKayit: 62,
+    goldKayit: 64,
+    goldGercekBanka: 60,
+    goldOrnekSenaryo: 4, // sartnamedeki A/B/C/D Bankasi ornegi
   },
+  // --- OLCUM: 251'lik set uzerinde, 18 Agustos (OLCUM_TARIHI) ---
   cikarim: {
     doluAlanDogrulugu: 98.48,
     doluAlanDetay: "65/66 alan",
@@ -25,6 +43,9 @@ export const OLCUMLER = {
     ozgulluk: "10/10",
   },
   rag: {
+    // DIKKAT: bu 817/263, Recall degerlerinin OLCULDUGU indekstir.
+    // Calisan sistemdeki guncel indeks SISTEM_DURUMU'nda (1907 parca) -
+    // ikisi ayri, cunku Recall yeni indekste yeniden olculmedi.
     indekslenenParca: 817,
     belgeSayisi: 263,
     indeksTarihi: "17 Ağustos 2026",
@@ -55,24 +76,28 @@ export const OLCUMLER = {
   ],
 };
 
+// PostgreSQL'den, VERI_TARIHI itibariyle. gold sutunu
+// gold_dataset/altin_veri_seti.json'dan banka bazinda sayilmistir.
 export const BANKA_DAGILIMI = [
+  { banka: "Kuveyt Türk",           tekil: 121, snapshot: 123, gold: 7 },
   { banka: "Ziraat Katılım",        tekil: 109, snapshot: 111, gold: 8 },
-  { banka: "Türkiye Emlak Katılım", tekil: 81,  snapshot: 103, gold: 7 },
-  { banka: "Albaraka Türk",         tekil: 14,  snapshot: 16,  gold: 6 },
-  { banka: "Kuveyt Türk",           tekil: 13,  snapshot: 15,  gold: 7 },
-  { banka: "Türkiye Finans",        tekil: 13,  snapshot: 16,  gold: 7 },
+  { banka: "Türkiye Emlak Katılım", tekil: 84,  snapshot: 106, gold: 7 },
+  { banka: "Dünya Katılım",         tekil: 45,  snapshot: 55,  gold: 7 },
+  { banka: "Albaraka Türk",         tekil: 37,  snapshot: 39,  gold: 8 },
+  { banka: "Türkiye Finans",        tekil: 25,  snapshot: 28,  gold: 7 },
+  { banka: "T.O.M. Katılım",        tekil: 13,  snapshot: 13,  gold: 3 },
   { banka: "Hayat Finans",          tekil: 10,  snapshot: 18,  gold: 5 },
-  { banka: "Dünya Katılım",         tekil: 5,   snapshot: 15,  gold: 7 },
-  { banka: "T.O.M. Katılım",        tekil: 3,   snapshot: 3,   gold: 3 },
   { banka: "Vakıf Katılım",         tekil: 3,   snapshot: 3,   gold: 8 },
 ];
 
+// Doluluk: o urun ailesindeki kampanyalarda 5 izlenen alanin
+// (kar payi, vade, taksit, odul, masraf) ne kadarinin dolu oldugu.
 export const URUN_AILESI = [
-  { ad: "Kart Kampanyası",               sayi: 153, doluluk: 21.2 },
-  { ad: "Belirtilmemiş",                 sayi: 38,  doluluk: 16.8 },
+  { ad: "Belirtilmemiş",                 sayi: 234, doluluk: 2.7 },
+  { ad: "Kart Kampanyası",               sayi: 153, doluluk: 21.3 },
   { ad: "Alışveriş Puanı Kampanyası",    sayi: 37,  doluluk: 20.0 },
-  { ad: "Konut Finansmanı Kampanyası",   sayi: 7,   doluluk: 31.4 },
-  { ad: "İhtiyaç Finansmanı Kampanyası", sayi: 6,   doluluk: 40.0 },
+  { ad: "Konut Finansmanı Kampanyası",   sayi: 7,   doluluk: 28.6 },
+  { ad: "İhtiyaç Finansmanı Kampanyası", sayi: 6,   doluluk: 36.7 },
   { ad: "Yatırım Ürünü Kampanyası",      sayi: 4,   doluluk: 0.0 },
   { ad: "Yeni Müşteri Kampanyası",       sayi: 3,   doluluk: 40.0 },
   { ad: "Finansman Kampanyası",          sayi: 2,   doluluk: 20.0 },
@@ -81,40 +106,38 @@ export const URUN_AILESI = [
 
 export const ZAMAN_EKSENI = {
   ilkGorulme: "31 Temmuz 2026",
-  sonGorulme: "18 Ağustos 2026",
-  ortalamaVersiyon: 1.2,
-  degisenKampanya: 40,
-  bayatlikGun: 0,
+  sonGorulme: "22 Ağustos 2026",
+  bayatlikGun: 1,
 };
 
-// Alan bazında veri doluluğu - docs/veri_coverage.md 4. bölüm
-// NOT: Bu oranlar YALNIZCA regex katmanının sonucudur. NER/LLM
-// katmanı daha fazlasını doldurur; bu bir ALT SINIR göstergesidir.
+// Alan bazinda veri doluluk - PostgreSQL'den, tekil kampanya bazinda.
+// NOT: Bu oranlar YALNIZCA regex katmaninin sonucudur. NER/LLM katmani
+// daha fazlasini doldurur; bu bir ALT SINIR gostergesidir.
 export const ALAN_DOLULUGU = [
-  { alan: "Taksit sayısı",   dolu: 130, toplam: 251 },
-  { alan: "Ödül miktarı",    dolu: 85,  toplam: 251 },
-  { alan: "Kâr payı oranı",  dolu: 37,  toplam: 251 },
-  { alan: "Vade",            dolu: 5,   toplam: 251 },
-  { alan: "Masraf durumu",   dolu: 5,   toplam: 251 },
+  { alan: "Taksit sayısı",   dolu: 130, toplam: 447 },
+  { alan: "Ödül miktarı",    dolu: 85,  toplam: 447 },
+  { alan: "Kâr payı oranı",  dolu: 34,  toplam: 447 },
+  { alan: "Vade",            dolu: 9,   toplam: 447 },
+  { alan: "Masraf durumu",   dolu: 5,   toplam: 447 },
 ];
 
 export const KAYNAK_TAKIP = [
+  { banka: "Kuveyt Türk",           url: "kuveytturk.com.tr/kampanyalar/kendim-icin" },
   { banka: "Ziraat Katılım",        url: "ziraatkatilim.com.tr/kart-kampanyalari" },
   { banka: "Türkiye Emlak Katılım", url: "emlakkatilim.com.tr/tr/bireysel/kampanyalar" },
-  { banka: "Kuveyt Türk",           url: "kuveytturk.com.tr/kampanyalar/kendim-icin" },
-  { banka: "Albaraka Türk",         url: "albaraka.com.tr/tr/kampanyalar" },
-  { banka: "Hayat Finans",          url: "hayatfinans.com.tr/kampanyalar" },
-  { banka: "Türkiye Finans",        url: "turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar" },
   { banka: "Dünya Katılım",         url: "dunyakatilim.com.tr/kampanyalar" },
-  { banka: "Vakıf Katılım",         url: "vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/mevcut-kampanyalar" },
+  { banka: "Albaraka Türk",         url: "albaraka.com.tr/tr/kampanyalar" },
+  { banka: "Türkiye Finans",        url: "turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar" },
   { banka: "T.O.M. Katılım",        url: "tombank.com.tr/kampanyalar.html" },
+  { banka: "Hayat Finans",          url: "hayatfinans.com.tr/kampanyalar" },
+  { banka: "Vakıf Katılım",         url: "vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/mevcut-kampanyalar" },
   { banka: "Adil Katılım",          url: "adilkatilim.com.tr", haric: true },
 ];
 
 export const SISTEM_DURUMU = {
-  qdrantParca: 817,
-  qdrantBelge: 263,
-  indeksTarihi: "17 Ağustos 2026",
-  sonTarama: "18 Ağustos 2026",
-  bayatlikGun: 0,
+  qdrantParca: 1907,
+  qdrantBelge: 498,
+  indeksTarihi: "23 Ağustos 2026",
+  sonTarama: "22 Ağustos 2026",
+  bayatlikGun: 1,
 };

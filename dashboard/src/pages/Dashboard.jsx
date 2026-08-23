@@ -10,6 +10,8 @@ import client from "../api/client";
 import {
   OLCUMLER,
   OLCUM_TARIHI,
+  VERI_TARIHI,
+  OLCUM_VERI_SETI,
   BANKA_DAGILIMI,
   URUN_AILESI,
   ZAMAN_EKSENI,
@@ -18,6 +20,27 @@ import {
   KAYNAK_TAKIP,
 } from "../data/olcumler";
 import TazelikSeridi from "../components/TazelikSeridi";
+
+// Baskin bankalar VERIDEN hesaplanir, isim olarak GOMULMEZ. Zeynep yeni
+// kampanya topladikca siralama degisiyor (23 Agustos'ta Kuveyt Turk
+// 13'ten 121'e cikip birinci oldu) - gomulu isim sessizce bayatlardi.
+const BASKIN_BANKALAR = [...BANKA_DAGILIMI]
+  .sort((a, b) => b.tekil - a.tekil)
+  .slice(0, 2)
+  .map((b) => b.banka);
+
+const BASKIN_YUZDE = Math.round(
+  (100 * [...BANKA_DAGILIMI].sort((a, b) => b.tekil - a.tekil).slice(0, 2)
+    .reduce((t, b) => t + b.tekil, 0)) /
+    BANKA_DAGILIMI.reduce((t, b) => t + b.tekil, 0),
+);
+
+// En az kampanya toplanabilen uc banka - dagilimin zayif ucu.
+const ZAYIF_BANKALAR = [...BANKA_DAGILIMI]
+  .sort((a, b) => a.tekil - b.tekil)
+  .slice(0, 3)
+  .map((b) => `${b.banka} ${b.tekil}`)
+  .join(", ");
 
 export default function Dashboard() {
   const [apiBagli, setApiBagli] = useState(false);
@@ -725,7 +748,9 @@ export default function Dashboard() {
             whiteSpace: "nowrap",
           }}
         >
-          Ölçüm: {OLCUM_TARIHI}
+          <span>Veri: {VERI_TARIHI}</span>
+          <span style={{ margin: "0 6px", opacity: 0.5 }}>·</span>
+          <span>Ölçüm: {OLCUM_TARIHI}</span>
         </div>
       </div>
 
@@ -1191,7 +1216,7 @@ export default function Dashboard() {
                 {BANKA_DAGILIMI.map((b) => {
                   const yuzde = (b.tekil / enBuyuk) * 100;
                   /* Baskın iki banka altın, diğerleri yeşil */
-                  const baskinMi = b.banka === "Ziraat Katılım" || b.banka === "Türkiye Emlak Katılım";
+                  const baskinMi = BASKIN_BANKALAR.includes(b.banka);
                   return (
                     <div className="cubuk-satir" key={b.banka}>
                       <span className="cubuk-banka-adi">{b.banka}</span>
@@ -1223,7 +1248,7 @@ export default function Dashboard() {
                   lineHeight: 1.45,
                 }}
               >
-                Altın renkli iki banka, Ziraat Katılım ve Türkiye Emlak Katılım toplam kampanyaların %76'sını oluşturuyor — dağılım dengesizdir.
+                Altın renkli iki banka ({BASKIN_BANKALAR.join(" ve ")}) toplam kampanyaların %{BASKIN_YUZDE}'sini oluşturuyor. Diğer uçta {ZAYIF_BANKALAR} kampanya toplanabildi — dağılım dengesizdir.
               </div>
             </div>
 
@@ -1720,7 +1745,7 @@ export default function Dashboard() {
               Model Metrikleri
             </div>
             <div style={{ fontSize: 12, color: "var(--yazi-soluk)", fontWeight: 400, marginTop: 2 }}>
-              Son ölçüm: {OLCUM_TARIHI}
+              Son ölçüm: {OLCUM_TARIHI} · {OLCUM_VERI_SETI} üzerinde
             </div>
           </div>
         }
@@ -1939,7 +1964,7 @@ export default function Dashboard() {
                 >
                   {/* Uyarı ikonu */}
                   <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>⚠</span>
-                  <span>Bu değerler canlı telemetri değildir. {OLCUM_TARIHI} tarihinde yapılmış ölçümlerdir. Veri veya indeks değiştiğinde yeniden ölçülmesi gerekir.</span>
+                  <span>Bu değerler canlı telemetri değildir. {OLCUM_TARIHI} tarihinde <strong>{OLCUM_VERI_SETI}</strong> üzerinde ölçülmüştür. Veri o tarihten sonra büyüdü ({OLCUMLER.veri.tekilKampanya} tekil kampanya, {SISTEM_DURUMU.qdrantParca} parçalık indeks) — bu oranlar <strong>yeni set üzerinde yeniden ölçülmedi</strong>.</span>
                 </div>
               </>
             );
@@ -1963,7 +1988,7 @@ export default function Dashboard() {
               Veri Kaynakları
             </div>
             <div style={{ fontSize: 12, color: "var(--yazi-soluk)", fontWeight: 400, marginTop: 2 }}>
-              Kapsam raporu: {OLCUM_TARIHI}
+              Kapsam raporu: {VERI_TARIHI} · PostgreSQL'den okundu
             </div>
           </div>
         }
@@ -2044,7 +2069,7 @@ export default function Dashboard() {
                     {BANKA_DAGILIMI.map((b) => {
                       const maxTekil = 109;
                       const yuzde = (b.tekil / maxTekil) * 100;
-                      const baskinMi = b.banka === "Ziraat Katılım" || b.banka === "Türkiye Emlak Katılım";
+                      const baskinMi = BASKIN_BANKALAR.includes(b.banka);
                       const cubukRengi = baskinMi ? "#d4a34b" : "#169276";
 
                       return (
@@ -2101,7 +2126,7 @@ export default function Dashboard() {
                       marginTop: 12,
                     }}
                   >
-                    Altın renkli iki banka toplam kampanyaların %76'sını oluşturuyor — dağılım dengesizdir. Bu bir veri kapsamı boşluğudur, gizlenmemektedir.
+                    Altın renkli iki banka ({BASKIN_BANKALAR.join(" ve ")}) toplam kampanyaların %{BASKIN_YUZDE}'sini oluşturuyor. Diğer uçta {ZAYIF_BANKALAR} kampanya toplanabildi. Bu bir veri kapsamı boşluğudur, gizlenmemektedir.
                   </div>
                 </div>
 

@@ -4,9 +4,11 @@ Mimari (rapor Bolum 8): Intent Detection -> Tool Router -> (SQL/Calculator/
 Dictionary/RAG/Fallback) -> Response Generator -> Terminology Check ->
 Verifier -> Provenance.
 
-BU DOSYANIN KAPSAMI: Intent Detection + Tool Router + bes arac
-(Hesaplama, Sozluk, Karsilastirma, Toplam Maliyet, RAG) + kademeli geri
-cekilme + zaman asimi fallback + Terminology Check.
+BU DOSYANIN KAPSAMI: Intent Detection + Tool Router + alti dal
+(Hesaplama, Sozluk, Karsilastirma, Toplam Maliyet, Kapsam Disi, RAG) +
+kademeli geri cekilme + zaman asimi fallback + Terminology Check.
+KAPSAM_DISI (23 Agustos 2026 eklendi, bkz. agent/intent.py) kademeli geri
+cekilmeye GIRMEZ - bilerek RAG'e hic sorulmadan sabit bir cevapla kapanir.
 
 TERMINOLOGY CHECK - RAG'DE NEDEN FARKLI DAVRANIR: terminoloji_tutarliligini_
 kontrol_et() kendi docstring'inde "ajanin URETTIGI yanitta" gelenek terim
@@ -62,7 +64,7 @@ import time
 import threading
 from typing import Any, Callable
 
-from agent.intent import Niyet, niyet_tespit_et
+from agent.intent import KAPSAM_DISI_CEVABI, Niyet, niyet_tespit_et
 from agent.router import (
     hesaplama_aracini_cagir,
     karsilastirma_aracini_cagir,
@@ -187,6 +189,13 @@ def soru_isle(soru: str, kayit_getirici: KayitGetirici, rag_araci=None) -> dict:
     elif niyet == Niyet.KARSILASTIRMA:
         sonuc = _arac_cagir_zaman_asimi(karsilastirma_aracini_cagir, soru, kayit_getirici)
         arac = "sql"
+    elif niyet == Niyet.KAPSAM_DISI:
+        # RAG'e HIC SORULMAZ - bkz. agent/intent.py::Niyet.KAPSAM_DISI
+        # docstring'i. Zaman asimi sarmalayicisina gerek yok, sabit metin
+        # doner; "basarili" burada KESINLIKLE DOGRU bir tespit demektir,
+        # kademeli geri cekilme (asagida) bu niyeti TETIKLEMEMELI.
+        sonuc = {"basarili": True, "cevap": KAPSAM_DISI_CEVABI}
+        arac = "kapsam_disi"
     else:
         sonuc = _arac_cagir_zaman_asimi(rag, soru, kayit_getirici)
         niyet = Niyet.BILGI

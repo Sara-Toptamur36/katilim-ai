@@ -320,6 +320,12 @@ def tarih_bekcisi(kayitlar: list[dict]) -> list[str]:
 
     uyarilar = []
     for k in kayitlar:
+        # IMZASIZ SATIR HENUZ OKUNMADI: tarihinin bos olmasi bir karar
+        # degil, sadece siranin ona gelmemis olmasidir. Uyarmak, kuyrukta
+        # bekleyen her taslak icin bir satir gurultu uretir ve GERCEK
+        # uyarilari gorunmez kilar (olculdu: 200 taslak -> 150 uyari).
+        if not (k.get("giren_kisi") or "").strip():
+            continue
         if k.get("kampanya_baslangic") or k.get("kampanya_bitis"):
             continue
         kaynak = ham.get(_slug(k.get("kaynak_url") or ""))
@@ -468,9 +474,17 @@ def donustur(excel_yolu: Path = EXCEL) -> tuple[list[dict], list[str]]:
 
         # Seffaflik bayragi: YALNIZCA incelenmis sutunlarda bos hucre
         # "kaynakta belirtilmemis" sayilir (bkz. modul docstring'i).
+        #
+        # IMZASIZ KAYIT HICBIR IDDIA TASIMAZ: giren_kisi bos ise o satira
+        # kimse bakmamistir; bos hucreleri "kaynakta yok" saymak, motorun
+        # o alanlarda hicbir sey uretmemesini DOGRU sayardi - yani bos
+        # birakilmis her taslak satir bedava puan kapisi olurdu.
+        # Etiketleme sprintinde kuyruktan yuzlerce taslak satir aciliyor;
+        # imza gelene kadar bu satirlar olcumun disindadir.
+        imzali = bool((kayit.get("giren_kisi") or "").strip())
         kayit["alan_belirtilmemis"] = {
             a: True for a in INCELENMIS_ALANLAR if kayit.get(a) is None
-        }
+        } if imzali else {}
 
         # TURETILMIS BAYRAK - odul_birimi, odul_miktari'na BAGLIDIR:
         # olmayan bir odulun birimi de olamaz. Bu YENI bir etiketleme
@@ -506,40 +520,48 @@ def main() -> int:
 
     ornek = [k for k in kayitlar if k.get("giren_kisi") == "ORNEK"]
     gercek = [k for k in kayitlar if k.get("giren_kisi") != "ORNEK"]
+    # IMZALI olan altin settir; imzasiz satir kuyrukta bekleyen taslaktir
+    # ve hicbir olcume girmez. Ikisi TEK SAYIDA birlestirilmez - "303
+    # kayitlik altin set" demek, 200 bos satiri veri saymak olurdu.
+    imzali = [k for k in gercek if (k.get("giren_kisi") or "").strip()]
+    taslak = [k for k in gercek if not (k.get("giren_kisi") or "").strip()]
 
     with open(JSON_CIKTI, "w", encoding="utf-8") as f:
         json.dump(kayitlar, f, ensure_ascii=False, indent=2)
 
     print(f"Yazildi: {JSON_CIKTI}")
-    print(f"  Toplam kayit : {len(kayitlar)}")
-    print(f"  Ornek (ORNEK): {len(ornek)}")
-    print(f"  Gercek veri  : {len(gercek)}")
+    print(f"  Toplam satir      : {len(kayitlar)}")
+    print(f"  Ornek (ORNEK)     : {len(ornek)}")
+    print(f"  ALTIN SET (imzali): {len(imzali)}   <- olculen kayitlar")
+    print(f"  Taslak (imzasiz)  : {len(taslak)}   <- kuyrukta, olcum disi")
 
     bankalar: dict[str, int] = {}
-    for k in gercek:
+    for k in imzali:
         bankalar[k.get("banka") or "?"] = bankalar.get(k.get("banka") or "?", 0) + 1
     if bankalar:
-        print("\n  Banka basina gercek kayit:")
+        print("\n  Banka basina IMZALI kayit:")
         for b, n in sorted(bankalar.items()):
-            durum = "OK" if n >= 5 else f"yetersiz (hedef 5-8)"
+            durum = "OK" if n >= 5 else "yetersiz (hedef 5-8)"
             print(f"    {b:24} {n:2}  {durum}")
 
     # Olcum kapsami: yanlis pozitif YALNIZCA incelenmis sutunlarda
     # olculebilir (bkz. modul docstring'i).
-    print("\n  Yanlis pozitif olcum kapsami:")
+    # Payda IMZALI kayit sayisidir: imzasiz taslaklar hicbir alanda olcume
+    # girmez, paydaya katilirlarsa kapsam oldugundan dusuk gorunur.
+    print("\n  Yanlis pozitif olcum kapsami (imzali kayitlar uzerinden):")
     for alan in INCELENMIS_ALANLAR:
-        bayrakli = sum(1 for k in gercek if k["alan_belirtilmemis"].get(alan) is True)
-        print(f"    {alan:20} olculebilir={bayrakli:2}/{len(gercek)}  (incelendi)")
-    turetilmis = sum(1 for k in gercek if k["alan_belirtilmemis"].get("odul_birimi"))
+        bayrakli = sum(1 for k in imzali if k["alan_belirtilmemis"].get(alan) is True)
+        print(f"    {alan:20} olculebilir={bayrakli:2}/{len(imzali)}  (incelendi)")
+    turetilmis = sum(1 for k in imzali if k["alan_belirtilmemis"].get("odul_birimi"))
     if turetilmis:
         print(
-            f"    {'odul_birimi':20} olculebilir={turetilmis:2}/{len(gercek)}  "
+            f"    {'odul_birimi':20} olculebilir={turetilmis:2}/{len(imzali)}  "
             "(TURETILDI - odul_miktari bayragindan)"
         )
     for alan in INCELENMEMIS_ALANLAR:
-        dolu = sum(1 for k in gercek if k.get(alan) is not None)
+        dolu = sum(1 for k in imzali if k.get(alan) is not None)
         print(
-            f"    {alan:20} olculebilir= 0/{len(gercek)}  "
+            f"    {alan:20} olculebilir= 0/{len(imzali)}  "
             f"(OLCUM DISI - {dolu} kayitta deger var, bos kalanlar incelenmedi)"
         )
     if INCELENMEMIS_ALANLAR:

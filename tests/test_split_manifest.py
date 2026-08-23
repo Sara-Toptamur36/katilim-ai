@@ -128,6 +128,22 @@ def test_yeni_kayit_eklenince_eski_atamalar_degismez():
     assert genisletilmis["yeni_atanan_kume"] == 12
 
 
+def test_imzasiz_taslak_split_e_girmez():
+    """Etiketleme kuyrugundan acilan taslaklar olcum disidir.
+
+    Taslak satirin butun olculen alanlari bostur; split'e girerse test
+    seti hakkinda hicbir sey soylenemeyen kayitlarla dolar. Kayit
+    imzalandigi anda kendiliginden split'e girer."""
+    with open(_GOLD_DOSYASI, encoding="utf-8") as f:
+        gold = json.load(f)
+    imzasiz = {k["kayit_id"] for k in gold if not (k.get("giren_kisi") or "").strip()}
+
+    manifest = split_uret()
+    icerdekiler = set(manifest["train"]) | set(manifest["test"])
+    sizanlar = imzasiz & icerdekiler
+    assert not sizanlar, f"imzasiz taslak split'e girmis: {sorted(sizanlar)}"
+
+
 def test_ayni_sablon_kumesi_iki_tarafa_bolunmez():
     """Sablon sizintisi - olculdu ve kapatildi.
 

@@ -603,3 +603,514 @@ html[data-tema="koyu"] .tema-dugme:hover {
   font-weight: 500;
   letter-spacing: 0.2px;
 }
+
+/* ==========================================================
+   AI Asistan (Chatbot) — Sayfa Düzeni
+   ========================================================== */
+
+/* Ana kapsayıcı: iki sütunlu düzen */
+.sohbet-sayfa {
+  display: flex;
+  height: calc(100vh - 72px);
+  margin: -28px;
+  overflow: hidden;
+}
+
+/* ---------- Sol Panel: Sohbet Geçmişi ---------- */
+.sohbet-gecmis-panel {
+  width: 260px;
+  min-width: 260px;
+  max-width: 260px;
+  background: var(--kart);
+  border-right: 1px solid var(--kenarlik);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: width 250ms ease, min-width 250ms ease,
+    max-width 250ms ease, opacity 200ms ease;
+}
+
+.sohbet-gecmis-panel.kapali {
+  width: 0;
+  min-width: 0;
+  max-width: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sohbet-gecmis-icerik {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  padding: 16px 12px;
+  gap: 12px;
+}
+
+/* "+ Yeni Sohbet" düğmesi */
+.yeni-sohbet-dugme {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 0;
+  border: none;
+  border-radius: 8px;
+  background: var(--marka-500);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 200ms ease;
+  flex-shrink: 0;
+}
+
+.yeni-sohbet-dugme:hover {
+  background: var(--marka-600);
+}
+
+/* Sohbet listesi */
+.sohbet-gecmis-liste {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Boş geçmiş metni */
+.sohbet-gecmis-bos {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--yazi-soluk);
+  font-size: 13px;
+}
+
+/* Her sohbet satırı */
+.sohbet-gecmis-satir {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 150ms ease;
+  position: relative;
+}
+
+.sohbet-gecmis-satir:hover {
+  background: var(--zemin-yumusak);
+}
+
+.sohbet-gecmis-satir.aktif {
+  background: var(--zemin-yumusak);
+  border-left: 3px solid var(--marka-500);
+  padding-left: 9px;
+}
+
+.sohbet-gecmis-satir-icerik {
+  flex: 1;
+  min-width: 0;
+}
+
+.sohbet-gecmis-baslik {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--yazi-koyu);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.sohbet-gecmis-zaman {
+  font-size: 11px;
+  color: var(--yazi-soluk);
+  margin-top: 2px;
+}
+
+/* Sil düğmesi (hover'da görünür) */
+.sohbet-sil-dugme {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--yazi-soluk);
+  cursor: pointer;
+  flex-shrink: 0;
+  font-size: 12px;
+  transition: color 150ms ease, background 150ms ease;
+}
+
+.sohbet-gecmis-satir:hover .sohbet-sil-dugme {
+  display: flex;
+}
+
+.sohbet-sil-dugme:hover {
+  color: #c94f4f;
+  background: rgba(201, 79, 79, 0.1);
+}
+
+/* ---------- Sağ Panel: Ana Sohbet Alanı ---------- */
+.sohbet-ana-alan {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--zemin);
+}
+
+/* Üst bar (geçmiş açma/kapama düğmesi) */
+.sohbet-ust-bar {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  flex-shrink: 0;
+}
+
+.gecmis-toggle-dugme {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--kenarlik);
+  border-radius: 6px;
+  background: var(--kart);
+  color: var(--yazi-normal);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  transition: all 150ms ease;
+}
+
+.gecmis-toggle-dugme:hover {
+  border-color: var(--marka-400);
+  color: var(--marka-500);
+}
+
+/* ---------- Mesaj Alanı ---------- */
+.sohbet-mesaj-alani {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 20px;
+}
+
+.sohbet-mesaj-listesi {
+  max-width: 860px;
+  margin: 0 auto;
+  padding-bottom: 20px;
+}
+
+/* Her mesaj satırı */
+.sohbet-mesaj-satiri {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.sohbet-mesaj-satiri.kullanici {
+  justify-content: flex-end;
+}
+
+.sohbet-mesaj-satiri.asistan {
+  justify-content: flex-start;
+}
+
+/* Avatarlar */
+.sohbet-avatar {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.asistan-avatar {
+  background: var(--marka-500);
+  color: #ffffff;
+}
+
+.kullanici-avatar {
+  background: var(--kenarlik);
+  color: var(--yazi-normal);
+  font-size: 14px;
+}
+
+/* Mesaj balonları */
+.sohbet-balon {
+  max-width: 75%;
+  padding: 12px 16px;
+  border-radius: 14px;
+  line-height: 1.55;
+  font-size: 14px;
+  word-break: break-word;
+}
+
+.kullanici-balon {
+  max-width: 75%;
+  background: var(--marka-500);
+  color: #ffffff;
+  border-bottom-right-radius: 4px;
+}
+
+/* Kullanıcı balonunda ChatMesaji içindeki yazıyı beyaz yap */
+.kullanici-balon div,
+.kullanici-balon span,
+.kullanici-balon strong {
+  color: #ffffff !important;
+}
+
+.asistan-balon {
+  max-width: 85%;
+  background: var(--kart);
+  border: 1px solid var(--kenarlik);
+  color: var(--yazi-koyu);
+  border-bottom-left-radius: 4px;
+}
+
+/* ---------- Boş Ekran (Karşılama) ---------- */
+.sohbet-bos-ekran {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.sohbet-bos-amblem {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--marka-500);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.sohbet-bos-baslik {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--yazi-koyu);
+  margin: 0 0 8px;
+}
+
+.sohbet-bos-aciklama {
+  font-size: 14px;
+  color: var(--yazi-soluk);
+  margin: 0 0 28px;
+  max-width: 420px;
+}
+
+/* Örnek soru kartları — 2×2 grid */
+.sohbet-ornek-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  max-width: 520px;
+  width: 100%;
+}
+
+.sohbet-ornek-kart {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--kenarlik);
+  background: var(--kart);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.sohbet-ornek-kart:hover {
+  border-color: var(--marka-400);
+  box-shadow: 0 2px 12px rgba(22, 146, 118, 0.10);
+}
+
+.sohbet-ornek-ikon {
+  font-size: 18px;
+  color: var(--marka-500);
+}
+
+.sohbet-ornek-baslik {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--yazi-koyu);
+}
+
+.sohbet-ornek-soru {
+  font-size: 12px;
+  color: var(--yazi-soluk);
+  line-height: 1.4;
+}
+
+/* ---------- Bekleme Animasyonu ---------- */
+.bekleme-noktalar {
+  display: flex;
+  gap: 5px;
+  padding: 4px 0;
+}
+
+.bekleme-nokta {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--yazi-soluk);
+  animation: beklemeZipla 1.4s infinite ease-in-out;
+}
+
+.bekleme-nokta:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.bekleme-nokta:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes beklemeZipla {
+  0%, 80%, 100% {
+    transform: scale(0.6);
+    opacity: 0.4;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.bekleme-sayac {
+  font-size: 11px;
+  color: var(--yazi-soluk);
+  margin-top: 6px;
+}
+
+.bekleme-isinma-notu {
+  font-size: 11px;
+  color: var(--yazi-soluk);
+  margin-top: 2px;
+  font-style: italic;
+}
+
+/* ---------- Alt Yazma Alanı ---------- */
+.sohbet-yazma-alani {
+  flex-shrink: 0;
+  padding: 12px 20px 16px;
+  background: var(--zemin);
+  border-top: 1px solid var(--kenarlik);
+}
+
+.sohbet-yazma-kutu {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.sohbet-textarea {
+  flex: 1;
+  resize: none !important;
+}
+
+.sohbet-gonder-dugme {
+  background: var(--marka-500) !important;
+  border-color: var(--marka-500) !important;
+  flex-shrink: 0;
+}
+
+.sohbet-gonder-dugme:hover:not(:disabled) {
+  background: var(--marka-600) !important;
+  border-color: var(--marka-600) !important;
+}
+
+.sohbet-yazma-not {
+  font-size: 11px;
+  color: var(--yazi-soluk);
+  text-align: center;
+  margin-top: 8px;
+}
+
+/* ---------- Koyu Tema — Sohbet Özel Geçersiz Kılmaları ---------- */
+html[data-tema="koyu"] .sohbet-gecmis-panel {
+  background: var(--kart);
+  border-right-color: var(--kenarlik);
+}
+
+html[data-tema="koyu"] .gecmis-toggle-dugme {
+  background: var(--kart);
+  border-color: var(--kenarlik);
+}
+
+html[data-tema="koyu"] .asistan-balon {
+  background: var(--kart);
+  border-color: var(--kenarlik);
+}
+
+html[data-tema="koyu"] .kullanici-avatar {
+  background: var(--kenarlik);
+  color: var(--yazi-normal);
+}
+
+html[data-tema="koyu"] .sohbet-ornek-kart {
+  background: var(--kart);
+  border-color: var(--kenarlik);
+}
+
+html[data-tema="koyu"] .sohbet-ornek-kart:hover {
+  border-color: var(--marka-400);
+}
+
+html[data-tema="koyu"] .sohbet-yazma-alani {
+  background: var(--zemin);
+  border-top-color: var(--kenarlik);
+}
+
+/* ---------- Mobil uyum — 1200px altı ---------- */
+@media (max-width: 1200px) {
+  .sohbet-gecmis-panel.acik {
+    position: absolute;
+    z-index: 100;
+    height: calc(100vh - 72px);
+    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
+  }
+}
+
+@media (max-width: 768px) {
+  .sohbet-ornek-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sohbet-balon,
+  .kullanici-balon {
+    max-width: 88%;
+  }
+
+  .asistan-balon {
+    max-width: 92%;
+  }
+}
+

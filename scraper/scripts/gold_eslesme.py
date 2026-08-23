@@ -31,6 +31,26 @@ KOD_HARITASI = {
 TEK_SAYFALI_KODLAR = {"tombank"}
 
 
+def karsilastirma_bicimi(metin: str) -> str:
+    """Kampanya kimligi karsilastirmalari icin ortak bicim.
+
+    KESME ISARETI IKI TARAFTA DA AYNI OLMALI. Olculdu: altin kayitta
+    "BAUHAUS'ta" (duz kesme) yaziyor, banka sayfasinda
+    "BAUHAUS’ta" (kivrik kesme, U+2019) geciyor. Eski surum
+    kesmeyi yalnizca kelimenin UCLARINDAN temizliyordu; Turkcede ek
+    kesmeyle baglandigi icin isaret kelimenin ORTASINDA kaliyor ve
+    karsilastirma sessizce basarisiz oluyordu - kampanya sayfada
+    dururken "sayfa degismis" hatasi veriliyordu.
+
+    Buyuk I notu: Python'un str.lower()'i Turkce noktali
+    buyuk I harfini duz i degil, gorunmez birlesik nokta karakteriyle
+    kucultur - bu yuzden once elle degistirilir.
+    """
+    return (metin.replace("’", "'")
+            .replace("‘", "'")
+            .replace("İ", "i").lower())
+
+
 def ilk_kelime(metin: str) -> str:
     """Karsilastirma icin normallestirilmis ilk kelime.
 
@@ -39,7 +59,12 @@ def ilk_kelime(metin: str) -> str:
     ('İ'.lower() -> 'i' + U+0307) - bu yuzden once manuel degistirilir.
     Ayni duzeltme terminology/genisletme.py'de de var (o modul Yagmur'un
     alani, oradan import edilmiyor)."""
-    return metin.split()[0].strip(".,!?'’").replace("İ", "i").lower()
+    return karsilastirma_bicimi(metin.split()[0]).strip(".,!?")
+
+
+def _en_yeni(kayitlar: list[dict]) -> dict:
+    """Ayni sayfanin birden fazla anlik goruntusunden en gunceli."""
+    return max(kayitlar, key=lambda a: a.get("erisim_zamani") or "")
 
 
 def scraper_kaydini_bul(altin_kayit: dict) -> dict | None:
@@ -71,8 +96,21 @@ def scraper_kaydini_bul(altin_kayit: dict) -> dict | None:
 
     if not adaylar:
         return None
+
+    # EN YENI ANLIK GORUNTU. Eskiden `adaylar[0]` donuyordu - yani glob'un
+    # dosya sistemi sirasi, pratikte EN ESKI dosya. Bu, kod tabaninda ayni
+    # soruya iki farkli cevap birakiyordu: etiketleme araclari
+    # (gold_dataset/sprint_is_listesi._ham_kampanyalar) EN YENI anlik
+    # goruntuyu okur, dogrulama testi ise EN ESKISINI.
+    #
+    # Sonuc sessiz ve tehlikeliydi: tazelenmis bir sayfadan yazilan kanit
+    # spani, testin baktigi ESKI metinde bulunamayip "span kirik" hatasi
+    # verirdi - oysa span dogruydu, test yanlis metne bakiyordu.
+    #
+    # Bir sayfanin anlik goruntusu sorusunun TEK cevabi olmali: en yenisi.
+    # Eski dosyalar diskte kalir (kampanya_tarihcesi.py onlara dayanir).
     if kod not in TEK_SAYFALI_KODLAR or len(adaylar) == 1:
-        return adaylar[0]
+        return _en_yeni(adaylar)
 
     # DENETIM BULGUSU (9 Agustos 2026): Eskiden hedef kelime adayin TUM
     # govde metninde araniyordu - bu, "ozel" gibi yaygin bir kelimenin
@@ -86,8 +124,9 @@ def scraper_kaydini_bul(altin_kayit: dict) -> dict | None:
     # BASLIGININ (ilk satirinin) ilk kelimesiyle karsilastirilir - ayni
     # `ilk_kelime()` fonksiyonu simetrik olarak iki tarafa da uygulanir.
     hedef_kelime = ilk_kelime(altin_kayit["kampanya_adi"])
-    for aday in adaylar:
-        aday_ilk_satir = aday["ham_metin"].split("\n", 1)[0]
-        if ilk_kelime(aday_ilk_satir) == hedef_kelime:
-            return aday
-    return None
+    eslesenler = [
+        aday for aday in adaylar
+        if ilk_kelime(aday["ham_metin"].split("\n", 1)[0]) == hedef_kelime
+    ]
+    # Basligi tutan adaylar arasindan yine EN YENISI secilir.
+    return _en_yeni(eslesenler) if eslesenler else None

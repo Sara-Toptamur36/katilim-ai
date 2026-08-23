@@ -177,12 +177,34 @@ def _encoding_duzelt(yanit: requests.Response) -> None:
         yanit.encoding = yanit.apparent_encoding
 
 
+import socket
+import ipaddress
+from urllib.parse import urlparse
+
+def _guvenli_url_mi(url: str) -> bool:
+    """SSRF Korumasi: URL'nin IP'si private/loopback/link-local mi diye kontrol eder."""
+    try:
+        hostname = urlparse(url).hostname
+        if not hostname:
+            return False
+        ip = socket.gethostbyname(hostname)
+        ip_obj = ipaddress.ip_address(ip)
+        if ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_link_local:
+            return False
+        return True
+    except Exception:
+        return False
+
 def istek_at_retry_ile(
     url: str, maks_deneme: int = 3, baslangic_bekleme: float = 2.0, timeout: int = 10
 ) -> requests.Response:
     """403/404'te ASLA tekrar denemez (Bolum 21.1); yalnizca timeout/
     connection error/429/5xx gecici sayilir ve exponential backoff ile
-    tekrar denenir."""
+    tekrar denenir. Ayrıca SSRF koruması uygular."""
+    
+    if not _guvenli_url_mi(url):
+        raise ValueError(f"SSRF Korumasi: Izin verilmeyen adres - {url}")
+        
     son_hata: Exception | None = None
     for deneme in range(1, maks_deneme + 1):
         try:

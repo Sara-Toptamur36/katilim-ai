@@ -29,10 +29,11 @@ from dataclasses import dataclass, field
 from chunking.embedding import sorguyu_vektore_cevir
 from chunking.qdrant_baglanti import (
     VARSAYILAN_KOLEKSIYON,
-    banka_filtresi,
+    coklu_filtre,
     hibrit_ara,
     qdrant_hazir_mi,
 )
+from chunking.reranker import rerank
 from chunking.seyrek_vektor import (
     GOVDE_ASGARI_TOKEN,
     GOVDE_ONEK_UZUNLUGU,
@@ -115,11 +116,29 @@ def getir(
     limit: int = 5,
     koleksiyon: str = VARSAYILAN_KOLEKSIYON,
     banka: str | None = None,
+    hedef_tarih: str | None = None,
+    exact: bool | None = None,
 ) -> RetrieverSonucu:
     """Soruya en ilgili parcalari getirir; kaynak yetersizse bunu bildirir.
 
     `banka` verilirse arama o bankaya daraltilir (metadata filtresi).
+    `hedef_tarih` verilirse o tarihte aktif olan kayitlara (valid_at) filtrelenir.
+
+    `exact` parametresi Qdrant'in yaklasik HNSW aramasi yerine tam tarama
+    (brute-force) kullanip kullanmayacagini belirler. None verilirse
+    KATILIMAI_RAG_EXACT_MOD ortam degiskeni okunur ("true" ise exact=True).
+
+    NEDEN GEREKLI (README ve docs/rag_tasarim_ve_olcum.md'de raporlandi):
+    Qdrant HNSW varsayilan yaklasik aramasi Recall@1'i kosudan kosuya
+    oynatiyordu (olculdu: 29/30/29). Cok yakin skorlu adaylarda 1. siranin
+    degismesi buyuk indekslerde kacinilamaz. Olcum tutarli olmasi icin bu
+    bayrak `true` verilmelidir. Uretim yolunda (hizli yanit onemli) exact
+    gereksizdir - yalnizca olcum/test doneminde kullanilir.
     """
+    import os
+    if exact is None:
+        exact = os.environ.get("KATILIMAI_RAG_EXACT_MOD", "false").lower() == "true"
+
     if not qdrant_hazir_mi():
         return RetrieverSonucu(sebep="Vektor veritabanina (Qdrant) erisilemiyor")
 
@@ -127,13 +146,20 @@ def getir(
     if not terimler:
         return RetrieverSonucu(sebep="Soruda aranabilir bir terim bulunamadi")
 
+    # Ilk asamada RRF ile daha genis bir aday havuzu (örn. 20) aliyoruz
+    genis_limit = max(20, limit * 2)
     parcalar = hibrit_ara(
         yogun_sorgu=sorguyu_vektore_cevir(soru),
         seyrek_sorgu=seyrek_vektor_uret(soru),
-        limit=limit,
+        limit=genis_limit,
         koleksiyon=koleksiyon,
-        filtre=banka_filtresi(banka) if banka else None,
+        filtre=coklu_filtre(banka=banka, hedef_tarih=hedef_tarih),
+        exact=exact,
     )
+    
+    # Ikinci asamada (Reranker) sonuclari capraz kodlayiciyla siralayip kesiyoruz
+    if parcalar:
+        parcalar = rerank(soru, parcalar, top_k=limit)
 
     if not parcalar:
         return RetrieverSonucu(sebep="Arama hicbir sonuc dondurmedi")
@@ -159,3 +185,4 @@ def getir(
             )
         ),
     )
+

@@ -720,6 +720,23 @@ def test_musteri_sesi_siniflandir_alan_disi_metinde_tema_uydurmaz():
     assert govde["guven"] == 0.0
 
 
+def test_musteri_sesi_yogunluk_ozeti_kimlik_dogrulama_ister():
+    assert client.get("/musteri-sesi/yogunluk-ozeti").status_code == 401
+
+
+@pytest.mark.skipif(not DB_ERISILEBILIR, reason=DB_YOK_MESAJI)
+def test_musteri_sesi_yogunluk_ozeti_bos_tabloda_sifir_doner():
+    """Izin kapisi kapaliyken `sikayetler` tablosu BOStur - bu bir hata
+    degil, tasarim geregi dogru bekleme durumudur (bkz. Sikayet modeli)."""
+    yanit = client.get("/musteri-sesi/yogunluk-ozeti", headers=GECERLI_BASLIK)
+    assert yanit.status_code == 200
+    govde = yanit.json()
+    assert govde["olcu"] == "gozlenen_yogunluk"
+    assert govde["toplam_sikayet"] == 0
+    assert govde["temalar"] == {}
+    assert not any("oran" in a or "yuzde" in a for a in govde)
+
+
 def test_musteri_sesi_ornekler_sentetik_oldugunu_acikca_belirtir():
     """DURUSTLUK: donen veri gercek sikayet degil - yanit bunu ACIKCA
     soylemeli, arayuz bu alani gizlemeden gostermeli (rapor Bolum 5.7/15

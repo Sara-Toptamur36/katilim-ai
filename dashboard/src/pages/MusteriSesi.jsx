@@ -12,7 +12,11 @@ import {
   Tag,
   Typography,
 } from "antd";
-import { musteriSesiOrneklerGetir, musteriSesiSiniflandir } from "../api/client";
+import {
+  musteriSesiOrneklerGetir,
+  musteriSesiSiniflandir,
+  musteriSesiYogunlukOzetiGetir,
+} from "../api/client";
 
 // FAZ 1 T8 - mentorun 3.7'deki "en dusuk riskli yol" onerisi: gercek
 // Sikayetvar/musteri verisi ancak kurumsal/hukuki (KVKK) izin surecinden
@@ -66,11 +70,20 @@ export default function MusteriSesi() {
   const [ornekYukleniyor, setOrnekYukleniyor] = useState(true);
   const [ornekHata, setOrnekHata] = useState(null);
 
+  const [yogunluk, setYogunluk] = useState(null);
+  const [yogunlukYukleniyor, setYogunlukYukleniyor] = useState(true);
+  const [yogunlukHata, setYogunlukHata] = useState(null);
+
   useEffect(() => {
     musteriSesiOrneklerGetir()
       .then(setOrnekVeri)
       .catch((e) => setOrnekHata(e.message))
       .finally(() => setOrnekYukleniyor(false));
+
+    musteriSesiYogunlukOzetiGetir()
+      .then(setYogunluk)
+      .catch((e) => setYogunlukHata(e.message))
+      .finally(() => setYogunlukYukleniyor(false));
   }, []);
 
   const siniflandir = async () => {
@@ -157,6 +170,35 @@ export default function MusteriSesi() {
           )}
         </Col>
       </Row>
+
+      <Typography.Title level={4}>Gerçek veri — gözlenen yoğunluk</Typography.Title>
+      {yogunlukHata && (
+        <Alert type="error" title="Yoğunluk özeti alınamadı" description={yogunlukHata} showIcon />
+      )}
+      {yogunluk && (
+        <Card size="small" style={{ marginBottom: 24 }} loading={yogunlukYukleniyor}>
+          {yogunluk.toplam_sikayet === 0 ? (
+            <Alert
+              type="info"
+              showIcon
+              title="Henüz gerçek şikâyet verisi yok"
+              description="Kurumsal/hukuki (KVKK) izin süreci tamamlanıp izin kaydı açılana kadar bu tablo boş kalır — bu bir hata değil, tasarım gereği doğru bekleme durumu. Altyapı (şema, izin kapısı, PII temizliği, tema eşleştirme) hazır; veri akışı onaydan sonra başlayacak."
+            />
+          ) : (
+            <Space orientation="vertical" style={{ width: "100%" }}>
+              <Typography.Text type="secondary">
+                {yogunluk.aciklama} — toplam {yogunluk.toplam_sikayet} kayıt
+              </Typography.Text>
+              {Object.entries(yogunluk.temalar).map(([tema, adet]) => (
+                <Space key={tema} size={8}>
+                  <Tag color="geekblue">{tema}</Tag>
+                  <Typography.Text>{adet}</Typography.Text>
+                </Space>
+              ))}
+            </Space>
+          )}
+        </Card>
+      )}
 
       <Typography.Title level={4}>Sentetik örnek seti</Typography.Title>
       {ornekHata && <Alert type="error" title="Örnekler alınamadı" description={ornekHata} showIcon />}

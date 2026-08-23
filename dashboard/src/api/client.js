@@ -201,4 +201,12 @@ export const musteriSesiOrneklerGetir = async () => {
   return yanit.data;
 };
 
+// GET /musteri-sesi/yogunluk-ozeti - GERCEK `sikayetler` tablosundan tema
+// bazli gozlenen yogunluk (sentetik ornekler DEGIL). Izin kapisi acilana
+// kadar hep toplam_sikayet: 0 doner - bu dogru bos durumdur.
+export const musteriSesiYogunlukOzetiGetir = async () => {
+  const yanit = await client.get("/musteri-sesi/yogunluk-ozeti");
+  return yanit.data;
+};
+
 export default client;

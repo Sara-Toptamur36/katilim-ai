@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <title>KatılımAI</title>
+    <script>
+      // GitHub Pages SPA yonlendirme numarasi (rafgraph/spa-github-pages
+      // deseni). GitHub Pages statik bir host oldugu icin /kampanyalar
+      // gibi bir alt yola dogrudan gidince ya da sayfa yenilenince,
+      // sunucu tarafinda React Router'a dusecek bir mekanizma yoktur -
+      // GitHub bu durumda bu 404.html'i dondurur. Burada gercek yolu bir
+      // sorgu parametresine kodlayip index.html'e yonlendiriyoruz;
+      // index.html icindeki kucuk script gercek yolu geri yaziyor.
+      var pathSegmentsToKeep = 1; // '/katilim-ai/' proje sayfasi oneki
+      var l = window.location;
+      l.replace(
+        l.protocol + "//" + l.hostname + (l.port ? ":" + l.port : "") +
+        l.pathname.split("/").slice(0, 1 + pathSegmentsToKeep).join("/") + "/?/" +
+        l.pathname.slice(1).split("/").slice(pathSegmentsToKeep).join("/").replace(/&/g, "~and~") +
+        (l.search ? "&" + l.search.slice(1).replace(/&/g, "~and~") : "") +
+        l.hash
+      );
+    </script>
+  </head>
+  <body></body>
+</html>

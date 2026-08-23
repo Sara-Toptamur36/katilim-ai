@@ -60,9 +60,9 @@ export default function ChatMesaji({ mesaj }) {
 
       {mesaj.fallback && (
         <Alert
-          type="info"
-          title="Bu soruyu tam olarak anlayamadım"
-          description="Kampanya karşılaştırması, kâr payı oranları veya vade süreleri hakkında soru sorabilirsiniz."
+          type="warning"
+          message="Güvenli Başarısızlık: Cevap Üretilemedi"
+          description="Sistem, kaynak yetersizliği veya düşük güven skoru nedeniyle cevap üretmedi. Halüsinasyon riskini önlemek için bu bir güvenlik önlemidir. Lütfen sorunuzu farklı kelimelerle ifade edin veya kampanya koşullarını sorun."
           showIcon
           style={{ marginTop: 8, maxWidth: 480 }}
         />
@@ -124,44 +124,47 @@ export default function ChatMesaji({ mesaj }) {
       )}
 
       {mesaj.kaynaklar && mesaj.kaynaklar.length > 0 && (
-        <Card size="small" title="Kaynaklar" style={{ marginTop: 8, maxWidth: 640 }}>
+        <Card size="small" title="Kaynaklar" style={{ marginTop: 8, maxWidth: 640 }} headStyle={{ backgroundColor: "#f5f5f5" }}>
           {mesaj.kaynaklar.map((k, i) => (
-            <div key={i} style={{ marginBottom: i < mesaj.kaynaklar.length - 1 ? 12 : 0 }}>
-              <Typography.Link href={k.kaynak_url} target="_blank" rel="noopener noreferrer">
-                {k.banka} — {k.kampanya_adi}
-              </Typography.Link>
-              {k.similarity_score != null && (
-                <Tag style={{ marginLeft: 8 }}>
-                  Benzerlik: {k.similarity_score.toFixed(2)}
-                </Tag>
-              )}
-              {k.belge_tarihi && <Tag>Belge tarihi: {k.belge_tarihi}</Tag>}
+            <div key={i} style={{ marginBottom: i < mesaj.kaynaklar.length - 1 ? 16 : 0, paddingBottom: i < mesaj.kaynaklar.length - 1 ? 12 : 0, borderBottom: i < mesaj.kaynaklar.length - 1 ? "1px solid #f0f0f0" : "none" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
+                <Typography.Link href={k.kaynak_url} target="_blank" rel="noopener noreferrer" style={{ fontWeight: 600 }}>
+                  🔗 {k.banka} — {k.kampanya_adi}
+                </Typography.Link>
+                {k.similarity_score != null && (
+                  <Tag color="blue" style={{ margin: 0 }}>
+                    Skor: {k.similarity_score.toFixed(2)}
+                  </Tag>
+                )}
+              </div>
+              <div style={{ marginBottom: 8 }}>
+                {k.chunk_id && <Tag color="default">Chunk ID: {k.chunk_id}</Tag>}
+                {k.belge_tarihi && <Tag color="cyan">Tarih: {k.belge_tarihi}</Tag>}
+                {k.erisim_zamani && <Tag color="geekblue">Erişim: {new Date(k.erisim_zamani).toLocaleDateString("tr-TR")}</Tag>}
+              </div>
 
-              {/* "Her cumle bir kaynak belgeden gelir" iddiasinin GORSEL
-                  KANITI. API bu alani (Kaynak.metin) zaten donduruyordu ama
-                  arayuz yalnizca baglantiyi basiyordu - kullanici alintiyi
-                  gormek icin bankanin sitesine gitmek zorunda kaliyordu.
-                  RAG hicbir sey URETMEZ, kaynagi BIREBIR dondurur; alintinin
-                  kendisi bu yuzden cevabin kanitidir. */}
+              {/* "Her cumle bir kaynak belgeden gelir" iddiasinin GORSEL KANITI. */}
               {k.metin && (
                 <blockquote
                   style={{
-                    margin: "6px 0 0",
-                    padding: "6px 10px",
-                    borderLeft: "3px solid #d9d9d9",
-                    background: "rgba(0,0,0,0.02)",
+                    margin: 0,
+                    padding: "8px 12px",
+                    borderLeft: "4px solid #1677ff",
+                    background: "#fafafa",
+                    borderRadius: "0 4px 4px 0",
                     fontSize: 13,
                   }}
                 >
-                  <Typography.Text type="secondary">{k.metin}</Typography.Text>
+                  <Typography.Text type="secondary" italic>{k.metin}</Typography.Text>
                 </blockquote>
               )}
             </div>
           ))}
-          <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-            Alıntılar kaynak sayfadan <strong>birebir</strong> alınmıştır; sistem bu
-            metnin üzerine cümle üretmez.
-          </Typography.Text>
+          <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px dashed #d9d9d9" }}>
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+              ℹ️ Alıntılar kaynak sayfadan <strong>birebir</strong> alınmıştır; sistem bu metnin üzerine cümle üretmez.
+            </Typography.Text>
+          </div>
         </Card>
       )}
     </div>

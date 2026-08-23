@@ -13,12 +13,12 @@ Mentorluk raporu II (Bolum 6.3): "veri eksikligi yalnizca toplam kampanya sayisi
 | Albaraka Türk | 37 | 39 | 8 |
 | Dünya Katılım | 45 | 55 | 7 |
 | Hayat Finans | 10 | 18 | 5 |
-| Kuveyt Türk | 121 | 124 | 7 |
+| Kuveyt Türk | 110 | 113 | 7 |
 | T.O.M. Katılım | 13 | 13 | 3 |
 | Türkiye Emlak Katılım | 84 | 107 | 7 |
-| Türkiye Finans | 25 | 28 | 7 |
+| Türkiye Finans | 15 | 17 | 7 |
 | Vakıf Katılım | 3 | 3 | 8 |
-| Ziraat Katılım | 109 | 111 | 8 |
+| Ziraat Katılım | 108 | 108 | 8 |
 
 ## 2. Urun ailesi ekseni
 
@@ -26,12 +26,12 @@ En son gorulen versiyon uzerinden hesaplanir (ayni kampanyanin eski snapshot'lar
 
 | Urun ailesi (kampanya_turu) | Sayi | Alan doluluk % |
 |---|---|---|
-| Kart Kampanyasi | 258 | %24.1 |
-| Konut Finansmani Kampanyasi | 64 | %29.7 |
+| Kart Kampanyasi | 250 | %24.8 |
 | Belirtilmemis | 61 | %14.1 |
+| Konut Finansmani Kampanyasi | 53 | %24.9 |
 | Alisveris Puani Kampanyasi | 37 | %20.0 |
-| Ihtiyac Finansmani Kampanyasi | 9 | %42.2 |
 | Finansman Kampanyasi | 9 | %15.6 |
+| Ihtiyac Finansmani Kampanyasi | 6 | %50.0 |
 | Yatirim Urunu Kampanyasi | 4 | %0.0 |
 | Yeni Musteri Kampanyasi | 3 | %40.0 |
 | Tasit Finansmani Kampanyasi | 2 | %0.0 |
@@ -41,7 +41,7 @@ En son gorulen versiyon uzerinden hesaplanir (ayni kampanyanin eski snapshot'lar
 - Ilk gorulme: 2026-07-31
 - Son gorulme: 2026-08-22
 - Kampanya basina ortalama versiyon sayisi: 1.11
-- Coklu versiyonlu (gercekten degismis) kampanya sayisi: 41
+- Coklu versiyonlu (gercekten degismis) kampanya sayisi: 39
 - Bayatlik (son taramadan bu yana gecen gun): 0
 
 ## 4. Alan ekseni
@@ -50,8 +50,8 @@ Kar payi / vade / taksit / odul / masraf alanlarinin en son versiyonda ne siklik
 
 | Alan | Dolu | Toplam | Doluluk % |
 |---|---|---|---|
-| kar_payi_orani_percent | 118 | 447 | %26.4 |
-| vade_ay | 15 | 447 | %3.4 |
-| taksit_sayisi | 242 | 447 | %54.1 |
-| odul_miktari | 132 | 447 | %29.5 |
-| masraf_durumu | 11 | 447 | %2.5 |
+| kar_payi_orani_percent | 110 | 425 | %25.9 |
+| vade_ay | 14 | 425 | %3.3 |
+| taksit_sayisi | 231 | 425 | %54.4 |
+| odul_miktari | 121 | 425 | %28.5 |
+| masraf_durumu | 8 | 425 | %1.9 |

@@ -1,0 +1,18 @@
+{
+  "tarih": "2026-08-22",
+  "kapsanma_esigi": 0.9,
+  "sonuclar": [
+    {
+      "kayit_id": "ZK-009",
+      "banka": "Ziraat Katılım",
+      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/a101de-6-taksit",
+      "dosya": "ZK-009.png",
+      "boyut_kb": 537.0,
+      "kapsanma": 0.991,
+      "anlik_uzunluk": 857,
+      "canli_uzunluk": 1681,
+      "durum": "tamam",
+      "anlik_goruntu_eksik": true
+    }
+  ]
+}

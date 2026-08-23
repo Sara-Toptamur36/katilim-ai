@@ -138,6 +138,42 @@ def test_makine_adaylari_olcume_girmez():
             )
 
 
+def test_yazilan_spanlarin_hepsi_butunluk_testinden_gecer():
+    """Betigin kabul ettigi span, butunluk testinin de kabul ettigi span
+    olmali.
+
+    Olculdu: betik _ham_kampanyalar() ile EN GUNCEL snapshot'a bakiyordu,
+    tests/test_altin_veri_butunlugu.py ise scraper_kaydini_bul ile baska
+    bir snapshot'a. TEK-025'te betik span'i kabul etti, butunluk testi
+    ayni span'i reddetti. Iki taraf ayni cozumleyiciyi kullanmazsa bu
+    kacinilmazdir; bu test kaymayi erken yakalar."""
+    from gold_dataset.excel_to_json import span_metinde_var
+    from gold_dataset.aday_deger_yaz import DAMGA
+    from scraper.scripts.gold_eslesme import scraper_kaydini_bul
+
+    hatalar = []
+    for kayit in _gold():
+        if DAMGA not in (kayit.get("notlar") or ""):
+            continue
+        spanlar = kayit.get("kanit_spanlari") or {}
+        if not spanlar:
+            continue
+        try:
+            eslesen = scraper_kaydini_bul(kayit) or {}
+        except Exception:  # noqa: BLE001
+            continue
+        metin = eslesen.get("normalize_metin") or eslesen.get("ham_metin") or ""
+        if not metin:
+            continue
+        for alan, span in spanlar.items():
+            if span and not span_metinde_var(span, metin):
+                hatalar.append(f"{kayit['kayit_id']}.{alan}")
+
+    assert not hatalar, (
+        f"makine adayi spani butunluk testinin kaynaginda bulunamadi: {hatalar}"
+    )
+
+
 def test_makine_adayi_damgasi_gorunur():
     """Aday deger tasiyan satir, notlar sutunundan taninabilmeli.
 

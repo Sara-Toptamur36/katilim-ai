@@ -100,11 +100,17 @@ def _kayitlari_al() -> dict[str, dict]:
 
 def dogrula(adaylar: list[dict]) -> tuple[list[dict], list[str]]:
     """Yazilabilir adaylari ve reddedilenlerin gerekcelerini dondurur."""
+    # TEK KAYNAK: kaydin ham metnini cozen mantik burada KOPYALANMAZ.
+    # Olculdu: bu betik once _ham_kampanyalar() ile EN GUNCEL snapshot'a
+    # bakiyordu, tests/test_altin_veri_butunlugu.py ise
+    # scraper_kaydini_bul ile BASKA bir snapshot'a. Sonuc: betik span'i
+    # kabul ediyor, test ayni span'i reddediyordu (TEK-025). Iki taraf
+    # ayni cozumleyiciyi kullanmazsa "arac gecti ama test kirildi"
+    # durumu kacinilmazdir.
     from gold_dataset.excel_to_json import span_metinde_var
-    from gold_dataset.sprint_is_listesi import _ham_kampanyalar, _slug
+    from scraper.scripts.gold_eslesme import scraper_kaydini_bul
 
     kayitlar = _kayitlari_al()
-    ham = _ham_kampanyalar()
     kabul: list[dict] = []
     ret: list[str] = []
 
@@ -118,8 +124,11 @@ def dogrula(adaylar: list[dict]) -> tuple[list[dict], list[str]]:
             ret.append(f"{kid}: IMZALI kayit - bu betik imzali satira dokunmaz")
             continue
 
-        metin = (ham.get(_slug(kayit.get("kaynak_url") or "")) or {}).get(
-            "normalize_metin") or ""
+        try:
+            eslesen = scraper_kaydini_bul(kayit) or {}
+        except Exception:  # noqa: BLE001 - eslesme yoksa span dogrulanamaz
+            eslesen = {}
+        metin = eslesen.get("normalize_metin") or eslesen.get("ham_metin") or ""
         alanlar = dict(aday.get("alanlar") or {})
         spanlar = dict(aday.get("spanlar") or {})
 

@@ -6,9 +6,16 @@ docs/extraction_accuracy_raporu.md) ve kampanya rotasyonuyla dogal olarak
 dalgalanir. Burada test edilen: olcum ARACININ KENDISI dogru calisiyor mu.
 """
 
+import json
+from pathlib import Path
+
 from scraper.scripts.extraction_accuracy import (
     _degerler_esit_mi,
     extraction_accuracy_hesapla,
+)
+
+_GOLD_DOSYASI = (
+    Path(__file__).resolve().parent.parent / "gold_dataset" / "altin_veri_seti.json"
 )
 
 
@@ -83,13 +90,30 @@ def test_yanlis_pozitif_yalnizca_bayrakli_alanlarda_sayilir():
     bayraklanMAMIS alanlar olcume girmemeli - orada "kaynakta yok" ile
     "etiketleyici doldurmadi" ayirt edilemez, motoru haksiz cezalandirir.
 
-    Altin veri setinde taksit_sayisi/erteleme_suresi_ay sutunlari hic
-    doldurulmamis ve bayraklanmamis; bu alanlardan yanlis pozitif
-    gelmemeli."""
+    SABIT SUTUN LISTESI TUTULMUYOR: burada once
+    {taksit_sayisi, erteleme_suresi_ay} yaziliydi, ama 23 Agustos'ta o iki
+    sutun incelenip olcume acildi (bkz. excel_to_json.py INCELENMIS_ALANLAR)
+    ve test kirildi. Sabit liste, testin asil isini - "yanlis pozitif
+    YALNIZCA bayrakli alandan sayilir" kuralini - golgeler. Bayraksiz
+    alanlar gold dosyasinin kendisinden hesaplanir."""
     sonuc = extraction_accuracy_hesapla()
 
-    bayraksiz_alanlar = {"taksit_sayisi", "erteleme_suresi_ay"}
-    sizanlar = [yp for yp in sonuc["yanlis_pozitifler"] if yp["alan"] in bayraksiz_alanlar]
+    with open(_GOLD_DOSYASI, encoding="utf-8") as f:
+        gold = json.load(f)
+    # (kayit_id, alan) ciftleri: deger bos AMA "kaynakta yok" diye
+    # bayraklanmamis - yani hakkinda hicbir sey bilinmiyor.
+    bayraksiz = {
+        (kayit["kayit_id"], alan)
+        for kayit in gold
+        for alan in kayit
+        if kayit.get(alan) in (None, "", [])
+        and alan not in (kayit.get("alan_belirtilmemis") or {})
+    }
+
+    sizanlar = [
+        yp for yp in sonuc["yanlis_pozitifler"]
+        if (yp.get("kayit_id"), yp["alan"]) in bayraksiz
+    ]
     assert sizanlar == [], f"Bayraklanmamis alandan yanlis pozitif sizmis: {sizanlar}"
 
 

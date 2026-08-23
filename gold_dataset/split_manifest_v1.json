@@ -1,8 +1,9 @@
 {
   "surum": "v1",
-  "olusturulma_yontemi": "banka-katmanli, kaynak_url gruplu split (gold_dataset/split_manifest_uret.py)",
+  "olusturulma_yontemi": "banka-katmanli, kaynak_url gruplu, atamasi dondurulmus split (gold_dataset/split_manifest_uret.py)",
   "test_orani_hedef": 0.2,
-  "tohum": 42,
+  "onceki_surumden_korunan_url": 101,
+  "yeni_atanan_url": 0,
   "toplam_kayit": 103,
   "toplam_kampanya_url": 101,
   "train": [

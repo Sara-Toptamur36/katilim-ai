@@ -13,6 +13,7 @@ YAZMA, BOS birak") KORUNUR - burada ona ek bir hucre isareti YOKTUR.
 import openpyxl
 import pytest
 
+from gold_dataset import excel_to_json as donustur_modulu
 from gold_dataset.excel_to_json import (
     INCELENMEMIS_ALANLAR,
     INCELENMIS_ALANLAR,
@@ -57,14 +58,66 @@ def _temel_kayit(**ekstra) -> dict:
 # ---------------------------------------------------------------------------
 
 
-def test_incelenmemis_sutunda_bos_hucre_BAYRAKLANMAZ(tmp_path):
-    """EN KRITIK TEST: sutun 9 Agustos'ta eklendi, hicbir kayit icin
-    incelenmedi. Bayraklansaydi 58 kaydin tamami yanlis pozitif olcumune
-    girer ve motor, hicbir sey kanitlamadan %100 alirdi."""
+def test_incelenmemis_sutunda_bos_hucre_BAYRAKLANMAZ(tmp_path, monkeypatch):
+    """EN KRITIK TEST: incelenmemis bir sutunda bos hucre olcume girerse
+    motor, hicbir sey kanitlamadan bedava puan alir.
+
+    SABIT SUTUN ISMI TUTULMUYOR: burada once `taksit_sayisi` yaziliydi,
+    ama 23 Agustos'ta o sutun tek tek incelenip INCELENMIS_ALANLAR'a
+    tasindi (bkz. excel_to_json.py) ve test kirildi. Sutun adina baglamak,
+    testin asil isini - "bos hucrenin anlamini SUTUN belirler" ilkesini -
+    golgeler. Ilke, listeler hangi sutunu icerirse icersin gecerlidir;
+    bu yuzden gecici bir sutun uzerinde dogrulanir.
+
+    NOT: bugun INCELENMEMIS_ALANLAR listesi BOS - semadaki her olculen
+    sutun yanlis pozitif olcumune giriyor. Bu iyi haberdir; testin
+    korudugu ilke, listeye ileride yeni bir sutun eklendiginde devreye
+    girer."""
+    monkeypatch.setattr(donustur_modulu, "INCELENMIS_ALANLAR",
+                        tuple(a for a in INCELENMIS_ALANLAR if a != "taksit_sayisi"))
+    monkeypatch.setattr(donustur_modulu, "INCELENMEMIS_ALANLAR", ("taksit_sayisi",))
+
     yol = _excel_yaz(tmp_path, [_temel_kayit(taksit_sayisi=None)])
     kayit = donustur(yol)[0][0]
     assert kayit["taksit_sayisi"] is None
     assert "taksit_sayisi" not in kayit["alan_belirtilmemis"]
+
+
+def test_acikca_olcum_disi_birakilan_sutun_yok():
+    """23 Agustos'ta kapatilan olcum deligi geri acilmasin.
+
+    DIKKAT - bu testin kapsami dar: yalnizca ACIKCA olcum disi ilan
+    edilmis sutun kalmadigini dogrular. "Semadaki her sutun olculuyor"
+    DEMEZ, cunku bayraklama yalnizca INCELENMIS_ALANLAR uzerinden
+    yapilir: her iki listede de yer almayan bir sutun sessizce olcum
+    disi kalir (bugun: maliyet_orani, oran_periyodu, kampanya_baslangic,
+    odul_birimi). Onlarin kapsanmasi bir VERI karari - o sutunlar tek tek
+    incelenmeden INCELENMIS_ALANLAR'a eklenirse olcum siser."""
+    assert INCELENMEMIS_ALANLAR == (), (
+        f"olcum disi birakilan sutunlar var: {INCELENMEMIS_ALANLAR} - "
+        "her biri motora bedava puan kapisidir"
+    )
+
+
+def test_hicbir_listede_yer_almayan_sutunlar_bilinir_listede():
+    """Sessizce olcum disi kalan sutunlar KAYIT ALTINDA olsun.
+
+    Amac bu sutunlari savunmak degil, gorunur tutmak: biri
+    INCELENMIS_ALANLAR'a tasindiginda burada da eksilmeli, yeni bir sutun
+    semaya eklenip unutuldugunda ise test kirilip haber vermeli."""
+    olculebilir_ama_kapsam_disi = {
+        "maliyet_orani", "oran_periyodu", "kampanya_baslangic", "odul_birimi",
+    }
+    su_an_kapsam_disi = {
+        b for b in BASLIKLAR
+        if b not in INCELENMIS_ALANLAR
+        and b not in INCELENMEMIS_ALANLAR
+        and b not in ("kayit_id", "banka", "kampanya_adi", "kaynak_url", "giren_kisi")
+    }
+    assert su_an_kapsam_disi == olculebilir_ama_kapsam_disi & set(BASLIKLAR), (
+        f"kapsam disi sutun kumesi degisti: {su_an_kapsam_disi} - "
+        "bir sutun olcume acildiysa bu listeden de cikarin"
+    )
 
 
 def test_incelenmis_sutunda_bos_hucre_bayraklanir(tmp_path):

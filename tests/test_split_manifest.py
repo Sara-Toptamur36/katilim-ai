@@ -1,11 +1,16 @@
 """gold_dataset/split_manifest_uret.py testleri - gercek gold veri setiyle."""
 
 import json
+import shutil
+import tempfile
 from pathlib import Path
 
+from gold_dataset import split_manifest_uret as split_modulu
 from gold_dataset.split_manifest_uret import _gercek_kayitlari_yukle, split_uret
 
-_GOLD_DOSYASI = Path(__file__).resolve().parent.parent / "gold_dataset" / "altin_veri_seti.json"
+_GOLD_DIZINI = Path(__file__).resolve().parent.parent / "gold_dataset"
+_GOLD_DOSYASI = _GOLD_DIZINI / "altin_veri_seti.json"
+_MANIFEST_DOSYASI = _GOLD_DIZINI / "split_manifest_v1.json"
 
 
 def test_ornek_kayitlar_disarida_birakilir():
@@ -50,6 +55,69 @@ def test_split_deterministik():
     m2 = split_uret()
     assert m1["train"] == m2["train"]
     assert m1["test"] == m2["test"]
+
+
+def test_yazili_manifest_ile_uretilen_ayni():
+    """Depodaki manifest, bugunku veriyle uretilenle ayni olmali.
+
+    Kirilirsa: gold sete kayit eklenmis ama manifest yeniden uretilmemis.
+    Cozum testi degistirmek degil, `python -m gold_dataset.split_manifest_uret`
+    calistirip cikan manifesti commit etmektir."""
+    with open(_MANIFEST_DOSYASI, encoding="utf-8") as f:
+        yazili = json.load(f)
+    uretilen = split_uret()
+    assert yazili["train"] == uretilen["train"]
+    assert yazili["test"] == uretilen["test"]
+
+
+def test_yeni_kayit_eklenince_eski_atamalar_degismez():
+    """Etiketleme sprintinin ana sizinti riski.
+
+    Onceki surum her calistirmada butun listeyi bastan karistiriyordu; 3
+    yeni kayit eklemek mevcut 103 kaydin 19'unu taraf degistiriyordu. Test
+    setinde olculmus bir kayit sonraki koşuda train'e gecerse o olcum artik
+    bagimsiz degildir. Bu test, bir URL taraf aldiktan sonra ORADA
+    KALDIGINI dogrular."""
+    taban = split_uret()
+
+    with tempfile.TemporaryDirectory() as gecici:
+        gecici_yol = Path(gecici)
+        shutil.copy(_GOLD_DOSYASI, gecici_yol / "gold.json")
+        shutil.copy(_MANIFEST_DOSYASI, gecici_yol / "manifest.json")
+
+        with open(gecici_yol / "gold.json", encoding="utf-8") as f:
+            kayitlar = json.load(f)
+        bankalar = ["Kuveyt Türk", "Ziraat Katılım", "Türkiye Emlak Katılım", "Vakıf Katılım"]
+        kayitlar.extend(
+            {
+                "kayit_id": f"SIMULE-{i:03d}",
+                "banka": bankalar[i % len(bankalar)],
+                "kaynak_url": f"https://simule.test/kampanya-{i}",
+                "giren_kisi": "Test",
+            }
+            for i in range(12)
+        )
+        with open(gecici_yol / "gold.json", "w", encoding="utf-8") as f:
+            json.dump(kayitlar, f, ensure_ascii=False)
+
+        # Modul seviyesindeki yollari gecici kopyaya cevirip geri koyariz -
+        # gercek gold dosyasi ve manifest bu testten etkilenmez.
+        gercek_gold, gercek_cikti = split_modulu.GOLD_DOSYASI, split_modulu.CIKTI_DOSYASI
+        try:
+            split_modulu.GOLD_DOSYASI = gecici_yol / "gold.json"
+            split_modulu.CIKTI_DOSYASI = gecici_yol / "manifest.json"
+            genisletilmis = split_uret()
+        finally:
+            split_modulu.GOLD_DOSYASI, split_modulu.CIKTI_DOSYASI = gercek_gold, gercek_cikti
+
+    eski_test, eski_train = set(taban["test"]), set(taban["train"])
+    yeni_test, yeni_train = set(genisletilmis["test"]), set(genisletilmis["train"])
+
+    kacan = eski_test & yeni_train
+    sizan = eski_train & yeni_test
+    assert not kacan, f"test'ten train'e kayan kayitlar: {sorted(kacan)}"
+    assert not sizan, f"train'den test'e kayan kayitlar: {sorted(sizan)}"
+    assert genisletilmis["yeni_atanan_url"] == 12
 
 
 def test_test_seti_bos_degil_ve_makul_oranda():

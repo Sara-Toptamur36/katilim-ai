@@ -123,7 +123,50 @@ _UCRET_BAGLAM_DISLAMA_KELIMELERI = _katla_hepsi([
     # "kar_payi_orani ILE KARISTIRILMAMALI" diye isaretlemis ama kural
     # regex'e baglanmamisti.
     "makas", "kur",
+    # SADAKAT PARA BIRIMLERI (olculdu 23 Agustos: ZK-011, ZK-016).
+    # "tum harcamalara %10, toplamda 5.000 TL Bankkart Lira!" - buradaki
+    # %10 bir KAZANIM oranidir, kar payi orani degil. Listede zaten "puan"
+    # ve "odul" vardi ama bankalarin KENDI birim adlari yoktu; oysa bu
+    # birimler depoda baska yerde tanimli (comparison/compare_engine.py
+    # BIRIM_BAGIMLI_EKSENLER, altin veri setinde alti ayri birim). Ayni
+    # bilgi iki yerde ayri ayri tutulunca biri guncellenip digeri
+    # unutuluyordu.
+    "bankkart lira", "worldpuan", "parafpara", "bonus", "mil",
+    # HARCAMA YUZDESI: bir yuzde "harcama"ya uygulaniyorsa o bir iade/
+    # kazanim oranidir (olculdu: ZK-011, ZK-016, HF-010). Bu kelime
+    # yalnizca DUSUK GUVENLI fallback'i (0.6) etkiler - metinde acikca
+    # "kar payi/kar orani" gecen kayitlar zaten 0.9 guvenli yoldan
+    # atanir ve buraya hic ugramaz.
+    "harcama",
+    # "... TUTARININ %X'i kadar": bir tutarin yuzdesi olarak ifade edilen
+    # deger, o urunun kar payi orani DEGIL, ondan turetilen bir kazanim
+    # ya da kesintidir (olculdu: HF-008 "transfer tutarinin %0,1'i").
+    "tutarın", "tutarin", "transfer",
 ])
+
+# ORAN TABLOSU ESIGI: Turkiye Finans'in "Aylik/Yillik Toplam Maliyet"
+# tablolari bir satirda yan yana bes-alti yuzde tasiyor
+# ("3 | 4,20% | 0,50% | 5,77% | 96,05%"). Baglam penceresi 45 karakter
+# oldugu icin satirin BASINDAKI "Maliyet" basligi uzaktaki hucrelere
+# yetismiyordu ve tablonun ortasindaki bir hucre kar payi orani
+# saniliyordu (olculdu: TF-001, TF-008 - TF-001 zaten "bilinen yanlis
+# pozitif" olarak belgelenmisti, kok nedeni buymus).
+#
+# NEDEN SAYIYLA AYIRT EDILIYOR: duz metinde bir cumlenin icinde ucten
+# fazla yuzde yan yana gecmez; bu yogunluk TABLO oldugunun kendisi kadar
+# guvenilir bir isaretidir. Tablolardaki gercek oranlari zaten ayri bir
+# katman okuyor (extraction/tablo_extractor.py), bu yuzden fallback'in
+# oraya hic girmemesi dogru davranistir.
+_ORAN_TABLOSU_PENCERE = 60
+_ORAN_TABLOSU_ASGARI_YUZDE = 3
+
+
+def _oran_tablosu_baglaminda_mi(metin: str, baslangic: int, bitis: int) -> bool:
+    """Eslesmenin cevresi bir oran TABLOSU satiri mi (duz cumle degil)?"""
+    pencere = metin[
+        max(0, baslangic - _ORAN_TABLOSU_PENCERE) : bitis + _ORAN_TABLOSU_PENCERE
+    ]
+    return pencere.count("%") >= _ORAN_TABLOSU_ASGARI_YUZDE
 
 
 def _ucret_baglaminda_mi(metin: str, baslangic: int, bitis: int, pencere: int = 45) -> bool:
@@ -194,7 +237,21 @@ RE_TAKSIT_SAYISI = _katlanmis_derle(
 # BUYUKLUK EKI: T.O.M. Katilim tutarlari kelimeyle yaziyor ("250 Bin TL ye
 # kadar"), binlik ayiracli degil. Bu bicim desende yoksa tutar HIC
 # bulunamaz (olculdu: TOM-002 finansman_tutari None donuyordu).
-_TUTAR = r"\d{1,3}(?:\.\d{3})*(?:,\d+)?\s*(?:bin|milyon|milyar)?"
+# ORTAK SAYI PARCASI - ayni kusur eskiden 6 ayri desende tekrarliyordu.
+# `\d{1,3}(?:\.\d{3})*` yazimi, ayrac KULLANILMAYAN sayilarda en fazla 3
+# hane alabildigi icin "2000 TL"de bastan degil SONDAN eslesiyordu:
+# regex "2"den baslayip TL'ye ulasamayinca ilerliyor ve "000 TL"yi
+# yakaliyordu -> odul_miktari = 0.0 (olculdu: ZK-009). Sifir degeri hem
+# yanlis pozitif uretiyor hem de karsilastirmada "en dusuk" siralamasini
+# haksiz kazaniyordu.
+#
+# Ayracli bicim ONCE denenir ("10.000" tek sayi olarak okunsun, "10" +
+# "000" diye ikiye bolunmesin); ayracsiz sayilar `\d+` ile tam uzunlukta
+# yakalanir. Tum desenler gruplarsiz (?:...) oldugu icin cagiran taraftaki
+# grup numaralari DEGISMEZ.
+_SAYI = r"(?:\d{1,3}(?:\.\d{3})+|\d+)(?:,\d+)?"
+
+_TUTAR = rf"{_SAYI}\s*(?:bin|milyon|milyar)?"
 
 RE_TUTAR_ARALIK = _katlanmis_derle(
     rf"({_TUTAR})\s*TL\s*[-–]\s*({_TUTAR})\s*TL\s*aras", re.IGNORECASE
@@ -364,7 +421,7 @@ RE_TAHSIS_ORANI = _katlanmis_derle(
 # henuz gorulmedi ama bankadan bankaya degistigi icin desen hazir tutulur.
 RE_MASRAF_TUTARI = _katlanmis_derle(
     r"(?:dosya masraf[ıi]|tahsis [üu]creti|ekspertiz [üu]creti)\s*[:=]?\s*"
-    r"(\d{1,3}(?:\.\d{3})*(?:,\d+)?)\s*(?:TL|₺)",
+    rf"({_SAYI})\s*(?:TL|₺)",
     re.IGNORECASE,
 )
 
@@ -372,13 +429,26 @@ RE_MASRAF_TUTARI = _katlanmis_derle(
 # "10.000 Mil'e varan hediye" (TL disi birim!), "250 TL ParafPara",
 # "2.000 TL'ye varan Bankkart Lira" (banka-ozel sadakat birimleri),
 # "1.000 TL'ye kadar iade", "1.250 TL Worldpuan".
+# OLCULDU (23 Agustos 2026) - "indirim" anahtar kelimesi KALDIRILMAK
+# ISTENDI, OLCUM REDDETTI: ZK-014 ("3.000 TL'ye Varan Indirim") ve VK-010
+# ("200 TL Indirim") altin veride odul_miktari = "belirtilmemis" oldugu
+# icin yanlis pozitif sayiliyor. "indirim" listeden cikarildiginda:
+#     bos alan dogrulugu  %93,16 -> %93,96  (34 -> 30 yanlis pozitif)
+#     dolu alan dogrulugu %84,42 -> %83,12  (2 dogru sonuc KAYBEDILDI)
+#     makro F1            %78,39 -> %78,60  (+0,21 - gurultu seviyesinde)
+# Yani altin veri setinin KENDISI tutarsiz: bazi kayitlarda indirim odul
+# sayilmis, bazilarinda sayilmamis. Motoru tek yone cekmek toplam kaliteyi
+# artirmiyor, yalnizca hatayi bir sutundan digerine tasiyor. Karar:
+# DEGISIKLIK YAPILMADI; cozulmesi gereken yer gold'daki etiket kurali
+# (bkz. docs/extraction_accuracy_raporu.md - gold etiket incelemesi).
+#
 # NOT: "nakit ödül"/"ödül" bilerek BURAYA eklenmedi - bu kelimeler genelde
 # kisi-basi/birim tutari da tasir (ör. "500 TL nakit ödül... toplamda
 # maksimum 10.000 TL"), .search() ILK eslesmeyi aldigi icin erken/yanlis
 # (kisi basi) tutari yakalardi. Bu durumlar asagidaki RE_ODUL_TAVAN
 # ("en fazla"/"maksimum" tetikleyicili) desenine birakildi.
 RE_ODUL = _katlanmis_derle(
-    r"\d{1,3}(?:\.\d{3})*(?:,\d+)?\s*(?:TL|₺)"
+    rf"{_SAYI}\s*(?:TL|₺)"
     r"(?:['’](?:ye|ya|e|a))?\s*"
     r"(?:değerinde\s*|varan\s*|kadar\s*)?"
     r"(?:alışveriş çeki|alışveriş kartı|hediye çeki|alışveriş puanı|hediye|kazan\w*"
@@ -388,23 +458,23 @@ RE_ODUL = _katlanmis_derle(
 # Banka-ozel sadakat birimleri (Mil, Gram) TL disinda oldugu icin ayri
 # desenler gerekir. NOT: gercek metinlerde egik/tipografik apostrof (’,
 # U+2019) kullanilir, duz apostrof (') degil - ikisi de kapsanmali.
-RE_ODUL_MIL = _katlanmis_derle(r"\d{1,3}(?:\.\d{3})*(?:,\d+)?\s*Mil['’]?[ea]?\s*varan\s*hediye", re.IGNORECASE)
+RE_ODUL_MIL = _katlanmis_derle(rf"{_SAYI}\s*Mil['’]?[ea]?\s*varan\s*hediye", re.IGNORECASE)
 # Tavan/limit ifadeleri: "en fazla 5 gram", "maksimum 10.000 TL", "kişi
 # başı maksimum 2.000 TL, toplamda ... maksimum 10.000 TL nakit ödül" gibi
 # cok sayida aday oldugunda SONUNCUSU (genelde "toplamda" olan) tercih
 # edilir - finditer + son eslesme.
 RE_ODUL_TAVAN = _katlanmis_derle(
     r"(?:en fazla|maksimum)\s+(?:\S+\s+){0,4}?"
-    r"(\d{1,3}(?:\.\d{3})*(?:,\d+)?)\s*(TL|₺|gram\w*|gr\b)",
+    rf"({_SAYI})\s*(TL|₺|gram\w*|gr\b)",
     re.IGNORECASE,
 )
 # "2.500 TL ile sınırlıdır" gibi "sinirli/sinirlidir" ile biten tavan ifadesi.
 RE_ODUL_SINIRLI = _katlanmis_derle(
-    r"(\d{1,3}(?:\.\d{3})*(?:,\d+)?)\s*(TL|₺)['’]?\s*(?:ile\s+)?s[ıi]n[ıi]rl[ıi]",
+    rf"({_SAYI})\s*(TL|₺)['’]?\s*(?:ile\s+)?s[ıi]n[ıi]rl[ıi]",
     re.IGNORECASE,
 )
 RE_ODUL_GRAM = _katlanmis_derle(
-    r"\d{1,3}(?:,\d+)?\s*gram\w*\s*(?:['’]?[ea]?\s*kadar\s*)?(?:hediye|kazan\w*)", re.IGNORECASE
+    rf"{_SAYI}\s*gram\w*\s*(?:['’]?[ea]?\s*kadar\s*)?(?:hediye|kazan\w*)", re.IGNORECASE
 )
 
 # Kampanya turu anahtar kelimeleri - degerler api/schemas.py KampanyaTuru
@@ -652,9 +722,12 @@ def kaydi_cikar(ham_metin: str) -> dict:
             izler["kar_payi_orani_percent"] = ("vade farksız", 0.8)
         else:
             for gm in RE_KAR_PAYI_GENEL.finditer(katlanmis):
-                if not _ucret_baglaminda_mi(ham_metin, gm.start(), gm.end()):
-                    if _kar_payi_ata(alanlar, izler, _ham_span(ham_metin, gm), 0.6):
-                        break
+                if _ucret_baglaminda_mi(ham_metin, gm.start(), gm.end()):
+                    continue
+                if _oran_tablosu_baglaminda_mi(ham_metin, gm.start(), gm.end()):
+                    continue
+                if _kar_payi_ata(alanlar, izler, _ham_span(ham_metin, gm), 0.6):
+                    break
 
     # --- Finansman tutari ----------------------------------------------
     # ARALIK DESENINE BAGLAM GUARD'I UYGULANMAZ (olculdu): "X TL - Y TL

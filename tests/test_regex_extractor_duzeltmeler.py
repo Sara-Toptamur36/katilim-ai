@@ -198,3 +198,92 @@ def test_extraction_accuracy_asgari_esigin_altina_dusmez():
         f"Extraction Accuracy %{sonuc['accuracy']}'e dustu (asgari %80 bekleniyordu). "
         f"Hatalar: {sonuc['hatalar']}"
     )
+
+
+# ---------------------------------------------------------------------------
+# 23 Agustos 2026 - sayi ayristirma ve oran baglami duzeltmeleri
+# ---------------------------------------------------------------------------
+# Altin Veri Seti 64 -> 103 kayda buyuyunce olcum yenilendi ve iki kok neden
+# ortaya cikti. Ikisi de asagida kilitlenir; bunlar bir daha sessizce
+# gerilemesin diye test edilirler (her ikisi de "sessiz" hatalardi -
+# istisna atmiyor, sadece YANLIS sayi uretiyorlardi).
+
+
+def test_ayracsiz_tutar_tam_uzunlugunda_okunur():
+    r"""'2000 TL' -> 2000.0 (200.0 DEGIL).
+
+    KOK NEDEN: tutar deseninin ilk alternatifi `\d{1,3}(?:\.\d{3})*`
+    idi - yildiz sayesinde ayrac olmayan sayilarda da eslesiyor ve
+    alternation soldan saga calistigi icin "2000"de "200"u yakalayip
+    donuyordu. Ayrac kullanmadan yazilmis HER tutar 10-100 kat kucuk
+    okunuyordu. Finansal bir uygulamada bu, tutari hic bulamamaktan
+    daha tehlikelidir: ekranda makul gorunen ama yanlis bir sayi cikar.
+    """
+    from extraction.normalizer import tutara_cevir
+
+    assert tutara_cevir("2000 TL") == 2000.0
+    assert tutara_cevir("10000 TL") == 10000.0
+    assert tutara_cevir("400000 TL") == 400000.0
+    # Ayracli ve kelimeli bicimler BOZULMAMALI (gerileme kontrolu)
+    assert tutara_cevir("50.000 TL") == 50000.0
+    assert tutara_cevir("1.000.000 TL") == 1000000.0
+    assert tutara_cevir("250 Bin TL") == 250000.0
+    assert tutara_cevir("1500,50 TL") == 1500.5
+
+
+def test_ayracsiz_odul_tutari_sifira_dusmez():
+    """ZK-009: 'Veteriner ve Petshop Harcamalariniza 2000 TL Bankkart Lira'
+
+    Motor eskiden '000 TL'yi yakalayip odul_miktari = 0.0 uretiyordu.
+    Sifir yalnizca yanlis degil, AKTIF OLARAK ZARARLI bir degerdi:
+    comparison/compare_engine.py 'en dusuk' kriterlerinde ASC siraladigi
+    icin uydurma sifir her karsilastirmayi kazanirdi.
+    """
+    sonuc = kaydi_cikar("Veteriner ve Petshop Harcamalarınıza 2000 TL Bankkart Lira!")
+    assert sonuc["odul_miktari"] == 2000.0
+    assert sonuc["odul_birimi"] == "Bankkart Lira"
+
+
+def test_sadakat_birimi_yuzdesi_kar_payi_sanilmaz():
+    """ZK-011 / ZK-016: '... tum harcamalara %10, toplamda 5.000 TL Bankkart Lira'
+
+    Buradaki %10 bir KAZANIM oranidir. Dislama listesinde 'puan' ve 'odul'
+    vardi ama bankalarin kendi birim adlari (Bankkart Lira, Worldpuan,
+    ParafPara) yoktu.
+    """
+    metin = "Bankkart POS'larında tüm harcamalara %10, toplamda 5.000 TL Bankkart Lira!"
+    assert kaydi_cikar(metin)["kar_payi_orani_percent"] is None
+
+
+def test_nakit_iade_yuzdesi_kar_payi_sanilmaz():
+    """HF-010: 'harcamalarin %10'u, gunluk en fazla 100 TL' - iade orani."""
+    metin = "Biz Kart ile yemek sektöründe yapılan harcamaların %10’u, günlük en fazla 100 TL."
+    assert kaydi_cikar(metin)["kar_payi_orani_percent"] is None
+
+
+def test_maliyet_tablosu_hucresi_kar_payi_sanilmaz():
+    """TF-001 / TF-008: 'Toplam Maliyet' tablosunun ortasindaki bir hucre.
+
+    Baglam penceresi 45 karakter oldugu icin satir basindaki 'Maliyet'
+    basligi uzak hucrelere yetismiyordu. TF-001 raporlarda 'bilinen yanlis
+    pozitif' olarak belgeliydi - kok nedeni buymus.
+    """
+    metin = (
+        "Vade | Aylık Kâr Oranı | Aylık Toplam Maliyet | Yıllık Toplam Maliyet | "
+        "3 | 4,20% | 0,50% | 5,77% | 96,05% | 12 | 4,15% | 0,50% | 5,50% | 90,09%"
+    )
+    sonuc = kaydi_cikar(metin)
+    # Tablodaki hicbir hucre dusuk guvenli fallback ile kar payi olarak
+    # ATANMAMALI - tablolari extraction/tablo_extractor.py okur.
+    iz = sonuc.get("_izler", {}).get("kar_payi_orani_percent")
+    assert iz is None or iz[1] >= 0.9, f"tablo hucresi fallback ile atandi: {iz}"
+
+
+def test_gercek_kar_payi_orani_hala_bulunur():
+    """Yeni baglam kurallari GERCEK oranlari elemiyor (gerileme kontrolu)."""
+    assert kaydi_cikar("Aylık kâr payı oranı %1,89 ile 120 ay vade.")[
+        "kar_payi_orani_percent"
+    ] == 1.89
+    assert kaydi_cikar("Konut finansmanında %2,05 kâr oranı fırsatı.")[
+        "kar_payi_orani_percent"
+    ] == 2.05

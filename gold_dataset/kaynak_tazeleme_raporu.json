@@ -1,16 +1,16 @@
 {
-  "tarih": "2026-08-23T03:24:19.470086",
+  "tarih": "2026-08-23T19:49:42.307428",
   "sonuclar": [
     {
-      "kayit_id": "KT-013",
-      "slug": "kuveyt-turk-mobilden-musterimiz-olun-ozel-kur-firsatini-kacirmayin",
-      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/musteri-ol-kampanyalari/kuveyt-turk-mobilden-musterimiz-olun-ozel-kur-firsatini-kacirmayin",
-      "eski_uzunluk": 2109,
+      "kayit_id": "ZK-004",
+      "slug": "okul-odemelerinizde-8-taksit",
+      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/okul-odemelerinizde-8-taksit",
+      "eski_uzunluk": 1238,
       "eski_sayfa_turu": "HTML",
-      "yeni_uzunluk": 4708,
-      "dosya": "20260823_kuveytturk_kampanyalar_kendim-icin_musteri-ol-kampanyalari_kuveyt-turk-mobilden-musterimiz-olun-ozel-kur-firsatini-kacirmayin.json",
+      "yeni_uzunluk": 1839,
+      "dosya": "20260823_ziraatkatilim_kart-kampanyalari_okul-odemelerinizde-8-taksit.json",
       "degisti": true,
-      "buyume_kati": 2.23,
+      "buyume_kati": 1.49,
       "durum": "GENISLEDI"
     }
   ]

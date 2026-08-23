@@ -269,7 +269,8 @@
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
       "taksit_sayisi": "Kampanya kapsamında Kutsal toprakları ziyaret etmek isteyen müşterilerimiz toplam umre tutarının en fazla yüzde altmışı için vade farksız 3 taksit imkanından yararlanabilir.",
-      "kampanya_baslangic": "13.08.2024 - 1.01.2027"
+      "kampanya_baslangic": "13.08.2024 - 1.01.2027",
+      "kampanya_bitis": "13.08.2024 - 1.01.2027"
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
@@ -513,13 +514,13 @@
     "odul_birimi": "Worldpuan",
     "kampanya_avantaji": "Her davet edilen ve müşteri olan yakın için 500 TL, toplamda 5.000 TL'ye varan Worldpuan (davet edilen de 500 TL kazanıyor)",
     "masraf_durumu": null,
-    "kampanya_baslangic": "2024-04-14",
+    "kampanya_baslangic": null,
     "kampanya_bitis": "2026-12-31",
     "hedef_kitle": "Albaraka World kartlı müşteriler, davet ettikleri 18 yaş üzeri kişiler",
     "ekran_goruntusu": "AL-004.png",
     "giren_kisi": "Sara Toptamur",
-    "giris_tarihi": "2026-07-28",
-    "notlar": "Ödül davet edilenin görüntülü görüşmeyle müşteri olmasına bağlı, başka kanaldan olursa ödül yok",
+    "giris_tarihi": "2026-08-23",
+    "notlar": "Ödül davet edilenin görüntülü görüşmeyle müşteri olmasına bağlı, başka kanaldan olursa ödül yok\n2026-08-23: baslangic tarihi kaynak sayfada gecmiyor; bitis (31 Aralik 2026) sayfada dogrulandi",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
@@ -866,7 +867,10 @@
     "notlar": "Odul parasal degil (1 aylik tabii Premium uyelik) - odul_miktari/odul_birimi semaya uymadigi icin bos birakildi, detay kampanya_avantaji alaninda. Musteri basina 1 kez",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "kampanya_bitis": "08 Mayıs 2026 - 30 Kasım 2026",
+      "kampanya_baslangic": "08 Mayıs 2026 - 30 Kasım 2026"
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1255,17 +1259,18 @@
     "odul_birimi": null,
     "kampanya_avantaji": "Eğitim sektöründe 2-4 taksitli okul ödemesi üzerine +8 ek taksit",
     "masraf_durumu": null,
-    "kampanya_baslangic": "2025-08-18",
+    "kampanya_baslangic": null,
     "kampanya_bitis": "2026-08-09",
     "hedef_kitle": "Bireysel Bankkart kredi kartı sahipleri",
     "ekran_goruntusu": "ZK-004.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-08-23",
-    "notlar": "vade_ay alani burada net degil: kampanya 'mevcut 2-4 taksite +8 ekliyor' diyor (toplamda 10-12 taksit gibi), tekil bir sayi degil - bos birakildi DUZELTME (23 Agustos 2026): taksit_sayisi=8 eklendi. Kampanya 2-4 taksitli islemlere +8 taksit EKLIYOR; 8, kampanyanin kendi kattigi taksit sayisidir (baslik da oyle diyor).\n2026-08-23: kampanya rotasyonu - tarih kaynak sayfadan yeniden okundu (Kampanya 09-08-2026 Tarihinde Sona Ermiştir.)",
+    "notlar": "vade_ay alani burada net degil: kampanya 'mevcut 2-4 taksite +8 ekliyor' diyor (toplamda 10-12 taksit gibi), tekil bir sayi degil - bos birakildi DUZELTME (23 Agustos 2026): taksit_sayisi=8 eklendi. Kampanya 2-4 taksitli islemlere +8 taksit EKLIYOR; 8, kampanyanin kendi kattigi taksit sayisidir (baslik da oyle diyor).\n2026-08-23: kampanya rotasyonu - tarih kaynak sayfadan yeniden okundu (Kampanya 09-08-2026 Tarihinde Sona Ermiştir.)\n2026-08-23: baslangic tarihi kaynak sayfada gecmiyor; kampanya 09-08-2026'da sona ermis",
     "taksit_sayisi": 8,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
-      "taksit_sayisi": "+8 taksit!"
+      "taksit_sayisi": "+8 taksit!",
+      "kampanya_bitis": "Kampanya 09-08-2026 Tarihinde Sona Ermiştir."
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
@@ -1728,13 +1733,13 @@
     "odul_birimi": "Gram",
     "kampanya_avantaji": "Davet kodu ile müşteri olup Paraf Kart başvurusu yapan her davetli için 0,1 gram altın",
     "masraf_durumu": null,
-    "kampanya_baslangic": "2026-07-01",
-    "kampanya_bitis": "2026-07-31",
+    "kampanya_baslangic": null,
+    "kampanya_bitis": null,
     "hedef_kitle": "Mevcut müşteriler (davet eden), davet edilen yeni müşteriler",
     "ekran_goruntusu": "DK-002.png",
     "giren_kisi": "Sara Toptamur",
-    "giris_tarihi": "2026-07-28",
-    "notlar": "Hem davet eden hem davet edilenin Paraf Kart basvurusu sart; 0,1 gram x 10 davet = 1 gram ust sinir",
+    "giris_tarihi": "2026-08-23",
+    "notlar": "Hem davet eden hem davet edilenin Paraf Kart basvurusu sart; 0,1 gram x 10 davet = 1 gram ust sinir\n2026-08-23: sayfada kampanya tarihi hic verilmiyor",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {},
@@ -1742,6 +1747,7 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
+      "kampanya_bitis": true,
       "finansman_tutari": true,
       "taksit_sayisi": true,
       "erteleme_suresi_ay": true
@@ -3938,7 +3944,9 @@
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
       "taksit_sayisi": "Kampanya kapsamında vergi ödemesi kategorisinde tek seferde gerçekleştirilen 1.000 TL ile 30.000 TL arasındaki işlemler vade farksız 3 taksite bölünür.",
-      "finansman_tutari": "Kampanya kapsamında vergi ödemesi kategorisinde tek seferde gerçekleştirilen 1.000 TL ile 30.000 TL arasındaki işlemler vade farksız 3 taksite bölünür."
+      "finansman_tutari": "Kampanya kapsamında vergi ödemesi kategorisinde tek seferde gerçekleştirilen 1.000 TL ile 30.000 TL arasındaki işlemler vade farksız 3 taksite bölünür.",
+      "kampanya_bitis": "Kampanya, 1 Temmuz 2026 – 31 Ağustos2026 tarihleri arasında Hadi Black Kredi Kartı ile gerçekleştirilecek vergi ödemelerinde geçerlidir.",
+      "kampanya_baslangic": "Kampanya, 1 Temmuz 2026 – 31 Ağustos2026 tarihleri arasında Hadi Black Kredi Kartı ile gerçekleştirilecek vergi ödemelerinde geçerlidir."
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,

@@ -48,11 +48,34 @@ def test_gercek_kar_payi_orani_HALA_bulunur():
     assert r["kar_payi_orani_percent"] == 1.89
 
 
-def test_vade_farksiz_sifir_orani_KORUNUR():
-    """Bu kural 4 gercek kayitta dogru calisiyor (AL-002/005/006,
-    TOM-002) - dislama listesi onu bozmamali."""
+def test_vade_farksiz_ARTIK_sifir_orani_URETMEZ():
+    """KURAL DEGISTI (23 Agustos 2026) - test tersine cevrildi.
+
+    Eskiden bu test "vade farksiz" ifadesinin kar_payi_orani = 0
+    uretmesini KORUYORDU. Kural kaldirildi: "vade farksiz 3 taksit" bir
+    KART TAKSIT ifadesidir, finansman kar payi orani degildir - ve bu
+    ornek cumle ("MTV odemelerinize KREDI KARTIYLA vade farksiz 3
+    taksit") tam olarak o vakayi gosteriyor.
+
+    Gercekten sifir kar payli kampanyalar bunu acikca yaziyor; o kurallar
+    korunuyor (bkz. asagidaki test). Ayrintili gerekce:
+    extraction/regex_extractor.py desen tanimlari ve
+    tests/test_olcum_kapsami.py.
+
+    Test SILINMEDI, TERSINE CEVRILDI - kuralin geri gelmesi de bir
+    gerileme olur ve yakalanmali. Olculen etki: uydurma sifir,
+    comparison/compare_engine.py "en dusuk kar payi" kriterini ASC
+    siraladigi icin gercek konut finansmanini her karsilastirmada
+    yeniyordu.
+    """
     r = kaydi_cikar("MTV odemelerinize kredi kartiyla vade farksiz 3 taksit!")
-    assert r["kar_payi_orani_percent"] == 0.0
+    assert r["kar_payi_orani_percent"] is None
+
+
+def test_acik_sifir_kar_payi_ifadeleri_KORUNUR():
+    """"Vade farksiz" kaldirilirken GERCEK sifirlar kaybedilmedi."""
+    assert kaydi_cikar("Kâr paysız finansman")["kar_payi_orani_percent"] == 0.0
+    assert kaydi_cikar("0 kâr paylı 12 ay vade")["kar_payi_orani_percent"] == 0.0
 
 
 def test_ikincil_urundeki_kar_paysiz_ifadesi_ANA_orani_SIFIRLAMAZ():

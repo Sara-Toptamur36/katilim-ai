@@ -177,25 +177,48 @@ def test_zenginlestirme_mevcut_dolu_alani_ezmez():
     from api.models import Kampanya
     from extraction.regex_ile_zenginlestir import zenginlestir
 
+    SENTINEL = 999  # gercek veride olmayacak deger (azami makul vade 360 ay)
+
     oturum = OturumYerel()
     try:
         satir = oturum.query(Kampanya).first()
         if satir is None:
             pytest.skip("Test icin veritabaninda kayit yok - once postgrese_yukle.yukle() calistirilmali")
-        satir.vade_ay = 999  # gercekte olmayacak, koruma testi icin belirgin sentinel
-        oturum.commit()
         korunan_id = satir.id
+        # SENTINEL'I GERI ALMAK ICIN ONCE GERCEK DEGERI SAKLA.
+        #
+        # DENETIM BULGUSU (25.08.2026): bu test sentinel'i yaziyor ama HIC
+        # GERI ALMIYORDU - `finally` yalnizca oturumu kapatiyordu. Sonuc:
+        # her test kosumu veritabaninda kalici bir kayit bozuyordu.
+        # Olculdu, iki kayit (id 153, 276) vade_ay=999 ile kirlenmisti ve
+        # `en_uzun_vade` karsilastirmasinda "999 ay" EN USTTE cikiyordu -
+        # yani juriye gosterilecek Md. 5.7 ekraninin lider satiri sahteydi.
+        # Test paylasilan durumu kirletirse, olctugu seyden baskasini bozar.
+        gercek_vade = satir.vade_ay
+        satir.vade_ay = SENTINEL
+        oturum.commit()
     finally:
         oturum.close()
 
-    zenginlestir()
-
-    oturum = OturumYerel()
     try:
-        guncel = oturum.get(Kampanya, korunan_id)
-        assert guncel.vade_ay == 999
+        zenginlestir()
+
+        oturum = OturumYerel()
+        try:
+            guncel = oturum.get(Kampanya, korunan_id)
+            assert guncel.vade_ay == SENTINEL
+        finally:
+            oturum.close()
     finally:
-        oturum.close()
+        # Test basarisiz olsa BILE gercek deger geri konur.
+        oturum = OturumYerel()
+        try:
+            geri = oturum.get(Kampanya, korunan_id)
+            if geri is not None:
+                geri.vade_ay = gercek_vade
+                oturum.commit()
+        finally:
+            oturum.close()
 
 
 @pytest.mark.skipif(not DB_ERISILEBILIR, reason=DB_YOK_MESAJI)

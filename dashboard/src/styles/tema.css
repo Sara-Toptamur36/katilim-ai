@@ -1480,11 +1480,23 @@ img.giris-logo-amblem {
    icin logo neredeyse kayboluyordu. Cozum logoyu degistirmek degil -
    arkasina acik bir daire koymak: marka renkleri bozulmadan her iki
    temada da okunur kaliyor. */
-html[data-tema="koyu"] img.marka-logo,
 html[data-tema="koyu"] img.profil-avatar,
 html[data-tema="koyu"] img.sohbet-bos-amblem,
 html[data-tema="koyu"] img.asistan-avatar,
 html[data-tema="koyu"] img.giris-logo-amblem {
   background: rgba(255, 255, 255, 0.93);
   padding: 3px;
+}
+
+/* Sol ust logo: kenar cubugu HER IKI temada da koyu yesil (#0d3f36) ve
+   logonun kendisi de koyu yesil - ust uste gelince neredeyse gorunmuyordu.
+   Koyu tema kurali burada iste yaramaz cunku sorun acik temada da var.
+   Bu yuzden marka logosu her zaman beyaz daire uzerinde duruyor. */
+img.marka-logo {
+  background: #ffffff;
+  border-radius: 50%;
+  padding: 4px;
+  width: 44px;
+  height: 44px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
 }

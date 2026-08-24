@@ -7,6 +7,7 @@ Gun 4) tarafindan paylasilir - eslestirme kurallari TEK yerde tutulur.
 from __future__ import annotations
 
 import json
+import unicodedata
 from pathlib import Path
 
 RAW_DATA = Path(__file__).resolve().parent.parent / "raw_data"
@@ -43,7 +44,7 @@ def karsilastirma_bicimi(metin: str) -> str:
 
     KESME ISARETI IKI TARAFTA DA AYNI OLMALI. Olculdu: altin kayitta
     "BAUHAUS'ta" (duz kesme) yaziyor, banka sayfasinda
-    "BAUHAUS’ta" (kivrik kesme, U+2019) geciyor. Eski surum
+    "BAUHAUS'ta" (kivrik kesme, U+2019) geciyor. Eski surum
     kesmeyi yalnizca kelimenin UCLARINDAN temizliyordu; Turkcede ek
     kesmeyle baglandigi icin isaret kelimenin ORTASINDA kaliyor ve
     karsilastirma sessizce basarisiz oluyordu - kampanya sayfada
@@ -51,10 +52,21 @@ def karsilastirma_bicimi(metin: str) -> str:
 
     Buyuk I notu: Python'un str.lower()'i Turkce noktali
     buyuk I harfini duz i degil, gorunmez birlesik nokta karakteriyle
-    kucultur - bu yuzden once elle degistirilir.
+    kucultur (İ.lower() -> i + U+0307 combining dot). NFD normalizasyonu
+    ile combining karakterleri ayrilir ve temizlenir.
+    
+    DENETIM BULGUSU (24 Agustos 2026): Gold dataset'te "Istikbalde"
+    (Latin I), ham metinde "İstikbal" (Turkce İ). Lower sonrasi "i" vs
+    "i̇" uyusmazligi NFD + combining char filtresiyle cozulur.
     """
-    return (metin.replace("’", "'")
-            .replace("‘", "'")
+    # NFD normalizasyonu: combining karakterleri ayir
+    metin = unicodedata.normalize("NFD", metin)
+    # Combining karakterleri (Mn category) kaldir
+    metin = "".join(c for c in metin if unicodedata.category(c) != "Mn")
+    
+    return (metin.replace("'", "'")
+            .replace("'", "'")
+            .replace(".", "")  # Kisaltmalardaki noktalar (E.C.A. -> eca)
             .replace("İ", "i").lower())
 
 

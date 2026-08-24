@@ -1164,4 +1164,222 @@ html[data-tema="koyu"] .sohbet-audit-ozet {
   color: var(--yazi-normal, #c3d1cc);
 }
 
+/* ==========================================================
+   Karşılaştırma Sayfası ve Terminoloji Sözlüğü Sınıfları
+   ========================================================== */
+.karsilastirma-karti {
+  background: var(--kart);
+  border: 1px solid var(--kenarlik);
+  border-radius: 12px;
+  box-shadow: var(--golge-kart);
+  margin-bottom: 24px;
+}
+
+html[data-tema="koyu"] .karsilastirma-karti {
+  background: var(--kart);
+  border-color: var(--kenarlik);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+html[data-tema="koyu"] .karsilastirma-karti .ant-card-head {
+  border-bottom-color: var(--kenarlik);
+  color: var(--yazi-koyu);
+}
+
+html[data-tema="koyu"] .karsilastirma-karti .ant-card-head-title {
+  color: var(--yazi-koyu);
+}
+
+mark.arama-vurgu {
+  background-color: var(--altin-100);
+  color: var(--yazi-koyu);
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+html[data-tema="koyu"] mark.arama-vurgu {
+  background-color: var(--marka-800);
+  color: var(--yazi-koyu);
+}
+
+/* ==========================================================
+   Hesap Makinesi Sınıfları
+   ========================================================== */
+.hesap-karti {
+  background: var(--kart);
+  border: 1px solid var(--kenarlik);
+  border-radius: 12px;
+  box-shadow: var(--golge-kart);
+}
+
+html[data-tema="koyu"] .hesap-karti {
+  background: var(--kart);
+  border-color: var(--kenarlik);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+html[data-tema="koyu"] .hesap-karti .ant-card-head {
+  border-bottom-color: var(--kenarlik);
+  color: var(--yazi-koyu);
+}
+
+html[data-tema="koyu"] .hesap-karti .ant-card-head-title {
+  color: var(--yazi-koyu);
+}
+
+.hesap-vurgu-kart {
+  background: var(--marka-50);
+  border: 1px solid var(--marka-200);
+  border-radius: 10px;
+  padding: 16px 20px;
+}
+
+html[data-tema="koyu"] .hesap-vurgu-kart {
+  background: rgba(12, 118, 95, 0.15);
+  border-color: var(--marka-700);
+}
+
+.hesap-istatistik-kart {
+  background: var(--zemin-yumusak);
+  border: 1px solid var(--kenarlik);
+  border-radius: 10px;
+  padding: 14px 16px;
+  height: 100%;
+}
+
+html[data-tema="koyu"] .hesap-istatistik-kart {
+  background: var(--kart-ustu);
+  border-color: var(--kenarlik);
+}
+
+/* ==========================================================
+   Giriş Ekranı Sınıfları
+   ========================================================== */
+.giris-kapsayici {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 160px);
+  padding: 24px 16px;
+}
+
+.giris-karti {
+  width: 100%;
+  max-width: 440px;
+  background: var(--kart);
+  border: 1px solid var(--kenarlik);
+  border-radius: 16px;
+  box-shadow: var(--golge-kart);
+  padding: 32px 28px;
+}
+
+html[data-tema="koyu"] .giris-karti {
+  background: var(--kart);
+  border-color: var(--kenarlik);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+}
+
+.giris-baslik-blogu {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.giris-logo-amblem {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--marka-500);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 auto 12px;
+  box-shadow: 0 4px 12px rgba(22, 146, 118, 0.3);
+}
+
+.giris-sifre-durum {
+  font-size: 12px;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.2s ease;
+}
+
+.giris-sifre-durum.gecerli {
+  color: var(--marka-600, #0c765f);
+  font-weight: 500;
+}
+
+.giris-sifre-durum.gecersiz {
+  color: var(--yazi-soluk, #7b8c86);
+}
+
+html[data-tema="koyu"] .giris-sifre-durum.gecerli {
+  color: var(--marka-400, #3fb296);
+}
+
+/* ==========================================================
+   Jüri Audit Paneli Sınıfları
+   ========================================================== */
+.audit-karti {
+  background: var(--kart);
+  border: 1px solid var(--kenarlik);
+  border-radius: 12px;
+  box-shadow: var(--golge-kart);
+  margin-bottom: 20px;
+}
+
+html[data-tema="koyu"] .audit-karti {
+  background: var(--kart);
+  border-color: var(--kenarlik);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+html[data-tema="koyu"] .audit-karti .ant-card-head {
+  border-bottom-color: var(--kenarlik);
+  color: var(--yazi-koyu);
+}
+
+html[data-tema="koyu"] .audit-karti .ant-card-head-title {
+  color: var(--yazi-koyu);
+}
+
+.audit-ust-serit {
+  background: var(--zemin-yumusak);
+  border: 1px solid var(--kenarlik);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+html[data-tema="koyu"] .audit-ust-serit {
+  background: var(--kart-ustu);
+  border-color: var(--kenarlik);
+}
+
+.audit-istatistik-kutu {
+  background: var(--zemin-yumusak);
+  border: 1px solid var(--kenarlik);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+html[data-tema="koyu"] .audit-istatistik-kutu {
+  background: var(--kart-ustu);
+  border-color: var(--kenarlik);
+}
+
+
+
+
+
 

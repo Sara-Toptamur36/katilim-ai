@@ -96,7 +96,7 @@ export default function KarsilastirmaPaneli({
       {hata && (
         <Alert
           type="error"
-          title="Karşılaştırma başarısız"
+          message="Karşılaştırma başarısız"
           description={hata}
           showIcon
           style={{ marginBottom: 12 }}
@@ -108,7 +108,7 @@ export default function KarsilastirmaPaneli({
           {sonuc.audit?.sebep && (
             <Alert
               type="info"
-              title={sonuc.audit.sebep}
+              message={sonuc.audit.sebep}
               style={{ marginBottom: 12 }}
               showIcon
             />

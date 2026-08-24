@@ -92,7 +92,7 @@ const SAYFA_ADLARI = {
 /* -------------------------------------------------------
    Menü İçeriği — hem Sider hem Drawer'da kullanılır
    ------------------------------------------------------- */
-function MenuIcerigi({ tiklaCalistir }) {
+function MenuIcerigi({ tiklaCalistir = () => {} }) {
   const { pathname } = useLocation();
 
   // Rol her yol degisiminde yeniden OKUNUR: Giris ekraninda giris/cikis

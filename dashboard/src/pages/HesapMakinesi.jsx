@@ -159,13 +159,14 @@ export default function HesapMakinesi() {
     return null;
   };
 
-  const hesapla_ = async () => {
+  const hesapla_ = async (overridePlanIstiyor) => {
     const sorun = girdiHatasi();
     if (sorun) {
       setHata(sorun);
       setSonuc(null);
       return;
     }
+    const hedefPlanIstiyor = overridePlanIstiyor !== undefined ? overridePlanIstiyor : planIstiyor;
     setHesaplaniyor(true);
     setHata(null);
     try {
@@ -173,7 +174,7 @@ export default function HesapMakinesi() {
         anapara: sayi(anapara),
         aylik_oran_percent: sayi(oran),
         vade_ay: sayi(vade),
-        odeme_plani_istiyor: planIstiyor,
+        odeme_plani_istiyor: hedefPlanIstiyor,
       });
       setSonuc(yanit);
       // Juri Audit Paneli bu hesabi da gorsun - sohbet yaniti gibi
@@ -277,15 +278,18 @@ export default function HesapMakinesi() {
                 <Button
                   type="primary"
                   icon={<CalculatorOutlined />}
-                  onClick={hesapla_}
+                  onClick={() => hesapla_()}
                   loading={hesaplaniyor}
                 >
                   Hesapla
                 </Button>
                 <Button
                   onClick={() => {
-                    setPlanIstiyor(!planIstiyor);
-                    setSonuc(null);
+                    const yeniPlanState = !planIstiyor;
+                    setPlanIstiyor(yeniPlanState);
+                    if (sonuc) {
+                      hesapla_(yeniPlanState);
+                    }
                   }}
                 >
                   {planIstiyor ? "Ödeme planı: açık" : "Ödeme planı: kapalı"}
@@ -300,7 +304,7 @@ export default function HesapMakinesi() {
           {hata && (
             <Alert
               type="error"
-              title="Hesaplama yapılamadı"
+              message="Hesaplama yapılamadı"
               description={hata}
               showIcon
               style={{ marginBottom: 16 }}

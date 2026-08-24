@@ -316,7 +316,7 @@ export default function Giris() {
         {mesaj && (
           <Alert
             type={mesaj.tip}
-            title={mesaj.baslik}
+            message={mesaj.baslik}
             description={mesaj.metin}
             showIcon
             style={{ marginTop: 16 }}

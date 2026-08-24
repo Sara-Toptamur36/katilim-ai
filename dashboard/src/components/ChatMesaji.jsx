@@ -127,11 +127,11 @@ export default function ChatMesaji({ mesaj }) {
       )}
 
       {mesaj.kaynaklar && mesaj.kaynaklar.length > 0 && (
-        <Card size="small" title="Kaynaklar" style={{ marginTop: 8, maxWidth: 640 }} headStyle={{ backgroundColor: "#f5f5f5" }}>
+        <Card size="small" title="Kaynaklar" style={{ marginTop: 8, maxWidth: 640 }} headStyle={{ backgroundColor: "var(--kart-ustu)" }}>
           {mesaj.kaynaklar.map((k, i) => (
             <EvidenceCard key={i} kaynak={k} />
           ))}
-          <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px dashed #d9d9d9" }}>
+          <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px dashed var(--kenarlik)" }}>
             <Typography.Text type="secondary" style={{ fontSize: 12 }}>
               ℹ️ Alıntılar kaynak sayfadan <strong>birebir</strong> alınmıştır; sistem bu metnin üzerine cümle üretmez.
             </Typography.Text>

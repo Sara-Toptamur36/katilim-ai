@@ -31,7 +31,12 @@
   --zemin: #f1ece0;
   --zemin-yumusak: #f7f3e9;
   --kart: #fbf8f2;
+  --kart-ustu: #f2ede2;
   --kenarlik: #e4ddcb;
+  --uyari-zemin: #f8edcf;
+  --uyari-yazi: #8c6219;
+  --hata-zemin: #fbe4e4;
+  --hata-yazi: #c94f4f;
 
   /* Kart gölgesi */
   --golge-kart: 0 1px 2px rgba(60,50,30,0.05),
@@ -55,9 +60,14 @@
    sol menü (#061a16) < zemin (#0a0e0c) < kart (#161b19) < kart-üstü (#1f2523) */
 html[data-tema="koyu"] {
   --zemin: #0a0e0c;
+  --zemin-yumusak: #121715;
   --kart: #161b19;
   --kart-ustu: #1f2523;
   --kenarlik: #2a312e;
+  --uyari-zemin: #3a2f16;
+  --uyari-yazi: #e8c877;
+  --hata-zemin: #3d1f1f;
+  --hata-yazi: #f08a8a;
   --yazi-koyu: #eef6f3;
   --yazi-normal: #c3d1cc;
   --yazi-soluk: #93a59e;

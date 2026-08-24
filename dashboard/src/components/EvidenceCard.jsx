@@ -88,7 +88,7 @@ export default function EvidenceCard({ kaynak, boyut = "normal" }) {
     <Card
       size="small"
       style={{
-        border: "1px solid #f0f0f0",
+        border: "1px solid var(--kenarlik)",
         borderLeft: `3px solid ${tip ? `var(--${tip.renk}, #1677ff)` : "#1677ff"}`,
         marginBottom: kucuk ? 8 : 12,
         position: "relative",
@@ -219,7 +219,7 @@ export default function EvidenceCard({ kaynak, boyut = "normal" }) {
             margin: 0,
             padding: "8px 12px",
             borderLeft: "3px solid #1677ff",
-            background: "#fafafa",
+            background: "var(--kart-ustu)",
             borderRadius: "0 6px 6px 0",
             fontSize: 12,
             lineHeight: 1.6,

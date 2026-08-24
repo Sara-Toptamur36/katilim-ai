@@ -300,6 +300,7 @@ export default function Chatbot() {
         cagrilanArac: yanit.audit?.cagrilan_arac,
         // Audit gorunumu acildiginda gosterilecek ham blok.
         auditHam: yanit.audit ?? null,
+        soruMetni: soru,  // DecisionTrace modalı için soru bağlamı
       };
       setSohbetler((onceki) =>
         onceki.map((s) => {
@@ -345,20 +346,55 @@ export default function Chatbot() {
     }
   }, [girdi, aktifId, auditEkle]);
 
-  // HAZIR AMA HENUZ KULLANILMIYOR: Sara /chat/stream (SSE) endpoint'ini
-  // eklediginde onSearch={gonderStreaming} olarak degistirilecek. Rehber
-  // Sprint 3 Gun 2 fallback plani geregi, iki fonksiyon ayri tutuluyor -
-  // Sara'nin SSE'si hazir olmadan arayuz calisir durumda kalir.
-  const gonderStreaming = async () => {
-    if (!girdi.trim()) return;
+  // === SSE Streaming gönderme (/chat/stream) ===
+  // Backend: main.py::chat_stream — kelime kelime SSE + bittiğinde audit/kaynaklar.
+  // SSE formatı: "data: {...}\n\n" satırları
+  //   { token: "kelime " }         — her kelimede
+  //   { done: true, audit: {}, kaynaklar: [], fallback: bool }  — sonda
+  const gonderStreaming = useCallback(async (metin) => {
+    const soru = (metin || girdi).trim();
+    if (!soru) return;
 
-    const soru = girdi;
-    mesajGuncelle((onceki) => [...onceki, { rol: "kullanici", metin: soru }]);
+    let hedefId = aktifId;
+    if (!hedefId) {
+      const yeni = { id: kimlikUret(), baslik: soru.slice(0, 40), mesajlar: [], zaman: Date.now() };
+      setSohbetler((onceki) => [yeni, ...onceki].slice(0, MAKS_SOHBET));
+      hedefId = yeni.id;
+      setAktifId(yeni.id);
+    }
+
+    const kullaniciMesaji = { rol: "kullanici", metin: soru };
+    setSohbetler((onceki) =>
+      onceki.map((s) => {
+        if (s.id !== hedefId) return s;
+        const yeniMesajlar = [...s.mesajlar, kullaniciMesaji];
+        let baslik = s.baslik;
+        if (baslik === "Yeni sohbet") baslik = soru.slice(0, 40);
+        return { ...s, mesajlar: yeniMesajlar, baslik, zaman: Date.now() };
+      })
+    );
+
     setGirdi("");
-    mesajGuncelle((onceki) => [...onceki, { rol: "bot", metin: "", streaming: true }]);
+    setBekleniyor(true);
+
+    // Bot placeholer — streaming:true ile
+    const streamId = kimlikUret();
+    setSohbetler((onceki) =>
+      onceki.map((s) => {
+        if (s.id !== hedefId) return s;
+        return {
+          ...s,
+          mesajlar: [
+            ...s.mesajlar,
+            { rol: "bot", metin: "", streaming: true, _streamId: streamId, soruMetni: soru },
+          ],
+          zaman: Date.now(),
+        };
+      })
+    );
 
     try {
-      const yanit = await fetch("http://localhost:8000/chat/stream", {
+      const yanit = await fetch("/api/chat/stream", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -367,53 +403,97 @@ export default function Chatbot() {
         body: JSON.stringify({ soru }),
       });
 
+      if (!yanit.ok) throw new Error(`HTTP ${yanit.status}`);
+
       const reader = yanit.body.getReader();
       const decoder = new TextDecoder();
+      let tampon = "";
+
+      const botMesajGuncelle = (guncelleyici) =>
+        setSohbetler((onceki) =>
+          onceki.map((s) => {
+            if (s.id !== hedefId) return s;
+            return {
+              ...s,
+              mesajlar: s.mesajlar.map((m) =>
+                m._streamId === streamId ? guncelleyici(m) : m
+              ),
+            };
+          })
+        );
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const parca = decoder.decode(value, { stream: true });
+        tampon += decoder.decode(value, { stream: true });
 
-        mesajGuncelle((onceki) => {
-          const kopya = [...onceki];
-          const son = { ...kopya[kopya.length - 1] };
-          son.metin += parca;
-          kopya[kopya.length - 1] = son;
-          return kopya;
-        });
+        // SSE satırlarını ayır
+        const satirlar = tampon.split("\n");
+        tampon = satirlar.pop() ?? ""; // tamamlanmamış satırı tampon'a geri al
+
+        for (const satir of satirlar) {
+          if (!satir.startsWith("data: ")) continue;
+          try {
+            const olay = JSON.parse(satir.slice(6));
+
+            if (olay.token !== undefined) {
+              // Her token gönderimde metni ekle
+              botMesajGuncelle((m) => ({ ...m, metin: m.metin + olay.token }));
+            } else if (olay.done) {
+              // Tamamlandı — audit + kaynaklar set et, streaming kapat
+              botMesajGuncelle((m) => ({
+                ...m,
+                streaming: false,
+                kaynaklar: olay.kaynaklar ?? [],
+                fallback: olay.fallback ?? false,
+                confidence: olay.audit?.response_confidence ?? null,
+                terminolojiTutarli: olay.audit?.terminoloji_tutarli ?? null,
+                terminolojiSorunlari: olay.audit?.terminoloji_sorunlari ?? [],
+                cagrilanArac: olay.audit?.cagrilan_arac,
+                auditHam: olay.audit ?? null,
+              }));
+              auditEkle(olay.audit, soru);
+            }
+          } catch { /* geçersiz JSON satırını yoksay */ }
+        }
       }
 
-      mesajGuncelle((onceki) => {
-        const kopya = [...onceki];
-        kopya[kopya.length - 1] = { ...kopya[kopya.length - 1], streaming: false };
-        return kopya;
-      });
+      // Stream kapalıysa ama done olayı gelmediyse streaming kapat
+      botMesajGuncelle((m) => m.streaming ? { ...m, streaming: false } : m);
+
     } catch {
-      mesajGuncelle((onceki) => [
-        ...onceki,
-        {
-          rol: "bot",
-          metin: "Bağlantı sırasında bir sorun oluştu. Lütfen tekrar deneyin.",
-          hata: true,
-        },
-      ]);
+      setSohbetler((onceki) =>
+        onceki.map((s) => {
+          if (s.id !== hedefId) return s;
+          return {
+            ...s,
+            mesajlar: s.mesajlar.map((m) =>
+              m._streamId === streamId
+                ? { rol: "bot", metin: "Bağlantı sırasında bir sorun oluştu. Lütfen tekrar deneyin.", hata: true }
+                : m
+            ),
+          };
+        })
+      );
+    } finally {
+      setBekleniyor(false);
     }
-  };
+  }, [girdi, aktifId, auditEkle]);
 
   // Enter = gönder, Shift+Enter = alt satır
+  // Streaming aktif: /chat/stream SSE kullanılıyor.
   const tusYakala = useCallback((e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      gonder();
+      gonderStreaming();
     }
-  }, [gonder]);
+  }, [gonderStreaming]);
 
   // Örnek soru tıklandığında
   const ornekSoruGonder = useCallback((soru) => {
-    gonder(soru);
-  }, [gonder]);
+    gonderStreaming(soru);
+  }, [gonderStreaming]);
 
   return (
     <div className="sohbet-sayfa">
@@ -610,7 +690,7 @@ export default function Chatbot() {
               type="primary"
               shape="circle"
               icon={<SendOutlined />}
-              onClick={() => gonder()}
+              onClick={() => gonderStreaming()}
               disabled={bekleniyor || !girdi.trim()}
               className="sohbet-gonder-dugme"
             />

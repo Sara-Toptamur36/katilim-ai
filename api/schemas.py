@@ -8,6 +8,13 @@ Bu dosya ekibin ORTAK SOZLESMESIDIR:
 Alan adlari degistirilecekse ONCE ekiple konusulur (Havin'in kodu bozulur).
 
 Kaynak: On Degerlendirme Raporu Bolum 15 (CampaignRecord) + sartname Md. 5.3
+
+# Son degisiklikler:
+#   evidence_type   → Kaynak'a eklendi (RAG yanitlarinda kaynak turu)
+#   trace_id        → AuditBilgisi'ne eklendi (izlenebilirlik UUID)
+#   demo_snapshot   → Kaynak + AuditBilgisi'ne eklendi (sahte veri etiketi)
+#   dataset_version, rag_index_version, model_version, rule_version,
+#   demo_mode, git_commit, last_ci → TazelikYanit'a eklendi (System Health)
 """
 
 from datetime import date
@@ -363,6 +370,34 @@ class Kaynak(BaseModel):
             "kullanici kaynagi ve 'suresi dolmus' uyarisini birlikte gorur."
         ),
     )
+    # Kaynagın nasil elde edildigini gosterir (Juri Audit - EvidenceCard).
+    # RAG geri donuslerinde 'SOURCE', hesaplamada 'CALCULATED' vb.
+    # None = bu kaynak icin tur belirlenemiyor / gecerli degil.
+    evidence_type: Literal[
+        "SOURCE",      # Resmi kaynakta bu sekilde yaziyor
+        "EXTRACTED",   # NLP modeli (Regex/GLiNER/Qwen) metinden cikardi
+        "CALCULATED",  # Deterministik Python ile hesaplandi
+        "CLASSIFIED",  # Anahtar kelimeyle siniflandirildi (kampanya_turu gibi)
+        "INFERRED",    # Baglamdan cikartildi, kaynakta aynen gecmiyor
+    ] | None = Field(
+        None,
+        description=(
+            "Kaynagın nasil elde edildigini gosterir. "
+            "RAG yanitlarinda 'SOURCE', deterministik hesaplarda 'CALCULATED', "
+            "NER cikarimlarinda 'EXTRACTED'. "
+            "None = bilinmiyor / bu alan icin gecerli degil."
+        ),
+    )
+    # True ise bu kaynak gercek canli veri degil, dogrulanmis demo/snapshot
+    # verisidir. Frontend DEMO SNAPSHOT rozeti gosterir.
+    # GERCEK_VERI_AKTIF=false iken mock kayitlarda True olarak set edilir.
+    demo_snapshot: bool = Field(
+        False,
+        description=(
+            "True ise bu kaynak gercek canli veri degil, dogrulanmis "
+            "demo/snapshot verisidir. Frontend 'DEMO SNAPSHOT' rozeti gosterir."
+        ),
+    )
 
 
 class RetrieverSonuc(BaseModel):
@@ -405,6 +440,47 @@ class TazelikYanit(BaseModel):
     )
     tekil_kampanya: int | None = None
     anlik_goruntu: int | None = None
+
+    # --- System Health / Versiyon bilgileri (Dashboard kartı için) ---
+    # chunking/indeks_durumu.py dosyasindan ya da ortam degiskenlerinden okunur.
+    # None = bilinmiyor (tahmin edilmez).
+    dataset_version: str | None = Field(
+        None,
+        description=(
+            "Veri seti versiyonu (ör. 'dataset_v23'). "
+            "DATASET_VERSION ortam degiskeninden okunur."
+        ),
+    )
+    rag_index_version: str | None = Field(
+        None,
+        description="RAG indeks versiyonu (ör. 'v12'). RAG_INDEX_VERSION ortam degiskeninden.",
+    )
+    model_version: str | None = Field(
+        None,
+        description="Kullanilan LLM model adi (ör. 'qwen2.5:7b-instruct-q4_K_M').",
+    )
+    rule_version: str | None = Field(
+        None,
+        description=(
+            "Kapsam ve guardrail kural versiyonu. "
+            "RULE_VERSION ortam degiskeninden ya da sozluk git hash'inden."
+        ),
+    )
+    demo_mode: bool = Field(
+        False,
+        description=(
+            "True ise sistem DEMO_MODE=true (veya GERCEK_VERI_AKTIF=false) "
+            "ile calisiyor. Frontend demo banner'ini bu alana gore gosterir."
+        ),
+    )
+    git_commit: str | None = Field(
+        None,
+        description="Son git commit SHA'si (GIT_COMMIT ortam degiskeninden).",
+    )
+    last_ci: str | None = Field(
+        None,
+        description="Son CI/CD gecme zamani (LAST_CI ortam degiskeninden).",
+    )
 
 
 class TarihceSatiri(BaseModel):
@@ -692,6 +768,22 @@ class AuditBilgisi(BaseModel):
     Havin arayuzu bu alan adlarina gore kurar; sonradan isim degistirmek
     onun kodunu bozar.
     """
+
+    # Her istege ait benzersiz izleme kimligi.
+    # Frontend Decision Trace modalinda gosterir; log arama icin kullanilir.
+    trace_id: str | None = Field(
+        None,
+        description=(
+            "Bu istege ait UUID izleme kimligi. "
+            "main.py::_bos_audit() tarafindan her istekte uuid4() ile uretilir."
+        ),
+    )
+    # True ise audit bilgisi demo/mock veri uzerinden uretilmis.
+    # GERCEK_VERI_AKTIF=false iken otomatik True olur.
+    demo_snapshot: bool = Field(
+        False,
+        description="True ise audit mock/demo veriye dayanıyor. Frontend DEMO SNAPSHOT rozeti gosterir.",
+    )
 
     intent: str | None = None
     intent_confidence: float | None = None

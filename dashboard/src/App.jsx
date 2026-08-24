@@ -26,6 +26,7 @@ import HesapMakinesi from "./pages/HesapMakinesi";
 import Giris from "./pages/Giris";
 import Chatbot from "./pages/Chatbot";
 import AuditPanel from "./pages/AuditPanel";
+import ExtractionAudit from "./pages/ExtractionAudit";
 
 /* Bağlam sağlayıcıları */
 import { AuditProvider } from "./context/AuditContext";
@@ -63,6 +64,12 @@ const GUVEN_MENUSU = [
   },
   { yol: "/musteri-sesi", etiket: "Müşteri Sesi", ikon: <MessageOutlined /> },
   { yol: "/audit", etiket: "Jüri Audit Paneli", ikon: <AuditOutlined /> },
+  {
+    yol: "/extraction-audit",
+    etiket: "Çıkarım Denetimi",
+    ikon: <FileSearchOutlined />,
+    roller: ["banka_calisani", "denetleyici", "yonetici"],
+  },
   { yol: "/giris", etiket: "Giriş / Kayıt", ikon: <LoginOutlined /> },
 ];
 
@@ -86,6 +93,7 @@ const SAYFA_ADLARI = {
   "/analiz": "Metin Analizi",
   "/musteri-sesi": "Müşteri Sesi",
   "/audit": "Jüri Audit Paneli",
+  "/extraction-audit": "Çıkarım Denetimi",
   "/giris": "Giriş / Kayıt",
 };
 
@@ -404,6 +412,7 @@ function App() {
                   <Route path="/musteri-sesi" element={<MusteriSesi />} />
                   <Route path="/chatbot" element={<Chatbot />} />
                   <Route path="/audit" element={<AuditPanel />} />
+                  <Route path="/extraction-audit" element={<ExtractionAudit />} />
                   <Route path="/giris" element={<Giris />} />
                 </Routes>
               </Content>

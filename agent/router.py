@@ -11,6 +11,7 @@ bulunamazsa cevap UYDURULMAZ - durum acikca bildirilir (rapor Bolum
 """
 
 import json
+import os
 from difflib import SequenceMatcher
 from datetime import datetime
 from pathlib import Path
@@ -591,8 +592,19 @@ def rag_aracini_cagir(
                 "belge_tarihi": _erisim_zamanini_tarihe_cevir(ustveri.get("erisim_zamani")),
                 "similarity_score": round(parca.get("skor", 0.0), 4),
                 "metin": ustveri.get("metin", ""),
+                # RAG geri donusleri her zaman resmi kaynak metninden gelir.
+                # Cikarim/hesaplama sonuclari bu listeye girmez (bos liste doner).
+                "evidence_type": "SOURCE",
+                # GERCEK_VERI_AKTIF=false veya DEMO_MODE=true iken demo_snapshot True.
+                # api.main.DEMO_MODE'u import etmek dongusel bagimlilik yaratir;
+                # ortam degiskenini dogrudan okuyoruz (ayni mantik).
+                "demo_snapshot": (
+                    os.environ.get("GERCEK_VERI_AKTIF", "false").lower() != "true"
+                    or os.environ.get("DEMO_MODE", "false").lower() == "true"
+                ),
             }
         )
+
 
     return {
         "basarili": True,

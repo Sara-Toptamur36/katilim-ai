@@ -1,4 +1,7 @@
 import { Card, Typography, Tag, Progress, Alert } from "antd";
+import EvidenceCard from "./EvidenceCard";
+import DecisionTrace from "./DecisionTrace";
+
 
 // Md. 5.5 - Terminoloji Kontrolu kartinin metinleri. Uc durum BILEREK
 // ayri: `null`, "sorun yok" DEMEK DEGILDIR - RAG ve Sozluk araclarinda
@@ -126,64 +129,21 @@ export default function ChatMesaji({ mesaj }) {
       {mesaj.kaynaklar && mesaj.kaynaklar.length > 0 && (
         <Card size="small" title="Kaynaklar" style={{ marginTop: 8, maxWidth: 640 }} headStyle={{ backgroundColor: "#f5f5f5" }}>
           {mesaj.kaynaklar.map((k, i) => (
-            <div key={i} style={{ marginBottom: i < mesaj.kaynaklar.length - 1 ? 16 : 0, paddingBottom: i < mesaj.kaynaklar.length - 1 ? 12 : 0, borderBottom: i < mesaj.kaynaklar.length - 1 ? "1px solid #f0f0f0" : "none" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
-                <Typography.Link href={k.kaynak_url} target="_blank" rel="noopener noreferrer" style={{ fontWeight: 600 }}>
-                  🔗 {k.banka} — {k.kampanya_adi}
-                </Typography.Link>
-                {k.similarity_score != null && (
-                  <Tag color="blue" style={{ margin: 0 }}>
-                    Skor: {k.similarity_score.toFixed(2)}
-                  </Tag>
-                )}
-              </div>
-              <div style={{ marginBottom: 8 }}>
-                {/* KAYNAK GIZLENMEZ, ISARETLENIR.
-                    Retriever'da bir tarih filtresi vardi ama calismiyordu
-                    (hicbir cagiran gecmiyordu ve baktigi valid_at alanlari
-                    indekste hic yoktu). Filtre yerine isaret secildi: yanlis
-                    cikarilmis tek bir tarih, GECERLI bir kampanyayi sessizce
-                    gorunmez yapabilirdi - juride fark edilmesi en zor hata.
-                    Burada kullanici hem kaynagi hem uyariyi birlikte gorur. */}
-                {k.guncellik === "suresi_dolmus" && (
-                  <Tag color="red" style={{ fontWeight: 600 }}>
-                    ⚠ Süresi dolmuş{k.kampanya_bitis ? ` — ${k.kampanya_bitis}` : ""}
-                  </Tag>
-                )}
-                {k.guncellik === "aktif" && k.kampanya_bitis && (
-                  <Tag color="green">Geçerli — {k.kampanya_bitis} tarihine kadar</Tag>
-                )}
-                {k.guncellik === "bilinmiyor" && (
-                  <Tag color="default">Geçerlilik tarihi bilinmiyor</Tag>
-                )}
-                {k.chunk_id && <Tag color="default">Chunk ID: {k.chunk_id}</Tag>}
-                {k.belge_tarihi && <Tag color="cyan">Tarih: {k.belge_tarihi}</Tag>}
-                {k.erisim_zamani && <Tag color="geekblue">Erişim: {new Date(k.erisim_zamani).toLocaleDateString("tr-TR")}</Tag>}
-              </div>
-
-              {/* "Her cumle bir kaynak belgeden gelir" iddiasinin GORSEL KANITI. */}
-              {k.metin && (
-                <blockquote
-                  style={{
-                    margin: 0,
-                    padding: "8px 12px",
-                    borderLeft: "4px solid #1677ff",
-                    background: "#fafafa",
-                    borderRadius: "0 4px 4px 0",
-                    fontSize: 13,
-                  }}
-                >
-                  <Typography.Text type="secondary" italic>{k.metin}</Typography.Text>
-                </blockquote>
-              )}
-            </div>
+            <EvidenceCard key={i} kaynak={k} />
           ))}
-          <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px dashed #d9d9d9" }}>
+          <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px dashed #d9d9d9" }}>
             <Typography.Text type="secondary" style={{ fontSize: 12 }}>
               ℹ️ Alıntılar kaynak sayfadan <strong>birebir</strong> alınmıştır; sistem bu metnin üzerine cümle üretmez.
             </Typography.Text>
           </div>
         </Card>
+      )}
+
+      {/* Karar zinciri (Audit) butonu — sadece bot yanıtlarında */}
+      {!kullaniciMi && mesaj.auditHam && !mesaj.streaming && !mesaj.hata && (
+        <div style={{ marginTop: 6 }}>
+          <DecisionTrace audit={mesaj.auditHam} soru={mesaj.soruMetni} />
+        </div>
       )}
     </div>
   );

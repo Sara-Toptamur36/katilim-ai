@@ -1,4 +1,15 @@
 import { Card, Typography, Tag, Progress, Alert } from "antd";
+
+// Yanit guven skoru bu esigin altindaysa cevabin ustunde acik bir uyari
+// gosterilir. Cevap GIZLENMEZ, kaynaklar da gizlenmez - yanina isaret
+// konur (README ilke 1: "filtrelemek yerine isaretlemek").
+//
+// Esik neden 0,5: asagidaki Progress zaten 0,5 altini "exception" (kirmizi)
+// olarak boyuyordu, ama kirmizi bir cubuk tek basina ne demek oldugunu
+// soylemiyordu. Olculdu: menu metninden gelen alakasiz kaynaklarda skor
+// 0,08-0,17 araliginda kaliyor, gercek kampanya eslesmelerinde 0,57 ve
+// uzerine cikiyor - esik bu iki kumeyi ayiriyor.
+const DUSUK_GUVEN_ESIGI = 0.5;
 import EvidenceCard from "./EvidenceCard";
 import DecisionTrace from "./DecisionTrace";
 
@@ -80,6 +91,20 @@ export default function ChatMesaji({ mesaj }) {
           style={{ marginTop: 8, maxWidth: 480 }}
         />
       )}
+
+      {!kullaniciMi &&
+        mesaj.confidence != null &&
+        !mesaj.streaming &&
+        !mesaj.hata &&
+        mesaj.confidence < DUSUK_GUVEN_ESIGI && (
+          <Alert
+            type="warning"
+            title="Bu yanıtın kaynak eşleşmesi zayıf"
+            description="Bulunan kaynaklar soruyla düşük oranda örtüşüyor; yanıt bir kampanya metni yerine sayfa menüsünden gelmiş olabilir. Aşağıdaki kaynaklara bakmadan bu yanıta dayanmayın."
+            showIcon
+            style={{ marginTop: 8, maxWidth: 520 }}
+          />
+        )}
 
       {!kullaniciMi && mesaj.confidence != null && !mesaj.streaming && !mesaj.hata && (
         <div style={{ marginTop: 4 }}>

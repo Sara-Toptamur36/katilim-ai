@@ -201,7 +201,7 @@ def test_zenginlestirme_mevcut_dolu_alani_ezmez():
         oturum.close()
 
     try:
-        zenginlestir()
+        zenginlestir(ner_kullan=False, llm_kullan=False)
 
         oturum = OturumYerel()
         try:
@@ -227,7 +227,7 @@ def test_zenginlestirme_bos_alanlari_doldurur():
     from api.models import Kampanya
     from extraction.regex_ile_zenginlestir import zenginlestir
 
-    sonuc = zenginlestir()
+    sonuc = zenginlestir(ner_kullan=False, llm_kullan=False)
     assert sonuc["guncellendi"] + sonuc["atlandi"] + sonuc["ham_metin_yok"] > 0
     assert "dogrulanamayan" in sonuc
 
@@ -252,7 +252,7 @@ def test_verifier_sonucu_kalici_olarak_yazilir():
     """DENETIM BULGUSU: Verifier calisiyordu ama sonucu yalnizca log
     dosyasina yaziliyordu - satirdaki `dogrulanan_alanlar` sutunu hep
     bos kalirdi, API/dashboard hicbir zaman "bu deger kaynakta dogrulandi
-    mi" gosteremezdi. Bu test, gercek DB'de zenginlestir() calistiktan
+    mi" gosteremezdi. Bu test, gercek DB'de zenginlestir(ner_kullan=False, llm_kullan=False) calistiktan
     sonra en az bir satirda dogrulanan_alanlar'in DOLU oldugunu kilitler -
     yalnizca modulun Verifier'i CAGIRDIGINI degil, sonucu GERCEKTEN
     SAKLADIGINI dogrular."""
@@ -260,7 +260,7 @@ def test_verifier_sonucu_kalici_olarak_yazilir():
     from api.models import Kampanya
     from extraction.regex_ile_zenginlestir import zenginlestir
 
-    zenginlestir()
+    zenginlestir(ner_kullan=False, llm_kullan=False)
 
     oturum = OturumYerel()
     try:
@@ -319,14 +319,14 @@ def test_tazele_BAYAT_degeri_duzeltir_varsayilan_kip_DOKUNMAZ():
         oturum.close()
 
     try:
-        zenginlestir()  # varsayilan kip: bayat degere DOKUNMAMALI
+        zenginlestir(ner_kullan=False, llm_kullan=False)  # varsayilan kip: bayat degere DOKUNMAMALI
         oturum = OturumYerel()
         try:
             assert oturum.get(Kampanya, hedef_id).vade_ay == SENTINEL
         finally:
             oturum.close()
 
-        zenginlestir(tazele=True)  # tazeleme kipi: DUZELTMELI
+        zenginlestir(tazele=True, ner_kullan=False, llm_kullan=False)  # tazeleme kipi: DUZELTMELI
         oturum = OturumYerel()
         try:
             assert oturum.get(Kampanya, hedef_id).vade_ay != SENTINEL

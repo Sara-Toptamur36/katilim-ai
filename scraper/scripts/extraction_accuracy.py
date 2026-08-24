@@ -55,7 +55,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from extraction.regex_extractor import kaydi_cikar
+from extraction.regex_extractor import hedef_kitle_segmenti, kaydi_cikar
 from scraper.scripts.gold_eslesme import scraper_kaydini_bul
 
 GOLD = Path(__file__).resolve().parent.parent.parent / "gold_dataset" / "altin_veri_seti.json"
@@ -78,6 +78,31 @@ ALAN_ESLEME = {
 }
 
 TOLERANS = 0.01  # ondalik yuvarlama farkini tolere et (ör. 2.990001 vs 2.99)
+
+# ALAN BAZLI NORMALIZASYON - karsilastirmadan ONCE iki tarafa da uygulanir.
+#
+# NEDEN GEREKLI (olculdu 23 Agustos 2026): `hedef_kitle` alani F1 = %0,00
+# veriyordu, 287 destekle. Sebep motorun zayifligi DEGILDI: altin veri
+# setinde bu alan SERBEST METIN olarak doldurulmus (299 kayitta 177 tekil
+# deger - "Ziraat Katilim Bankkart kredi karti sahipleri (ucretsiz ve
+# ticari kartlar haric)" gibi), motor ise Sartname Md. 5.3'un KATEGORI
+# listesini uretiyor. 177 serbest metni 4 kategoriyle tam eslestirmek
+# matematiksel olarak imkansizdir - olculen sey motorun basarisi degil,
+# iki farkli gosterim biciminin farkiydi.
+#
+# Sartname Md. 5.3 bu alani zaten kategori olarak tanimliyor ("Yeni
+# Musterilere Ozel", "Mevcut Musterilere Ozel", "Maas Musterilerine
+# Ozel", "Belirli Musteri Segmentlerine Yonelik"). Bu yuzden olcum de
+# kategori duzeyinde yapilir: gold'un serbest metni ayni segment
+# kuralindan gecirilir.
+#
+# TEK KAYNAK: kural extraction/regex_extractor.hedef_kitle_segmenti
+# icinde tanimli ve motorun kendisi de onu kullanir. Olcum tarafinda
+# AYRI bir kopya tutulsaydi iki kural zamanla ayrisir ve olcum sessizce
+# yanlislasirdi.
+ALAN_NORMALIZE = {
+    "hedef_kitle": hedef_kitle_segmenti,
+}
 
 
 # ---------------------------------------------------------------------------
@@ -190,6 +215,21 @@ def extraction_accuracy_hesapla(cikarim_fonksiyonu=kaydi_cikar) -> dict:
     katman_katkisi: dict[str, dict[str, int]] = {}
 
     for altin in altin_kayitlari_yukle():
+        # IMZASIZ KAYITLAR OLCUM DISI (23 Agustos 2026).
+        #
+        # Etiketleme kuyrugundan acilan taslak satirlarda `giren_kisi`
+        # bostur: bir okuyucu aday deger yazmis olabilir ama kimse
+        # IMZALAMAMISTIR. Depodaki kural bu kayitlarin olcum disi olmasi
+        # (bkz. tests/test_altin_veri_butunlugu.py - "IMZALI kayit"
+        # sayar; gold_dataset/aday_deger_yaz.py imza sutununa hic
+        # dokunmaz) ama dogruluk olcumu bu filtreyi UYGULAMIYORDU:
+        # butunluk testi 107 kayit sayarken olcum 293 kayit uzerinden
+        # kosuyordu. Iki olcum yolunun ayni veri kumesini kullanmamasi,
+        # "kac kayit uzerinde olctunuz?" sorusuna iki farkli cevap
+        # uretiyordu.
+        if not (altin.get("giren_kisi") or "").strip():
+            continue
+
         cikti_json = scraper_kaydini_bul(altin)
         if cikti_json is None:
             continue
@@ -203,6 +243,11 @@ def extraction_accuracy_hesapla(cikarim_fonksiyonu=kaydi_cikar) -> dict:
         for extractor_alan, gold_alan in ALAN_ESLEME.items():
             beklenen = altin.get(gold_alan)
             bulunan = cikarilan.get(extractor_alan)
+            # Iki taraf ayni gosterime indirgenir (bkz. ALAN_NORMALIZE).
+            normalize = ALAN_NORMALIZE.get(gold_alan)
+            if normalize is not None:
+                beklenen = normalize(beklenen)
+                bulunan = normalize(bulunan)
 
             # Katman katkisi: bu alan olcume giriyor mu?
             if bulunan is not None and extractor_alan in kaynaklar:

@@ -519,11 +519,95 @@ KAMPANYA_TURU_ANAHTAR_KELIMELERI = {
     "Finansman Kampanyasi": ["finansman"],
 }
 
+# HEDEF KITLE - Sartname Md. 5.3 "Hedef Kitle Bilgileri" sutunundaki DORT
+# segment. Sartname bu alani serbest metin olarak degil KATEGORI olarak
+# tanimliyor: "Yeni Musterilere Ozel", "Mevcut Musterilere Ozel", "Maas
+# Musterilerine Ozel", "Belirli Musteri Segmentlerine Yonelik".
+#
+# NEDEN DORDUNCU SEGMENT EKLENDI (olculdu 23 Agustos 2026): altin veri
+# setinde hedef_kitle 299 kayitta dolu ama 177 TEKIL serbest metin degeri
+# var ("Ziraat Katilim Bankkart kredi karti sahipleri (ucretsiz ve ticari
+# kartlar haric)" gibi). Motor yalnizca ilk uc kategoriyi uretebildigi
+# icin alan bazli olcumde F1 = %0,00 cikiyordu - 287 destekle. Bu bir
+# motor zayifligi DEGIL, olculemez bir karsilastirmaydi: 177 farkli
+# serbest metni 3 kategoriyle tam eslestirmek matematiksel olarak
+# imkansiz. Sartnamenin dorduncu segmenti tam bu vakayi karsiliyor.
+#
+# CATCH-ALL DEGIL - KANIT ISTER: "Belirli segment" yalnizca metinde
+# ACIK bir uygunluk ifadesi varsa atanir ("... kart sahipleri", "...
+# musterilerine ozel"). Her kayda varsayilan olarak yazilsaydi olcum
+# bedava yukselirdi; oyle bir kural bilgi tasimaz.
 HEDEF_KITLE_ANAHTAR_KELIMELERI = {
-    "Yeni müşteri": ["yeni müşteri", "yeni ev sahibi olmak isteyen"],
-    "Mevcut müşteri": ["mevcut müşteri"],
-    "Maaş müşterisi": ["maaş müşteri", "maaş getiren"],
+    "Yeni müşteri": [
+        "yeni müşteri", "yeni ev sahibi olmak isteyen", "ilk kez",
+        "yeni kart müşteri", "müşterimiz olun", "yeni müşterilere",
+    ],
+    "Maaş müşterisi": ["maaş müşteri", "maaş getiren", "maaşını", "emekli"],
+    "Mevcut müşteri": ["mevcut müşteri", "mevcut müşterilere"],
+    "Belirli segment": [
+        "kart sahipleri", "kart sahiplerine", "kartı sahipleri",
+        "müşterilerine özel", "sahiplerine özel", "kart müşterileri",
+        "kullanıcılarına özel", "üyelerine özel",
+    ],
 }
+
+# SIRA ONEMLI: bir metin birden fazla ipucu tasiyabilir. Sira ozelden
+# genele gider - en bilgi verici segment once yakalanir. "Maas musterisi"
+# ilk sirada: maas/emekli ifadesi cok belirgin bir sinyal ve olculdu
+# (TF-002) ki "yeni musteri" once denenirse "emekli maasini tasiyan yeni
+# musteriler" yanlis segmente dusuyor.
+HEDEF_KITLE_SIRASI = ("Maaş müşterisi", "Yeni müşteri", "Mevcut müşteri", "Belirli segment")
+
+# DESEN GENISLETMESI DENENDI VE GERI ALINDI (23 Agustos 2026, olculdu).
+#
+# Alt-dize yerine regex kullanip "yeni ... musteri" bosluklu kalibi ve
+# "yalnizca ... kart ile" uygunluk kosulunu da yakalamayi denedim. Tek
+# tek denemelerde dogru calisiyordu (KT-005, ZK-002, TF-002 duzeliyordu)
+# ama TOPLAM olcumde geriletti:
+#
+#     hedef_kitle F1  %30,00 -> %27,59
+#     precision       %63,16 -> %48,00
+#     recall          %19,67 -> %19,35   (yani yeni dogru sonuc GELMEDI)
+#
+# Sebep: altin verideki hedef_kitle etiketi bir INSAN OZETI ("Bireysel
+# Bankkart kredi karti sahipleri"); o ozet sayfada aynen gecmiyor ve
+# sayfadaki uygunluk kosullari cogu zaman segmenti TEK BASINA belirlemeye
+# yetmiyor. Genis desenler bu yuzden yalnizca yanlis segment atamasi
+# uretti. Bu alanin recall'unu yukseltmek kural genisletmekle degil,
+# muhtemelen NER/LLM katmaniyla mumkun - regex'in dogru isi burada
+# emin oldugu az sayida vakayi yakalamak.
+_HEDEF_KITLE_KATLANMIS = {
+    etiket: _katla_hepsi(kelimeler)
+    for etiket, kelimeler in HEDEF_KITLE_ANAHTAR_KELIMELERI.items()
+}
+
+
+def hedef_kitle_segmenti(metin: Optional[str]) -> Optional[str]:
+    """Serbest metni Sartname Md. 5.3 segmentlerinden birine indirger.
+
+    TEK KAYNAK OLMASI ONEMLI: hem cikarim motoru (kampanya sayfasindan)
+    hem dogruluk olcumu (altin verideki serbest metin etiketinden) AYNI
+    fonksiyonu cagirir. Iki taraf ayri kural kullanirsa olcum, motorun
+    basarisini degil iki kural arasindaki farki olcer.
+    """
+    if not metin:
+        return None
+    metin_l = turkce_ascii_kucult(metin)
+    for etiket in HEDEF_KITLE_SIRASI:
+        if any(k in metin_l for k in _HEDEF_KITLE_KATLANMIS[etiket]):
+            return etiket
+    return None
+    katlanmis = turkce_ascii_katla(metin)
+    for etiket in HEDEF_KITLE_SIRASI:
+        if any(d.search(katlanmis) for d in _HEDEF_KITLE_DERLENMIS[etiket]):
+            return etiket
+    return None
+    metin_l = turkce_ascii_kucult(metin)
+    for etiket in HEDEF_KITLE_SIRASI:
+        kelimeler = [turkce_ascii_kucult(k) for k in HEDEF_KITLE_ANAHTAR_KELIMELERI[etiket]]
+        if any(k in metin_l for k in kelimeler):
+            return etiket
+    return None
 
 # YALNIZCA DEGERLER (aranacak kelimeler) katlanir - ANAHTARLAR katlanmaz:
 # onlar cikti etiketidir ve api/schemas.py'deki enum degerleriyle BIREBIR
@@ -533,10 +617,10 @@ _KAMPANYA_TURU_KATLANMIS = {
     etiket: _katla_hepsi(kelimeler)
     for etiket, kelimeler in KAMPANYA_TURU_ANAHTAR_KELIMELERI.items()
 }
-_HEDEF_KITLE_KATLANMIS = {
-    etiket: _katla_hepsi(kelimeler)
-    for etiket, kelimeler in HEDEF_KITLE_ANAHTAR_KELIMELERI.items()
-}
+# NOT: hedef kitle icin ayri bir katlanmis sozluk TUTULMUYOR - segment
+# kurali `hedef_kitle_segmenti` icinde, cagri aninda katlanarak
+# uygulaniyor. Iki yerde iki kopya, olcum tarafiyla motorun ayrisma
+# riskini geri getirirdi.
 
 
 def _kar_payi_makul_mu(percent: float) -> bool:
@@ -591,11 +675,12 @@ def _kampanya_turunu_tespit_et(metin: str) -> Optional[str]:
 
 
 def _hedef_kitleyi_tespit_et(metin: str) -> Optional[str]:
-    metin_l = turkce_ascii_kucult(metin)
-    for etiket, kelimeler in _HEDEF_KITLE_KATLANMIS.items():
-        if any(k in metin_l for k in kelimeler):
-            return etiket
-    return None
+    """Kampanya metninden hedef kitle SEGMENTINI belirler.
+
+    Paylasilan `hedef_kitle_segmenti` uzerinden gider - olcum tarafi da
+    ayni fonksiyonu cagirdigi icin iki taraf hicbir zaman ayrisamaz.
+    """
+    return hedef_kitle_segmenti(metin)
 
 
 def _tr_sayi(deger: float) -> str:
@@ -746,11 +831,21 @@ def kaydi_cikar(ham_metin: str) -> dict:
             # RE_VADE_FARKSIZ BURADA ARTIK YOK (23 Agustos 2026).
             # Bkz. desen tanimlari bolumu - kart taksit ifadesi, finansman
             # kar payi degildir.
+            # SIRA ONEMLI - YONLENDIRME, ELEMEDEN ONCE GELIR.
+            #
+            # OLCULDU (23 Agustos 2026): baglam korumalari (_ucret_baglaminda_mi
+            # ve _oran_tablosu_baglaminda_mi) once kosuyordu ve nakit iade /
+            # indirim yuzdesini `continue` ile atiyordu. Sonuc: yuzde
+            # kar_payi'na DOGRU sekilde girmiyordu ama dogru alanina da
+            # (nakit_iade_orani / indirim_orani_percent) hic yazilmiyordu -
+            # bilgi sessizce kayboluyordu. "Tum harcamalarinizda %10 nakit
+            # iade" cumlesinde `harcama` kelimesi ucret dislama listesinde
+            # oldugu icin eleme once tetikleniyordu.
+            #
+            # Dogru sira: bir yuzdenin NE OLDUGU belirlenebiliyorsa once
+            # oraya yazilir; yalnizca hicbir alana ait olmadigi anlasilanlar
+            # atilir. Eleme, siniflandirmanin yerine gecmemeli.
             for gm in RE_KAR_PAYI_GENEL.finditer(katlanmis):
-                if _ucret_baglaminda_mi(ham_metin, gm.start(), gm.end()):
-                    continue
-                if _oran_tablosu_baglaminda_mi(ham_metin, gm.start(), gm.end()):
-                    continue
                 # Nakit iade veya indirim baglamindasak kar payi DEGIL -
                 # bu yuzden nakit_iade_orani / indirim_orani_percent'e
                 # cikarip kar_payi_orani'na GIRME.
@@ -758,15 +853,28 @@ def kaydi_cikar(ham_metin: str) -> dict:
                 if RE_NAKIT_IADE.search(katlanmis[max(0, gm.start()-50):gm.end()+50]):
                     yuzde = yuzdeye_cevir(span_ham)
                     if yuzde is not None:
-                        alanlar["nakit_iade_orani"] = yuzde
+                        # BIRIM: yuzdeye_cevir ONDALIK doner (%10 -> 0.1).
+                        # Bu alanlar YUZDE tasiyor (alan adi da oyle diyor:
+                        # indirim_orani_percent) - _kar_payi_ata ile ayni
+                        # donusum uygulanmali, yoksa "%10 nakit iade"
+                        # arayuzde %0,1 olarak gorunur.
+                        alanlar["nakit_iade_orani"] = round(yuzde * 100, 4)
                         izler["nakit_iade_orani"] = (span_ham, 0.8)
                     continue  # kar_payi'na girme
                 if RE_INDIRIM_ORANI.search(katlanmis[max(0, gm.start()-50):gm.end()+50]):
                     yuzde = yuzdeye_cevir(span_ham)
                     if yuzde is not None:
-                        alanlar["indirim_orani_percent"] = yuzde
+                        # Ayni birim gerekcesi (bkz. nakit_iade_orani).
+                        alanlar["indirim_orani_percent"] = round(yuzde * 100, 4)
                         izler["indirim_orani_percent"] = (span_ham, 0.75)
                     continue  # kar_payi'na girme
+                # Buraya gelen yuzde bilinen bir alana ait DEGIL. Simdi
+                # elenebilir: ucret/masraf baglami ya da oran tablosu
+                # hucresi ise kar payi olarak da atanmamali.
+                if _ucret_baglaminda_mi(ham_metin, gm.start(), gm.end()):
+                    continue
+                if _oran_tablosu_baglaminda_mi(ham_metin, gm.start(), gm.end()):
+                    continue
                 if _kar_payi_ata(alanlar, izler, span_ham, 0.6):
                     break
 

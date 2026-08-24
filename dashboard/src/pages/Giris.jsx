@@ -260,7 +260,11 @@ export default function Giris() {
       <div className="giris-karti">
         {/* Başlık ve Logo Amblemi */}
         <div className="giris-baslik-blogu">
-          <div className="giris-logo-amblem">K</div>
+          <img
+            className="giris-logo-amblem"
+            src={`${import.meta.env.BASE_URL}logo.png`}
+            alt="KatılımAI"
+          />
           <Title level={3} style={{ margin: 0, letterSpacing: "-0.5px" }}>
             KatılımAI Portal
           </Title>

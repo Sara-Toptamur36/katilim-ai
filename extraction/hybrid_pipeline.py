@@ -77,6 +77,8 @@ kapsam sinirlamalaridir.
 
 from __future__ import annotations
 
+import re
+
 from extraction.llm_extractor import llm_ile_cikar
 from extraction.ner_extractor import ner_ile_cikar
 from extraction.regex_extractor import kampanya_avantajini_olustur, kaydi_cikar
@@ -143,6 +145,79 @@ def _adaya_acik_alanlar(
 KILITLEME_GUVEN_ESIGI = 0.8
 
 
+def _kar_payi_baglami_reddediyor_mu(deger: float, ham_metin: str) -> bool:
+    """Onerilen oran, metinde YALNIZCA "kar payi olmayan" baglamlarda mi geciyor?
+
+    --------------------------------------------------------------------
+    NEDEN GEREKLI (olculdu 24.08.2026)
+    --------------------------------------------------------------------
+    regex_extractor bir yuzdeyi kar payina yazmadan once dort koruma
+    uygular: nakit iade, indirim, ucret/masraf baglami ve oran tablosu
+    hucresi. Bu korumalar calistiginda regex `None` doner.
+
+    Ama boru hatti `None`'i "regex BILEMEDI" diye yorumluyor ve alani
+    NER/LLM'e aciyordu (`_adaya_acik_alanlar`). Oysa buradaki `None` bir
+    bilgisizlik degil, bir KARAR: "bu yuzde kar payi orani DEGIL". Sonuc,
+    regex'in bilerek reddettigi degeri sonraki katmanin geri koymasiydi -
+    koruma tumuyle devre disi kaliyordu.
+
+    Olculen kanit (kart kampanyalari, kar payi dolu kayitlar):
+        id 293  regex=None  hibrit=%10   "Kultur Sanat Harcamalariniza..."
+        id 393  regex=None  hibrit=%15   "Kuveyt Turk Ile E Ihracat..."
+        id 399  regex=None  hibrit=%5    "Saglam Business Kart QR Odeme..."
+    Regex'in deger BULDUGU kayitlarda (400/420/457) iki katman zaten
+    ayni sonucu veriyor - yani kaybedilen dogru deger yok, yalnizca
+    reddedilmis olan geri geliyordu.
+
+    Bedeli, tam da juriye gosterilecek ekranda gorunur: `en_dusuk_kar_payi`
+    siralamasi ASC'dir, uydurma dusuk oran her zaman en uste cikar.
+
+    --------------------------------------------------------------------
+    KURAL
+    --------------------------------------------------------------------
+    Deger metinde gectigi HER yerde bir "kar payi degil" baglamindaysa
+    reddedilir. Tek bir gecerli gecis bile varsa deger KABUL EDILIR -
+    supheyle veri atmamak icin kasitli olarak temkinli taraf secildi.
+    Metinde hic bulunamayan deger de reddedilmez (varligini bu fonksiyon
+    degil, Verifier denetler).
+    """
+    from extraction.regex_extractor import (
+        RE_INDIRIM_ORANI,
+        RE_NAKIT_IADE,
+        _oran_tablosu_baglaminda_mi,
+        _ucret_baglaminda_mi,
+        turkce_ascii_katla,
+    )
+
+    katlanmis = turkce_ascii_katla(ham_metin)
+    # "%10" ve "%10,5" gibi yazimlar; ondalik ayrac iki bicimde de olabilir.
+    sayi = f"{deger:g}"
+    desenler = {sayi, sayi.replace(".", ",")}
+    gecisler = [
+        m
+        for d in desenler
+        # ILERI-BAKIS TUZAGI (bir kez dusuldu): `(?![\d.,])` yazilmisti ve
+        # cumle sonundaki NOKTAYI da eliyordu - "...%5." metinde vardi ama
+        # eslesmiyor, deger "metinde yok" sayilip koruma sessizce
+        # atlanıyordu. Dogru kural: ondalik DEVAMI olmasin ("%5,5" icinde
+        # "%5" sayilmasin), ama noktalama serbest.
+        for m in re.finditer(r"%\s*" + re.escape(d) + r"(?![.,]?\d)", katlanmis)
+    ]
+    if not gecisler:
+        return False  # metinde bulunamadi - karar bu fonksiyonun isi degil
+
+    for m in gecisler:
+        cevre = katlanmis[max(0, m.start() - 50) : m.end() + 50]
+        if RE_NAKIT_IADE.search(cevre) or RE_INDIRIM_ORANI.search(cevre):
+            continue
+        if _ucret_baglaminda_mi(ham_metin, m.start(), m.end()):
+            continue
+        if _oran_tablosu_baglaminda_mi(ham_metin, m.start(), m.end()):
+            continue
+        return False  # en az bir gecerli baglam var -> reddetme
+    return True
+
+
 def _katman_sonucunu_birlestir(
     alanlar: dict,
     izler: dict,
@@ -151,6 +226,7 @@ def _katman_sonucunu_birlestir(
     katman_adi: str,
     adaylar: dict,
     catismalar: list,
+    ham_metin: str = "",
 ) -> None:
     """Katmanin urettigi degerleri ADAY olarak kaydeder ve gerekiyorsa
     mevcut degeri devralir.
@@ -171,6 +247,23 @@ def _katman_sonucunu_birlestir(
 
     for alan, deger in katman_sonucu.items():
         if alan == "_izler" or deger is None:
+            continue
+
+        # REGEX'IN KARARI BAGLAYICIDIR - bkz. _kar_payi_baglami_reddediyor_mu.
+        # regex bu alani bilerek bos biraktiysa (nakit iade / indirim /
+        # ucret / tablo baglami), sonraki katman onu geri koyamaz.
+        if (
+            alan == "kar_payi_orani_percent"
+            and ham_metin
+            and _kar_payi_baglami_reddediyor_mu(deger, ham_metin)
+        ):
+            catismalar.append({
+                "alan": alan,
+                "yeni_katman": katman_adi,
+                "yeni_deger": deger,
+                "devralindi": False,
+                "red_sebebi": "baglam kar payi orani degil (nakit iade / indirim / ucret / tablo)",
+            })
             continue
 
         guven = katman_izler.get(alan, (None, 0.0))[1]
@@ -258,7 +351,8 @@ def kaydi_hibrit_cikar(
         if acik:
             ner_sonucu = ner_ile_cikar(ham_metin, sadece_bu_alanlar=acik)
             _katman_sonucunu_birlestir(
-                alanlar, izler, kaynaklar, ner_sonucu, "ner", adaylar, catismalar
+                alanlar, izler, kaynaklar, ner_sonucu, "ner", adaylar,
+                catismalar, ham_metin,
             )
 
     # LLM: YALNIZCA hala bos alanlar (bkz. _adaya_acik_alanlar docstring'i -
@@ -269,7 +363,8 @@ def kaydi_hibrit_cikar(
         if acik:
             llm_sonucu = llm_ile_cikar(ham_metin, sadece_bu_alanlar=acik)
             _katman_sonucunu_birlestir(
-                alanlar, izler, kaynaklar, llm_sonucu, "llm", adaylar, catismalar
+                alanlar, izler, kaynaklar, llm_sonucu, "llm", adaylar,
+                catismalar, ham_metin,
             )
 
     # Avantaj ozeti TUM katmanlar bittikten SONRA yeniden derlenir.

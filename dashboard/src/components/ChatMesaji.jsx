@@ -1,4 +1,15 @@
 import { Card, Typography, Tag, Progress, Alert } from "antd";
+
+// Yanit guven skoru bu esigin altindaysa cevabin ustunde acik bir uyari
+// gosterilir. Cevap GIZLENMEZ, kaynaklar da gizlenmez - yanina isaret
+// konur (README ilke 1: "filtrelemek yerine isaretlemek").
+//
+// Esik neden 0,5: asagidaki Progress zaten 0,5 altini "exception" (kirmizi)
+// olarak boyuyordu, ama kirmizi bir cubuk tek basina ne demek oldugunu
+// soylemiyordu. Olculdu: menu metninden gelen alakasiz kaynaklarda skor
+// 0,08-0,17 araliginda kaliyor, gercek kampanya eslesmelerinde 0,57 ve
+// uzerine cikiyor - esik bu iki kumeyi ayiriyor.
+const DUSUK_GUVEN_ESIGI = 0.5;
 import EvidenceCard from "./EvidenceCard";
 import DecisionTrace from "./DecisionTrace";
 
@@ -61,13 +72,33 @@ export default function ChatMesaji({ mesaj }) {
         {mesaj.streaming && <span>▍</span>}
       </div>
 
+      {/* CEKIMSERLIK (abstention) - projenin juriye anlatilan ana mesaji:
+          "bilmiyorum diyebilen sistem". Bu yuzden kucuk bir uyari degil,
+          belirgin bir kart olarak gosterilir.
+
+          PROP NOTU: antd v6'da Alert basligi `title` ile verilir, `message`
+          ile DEGIL. Burasi `message` kullaniyordu, bu yuzden baslik hic
+          ekrana basilmiyordu - kullanici yalnizca aciklama metnini
+          goruyordu ve bunun bilincli bir karar oldugu anlasilmiyordu. */}
       {mesaj.fallback && (
         <Alert
           type="warning"
-          message="Güvenli Başarısızlık: Cevap Üretilemedi"
-          description="Sistem, kaynak yetersizliği veya düşük güven skoru nedeniyle cevap üretmedi. Halüsinasyon riskini önlemek için bu bir güvenlik önlemidir. Lütfen sorunuzu farklı kelimelerle ifade edin veya kampanya koşullarını sorun."
+          title="Güvenli Başarısızlık — Yanıt Üretilmedi"
+          description={
+            <>
+              <strong>Bu bir hata değil, bilinçli bir güvenlik kararıdır.</strong>
+              <br />
+              Soruyu yanıtlayacak yeterli kaynak bulunamadı. Sistem, uydurma
+              bilgi vermektense cevap vermemeyi tercih etti.
+              <br />
+              <span style={{ fontSize: 12, opacity: 0.8 }}>
+                Soruyu farklı kelimelerle sorabilir ya da mevcut kampanya
+                koşullarını sorabilirsiniz.
+              </span>
+            </>
+          }
           showIcon
-          style={{ marginTop: 8, maxWidth: 480 }}
+          style={{ marginTop: 8, maxWidth: 520 }}
         />
       )}
 
@@ -81,7 +112,30 @@ export default function ChatMesaji({ mesaj }) {
         />
       )}
 
-      {!kullaniciMi && mesaj.confidence != null && !mesaj.streaming && !mesaj.hata && (
+      {!kullaniciMi &&
+        mesaj.confidence != null &&
+        !mesaj.streaming &&
+        !mesaj.hata &&
+        !mesaj.fallback &&
+        mesaj.confidence < DUSUK_GUVEN_ESIGI && (
+          <Alert
+            type="warning"
+            title="Bu yanıtın kaynak eşleşmesi zayıf"
+            description="Bulunan kaynaklar soruyla düşük oranda örtüşüyor; yanıt bir kampanya metni yerine sayfa menüsünden gelmiş olabilir. Aşağıdaki kaynaklara bakmadan bu yanıta dayanmayın."
+            showIcon
+            style={{ marginTop: 8, maxWidth: 520 }}
+          />
+        )}
+
+      {/* Cekimserlikte guven cubugu GOSTERILMEZ: fallback yanitta confidence
+          her zaman 0 doner ve "%0 guven" kirmizi bir cubuk, sistemin basarisiz
+          oldugu izlenimi verir. Oysa cevap uretmemek burada dogru davranistir.
+          Yukaridaki "Guvenli Basarisizlik" karti zaten durumu anlatiyor. */}
+      {!kullaniciMi &&
+        mesaj.confidence != null &&
+        !mesaj.streaming &&
+        !mesaj.hata &&
+        !mesaj.fallback && (
         <div style={{ marginTop: 4 }}>
           <span>Yanıt güven skoru: </span>
           <Progress

@@ -341,7 +341,36 @@ class Kaynak(BaseModel):
     kaynak_url: str | None = None
     belge_tarihi: date | None = None
     chunk_id: str | None = None
+    # ARAMA ASAMASININ skoru (hibrit yogun+seyrek, RRF birlestirmesi).
+    # Havin'in 24.08.2026 raporunda "retrieval_score" adiyla istendi; AYNI
+    # SAYIYA IKINCI BIR AD VERILMEDI - bir degeri iki alanda tasimak, ikisi
+    # farkli seyler sanilip birbirine karistigi anda sessiz hataya donusur.
+    # Arayuz tarafinda okunacak ad budur.
     similarity_score: float | None = None
+    # YENIDEN SIRALAMA asamasinin skoru (cross-encoder). Arama skorundan
+    # AYRI bir bilesendir - retriever bu degeri zaten uretiyordu ama semada
+    # karsiligi olmadigi icin arayuze hic ulasmiyordu, dolayisiyla Juri
+    # Audit Paneli "bileşen bazli skor ayrimini" gosteremiyordu.
+    rerank_score: float | None = Field(
+        None,
+        description=(
+            "Cross-encoder yeniden siralama skoru. similarity_score arama "
+            "asamasinin, bu ise siralama asamasinin skorudur - ikisi ayri "
+            "bilesendir ve audit panelinde ayri gosterilir."
+        ),
+    )
+    # Bu kaynagin ait oldugu kampanya kaydinin CIKARIM guveni.
+    # Arama skorlariyla KARISTIRILMAMALI: onlar "bu parca soruya ne kadar
+    # uyuyor" der, bu ise "bu kampanyanin alanlari metinden ne kadar
+    # guvenle cikarildi" der. Kayit eslesmezse None kalir - uydurulmaz.
+    entity_confidence: float | None = Field(
+        None,
+        description=(
+            "Kaynagin ait oldugu kampanya kaydinin cikarim guveni (0-1). "
+            "Arama/siralama skorlarindan farklidir: bu, degerin metinden ne "
+            "kadar guvenle CIKARILDIGINI gosterir. Kayit eslesmediyse None."
+        ),
+    )
     metin: str | None = Field(
         None, description="Kaynak parcanin birebir metni (RAG yanitlarinda dolu)"
     )
@@ -591,6 +620,23 @@ class CikarimYanit(BaseModel):
     hibrit_kullanildi: bool = False
     sure_ms: int = 0
     not_: str | None = Field(None, alias="not")
+    # DENETIM BULGUSU (Havin'in 24.08.2026 arayuz raporu, Md. 6): /hesapla ve
+    # /karsilastir yanitlarinda audit blogu vardi, /cikar'da YOKTU. Cikarim
+    # sunucu tarafinda denetim kaydina yaziliyordu (_audit_kaydet) ama YANITA
+    # konmadigi icin Metin Analizi ekranindan yapilan cikarimlar Juri Audit
+    # Paneli'ne hic dusmuyordu - yani sistemin en cok "nasil karar verdi?"
+    # sorusu sorulan islemi, denetim panelinde gorunmeyen tek islemdi.
+    # ILERI REFERANS: AuditBilgisi bu siniftan SONRA tanimlaniyor, bu
+    # yuzden tip bir dize olarak yazilir ve sinif dosyanin sonunda
+    # model_rebuild() ile tamamlanir (bkz. dosya sonu).
+    audit: "AuditBilgisi | None" = Field(
+        None,
+        description=(
+            "Denetim bilgisi - diger uc noktalarla ayni blok. Cikarimin "
+            "hangi araca, ne kadar surede ve hangi guvenle gittigi burada "
+            "gorunur (Juri Audit Paneli)."
+        ),
+    )
 
     model_config = {"populate_by_name": True}
 
@@ -840,3 +886,9 @@ class KarsilastirYanit(BaseModel):
     sonuclar: list[dict[str, Any]] = Field(default_factory=list)
     calistirilan_sql: str | None = None
     audit: AuditBilgisi | None = None
+
+
+# CikarimYanit.audit alani AuditBilgisi'ne ileri referans verir (sinif
+# bu dosyada daha ASAGIDA tanimli). Pydantic'in referansi cozebilmesi icin
+# model burada yeniden kurulur - atlanirsa /cikar ilk cagrida patlar.
+CikarimYanit.model_rebuild()

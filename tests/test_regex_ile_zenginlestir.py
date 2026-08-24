@@ -264,3 +264,57 @@ def test_verifier_sonucu_kalici_olarak_yazilir():
         assert all(isinstance(v, bool) for v in dogrulanmis_satir.dogrulanan_alanlar.values())
     finally:
         oturum.close()
+
+
+@pytest.mark.skipif(not DB_ERISILEBILIR, reason=DB_YOK_MESAJI)
+def test_tazele_BAYAT_degeri_duzeltir_varsayilan_kip_DOKUNMAZ():
+    """`--tazele` bayraginin varlik sebebi (olculdu 24.08.2026).
+
+    "Asla ezme" kurali, motor DUZELTILDIGINDE veritabanini bayat
+    birakiyordu: sutundaki eski deger "dolu" sayilip atlanıyor, betik kac
+    kere kosulursa kosulsun degismiyordu. Kar payi orani dolu 17 kaydin
+    13'u boylece guncel motorla celisir hale gelmisti.
+
+    Test iki kipi de olcer - varsayilan kip sentineli KORUMALI (mevcut
+    cagiranlarin davranisi degismedi), tazeleme kipi DUZELTMELI.
+    """
+    from api.db import OturumYerel
+    from api.models import Kampanya
+    from extraction.regex_ile_zenginlestir import zenginlestir
+
+    SENTINEL = 4242  # motorun hicbir kaynaktan uretemeyecegi deger
+
+    oturum = OturumYerel()
+    try:
+        satir = oturum.query(Kampanya).filter(Kampanya.vade_ay.isnot(None)).first()
+        if satir is None:
+            pytest.skip("vade_ay dolu kayit yok")
+        hedef_id, gercek_deger = satir.id, satir.vade_ay
+        satir.vade_ay = SENTINEL
+        oturum.commit()
+    finally:
+        oturum.close()
+
+    try:
+        zenginlestir()  # varsayilan kip: bayat degere DOKUNMAMALI
+        oturum = OturumYerel()
+        try:
+            assert oturum.get(Kampanya, hedef_id).vade_ay == SENTINEL
+        finally:
+            oturum.close()
+
+        zenginlestir(tazele=True)  # tazeleme kipi: DUZELTMELI
+        oturum = OturumYerel()
+        try:
+            assert oturum.get(Kampanya, hedef_id).vade_ay != SENTINEL
+        finally:
+            oturum.close()
+    finally:
+        # Testin DB'yi kalici bozmamasi icin gercek degeri geri koy.
+        oturum = OturumYerel()
+        try:
+            geri = oturum.get(Kampanya, hedef_id)
+            geri.vade_ay = gercek_deger
+            oturum.commit()
+        finally:
+            oturum.close()

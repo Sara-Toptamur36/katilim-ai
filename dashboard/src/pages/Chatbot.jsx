@@ -118,7 +118,11 @@ function BeklemeBalonu({ bekleniyor }) {
   return (
     <div className="sohbet-mesaj-satiri asistan">
       {/* Asistan avatarı */}
-      <div className="sohbet-avatar asistan-avatar">NN</div>
+      <img
+        className="sohbet-avatar asistan-avatar"
+        src={`${import.meta.env.BASE_URL}logo-64.png`}
+        alt=""
+      />
       <div className="sohbet-balon asistan-balon">
         {/* Üç nokta animasyonu */}
         <div className="bekleme-noktalar">
@@ -594,7 +598,11 @@ export default function Chatbot() {
           {mesajlar.length === 0 && !bekleniyor ? (
             /* === BOŞ EKRAN === */
             <div className="sohbet-bos-ekran">
-              <div className="sohbet-bos-amblem">NN</div>
+              <img
+                className="sohbet-bos-amblem"
+                src={`${import.meta.env.BASE_URL}logo.png`}
+                alt=""
+              />
               <h2 className="sohbet-bos-baslik">Size nasıl yardımcı olabilirim?</h2>
               <p className="sohbet-bos-aciklama">
                 Katılım bankası kampanyaları, karşılaştırma ve finansman hesaplaması hakkında soru sorun.
@@ -625,7 +633,11 @@ export default function Chatbot() {
                   >
                     {/* Avatar */}
                     {!kullaniciMi && (
-                      <div className="sohbet-avatar asistan-avatar">NN</div>
+                      <img
+        className="sohbet-avatar asistan-avatar"
+        src={`${import.meta.env.BASE_URL}logo-64.png`}
+        alt=""
+      />
                     )}
                     <div className={`sohbet-balon ${kullaniciMi ? "kullanici-balon" : "asistan-balon"}`}>
                       <ChatMesaji mesaj={m} />

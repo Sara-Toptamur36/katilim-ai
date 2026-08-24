@@ -560,7 +560,13 @@ export default function Dashboard() {
                 marginBottom: 3,
               }}
             >
-              RAG İNDEKSİ
+              {/* ETIKET AYRIMI: burasi Recall@5'in OLCULDUGU indekstir
+                  (817 parca). Asagidaki Sistem Sagligi karti CALISAN
+                  indeksi gosterir (1907). Ikisi bilerek ayri - Recall
+                  yeni indekste yeniden olculmedi. Ayni etiketi
+                  tasidiklarinda juriye ayni sey icin iki farkli sayi
+                  veriliyormus gibi gorunuyordu. */}
+              ÖLÇÜM İNDEKSİ
             </span>
             <span
               className="hero-sag-deger"
@@ -1450,7 +1456,9 @@ export default function Dashboard() {
                         textTransform: "uppercase",
                       }}
                     >
-                      RAG İNDEKSİ
+                      {/* Hero'daki "OLCUM INDEKSI" ile karistirilmasin:
+                          burasi calisan sistemin guncel indeksi. */}
+                      CANLI RAG İNDEKSİ
                     </div>
                     <div
                       style={{

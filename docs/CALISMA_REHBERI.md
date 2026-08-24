@@ -291,6 +291,20 @@ Playwright gerekiyor. Kurulu değilse:
 python -m playwright install chromium
 ```
 
+> **Taslakların görüntüleri depoya girmez.** Kuyruktaki 200 taslağın
+> görüntüsü 24 Ağustos'ta alındı (132 MB) ve `.gitignore`'a kondu — depo
+> 65 MB'dan 200 MB'a çıkmasın diye. Görüntüler yerelde
+> `gold_dataset/ekran_goruntuleri/` altında duruyor.
+>
+> Bir kaydı **imzaladıktan sonra** görüntüsünü depoya almak için `-f`
+> gerekir:
+>
+> ```bash
+> git add -f gold_dataset/ekran_goruntuleri/KT-018.png
+> ```
+>
+> Daha önce commit edilmiş 103 imzalı kaydın görüntüsü etkilenmedi.
+
 **Yavaş çalışır** — kayıt başına birkaç saniye bekler, çünkü sayfaların
 JavaScript'i yüklenmeden görüntü almak eksik ekran üretiyordu. Sabırlı
 olun; 100 kayıt yaklaşık 10 dakika sürer.

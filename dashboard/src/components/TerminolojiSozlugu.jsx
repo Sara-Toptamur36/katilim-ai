@@ -90,7 +90,7 @@ export default function TerminolojiSozlugu() {
     return (
       <Alert
         type="error"
-        title="Terminoloji sözlüğü alınamadı"
+        message="Terminoloji sözlüğü alınamadı"
         description={hata}
         showIcon
       />

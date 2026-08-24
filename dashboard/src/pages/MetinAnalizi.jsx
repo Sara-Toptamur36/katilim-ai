@@ -25,6 +25,7 @@ import {
   MinusOutlined,
 } from "@ant-design/icons";
 import { metinCikar } from "../api/client";
+import { useAudit } from "../context/AuditContext";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -192,6 +193,7 @@ const kolonlar = [
 ];
 
 export default function MetinAnalizi() {
+  const { auditEkle } = useAudit();
   const [metin, setMetin] = useState("");
   const [hibrit, setHibrit] = useState(false);
   const [sonuc, setSonuc] = useState(null);
@@ -203,7 +205,18 @@ export default function MetinAnalizi() {
     setHata(null);
     setSonuc(null);
     try {
-      setSonuc(await metinCikar(metin, hibrit));
+      const yanit = await metinCikar(metin, hibrit);
+      setSonuc(yanit);
+      // Juri Audit Paneli bu cikarimi da gorsun.
+      //
+      // DENETIM BULGUSU (Havin'in 24.08.2026 raporu, Md. 6): /hesapla ve
+      // /karsilastir audit dondururken /cikar dondurmuyordu. Backend tarafi
+      // duzeltildi (api/main.py, CikarimYanit.audit) ama arayuz o blogu
+      // AuditContext'e hic aktarmiyordu - yani Metin Analizi ekranindan
+      // yapilan cikarimlar hala denetim panelinde gorunmuyordu. Sistemin
+      // "nasil karar verdi?" sorusu en cok sorulan islemi, denetlenemeyen
+      // tek islem olarak kaliyordu.
+      auditEkle(yanit.audit, `Metin analizi: ${metin.slice(0, 60)}`);
     } catch (e) {
       setHata(e.response?.data?.detail?.[0]?.msg ?? e.message);
     } finally {

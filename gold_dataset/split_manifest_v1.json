@@ -3,11 +3,11 @@
   "olusturulma_yontemi": "banka-katmanli, benzerlik-kumesi gruplu, atamasi dondurulmus split (gold_dataset/split_manifest_uret.py)",
   "test_orani_hedef": 0.2,
   "kumeleme": "uygulandi",
-  "toplam_kume": 253,
-  "onceki_surumden_korunan_kume": 253,
+  "toplam_kume": 255,
+  "onceki_surumden_korunan_kume": 255,
   "yeni_atanan_kume": 0,
   "toplam_kayit": 298,
-  "toplam_kampanya_url": 296,
+  "toplam_kampanya_url": 298,
   "train": [
     "AL-001",
     "AL-002",
@@ -336,9 +336,9 @@
       "test_url": 11
     },
     "T.O.M. Katılım": {
-      "toplam_kume": 11,
+      "toplam_kume": 13,
       "test_kume": 2,
-      "toplam_url": 11,
+      "toplam_url": 13,
       "test_url": 2
     },
     "Türkiye Emlak Katılım": {

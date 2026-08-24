@@ -139,6 +139,34 @@ def test_kanit_spani_kaynak_metinde_GERCEKTEN_geciyor(kayitlar):
     )
 
 
+def test_kaynak_url_kampanya_sayfasini_gosterir(kayitlar):
+    """Her kayit KENDI kampanya sayfasini gostermeli - liste sayfasini degil.
+
+    Rehber E sutunu: "Kampanyanin TAM adresi (ana sayfa degil)". Denetimde
+    uc kayit (TOM-001/002/003) ayni adresi gosteriyordu:
+    tombank.com.tr/kampanyalar.html. TOM Bank kampanyalarini tek sayfada
+    anchor olarak yayimliyor; scraper fragment'i dogru yakalamisti ama
+    altin sete yazilirken dusmustu.
+
+    Iki sonucu vardi: kayitlar mukerrer gorunuyordu ve split kaynak_url'ye
+    gore grupladigi icin ucu tek grup sayiliyordu.
+    """
+    from collections import Counter
+
+    urller = [
+        (k["kayit_id"], (k.get("kaynak_url") or "").rstrip("/"))
+        for k in kayitlar
+        if k.get("kaynak_url")
+    ]
+
+    sayim = Counter(u for _kid, u in urller)
+    mukerrer = {u: n for u, n in sayim.items() if n > 1}
+    assert not mukerrer, (
+        "ayni kaynak_url birden fazla kayitta - muhtemelen liste sayfasi "
+        f"yazilmis, kampanyanin kendi adresi degil: {mukerrer}"
+    )
+
+
 def test_kanit_spani_ALANIN_DEGERINI_destekliyor(kayitlar):
     """Span kaynakta gecmesi YETMEZ - o alanin DEGERINI de icermeli.
 

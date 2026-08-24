@@ -191,6 +191,34 @@ export default function EvidenceCard({ kaynak, boyut = "normal" }) {
             </div>
           </Tooltip>
         )}
+
+        {/* ÇIKARIM GÜVENİ — arama skorlarından AYRI bir bileşendir.
+            Benzerlik/sıralama skorları "bu parça soruya ne kadar uyuyor"
+            der; bu ise "bu kampanyanın alanları metinden ne kadar güvenle
+            ÇIKARILDI" der. İkisini tek sayıya indirmek, Jüri Audit
+            Paneli'nin bileşen bazlı skor ayrımını yok ederdi.
+            Kayıt eşleşmediyse None gelir ve hiç gösterilmez - uydurulmaz. */}
+        {kaynak.entity_confidence != null && (
+          <Tooltip title="Çıkarım güveni — bu kampanyanın alanlarının kaynak metinden ne kadar güvenle çıkarıldığı. Arama benzerliğinden farklıdır.">
+            <div style={{ textAlign: "right", cursor: "help" }}>
+              <div style={{ fontSize: 10, color: "#8c8c8c" }}>Çıkarım</div>
+              <div
+                style={{
+                  fontSize: 15,
+                  fontWeight: 700,
+                  color:
+                    kaynak.entity_confidence >= 0.8
+                      ? "#169276"
+                      : kaynak.entity_confidence >= 0.6
+                      ? "#c28e28"
+                      : "#c94f4f",
+                }}
+              >
+                {(kaynak.entity_confidence * 100).toFixed(0)}%
+              </div>
+            </div>
+          </Tooltip>
+        )}
       </div>
 
       {/* Meta bilgiler */}

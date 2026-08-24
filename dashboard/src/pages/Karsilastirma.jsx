@@ -14,6 +14,8 @@ const KRITER_ALAN_HARITASI = {
   en_uzun_vade: "vade_ay",
   en_dusuk_masraf: "tahsis_ucreti",
   en_yuksek_tutar: "finansman_tutari",
+  en_yuksek_nakit_iade: "nakit_iade_orani",
+  en_yuksek_indirim: "indirim_orani_percent",
 };
 
 export default function Karsilastirma() {

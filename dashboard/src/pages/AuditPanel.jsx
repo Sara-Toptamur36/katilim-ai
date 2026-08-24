@@ -185,8 +185,8 @@ function KaynaktaDogrulamaBolumu({ sonAudit }) {
           gap: 4,
           padding: "3px 10px",
           borderRadius: 6,
-          backgroundColor: "#f8edcf",
-          color: "#8c6219",
+          backgroundColor: "var(--uyari-zemin)",
+          color: "var(--uyari-yazi)",
           fontSize: 12,
           fontWeight: 500,
         }}
@@ -204,8 +204,8 @@ function KaynaktaDogrulamaBolumu({ sonAudit }) {
           gap: 4,
           padding: "3px 10px",
           borderRadius: 6,
-          backgroundColor: "#eeeae0",
-          color: "#7b8c86",
+          backgroundColor: "var(--kart-ustu)",
+          color: "var(--yazi-soluk)",
           fontSize: 12,
           fontWeight: 500,
         }}

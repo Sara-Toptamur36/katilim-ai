@@ -1666,8 +1666,8 @@ export default function Dashboard() {
                             style={{
                               fontSize: 10,
                               fontWeight: 600,
-                              background: "#eeeae0",
-                              color: "#7b8c86",
+                              background: "var(--kart-ustu)",
+                              color: "var(--yazi-soluk)",
                               padding: "1px 5px",
                               borderRadius: 5,
                             }}
@@ -1928,7 +1928,7 @@ export default function Dashboard() {
                         {idx > 0 && <div style={{ borderTop: "1px solid var(--kenarlik)", margin: "10px 0" }} />}
                         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <span style={{ fontSize: 11, fontWeight: 700, background: "#fbe4e4", color: "#c94f4f", padding: "2px 7px", borderRadius: 6, flexShrink: 0 }}>{hata.kod}</span>
+                            <span style={{ fontSize: 11, fontWeight: 700, background: "var(--hata-zemin)", color: "var(--hata-yazi)", padding: "2px 7px", borderRadius: 6, flexShrink: 0 }}>{hata.kod}</span>
                             <span style={{ fontWeight: 650, fontSize: 13, color: "var(--yazi-koyu)" }}>{hata.alan}</span>
                           </div>
                           <div style={{ fontSize: 12, color: "var(--yazi-normal)", lineHeight: 1.45, paddingLeft: 2 }}>{hata.aciklama}</div>
@@ -1950,15 +1950,15 @@ export default function Dashboard() {
                 <div
                   style={{
                     gridColumn: "1 / -1",
-                    background: "#f8edcf",
-                    border: "1px solid #e7c978",
+                    background: "var(--uyari-zemin)",
+                    border: "1px solid var(--kenarlik)",
                     borderRadius: 12,
                     padding: 14,
                     display: "flex",
                     alignItems: "flex-start",
                     gap: 10,
                     fontSize: 12.5,
-                    color: "#8c6219",
+                    color: "var(--uyari-yazi)",
                     lineHeight: 1.5,
                   }}
                 >
@@ -2080,7 +2080,7 @@ export default function Dashboard() {
                                 {b.banka}
                               </span>
                               {baskinMi && (
-                                <span style={{ fontSize: 10, fontWeight: 600, background: "#f8edcf", color: "#8c6219", padding: "1px 5px", borderRadius: 5 }}>
+                                <span style={{ fontSize: 10, fontWeight: 600, background: "var(--uyari-zemin)", color: "var(--uyari-yazi)", padding: "1px 5px", borderRadius: 5 }}>
                                   baskın
                                 </span>
                               )}
@@ -2116,12 +2116,12 @@ export default function Dashboard() {
                   {/* Amber Kutusu */}
                   <div
                     style={{
-                      background: "#f8edcf",
-                      border: "1px solid #e7c978",
+                      background: "var(--uyari-zemin)",
+                      border: "1px solid var(--kenarlik)",
                       borderRadius: 8,
                       padding: "10px 12px",
                       fontSize: 11.5,
-                      color: "#8c6219",
+                      color: "var(--uyari-yazi)",
                       lineHeight: 1.45,
                       marginTop: 12,
                     }}
@@ -2179,7 +2179,7 @@ export default function Dashboard() {
                             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                               <span style={{ fontSize: 13, fontWeight: 500, color: "var(--yazi-koyu)" }}>{u.ad}</span>
                               {kaynaktaYokMu && (
-                                <span style={{ fontSize: 10, fontWeight: 600, background: "#eeeae0", color: "#7b8c86", padding: "1px 5px", borderRadius: 5 }}>
+                                <span style={{ fontSize: 10, fontWeight: 600, background: "var(--kart-ustu)", color: "var(--yazi-soluk)", padding: "1px 5px", borderRadius: 5 }}>
                                   kaynakta yok
                                 </span>
                               )}

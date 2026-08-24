@@ -124,9 +124,9 @@ export default function ChatMesaji({ mesaj }) {
       )}
 
       {mesaj.kaynaklar && mesaj.kaynaklar.length > 0 && (
-        <Card size="small" title="Kaynaklar" style={{ marginTop: 8, maxWidth: 640 }} headStyle={{ backgroundColor: "#f5f5f5" }}>
+        <Card size="small" title="Kaynaklar" style={{ marginTop: 8, maxWidth: 640 }} headStyle={{ backgroundColor: "var(--kart-ustu)" }}>
           {mesaj.kaynaklar.map((k, i) => (
-            <div key={i} style={{ marginBottom: i < mesaj.kaynaklar.length - 1 ? 16 : 0, paddingBottom: i < mesaj.kaynaklar.length - 1 ? 12 : 0, borderBottom: i < mesaj.kaynaklar.length - 1 ? "1px solid #f0f0f0" : "none" }}>
+            <div key={i} style={{ marginBottom: i < mesaj.kaynaklar.length - 1 ? 16 : 0, paddingBottom: i < mesaj.kaynaklar.length - 1 ? 12 : 0, borderBottom: i < mesaj.kaynaklar.length - 1 ? "1px solid var(--kenarlik)" : "none" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
                 <Typography.Link href={k.kaynak_url} target="_blank" rel="noopener noreferrer" style={{ fontWeight: 600 }}>
                   🔗 {k.banka} — {k.kampanya_adi}
@@ -168,7 +168,7 @@ export default function ChatMesaji({ mesaj }) {
                     margin: 0,
                     padding: "8px 12px",
                     borderLeft: "4px solid #1677ff",
-                    background: "#fafafa",
+                    background: "var(--kart-ustu)",
                     borderRadius: "0 4px 4px 0",
                     fontSize: 13,
                   }}
@@ -178,7 +178,7 @@ export default function ChatMesaji({ mesaj }) {
               )}
             </div>
           ))}
-          <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px dashed #d9d9d9" }}>
+          <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px dashed var(--kenarlik)" }}>
             <Typography.Text type="secondary" style={{ fontSize: 12 }}>
               ℹ️ Alıntılar kaynak sayfadan <strong>birebir</strong> alınmıştır; sistem bu metnin üzerine cümle üretmez.
             </Typography.Text>

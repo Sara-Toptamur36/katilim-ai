@@ -342,11 +342,17 @@ class Kaynak(BaseModel):
     belge_tarihi: date | None = None
     chunk_id: str | None = None
     # ARAMA ASAMASININ skoru (hibrit yogun+seyrek, RRF birlestirmesi).
-    # Havin'in 24.08.2026 raporunda "retrieval_score" adiyla istendi; AYNI
-    # SAYIYA IKINCI BIR AD VERILMEDI - bir degeri iki alanda tasimak, ikisi
-    # farkli seyler sanilip birbirine karistigi anda sessiz hataya donusur.
-    # Arayuz tarafinda okunacak ad budur.
+    # Havin'in 24.08.2026 raporunda "retrieval_score" adiyla istendi.
+    # Her iki ad da desteklenir (backward compatibility) ama asil ad
+    # similarity_score'dur - arayuz yeni kodu bu adi kullanmalidir.
     similarity_score: float | None = None
+    retrieval_score: float | None = Field(
+        None,
+        description=(
+            "ALIAS: similarity_score ile ayni deger (backward compatibility). "
+            "Yeni kod similarity_score kullanmalidir."
+        ),
+    )
     # YENIDEN SIRALAMA asamasinin skoru (cross-encoder). Arama skorundan
     # AYRI bir bilesendir - retriever bu degeri zaten uretiyordu ama semada
     # karsiligi olmadigi icin arayuze hic ulasmiyordu, dolayisiyla Juri
@@ -432,6 +438,11 @@ class Kaynak(BaseModel):
 class RetrieverSonuc(BaseModel):
     chunk_id: str
     similarity_score: float | None = None
+    # Backward compatibility alias
+    retrieval_score: float | None = Field(
+        None,
+        description="ALIAS: similarity_score ile ayni (backward compatibility)",
+    )
     rerank_score: float | None = None
     metin_ozeti: str | None = None
 

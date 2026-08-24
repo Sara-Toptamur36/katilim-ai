@@ -57,6 +57,17 @@ from chunking.seyrek_vektor import (
 # olustukca yeniden olculmeli - bu yuzden sabit burada, tek yerde tutulur.
 ASGARI_TERIM_ORTUSMESI = 0.60
 
+# DENETIM BULGUSU (24.08.2026): Terim ortusme kontrolu YALNIZ BASINA
+# YETERSIZ - site menu metni ("Konut Finansmani", "Kart Kampanyalari")
+# genel terimleri icerir, sorgu terimleri gecse de vektor skoru cok dusuk
+# (0.17/0.13/0.08). COZUM: terim ortusmesi GEREKLI ama YETERLI degil -
+# bunun yaninda en yuksek vektor skorunun da makul olmasi gerekir.
+#
+# Ölcüldü: gerçek sorularda (Recall@5 %88.24 olan sette) en düşük top-1
+# skor ~0.45 civari. Menu kirliliği sorununda 0.17. Esik 0.40 bu ikisinin
+# arasina oturur.
+ASGARI_VEKTOR_SKORU = 0.40
+
 # Cok kisa sorgularda ("murabaha nedir") tek terim bile yeterli olabilir;
 # bu uzunlugun altinda oran yerine "en az 1 terim" kurali uygulanir.
 KISA_SORGU_TERIM_SAYISI = 2
@@ -233,12 +244,28 @@ def getir(
     if not parcalar:
         return RetrieverSonucu(sebep="Arama hicbir sonuc dondurmedi")
 
+    # --- Vektor skoru kontrolu (menu kirliligi onlemi) -------------------
+    # Ilk parcadaki en yuksek vektor skorunu kontrol et. Parcalarda
+    # "score" alani RRF skorudur (siralama birlesimi) - ham vektor skoru
+    # degil. Ham vektor skoru "ustveri.vektor_skoru" alaninda korunur
+    # (qdrant_baglanti.hibrit_ara'da eklenir).
+    en_yuksek_vektor_skoru = max(
+        (
+            (p.get("ustveri") or {}).get("vektor_skoru", 0.0)
+            for p in parcalar
+        ),
+        default=0.0,
+    )
+
     ortusme, eslesen = _terim_ortusmesi(terimler, parcalar)
 
     if len(terimler) <= KISA_SORGU_TERIM_SAYISI:
-        yeterli = len(eslesen) >= 1
+        yeterli_ortusme = len(eslesen) >= 1
     else:
-        yeterli = ortusme >= ASGARI_TERIM_ORTUSMESI
+        yeterli_ortusme = ortusme >= ASGARI_TERIM_ORTUSMESI
+
+    # IKI KOSUL DA GERCEKLESMELI: terim ortusmesi + vektor skoru
+    yeterli = yeterli_ortusme and en_yuksek_vektor_skoru >= ASGARI_VEKTOR_SKORU
 
     # Banka metadata ile eslesti - kanit listesinde gorunmeli.
     # ABSTENTION ACISINDAN: banka adi artik sorgu terimleri arasinda DEGIL
@@ -249,17 +276,24 @@ def getir(
     if tespit_edilen_banka is not None:
         eslesen = [f"{tespit_edilen_banka} (metadata)", *eslesen]
 
+    sebep = None
+    if not yeterli:
+        if not yeterli_ortusme:
+            sebep = (
+                f"Sorudaki terimlerin yalnizca %{ortusme * 100:.0f}'i kaynaklarda "
+                "gecti - guvenilir bir cevap icin yetersiz"
+            )
+        else:
+            sebep = (
+                f"Terim ortusmesi yeterli (%{ortusme * 100:.0f}) ama en yuksek "
+                f"vektor skoru cok dusuk ({en_yuksek_vektor_skoru:.2f} < {ASGARI_VEKTOR_SKORU}) - "
+                "muhtemelen genel menu/navigasyon metni"
+            )
+
     return RetrieverSonucu(
         parcalar=parcalar,
         yeterli_kaynak_var=yeterli,
         terim_ortusmesi=round(ortusme, 3),
         eslesen_terimler=eslesen,
-        sebep=(
-            None
-            if yeterli
-            else (
-                f"Sorudaki terimlerin yalnizca %{ortusme * 100:.0f}'i kaynaklarda "
-                "gecti - guvenilir bir cevap icin yetersiz"
-            )
-        ),
+        sebep=sebep,
     )

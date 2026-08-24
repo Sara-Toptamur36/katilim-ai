@@ -245,6 +245,11 @@ def hibrit_ara(
     `exact=True`: HNSW yaklasik arama yerine tam brute-force tarama yapar.
     Recall@1 oynamasini onlemek icin olcum/test doneminde kullanilir;
     uretim yolunda (hizli yanit onemli) False birakilmalidir.
+    
+    DENETIM BULGUSU (24.08.2026): Menu kirliligi onlemi icin ham vektor
+    skoru da donduruluyor. RRF skoru siralama birlestirme skorudur ve
+    en ustteki sonuc her zaman ~1.0 civari alir; ham vektor skoru ise
+    gercek anlam benzerligini gosterir (0-1 arasi cosine similarity).
     """
     from qdrant_client.models import Fusion, FusionQuery, Prefetch, SearchParams, SparseVector
 
@@ -273,13 +278,38 @@ def hibrit_ara(
             )
         )
 
+    # RRF birlesik sonuclari al
     sonuclar = istemci_al().query_points(
         collection_name=koleksiyon,
         prefetch=on_aramalar,
         query=FusionQuery(fusion=Fusion.RRF),
         limit=limit,
     ).points
-    return [{"skor": s.score, "ustveri": s.payload} for s in sonuclar]
+    
+    # Ham vektor skorlarini ayri bir aramadan al (menu kirliligi kontrolu icin)
+    # YALNIZCA yogun vektor aramasinin skorlari - seyrek arama keyword bazli,
+    # menu kirliligi zaten keyword eslesmesindendir.
+    ham_vektor_sonuclari = istemci_al().search(
+        collection_name=koleksiyon,
+        query_vector=(YOGUN_AD, yogun_sorgu),
+        limit=limit,
+        query_filter=filtre,
+        search_params=arama_params,
+    )
+    
+    # RRF sonuc ID'leriyle ham vektor skorlarini eslestir
+    ham_skor_map = {s.id: s.score for s in ham_vektor_sonuclari}
+    
+    return [
+        {
+            "skor": s.score,
+            "ustveri": {
+                **(s.payload or {}),
+                "vektor_skoru": ham_skor_map.get(s.id, 0.0),
+            }
+        }
+        for s in sonuclar
+    ]
 
 
 

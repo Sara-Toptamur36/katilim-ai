@@ -591,6 +591,8 @@ def rag_aracini_cagir(
                 "chunk_id": ustveri.get("kaynak_url"),
                 "belge_tarihi": _erisim_zamanini_tarihe_cevir(ustveri.get("erisim_zamani")),
                 "similarity_score": round(parca.get("skor", 0.0), 4),
+                # Backward compatibility: retrieval_score = similarity_score
+                "retrieval_score": round(parca.get("skor", 0.0), 4),
                 # Arama ve siralama AYRI bilesenler - audit paneli ikisini
                 # ayri gosterebilsin diye ikisi de tasinir. Reranker
                 # calismadiysa (parcada anahtar yok) None kalir, 0.0

@@ -55,6 +55,8 @@ class SahteSatir:
             "kampanya_avantaji": None,
             "masraf_durumu": None,
             "tahsis_ucreti": None,
+            "nakit_iade_orani": None,
+            "indirim_orani_percent": None,
             "kampanya_baslangic": None,
             "kampanya_bitis": None,
             "durum": None,

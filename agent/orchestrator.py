@@ -279,6 +279,9 @@ def soru_isle(soru: str, kayit_getirici: KayitGetirici, rag_araci=None) -> dict:
                 {
                     "chunk_id": k.get("kaynak_url") or "",
                     "similarity_score": k.get("similarity_score"),
+                    # Backward compatibility alias
+                    "retrieval_score": k.get("similarity_score"),
+                    "rerank_score": k.get("rerank_score"),
                     "metin_ozeti": (k.get("metin") or "")[:200],
                 }
                 for k in kaynaklar

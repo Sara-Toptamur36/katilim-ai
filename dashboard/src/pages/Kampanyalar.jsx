@@ -3,6 +3,7 @@ import { Alert, Divider, Typography } from "antd";
 import { kampanyalariGetir } from "../api/client";
 import FiltrePaneli from "../components/FiltrePaneli";
 import KampanyaTablosu from "../components/KampanyaTablosu";
+import IstatistikKartlari from "../components/IstatistikKartlari";
 import EtkiSkoruKarti from "../components/EtkiSkoruKarti";
 import KampanyaTarihcesiKarti from "../components/KampanyaTarihcesiKarti";
 import KarPayiTablosuKarti from "../components/KarPayiTablosuKarti";
@@ -46,6 +47,11 @@ export default function Kampanyalar() {
   return (
     <div>
       <Title level={3}>Kampanyalar</Title>
+
+      {/* Ozet kartlari: bilesen yazilmisti ama hicbir sayfada render
+          edilmiyordu (olculdu 24.08.2026). Suzgecin o anki sonucunu
+          ozetler - filtre degistikce sayilar da degisir. */}
+      <IstatistikKartlari kampanyalar={kampanyalar} />
 
       <FiltrePaneli
         bankalar={bankalar}

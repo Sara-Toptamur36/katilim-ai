@@ -24,8 +24,27 @@ from typing import Any, Optional
 
 import requests
 
+import evren_istemci
+
 QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:6333")
-VARSAYILAN_KOLEKSIYON = os.environ.get("QDRANT_KOLEKSIYON", "kampanya_parcalari")
+
+# KOLEKSIYON ADI EMBEDDING SAGLAYICISINA GORE OTOMATIK AYRILIR (bkz.
+# docs/adr/0002-evren-cikarim-entegrasyonu.md): EVREN'in bge-m3-embed'i
+# 1024, yerel e5-base 768 boyutlu vektor uretiyor - ikisi AYNI koleksiyona
+# yazilamaz (Qdrant boyut uyumsuzlugunda hata verir, ya da daha kotusu,
+# koleksiyon ilk olusturuldugu boyutta SABIT kalir ve farkli boyuttaki
+# sonraki yazmalar sessizce yanlis sonuc uretebilir). QDRANT_KOLEKSIYON
+# ORTAM DEGISKENI ACIKCA VERILMISSE bu otomatik ayrim devre disi kalir -
+# kullanicinin ELLE sectigi bir isim her zaman kazanir.
+_KOLEKSIYON_ELLE_VERILMIS = "QDRANT_KOLEKSIYON" in os.environ
+_KOLEKSIYON_TABANI = os.environ.get("QDRANT_KOLEKSIYON", "kampanya_parcalari")
+VARSAYILAN_KOLEKSIYON = (
+    _KOLEKSIYON_TABANI
+    if _KOLEKSIYON_ELLE_VERILMIS
+    else (
+        f"{_KOLEKSIYON_TABANI}_evren" if evren_istemci.aktif_mi() else _KOLEKSIYON_TABANI
+    )
+)
 
 # YEREL DOSYA MODU (sunucusuz). Tanimliysa Qdrant sunucusu yerine bu
 # klasore yazilir - Docker/servis kurulamayan makinelerde (ornegin GPU'suz
@@ -289,14 +308,23 @@ def hibrit_ara(
     # Ham vektor skorlarini ayri bir aramadan al (menu kirliligi kontrolu icin)
     # YALNIZCA yogun vektor aramasinin skorlari - seyrek arama keyword bazli,
     # menu kirliligi zaten keyword eslesmesindendir.
-    ham_vektor_sonuclari = istemci_al().search(
+    #
+    # DENETIM BULGUSU (25 Agustos 2026): `QdrantClient.search()` bu
+    # projenin sabitledigi qdrant-client==1.18.0 surumunde ARTIK YOK -
+    # tamamen `query_points()` ile degistirilmis (bkz. requirements.txt).
+    # Bu satir daha once hicbir CANLI Qdrant'a karsi calistirilmamisti
+    # (CI'da servis yok, testler skip ediliyordu) - AttributeError ilk kez
+    # yerel dosya modundaki gercek indeksle (.qdrant_yerel) calistirildiginda
+    # yakalandi.
+    ham_vektor_sonuclari = istemci_al().query_points(
         collection_name=koleksiyon,
-        query_vector=(YOGUN_AD, yogun_sorgu),
+        query=yogun_sorgu,
+        using=YOGUN_AD,
         limit=limit,
         query_filter=filtre,
         search_params=arama_params,
-    )
-    
+    ).points
+
     # RRF sonuc ID'leriyle ham vektor skorlarini eslestir
     ham_skor_map = {s.id: s.score for s in ham_vektor_sonuclari}
     
@@ -311,6 +339,52 @@ def hibrit_ara(
         for s in sonuclar
     ]
 
+
+def yogun_ara(
+    yogun_sorgu: list[float],
+    limit: int = 5,
+    koleksiyon: str = VARSAYILAN_KOLEKSIYON,
+    filtre=None,
+    exact: bool = False,
+) -> list[dict]:
+    """SAF yogun (dense-only) arama - seyrek vektor/RRF fuzyonu YOK.
+
+    NEDEN VAR (bkz. docs/adr/0002-evren-cikarim-entegrasyonu.md, RAG_MODE):
+    EVREN dokumantasyonunun kendi olcumunde hibrit fuzyon (0,85) ve
+    yeniden siralama (0,55) saf yogun getirmenin (0,95) ALTINDA kaliyor.
+    Bu fonksiyon, chunking/retriever.py::getir() icinde RAG_MODE=dense
+    iken kullanilir - hibrit_ara() ile AYNI koleksiyon semasini (named
+    "yogun"/"seyrek" vektorler) hedefler, yalnizca seyrek prefetch/fuzyon
+    adimini atlar.
+
+    DONUS BICIMI hibrit_ara() ILE BIREBIR AYNI - {"skor":..., "ustveri":
+    {..., "vektor_skoru": ...}} - boylece chunking/retriever.py'deki
+    "menu kirliligi" esik kontrolu (ASGARI_VEKTOR_SKORU, DENETIM BULGUSU
+    24.08.2026) hangi arama modu kullanilirsa kullanilsin degismeden
+    calisir. Burada `vektor_skoru` == `skor` (ikisi de ayni ham kosinus
+    benzerligi) - hibrit_ara()'daki gibi AYRI bir ikinci sorguya gerek
+    yok, zaten tek bir dense sorgu yapiliyor.
+    """
+    from qdrant_client.models import SearchParams
+
+    arama_params = SearchParams(exact=exact) if exact else None
+    # `.search()` DEGIL `.query_points()` - bkz. hibrit_ara() icindeki AYNI
+    # denetim bulgusu (25 Agustos 2026, qdrant-client==1.18.0'da .search() yok).
+    sonuclar = istemci_al().query_points(
+        collection_name=koleksiyon,
+        query=yogun_sorgu,
+        using=YOGUN_AD,
+        limit=limit,
+        query_filter=filtre,
+        search_params=arama_params,
+    ).points
+    return [
+        {
+            "skor": s.score,
+            "ustveri": {**(s.payload or {}), "vektor_skoru": s.score},
+        }
+        for s in sonuclar
+    ]
 
 
 def coklu_filtre(banka: str | None = None, hedef_tarih: str | None = None):

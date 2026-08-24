@@ -33,8 +33,22 @@ cagrisi icindeki regex/NER/LLM katmanlari arasindaki uzlasmadir; burasi,
 veritabaninda ONCEDEN VAR olan bir degerin bu script tarafindan hic
 ezilmemesidir.)
 
+BU KURALIN BEDELI VE `--tazele` (24 Agustos 2026): "asla ezme" kurali,
+motor DUZELTILDIGINDE veritabaninin bayat kalmasi anlamina geliyordu.
+Olculdu: kar payi orani dolu 17 kaydin 13'u guncel motorla celisiyordu -
+23 Agustos'ta eklenen nakit iade/indirim korumalari ve kaldirilan
+RE_VADE_FARKSIZ kurali DB'ye hic yansimamisti, cunku sutundaki eski deger
+"dolu" sayilip atlanıyordu. `--tazele` bayragi bu celiskiyi giderir:
+motorun bugunku cevabi esas alinir, motor None diyorsa eski deger silinir.
+
+Bayrak OPSIYONELDIR ve varsayilan davranis degismemistir. Ezilecek "elle
+yapilan duzeltme" de yoktur: bu alanlarin tek yazari cikarim motorudur
+(postgrese_yukle.py finansal alanlari NULL birakir), altin veri seti ise
+ayri bir dosyada durur ve bundan hic etkilenmez.
+
 Kullanim:
-    python -m extraction.regex_ile_zenginlestir
+    python -m extraction.regex_ile_zenginlestir              # bos alanlari doldur
+    python -m extraction.regex_ile_zenginlestir --tazele     # bayat degerleri de duzelt
 """
 
 import json
@@ -121,9 +135,33 @@ def _tablo_varsa_kar_payi_bastir(cikan: dict, secilen_tablo: list[dict] | None) 
     return cikan
 
 
-def zenginlestir() -> dict:
+def zenginlestir(tazele: bool = False) -> dict:
     """Donen ozet: {"guncellendi": N, "atlandi": M, "ham_metin_yok": K,
-    "dogrulanamayan": L, "tablo_eklendi": T}.
+    "dogrulanamayan": L, "tablo_eklendi": T, "tazelendi": G}.
+
+    `tazele=False` (varsayilan): yalnizca BOS alanlar doldurulur. Ucuz ve
+    idempotent; mevcut cagiranlar bu davranisi bekliyor.
+
+    `tazele=True`: motorun bugunku cevabi sutundakiyle celisiyorsa sutun
+    GUNCELLENIR - motor None diyorsa eski deger silinir.
+
+    NEDEN GEREKLI (olculdu 24.08.2026): doldur-sadece semantigi, motor
+    duzeltildikten sonra DB'yi kendi kendine tazelemiyor. Sutunda duran
+    eski deger "mevcut deger" sayildigi icin `mevcut_deger is None` kosulu
+    hic tutmuyor; betik kac kere kosulursa kosulsun bayat deger kaliyordu.
+
+    Bedeli olculdu: kar payi orani dolu 17 kaydin 13'unde DB, guncel
+    motorla CELISIYORDU. 23 Agustos'ta motora eklenen nakit iade / indirim
+    korumalari ve kaldirilan RE_VADE_FARKSIZ kurali DB'ye hic yansimamisti.
+    Sonuc, "%10 nakit iade"nin kar payi orani olarak durmasiydi; bu da
+    `en_dusuk_kar_payi` (ASC) siralamasinin en ust satirini - juriye
+    gosterilecek Md. 5.7 ekranini - yanlis yapiyordu.
+
+    GUVENLI OLMASININ SEBEBI: bu alanlarin TEK yazari cikarim motorudur.
+    scraper/scripts/postgrese_yukle.py yalnizca kaynak/izlenebilirlik
+    alanlarini yazip finansal alanlari NULL birakir (kendi docstring'i),
+    yani DB'de ezilecek insan girdisi yoktur. Altin veri seti ayri bir
+    dosyada durur ve buradan hic etkilenmez.
 
     "dogrulanamayan": bu calistirmada YENI yazilan sayisal alanlardan,
     validation/verifier.py'nin kaynak metinde (deger + baglam) DOGRULAYAMADIGI
@@ -133,7 +171,7 @@ def zenginlestir() -> dict:
     (confidence/cikarim_yontemi/Verifier) dahil degildir."""
     ozet = {
         "guncellendi": 0, "atlandi": 0, "ham_metin_yok": 0,
-        "dogrulanamayan": 0, "tablo_eklendi": 0,
+        "dogrulanamayan": 0, "tablo_eklendi": 0, "tazelendi": 0,
     }
     url_veri = _ham_metinleri_url_ile_esle()
     oturum = OturumYerel()
@@ -172,12 +210,26 @@ def zenginlestir() -> dict:
             for alan in CIKARILABILEN_ALANLAR:
                 mevcut_deger = getattr(satir, alan, None)
                 yeni_deger = cikan.get(alan)
+
                 if mevcut_deger is None and yeni_deger is not None:
                     setattr(satir, alan, yeni_deger)
                     alan_belirtilmemis[alan] = False
                     degisti = True
                     kullanilan_katmanlar.add(kaynaklar.get(alan, "regex"))
                     guncellenen_alanlar.append(alan)
+                elif tazele and mevcut_deger != yeni_deger:
+                    # BAYAT DEGER TEMIZLIGI - bkz. `tazele` parametresinin
+                    # docstring'i. Motor artik None diyorsa sutundaki eski
+                    # deger de SILINIR; "belirtilmemis" isaretlenir ki deger
+                    # sessizce kaybolmus gibi degil, bilerek bos birakilmis
+                    # gibi gorunsun (rapor Bolum 5.7/15).
+                    setattr(satir, alan, yeni_deger)
+                    alan_belirtilmemis[alan] = yeni_deger is None
+                    degisti = True
+                    ozet["tazelendi"] += 1
+                    if yeni_deger is not None:
+                        kullanilan_katmanlar.add(kaynaklar.get(alan, "regex"))
+                        guncellenen_alanlar.append(alan)
 
             if degisti:
                 satir.alan_belirtilmemis = alan_belirtilmemis
@@ -233,12 +285,21 @@ def zenginlestir() -> dict:
 
 
 if __name__ == "__main__":
-    sonuc = zenginlestir()
+    import argparse
+
+    _a = argparse.ArgumentParser(description="Kampanya alanlarini cikarimla doldurur")
+    _a.add_argument(
+        "--tazele",
+        action="store_true",
+        help="Motorun bugunku cevabiyla celisen BAYAT degerleri de duzelt",
+    )
+    sonuc = zenginlestir(tazele=_a.parse_args().tazele)
     print(
         f"Zenginlestirildi: {sonuc['guncellendi']} guncellendi, "
         f"{sonuc['atlandi']} zaten doluydu/degismedi, "
         f"{sonuc['ham_metin_yok']} icin ham metin bulunamadi, "
         f"{sonuc['dogrulanamayan']} yeni alan Verifier'dan gecemedi "
         "(silinmedi, bkz. logs/api.log), "
-        f"{sonuc['tablo_eklendi']} kayda kar_payi_tablosu eklendi"
+        f"{sonuc['tablo_eklendi']} kayda kar_payi_tablosu eklendi, "
+        f"{sonuc['tazelendi']} bayat alan tazelendi"
     )

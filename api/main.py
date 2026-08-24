@@ -54,6 +54,7 @@ from api.schemas import (
     ChatYanit,
     HesapIstek,
     HesapYanit,
+    Kaynak,
     KarsilastirIstek,
     KarsilastirYanit,
     KayitIstek,
@@ -598,6 +599,20 @@ def cikar(
         genel_guven=genel_guven_hesapla(izler_ham),
         hibrit_kullanildi=istek.hibrit,
         sure_ms=sure_ms,
+        # Cikarim, denetim kaydina (yukaridaki _audit_kaydet) zaten
+        # yaziliyordu ama YANITA konmadigi icin Juri Audit Paneli'ne hic
+        # dusmuyordu - /hesapla ve /karsilastir'da olan blok burada eksikti
+        # (Havin'in 24.08.2026 raporu, Md. 6).
+        audit=_bos_audit(
+            cagrilan_arac="extraction",
+            latency_ms=sure_ms,
+            response_confidence=genel_guven_hesapla(izler_ham),
+            sebep=(
+                "Hibrit cikarim (regex -> NER -> LLM)"
+                if istek.hibrit
+                else "Yalnizca deterministik regex katmani"
+            ),
+        ),
         **{"not": not_metni},
     )
 
@@ -1095,6 +1110,25 @@ async def chat_stream(istek: ChatIstek, kullanici: dict = Depends(token_dogrula)
 
     cevap = sonuc["cevap"]
 
+    # KAYNAKLAR AKIS BASLAMADAN ONCE HAZIRLANIR.
+    #
+    # Hata 1 (olculdu): `sonuc["kaynaklar"]` bir Kaynak listesi DEGIL, duz
+    # dict listesidir - /chat onlari ChatYanit'a verip Pydantic'e dogrulatir.
+    # Burada dogrudan `k.model_dump()` cagriliyordu ve akis her istekte
+    # AttributeError ile patliyordu. Uc nokta vardi ama calismiyordu.
+    #
+    # Hata 2 (ayni satirin ikinci tuzagi): bu is jenerator'un ICINDE
+    # yapilirsa hata akis basladiktan SONRA olusur - HTTP durum kodu coktan
+    # 200 gonderilmistir, istemci hatayi goremez, yalnizca yarim kalmis bir
+    # akis gorur. Bu yuzden dogrulama BURADA, yanit donmeden yapilir:
+    # bozuk veri duzgun bir 500 uretir.
+    #
+    # Dogrulamadan gecirmek (ham dict'i oldugu gibi yollamak yerine) iki
+    # ucun AYNI semayi uygulamasini garanti eder; aksi halde /chat ile
+    # /chat/stream'in kaynak nesneleri sessizce birbirinden ayrilirdi.
+    kaynaklar_json = [Kaynak.model_validate(k).model_dump() for k in sonuc["kaynaklar"]]
+    audit_json = audit.model_dump()
+
     async def jenerator():
         # Kelime kelime gonder - canli yazma hissi
         kelimeler = cevap.split(" ")
@@ -1104,7 +1138,13 @@ async def chat_stream(istek: ChatIstek, kullanici: dict = Depends(token_dogrula)
             await asyncio.sleep(0.03)  # ~30ms - gercekci his, demo'da yeterli
 
         # Tamamlandi: audit + kaynaklar + fallback
-        yield f"data: {json.dumps({'done': True, 'audit': audit.model_dump(), 'kaynaklar': [k.model_dump() for k in sonuc['kaynaklar']], 'fallback': sonuc['fallback']}, ensure_ascii=False, default=str)}\n\n"
+        tamamlandi = {
+            "done": True,
+            "audit": audit_json,
+            "kaynaklar": kaynaklar_json,
+            "fallback": sonuc["fallback"],
+        }
+        yield f"data: {json.dumps(tamamlandi, ensure_ascii=False, default=str)}\n\n"
 
     return StreamingResponse(
         jenerator(),

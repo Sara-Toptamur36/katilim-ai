@@ -6,13 +6,46 @@ Havin'in arayuzune hic yansitmadan degistirebilir (bkz. GERCEK_VERI_AKTIF
 bayragi, api/main.py).
 """
 
+from datetime import date
+
 from sqlalchemy.orm import Session
 
 from api.models import Kampanya
 from api.schemas import CampaignRecord
+from storage.yasam_dongusu import durum_hesapla
 
 
-def _kayda_cevir(satir: Kampanya) -> CampaignRecord:
+def _durum_coz(satir: Kampanya, bugun: date | None = None) -> str:
+    """Kampanyanin yasam dongusu durumunu OKUMA ANINDA hesaplar.
+
+    DENETIM BULGUSU (24.08.2026, Havin'in arayuz raporu Md. 1): 251 kaydin
+    251'i de durum=BILINMIYOR idi. Sebep basit ama gorunmezdi -
+    `durum_hesapla` uretim kodunda HIC CAGRILMIYORDU, yalnizca testleri
+    vardi; `durum` sutununa da hicbir yukleyici yazmiyordu. Burasi bos
+    sutunu `or "BILINMIYOR"` ile oldugu gibi geciriyordu.
+
+    Bedeli: compare_engine'in `yalnizca_aktif` filtresi listeyi tumuyle
+    bosaltiyor, Karsilastirma sayfasi "0 aktif kampanya - 0 banka"
+    gosteriyordu. Sartname Md. 5.7'nin istedigi rakip analizi bostu.
+
+    NEDEN SUTUNA YAZMIYORUZ: yasam dongusu ZAMANA BAGLI. Bugun ACTIVE olan
+    kayit yarin EXPIRED olur; sutuna yazilan deger yazildigi gun dogru,
+    ertesi gun sessizce yanlistir. Tarihlerden her okumada hesaplamak
+    degerin sorulduğu ana gore hep dogru olmasini garanti eder.
+
+    Tarih HIC yoksa hesaplama BILINMIYOR doner; o durumda sutunda bir bilgi
+    varsa (ornegin kaynak sayfa "kampanya sona erdi" diyorsa) onu EZMEYIZ -
+    elde olan tek veriyi atmak olurdu.
+    """
+    hesaplanan = durum_hesapla(
+        satir.kampanya_baslangic, satir.kampanya_bitis, bugun=bugun
+    )
+    if hesaplanan != "BILINMIYOR":
+        return hesaplanan
+    return satir.durum or "BILINMIYOR"
+
+
+def _kayda_cevir(satir: Kampanya, bugun: date | None = None) -> CampaignRecord:
     """SQLAlchemy satirini CampaignRecord'a cevirir.
 
     ONEMLI: mock_data.id_ile_getir() de ayni sekilde Pydantic CampaignRecord
@@ -39,7 +72,7 @@ def _kayda_cevir(satir: Kampanya) -> CampaignRecord:
         "tahsis_ucreti": satir.tahsis_ucreti,
         "kampanya_baslangic": satir.kampanya_baslangic,
         "kampanya_bitis": satir.kampanya_bitis,
-        "durum": satir.durum or "BILINMIYOR",
+        "durum": _durum_coz(satir, bugun),
         "hedef_kitle": satir.hedef_kitle,
         "kaynak_url": satir.kaynak_url,
         "belge_tarihi": satir.belge_tarihi,

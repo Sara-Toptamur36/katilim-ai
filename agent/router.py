@@ -591,6 +591,19 @@ def rag_aracini_cagir(
                 "chunk_id": ustveri.get("kaynak_url"),
                 "belge_tarihi": _erisim_zamanini_tarihe_cevir(ustveri.get("erisim_zamani")),
                 "similarity_score": round(parca.get("skor", 0.0), 4),
+                # Arama ve siralama AYRI bilesenler - audit paneli ikisini
+                # ayri gosterebilsin diye ikisi de tasinir. Reranker
+                # calismadiysa (parcada anahtar yok) None kalir, 0.0
+                # UYDURULMAZ: 0.0 "cok kotu eslesme" demektir, "olculmedi"
+                # demek degil.
+                "rerank_score": (
+                    round(parca["rerank_score"], 4)
+                    if parca.get("rerank_score") is not None
+                    else None
+                ),
+                # Cikarim guveni kampanya KAYDINDAN gelir, parcadan degil.
+                # Kayit eslesmediyse None - bkz. Kaynak.entity_confidence.
+                "entity_confidence": getattr(kampanya_kaydi, "confidence", None),
                 "metin": ustveri.get("metin", ""),
                 # RAG geri donusleri her zaman resmi kaynak metninden gelir.
                 # Cikarim/hesaplama sonuclari bu listeye girmez (bos liste doner).

@@ -959,7 +959,7 @@
     "soru": "Restoran Harcamalarında %10 İade",
     "kategori": "tam_ad",
     "beklenen_sluglar": [
-      "kampanyalar.html"
+      "kampanyalar.html#restoran-harcamalar-nda-10-i-ade-kazan"
     ],
     "kayit_id": "TOM-001",
     "kaynak": "turetilmis"
@@ -968,7 +968,7 @@
     "soru": "Restoran Harcamalarında %10",
     "kategori": "kismi_ad",
     "beklenen_sluglar": [
-      "kampanyalar.html"
+      "kampanyalar.html#restoran-harcamalar-nda-10-i-ade-kazan"
     ],
     "kayit_id": "TOM-001",
     "kaynak": "turetilmis"
@@ -977,7 +977,7 @@
     "soru": "Özel Okul Ödemelerinde 10 Taksit, Vade Farksız",
     "kategori": "tam_ad",
     "beklenen_sluglar": [
-      "kampanyalar.html"
+      "kampanyalar.html#zel-okul-demelerinde-10-taksit-stelik-vade-farks-z"
     ],
     "kayit_id": "TOM-002",
     "kaynak": "turetilmis"
@@ -986,7 +986,7 @@
     "soru": "Özel Okul Ödemelerinde",
     "kategori": "kismi_ad",
     "beklenen_sluglar": [
-      "kampanyalar.html"
+      "kampanyalar.html#zel-okul-demelerinde-10-taksit-stelik-vade-farks-z"
     ],
     "kayit_id": "TOM-002",
     "kaynak": "turetilmis"
@@ -995,7 +995,7 @@
     "soru": "Tüm Marketlerde 1.000 TL'ye Kadar İade",
     "kategori": "tam_ad",
     "beklenen_sluglar": [
-      "kampanyalar.html"
+      "kampanyalar.html#t-m-marketlerde-ge-erli-1-000-tl-ye-kadar-iade"
     ],
     "kayit_id": "TOM-003",
     "kaynak": "turetilmis"
@@ -1004,7 +1004,7 @@
     "soru": "Tüm Marketlerde 1.000",
     "kategori": "kismi_ad",
     "beklenen_sluglar": [
-      "kampanyalar.html"
+      "kampanyalar.html#t-m-marketlerde-ge-erli-1-000-tl-ye-kadar-iade"
     ],
     "kayit_id": "TOM-003",
     "kaynak": "turetilmis"
@@ -1182,7 +1182,7 @@
     "soru": "T.O.M. Katılım ihtiyac finansmani",
     "kategori": "banka_ve_konu",
     "beklenen_sluglar": [
-      "kampanyalar.html"
+      "kampanyalar.html#zel-okul-demelerinde-10-taksit-stelik-vade-farks-z"
     ],
     "kayit_id": "TOM-002",
     "kaynak": "turetilmis",
@@ -1192,7 +1192,7 @@
     "soru": "T.O.M. Katılım kart",
     "kategori": "banka_ve_konu",
     "beklenen_sluglar": [
-      "kampanyalar.html"
+      "kampanyalar.html#restoran-harcamalar-nda-10-i-ade-kazan"
     ],
     "kayit_id": "TOM-001",
     "kaynak": "turetilmis",
@@ -1482,7 +1482,7 @@
     "soru": "Özel okul ödemesini vade farksız taksitlendirebilir miyim?",
     "kategori": "dogal_soru",
     "beklenen_sluglar": [
-      "kampanyalar.html"
+      "kampanyalar.html#zel-okul-demelerinde-10-taksit-stelik-vade-farks-z"
     ],
     "kayit_id": "TOM-002",
     "kaynak": "elle"
@@ -1491,7 +1491,7 @@
     "soru": "Market alışverişlerinde iade veren katılım bankası hangisi?",
     "kategori": "dogal_soru",
     "beklenen_sluglar": [
-      "kampanyalar.html"
+      "kampanyalar.html#t-m-marketlerde-ge-erli-1-000-tl-ye-kadar-iade"
     ],
     "kayit_id": "TOM-003",
     "kaynak": "elle"

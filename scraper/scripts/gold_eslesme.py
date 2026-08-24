@@ -64,8 +64,8 @@ def karsilastirma_bicimi(metin: str) -> str:
     # Combining karakterleri (Mn category) kaldir
     metin = "".join(c for c in metin if unicodedata.category(c) != "Mn")
     
-    return (metin.replace("'", "'")
-            .replace("'", "'")
+    return (metin.replace("’", "'")
+            .replace("‘", "'")
             .replace(".", "")  # Kisaltmalardaki noktalar (E.C.A. -> eca)
             .replace("İ", "i").lower())
 

@@ -1,6 +1,24 @@
 import { useState } from "react";
-import { Alert, Button, Card, Input, Space, Tag, Typography } from "antd";
-import { LoginOutlined, UserAddOutlined } from "@ant-design/icons";
+import {
+  Alert,
+  Button,
+  Collapse,
+  Input,
+  Space,
+  Tabs,
+  Tag,
+  Typography,
+} from "antd";
+import {
+  CheckCircleOutlined,
+  ExclamationCircleOutlined,
+  InfoCircleOutlined,
+  LockOutlined,
+  LoginOutlined,
+  LogoutOutlined,
+  UserAddOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import { girisYap, kayitOl, rolAl, rolSil, tokenSil } from "../api/client";
 
 const { Title, Text, Paragraph } = Typography;
@@ -19,6 +37,7 @@ export default function Giris() {
   const [mesaj, setMesaj] = useState(null); // {tip, baslik, metin}
   const [calisiyor, setCalisiyor] = useState(false);
   const [mevcutRol, setMevcutRol] = useState(rolAl());
+  const [aktifSekme, setAktifSekme] = useState("giris");
 
   const hataMetni = (e) =>
     // API'nin KENDI mesajini gosteriyoruz. Ozellikle /token mock modda
@@ -81,104 +100,262 @@ export default function Giris() {
     });
   };
 
-  return (
-    <div>
-      <Title level={3}>Giriş / Kayıt</Title>
+  // Şifre uzunluğunun anlık görsel doğrulaması (min 8 karakter)
+  const sifreGecerli = sifre.length >= ASGARI_SIFRE;
 
-      <Paragraph type="secondary" style={{ maxWidth: 640 }}>
-        Kayıt olan herkes <strong>müşteri</strong> rolü alır. Banka çalışanı,
-        denetleyici ve yönetici hesapları serbest kayıtla açılmaz — bunlar elle
-        tanımlanır.
-      </Paragraph>
-
-      <Card size="small" style={{ maxWidth: 480 }}>
-        <Space orientation="vertical" style={{ width: "100%" }} size={12}>
-          {mevcutRol && (
-            <Alert
-              type="info"
-              showIcon
-              title={
-                <span>
-                  Oturum açık — rol: <Tag color="blue">{mevcutRol}</Tag>
-                </span>
-              }
-              description="Menü bu role göre çiziliyor."
-            />
-          )}
-
+  const sekmeOgeleri = [
+    {
+      key: "giris",
+      label: (
+        <span>
+          <LoginOutlined /> Giriş Yap
+        </span>
+      ),
+      children: (
+        <Space direction="vertical" style={{ width: "100%" }} size={14}>
           <div>
-            <Text type="secondary">Kullanıcı adı</Text>
+            <Text type="secondary" style={{ fontSize: 13 }}>
+              Kullanıcı adı
+            </Text>
             <Input
+              prefix={<UserOutlined style={{ color: "var(--yazi-soluk)" }} />}
               style={{ marginTop: 4 }}
               value={kullaniciAdi}
               onChange={(e) => setKullaniciAdi(e.target.value)}
               autoComplete="username"
+              placeholder="Kullanıcı adınızı girin"
             />
           </div>
 
           <div>
-            <Text type="secondary">Şifre (en az {ASGARI_SIFRE} karakter)</Text>
+            <Text type="secondary" style={{ fontSize: 13 }}>
+              Şifre
+            </Text>
             <Input.Password
+              prefix={<LockOutlined style={{ color: "var(--yazi-soluk)" }} />}
               style={{ marginTop: 4 }}
               value={sifre}
               onChange={(e) => setSifre(e.target.value)}
               autoComplete="current-password"
               onPressEnter={giris}
+              placeholder="Şifrenizi girin"
             />
+            {/* Şifre alanında en az 8 karakter kuralı anlık görselleştirilir */}
+            <div
+              className={`giris-sifre-durum ${
+                sifreGecerli ? "gecerli" : "gecersiz"
+              }`}
+            >
+              {sifreGecerli ? (
+                <>
+                  <CheckCircleOutlined /> Şifre uzunluğu yeterli ({sifre.length}/{ASGARI_SIFRE} karakter)
+                </>
+              ) : (
+                <>
+                  <ExclamationCircleOutlined /> En az {ASGARI_SIFRE} karakter olmalı ({sifre.length}/{ASGARI_SIFRE})
+                </>
+              )}
+            </div>
+          </div>
+
+          <Button
+            type="primary"
+            block
+            size="large"
+            icon={<LoginOutlined />}
+            onClick={giris}
+            loading={calisiyor}
+            disabled={!kullaniciAdi || !sifre}
+            style={{ marginTop: 6 }}
+          >
+            Giriş yap
+          </Button>
+        </Space>
+      ),
+    },
+    {
+      key: "kayit",
+      label: (
+        <span>
+          <UserAddOutlined /> Kayıt Ol
+        </span>
+      ),
+      children: (
+        <Space direction="vertical" style={{ width: "100%" }} size={14}>
+          {/* Rol Bilgisi Etiketi: Kayıt olan herkes müşteri rolü alır */}
+          <div style={{ marginBottom: 4 }}>
+            <Tag color="cyan" style={{ fontSize: 12, padding: "4px 8px", width: "100%", textAlign: "center" }}>
+              👤 Kayıt olan tüm kullanıcılar varsayılan olarak "müşteri" rolü alır
+            </Tag>
+          </div>
+
+          <div>
+            <Text type="secondary" style={{ fontSize: 13 }}>
+              Kullanıcı adı
+            </Text>
+            <Input
+              prefix={<UserOutlined style={{ color: "var(--yazi-soluk)" }} />}
+              style={{ marginTop: 4 }}
+              value={kullaniciAdi}
+              onChange={(e) => setKullaniciAdi(e.target.value)}
+              autoComplete="username"
+              placeholder="Yeni kullanıcı adı belirleyin"
+            />
+          </div>
+
+          <div>
+            <Text type="secondary" style={{ fontSize: 13 }}>
+              Şifre (en az {ASGARI_SIFRE} karakter)
+            </Text>
+            <Input.Password
+              prefix={<LockOutlined style={{ color: "var(--yazi-soluk)" }} />}
+              style={{ marginTop: 4 }}
+              value={sifre}
+              onChange={(e) => setSifre(e.target.value)}
+              autoComplete="new-password"
+              onPressEnter={kayit}
+              placeholder="Şifrenizi belirleyin"
+            />
+            {/* Şifre alanında en az 8 karakter kuralı anlık görselleştirilir */}
+            <div
+              className={`giris-sifre-durum ${
+                sifreGecerli ? "gecerli" : "gecersiz"
+              }`}
+            >
+              {sifreGecerli ? (
+                <>
+                  <CheckCircleOutlined /> Şifre uzunluğu yeterli ({sifre.length}/{ASGARI_SIFRE} karakter)
+                </>
+              ) : (
+                <>
+                  <ExclamationCircleOutlined /> En az {ASGARI_SIFRE} karakter olmalı ({sifre.length}/{ASGARI_SIFRE})
+                </>
+              )}
+            </div>
           </div>
 
           {/* Rol SECTIREN bir alan BILEREK yok: sunucu her zaman "musteri"
               atar (api/schemas.py::KayitIstek). Buraya bir rol secici
               koymak, herkesin kendini yonetici yapabilmesi demek olurdu. */}
 
-          <Space wrap>
-            <Button
-              type="primary"
-              icon={<LoginOutlined />}
-              onClick={giris}
-              loading={calisiyor}
-              disabled={!kullaniciAdi || !sifre}
-            >
-              Giriş yap
-            </Button>
-            <Button
-              icon={<UserAddOutlined />}
-              onClick={kayit}
-              loading={calisiyor}
-              disabled={!kullaniciAdi || !sifre}
-            >
-              Kayıt ol
-            </Button>
-            {mevcutRol && <Button onClick={cikis}>Çıkış</Button>}
-          </Space>
-
-          {mesaj && (
-            <Alert
-              type={mesaj.tip}
-              title={mesaj.baslik}
-              description={mesaj.metin}
-              showIcon
-            />
-          )}
+          <Button
+            type="primary"
+            block
+            size="large"
+            icon={<UserAddOutlined />}
+            onClick={kayit}
+            loading={calisiyor}
+            disabled={!kullaniciAdi || !sifre}
+            style={{ marginTop: 6 }}
+          >
+            Kayıt ol
+          </Button>
         </Space>
-      </Card>
+      ),
+    },
+  ];
 
-      <Alert
-        type="warning"
-        showIcon
-        style={{ maxWidth: 640, marginTop: 16 }}
-        title="Demo modunda giriş gerekmez"
-        description={
-          <>
-            Sistem varsayılan olarak <strong>mock kimlik doğrulama</strong> ile
-            çalışır: her istek kabul edilir ve menüde hiçbir ekran gizlenmez.
-            Gerçek yetkilendirme yalnızca sunucu <code>JWT_AKTIF=true</code> ile
-            başlatıldığında devreye girer; bu ekran o modda anlam kazanır.
-            Mock modda <code>Giriş yap</code> düğmesi, sunucunun açıklayıcı
-            uyarısını olduğu gibi gösterir.
-          </>
-        }
-      />
+  return (
+    <div className="giris-kapsayici">
+      <div className="giris-karti">
+        {/* Başlık ve Logo Amblemi */}
+        <div className="giris-baslik-blogu">
+          <div className="giris-logo-amblem">K</div>
+          <Title level={3} style={{ margin: 0, letterSpacing: "-0.5px" }}>
+            KatılımAI Portal
+          </Title>
+          <Paragraph type="secondary" style={{ fontSize: 13, marginTop: 4, marginBottom: 0 }}>
+            Katılım bankacılığı yapay zekâ analiz platformu
+          </Paragraph>
+        </div>
+
+        {/* Oturum Açık ise Mevcut Rolü Belirgin Göster */}
+        {mevcutRol && (
+          <Alert
+            type="info"
+            showIcon
+            message={
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  width: "100%",
+                }}
+              >
+                <span>
+                  Oturum Açık — Rol:{" "}
+                  <Tag color="blue" style={{ fontWeight: 600, marginLeft: 4 }}>
+                    {mevcutRol}
+                  </Tag>
+                </span>
+                <Button
+                  size="small"
+                  type="text"
+                  danger
+                  onClick={cikis}
+                  icon={<LogoutOutlined />}
+                >
+                  Çıkış
+                </Button>
+              </div>
+            }
+            style={{ marginBottom: 16 }}
+          />
+        )}
+
+        {/* Giriş Yap / Kayıt Ol Sekmeleri */}
+        <Tabs
+          activeKey={aktifSekme}
+          onChange={setAktifSekme}
+          centered
+          items={sekmeOgeleri}
+        />
+
+        {/* Hata / Başarı bildirim mesajı kartın İÇİNDE, formun hemen altında */}
+        {mesaj && (
+          <Alert
+            type={mesaj.tip}
+            title={mesaj.baslik}
+            description={mesaj.metin}
+            showIcon
+            style={{ marginTop: 16 }}
+          />
+        )}
+
+        {/* Demo Modu Uyarısı: Tek cümle + Katlanır Ayrıntı Bölümü */}
+        <Alert
+          type="warning"
+          showIcon
+          icon={<InfoCircleOutlined />}
+          style={{ marginTop: 20 }}
+          message="Demo modunda giriş yapmadan tüm ekranlara erişebilirsiniz."
+          description={
+            <Collapse
+              ghost
+              size="small"
+              items={[
+                {
+                  key: "detay",
+                  label: (
+                    <Text type="secondary" style={{ fontSize: 11 }}>
+                      Teknik Ayrıntıyı Göster
+                    </Text>
+                  ),
+                  children: (
+                    <Text type="secondary" style={{ fontSize: 12, display: "block", lineHeight: 1.5 }}>
+                      Sistem varsayılan olarak mock kimlik doğrulama ile çalışır: her istek
+                      kabul edilir ve tüm ekranlar açık kalır. Gerçek yetkilendirme yalnızca
+                      sunucu <code>JWT_AKTIF=true</code> ile başlatıldığında devreye girer.
+                    </Text>
+                  ),
+                },
+              ]}
+            />
+          }
+        />
+      </div>
     </div>
   );
 }
+

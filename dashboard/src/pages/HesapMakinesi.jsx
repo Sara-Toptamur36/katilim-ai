@@ -4,7 +4,6 @@ import {
   Button,
   Card,
   Col,
-  Divider,
   Input,
   Row,
   Select,
@@ -15,7 +14,12 @@ import {
   Tooltip,
   Typography,
 } from "antd";
-import { CalculatorOutlined } from "@ant-design/icons";
+import {
+  CalculatorOutlined,
+  CheckCircleOutlined,
+  InfoCircleOutlined,
+  SafetyCertificateOutlined,
+} from "@ant-design/icons";
 import { hesapla, kampanyalariGetir } from "../api/client";
 import { useAudit } from "../context/AuditContext";
 
@@ -52,21 +56,21 @@ function hesaplanabilir(kampanya) {
 
 const PLAN_KOLONLARI = [
   { title: "Ay", dataIndex: "ay", key: "ay", width: 70 },
-  { title: "Taksit", dataIndex: "taksit", key: "taksit", render: tl },
+  { title: "Taksit (TL)", dataIndex: "taksit", key: "taksit", render: tl },
   {
-    title: "Kâr payı kısmı",
+    title: "Kâr Payı Kısmı (TL)",
     dataIndex: "kar_payi_kismi",
     key: "kar_payi_kismi",
     render: tl,
   },
   {
-    title: "Anapara kısmı",
+    title: "Anapara Kısmı (TL)",
     dataIndex: "anapara_kismi",
     key: "anapara_kismi",
     render: tl,
   },
   {
-    title: "Kalan bakiye",
+    title: "Kalan Bakiye (TL)",
     dataIndex: "kalan_bakiye",
     key: "kalan_bakiye",
     render: tl,
@@ -119,7 +123,7 @@ export default function HesapMakinesi() {
         // Hesaplanamayan kampanya listeden CIKARILMAZ - sebebi yazilir.
         label: hesaplanabilir(k)
           ? `${k.banka} — ${k.kampanya_adi}`
-          : `${k.banka} — ${k.kampanya_adi}  (oran/vade eksik)`,
+          : `${k.banka} — ${k.kampanya_adi} (oran/vade eksik)`,
         disabled: !hesaplanabilir(k),
       })),
     ],
@@ -128,12 +132,7 @@ export default function HesapMakinesi() {
 
   // Noktanin Turkce'de IKI anlami var: binlik ayraci ("500.000") ve -
   // makineden gelen degerlerde - ondalik ayraci ("1.89"). Kor bir
-  // `replace(/\./g,"")` ikincisini 189 yapar; bu, calculator.py'de
-  // duzeltilen "1234 TL -> 234" hatasinin arayuz karsiligidir.
-  //
-  // Kural: virgul VARSA ondalik ayraci odur, noktalar binliktir. Virgul
-  // yoksa nokta ancak "3'er basamakli gruplar" desenine uyuyorsa binlik
-  // sayilir; aksi halde ondalik kabul edilir.
+  // `replace(/\./g,"")` ikincisini 189 yapar.
   const sayi = (metin) => {
     let t = String(metin).trim();
     if (t === "") return null;
@@ -151,7 +150,8 @@ export default function HesapMakinesi() {
     const o = sayi(oran);
     const v = sayi(vade);
     if (a == null || o == null || v == null) return "Üç alanı da doldurun.";
-    if (a <= 0 || a > AZAMI_ANAPARA) return `Anapara 0 ile ${tl(AZAMI_ANAPARA)} TL arasında olmalı.`;
+    if (a <= 0 || a > AZAMI_ANAPARA)
+      return `Anapara 0 ile ${tl(AZAMI_ANAPARA)} TL arasında olmalı.`;
     if (o < 0 || o > AZAMI_AYLIK_ORAN)
       return `Aylık kâr payı oranı 0 ile %${AZAMI_AYLIK_ORAN} arasında olmalı. Yıllık oran girmiş olabilir misiniz?`;
     if (!Number.isInteger(v) || v <= 0 || v > AZAMI_VADE_AY)
@@ -178,7 +178,10 @@ export default function HesapMakinesi() {
       setSonuc(yanit);
       // Juri Audit Paneli bu hesabi da gorsun - sohbet yaniti gibi
       // izlenebilir olmali (bkz. context/AuditContext.jsx).
-      auditEkle(yanit.audit, `Hesaplama: ${tl(sayi(anapara))} TL / %${oran} / ${vade} ay`);
+      auditEkle(
+        yanit.audit,
+        `Hesaplama: ${tl(sayi(anapara))} TL / %${oran} / ${vade} ay`
+      );
     } catch (e) {
       setHata(e.response?.data?.detail ?? e.message);
       setSonuc(null);
@@ -188,124 +191,245 @@ export default function HesapMakinesi() {
   };
 
   return (
-    <div>
-      <Title level={3}>Hesap Makinesi</Title>
-      <Paragraph type="secondary" style={{ maxWidth: 720 }}>
+    <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+      <Title level={3} style={{ marginBottom: 4 }}>
+        Hesap Makinesi
+      </Title>
+      <Paragraph type="secondary" style={{ marginBottom: 20 }}>
         Taksit ve toplam maliyet hesabı. Bir kampanya seçerseniz kâr payı oranı
         ve vade <strong>kaydın kendisinden</strong> gelir; sizden yalnızca
         anapara istenir.
       </Paragraph>
 
-      <Card size="small" style={{ maxWidth: 720, marginBottom: 16 }}>
-        <Space orientation="vertical" style={{ width: "100%" }} size={12}>
-          <div>
-            <Text type="secondary">Kampanya</Text>
-            <Select
-              style={{ width: "100%", marginTop: 4 }}
-              value={secilenKampanya}
-              onChange={kampanyaSecildi}
-              loading={kampanyaYukleniyor}
-              options={secenekler}
-              showSearch
-              optionFilterProp="label"
-            />
-          </div>
+      {/* 2 Kolonlu Dengeli Düzen: Solda girdi parametreleri, sağda sonuç veya rehber */}
+      <Row gutter={[20, 20]}>
+        {/* Sol Kolon: Hesaplama Formu */}
+        <Col xs={24} lg={11}>
+          <Card
+            title={
+              <Space>
+                <CalculatorOutlined style={{ color: "var(--marka-500)" }} />
+                <span>Hesaplama Parametreleri</span>
+              </Space>
+            }
+            className="hesap-karti"
+            style={{ height: "100%" }}
+          >
+            <Space size={14} direction="vertical" style={{ width: "100%" }}>
+              <div>
+                <Text type="secondary" style={{ fontSize: 13, fontWeight: 500 }}>
+                  Kampanya Seçimi
+                </Text>
+                <Select
+                  style={{ width: "100%", marginTop: 6 }}
+                  value={secilenKampanya}
+                  onChange={kampanyaSecildi}
+                  loading={kampanyaYukleniyor}
+                  options={secenekler}
+                  showSearch
+                  optionFilterProp="label"
+                />
+              </div>
 
-          <Row gutter={12}>
-            <Col xs={24} sm={8}>
-              <Text type="secondary">Anapara (TL)</Text>
-              <Input
-                style={{ marginTop: 4 }}
-                value={anapara}
-                onChange={(e) => setAnapara(e.target.value)}
-                placeholder="500.000"
-                inputMode="decimal"
-              />
-            </Col>
-            <Col xs={24} sm={8}>
-              <Tooltip title="AYLIK orandır — yıllık oran girmeyin. Kampanya kayıtlarındaki kar_payi_orani_percent ile aynı birim.">
-                <Text type="secondary">Aylık kâr payı oranı (%) ⓘ</Text>
-              </Tooltip>
-              <Input
-                style={{ marginTop: 4 }}
-                value={oran}
-                onChange={(e) => setOran(e.target.value)}
-                placeholder="1,89"
-                inputMode="decimal"
-              />
-            </Col>
-            <Col xs={24} sm={8}>
-              <Text type="secondary">Vade (ay)</Text>
-              <Input
-                style={{ marginTop: 4 }}
-                value={vade}
-                onChange={(e) => setVade(e.target.value)}
-                placeholder="12"
-                inputMode="numeric"
-              />
-            </Col>
-          </Row>
+              <div>
+                <Text type="secondary" style={{ fontSize: 13, fontWeight: 500 }}>
+                  Anapara (TL)
+                </Text>
+                <Input
+                  style={{ marginTop: 6 }}
+                  value={anapara}
+                  onChange={(e) => setAnapara(e.target.value)}
+                  placeholder="500.000"
+                  inputMode="decimal"
+                />
+              </div>
 
-          <Space wrap>
-            <Button
-              type="primary"
-              icon={<CalculatorOutlined />}
-              onClick={hesapla_}
-              loading={hesaplaniyor}
-            >
-              Hesapla
-            </Button>
-            <Button
-              onClick={() => {
-                setPlanIstiyor(!planIstiyor);
-                setSonuc(null);
-              }}
-            >
-              {planIstiyor ? "Ödeme planı: açık" : "Ödeme planı: kapalı"}
-            </Button>
-          </Space>
-        </Space>
-      </Card>
+              <Row gutter={12}>
+                <Col span={12}>
+                  <Tooltip title="AYLIK orandır — yıllık oran girmeyin. Kampanya kayıtlarındaki kar_payi_orani_percent ile aynı birim.">
+                    <Text type="secondary" style={{ fontSize: 13, fontWeight: 500 }}>
+                      Aylık Kâr Payı Oranı (%) ⓘ
+                    </Text>
+                  </Tooltip>
+                  <Input
+                    style={{ marginTop: 6 }}
+                    value={oran}
+                    onChange={(e) => setOran(e.target.value)}
+                    placeholder="1,89"
+                    inputMode="decimal"
+                  />
+                </Col>
+                <Col span={12}>
+                  <Text type="secondary" style={{ fontSize: 13, fontWeight: 500 }}>
+                    Vade (ay)
+                  </Text>
+                  <Input
+                    style={{ marginTop: 6 }}
+                    value={vade}
+                    onChange={(e) => setVade(e.target.value)}
+                    placeholder="12"
+                    inputMode="numeric"
+                  />
+                </Col>
+              </Row>
 
-      {hata && (
-        <Alert
-          type="error"
-          title="Hesaplama yapılamadı"
-          description={hata}
-          showIcon
-          style={{ maxWidth: 720, marginBottom: 16 }}
-        />
-      )}
-
-      {sonuc && (
-        <>
-          <Card size="small" style={{ maxWidth: 720, marginBottom: 16 }}>
-            <Row gutter={16}>
-              <Col xs={24} sm={8}>
-                <Statistic title="Aylık taksit" value={tl(sonuc.aylik_taksit)} suffix="TL" />
-              </Col>
-              <Col xs={24} sm={8}>
-                <Statistic title="Toplam ödeme" value={tl(sonuc.toplam_odeme)} suffix="TL" />
-              </Col>
-              <Col xs={24} sm={8}>
-                <Statistic title="Toplam kâr payı" value={tl(sonuc.toplam_kar_payi)} suffix="TL" />
-              </Col>
-            </Row>
-
-            <Divider style={{ margin: "12px 0" }} />
-
-            <Paragraph style={{ marginBottom: 8 }}>{sonuc.ozet}</Paragraph>
-
-            {/* Hesap LLM'e BIRAKILMAZ (rapor Bolum 8) - bu rozet o iddianin
-                ekrandaki karsiligidir; API'nin kendi dondurdugu degerdir,
-                arayuzde sabitlenmis bir metin degil. */}
-            <Tooltip title="Taksit hesabı saf Python fonksiyonuyla yapılır; dil modeli kullanılmaz. Bu değer API'nin kendi yanıtından gelir.">
-              <Tag color="green">yöntem: {sonuc.yontem}</Tag>
-            </Tooltip>
+              <Space wrap size="middle" style={{ marginTop: 10 }}>
+                <Button
+                  type="primary"
+                  icon={<CalculatorOutlined />}
+                  onClick={hesapla_}
+                  loading={hesaplaniyor}
+                >
+                  Hesapla
+                </Button>
+                <Button
+                  onClick={() => {
+                    setPlanIstiyor(!planIstiyor);
+                    setSonuc(null);
+                  }}
+                >
+                  {planIstiyor ? "Ödeme planı: açık" : "Ödeme planı: kapalı"}
+                </Button>
+              </Space>
+            </Space>
           </Card>
+        </Col>
 
-          {sonuc.odeme_plani?.length > 0 && (
-            <Card size="small" title="Ödeme planı" style={{ maxWidth: 900 }}>
+        {/* Sağ Kolon: Hesaplama Sonucu veya Boş Durum Kılavuzu */}
+        <Col xs={24} lg={13}>
+          {hata && (
+            <Alert
+              type="error"
+              title="Hesaplama yapılamadı"
+              description={hata}
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
+          )}
+
+          {sonuc ? (
+            <Card
+              title={
+                <Space>
+                  <CheckCircleOutlined style={{ color: "var(--marka-500)" }} />
+                  <span>Hesaplama Sonucu</span>
+                </Space>
+              }
+              className="hesap-karti"
+            >
+              <Space direction="vertical" size={16} style={{ width: "100%" }}>
+                {/* Jürinin soracağı soruya doğrudan cevap: Taksit hesabı LLM'e bırakılmaz.
+                    API yanıtındaki sonuc.yontem ("deterministik_python") ekranda gururla gösterilir. */}
+                <Alert
+                  type="success"
+                  showIcon
+                  icon={<SafetyCertificateOutlined style={{ fontSize: 18, color: "var(--marka-600)" }} />}
+                  message={
+                    <Space wrap align="center">
+                      <Text style={{ fontWeight: 600, color: "var(--marka-900, #0c765f)" }}>
+                        🛡 Deterministik Python Hesaplaması — bu sonuç dil modeli tarafından üretilmedi
+                      </Text>
+                      <Tag color="green" style={{ fontFamily: "monospace", fontSize: 11, margin: 0 }}>
+                        {sonuc.yontem}
+                      </Tag>
+                    </Space>
+                  }
+                />
+
+                {/* Aylık Taksit: Kullanıcının aradığı ana sayı vurgulu olarak gösterilir */}
+                <div className="hesap-vurgu-kart">
+                  <Statistic
+                    title={
+                      <Text type="secondary" style={{ fontSize: 13, fontWeight: 500 }}>
+                        Aylık Taksit Tutarı
+                      </Text>
+                    }
+                    value={tl(sonuc.aylik_taksit)}
+                    suffix="TL"
+                    valueStyle={{ color: "var(--marka-600)", fontWeight: 700, fontSize: 30 }}
+                  />
+                </div>
+
+                {/* Yan İstatistikler: Toplam ödeme ve Toplam kâr payı yan yana kartlarda */}
+                <Row gutter={12}>
+                  <Col span={12}>
+                    <div className="hesap-istatistik-kart">
+                      <Statistic
+                        title={
+                          <Text type="secondary" style={{ fontSize: 12, fontWeight: 500 }}>
+                            Toplam Ödeme
+                          </Text>
+                        }
+                        value={tl(sonuc.toplam_odeme)}
+                        suffix="TL"
+                        valueStyle={{ fontSize: 18, fontWeight: 600 }}
+                      />
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <div className="hesap-istatistik-kart">
+                      <Statistic
+                        title={
+                          <Text type="secondary" style={{ fontSize: 12, fontWeight: 500 }}>
+                            Toplam Kâr Payı
+                          </Text>
+                        }
+                        value={tl(sonuc.toplam_kar_payi)}
+                        suffix="TL"
+                        valueStyle={{ fontSize: 18, fontWeight: 600 }}
+                      />
+                    </div>
+                  </Col>
+                </Row>
+
+                {/* API'den gelen sonuc.ozet metni */}
+                {sonuc.ozet && (
+                  <Paragraph
+                    style={{
+                      margin: 0,
+                      color: "var(--yazi-normal)",
+                      fontSize: 14,
+                      lineHeight: 1.5,
+                      padding: "4px 0",
+                    }}
+                  >
+                    {sonuc.ozet}
+                  </Paragraph>
+                )}
+              </Space>
+            </Card>
+          ) : (
+            /* Boş Durum (Hesaplama Yapılmadığında Gösterilen Bilgilendirme Kartı) */
+            <Card
+              title={
+                <Space>
+                  <InfoCircleOutlined style={{ color: "var(--marka-500)" }} />
+                  <span>Hesaplama Rehberi</span>
+                </Space>
+              }
+              className="hesap-karti"
+              style={{ height: "100%" }}
+            >
+              <Space direction="vertical" size={16} style={{ width: "100%" }}>
+                <Paragraph style={{ fontSize: 14, color: "var(--yazi-normal)", margin: 0, lineHeight: 1.6 }}>
+                  Bir kampanya seçin ya da değerleri elle girin. Hesaplama tamamen
+                  deterministik Python ile yapılır, dil modeli kullanılmaz.
+                </Paragraph>
+                <Alert
+                  type="info"
+                  showIcon
+                  message="Örnek Girdi"
+                  description="Örn: 500.000 TL · aylık %1,89 · 12 ay"
+                />
+              </Space>
+            </Card>
+          )}
+        </Col>
+
+        {/* Ödeme Planı Tablosu: Sadece odeme_plani dizisi dolu geldiğinde render edilir */}
+        {sonuc?.odeme_plani?.length > 0 && (
+          <Col span={24}>
+            <Card title="Ödeme Planı Tablosu" className="hesap-karti">
               <Table
                 columns={PLAN_KOLONLARI}
                 dataSource={sonuc.odeme_plani}
@@ -315,9 +439,10 @@ export default function HesapMakinesi() {
                 scroll={{ x: "max-content" }}
               />
             </Card>
-          )}
-        </>
-      )}
+          </Col>
+        )}
+      </Row>
     </div>
   );
 }
+

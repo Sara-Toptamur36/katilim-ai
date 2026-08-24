@@ -260,6 +260,23 @@ RE_TAKSIT_SAYISI = _katlanmis_derle(
     re.IGNORECASE,
 )
 
+# ARALIK IFADESININ IKINCI SAYISI (olculdu 24 Agustos 2026, KT-021/025):
+# "2 ila 9 taksit arasinda secim yaparak" veya "2-7 taksitli islemlere"
+# gibi ifadelerde RE_TAKSIT_SAYISI yalnizca ARALIGIN SON sayisini
+# yakalar ("9 taksit" / "7 taksitli") - ilk sayidan sonra gelen "ila"
+# veya tire, "\d{1,3}\s*taksit" desenine uymadigi icin eslesme oradan
+# baslayamaz, ikinci sayidan baslar. Sonuc: kullanicinin SECEBILECEGI
+# bir ARALIK, sabit bir taahhut gibi okunur. Gold bu durumlarda dogru
+# olarak "belirtilmemis" diyor - tek bir taksit sayisi yok, bir aralik
+# var.
+RE_TAKSIT_ARALIK_ONEKI = re.compile(r"\d{1,3}\s*(?:-|–|ila)\s*$", re.IGNORECASE)
+
+
+def _taksit_araliginin_ikinci_sayisi_mi(katlanmis: str, baslangic: int, pencere: int = 12) -> bool:
+    """Eslesmenin HEMEN ONCESINDE 'N-' veya 'N ila' var mi (aralik ifadesi)?"""
+    sol = katlanmis[max(0, baslangic - pencere):baslangic]
+    return bool(RE_TAKSIT_ARALIK_ONEKI.search(sol))
+
 # Finansman tutari - gercek veride iki ana kalip: tekli ust limit
 # ("100.000 TL'ye kadar") ve aralik ("1.000 TL - 100.000 TL arasi").
 #
@@ -287,6 +304,22 @@ RE_TUTAR_ARALIK = _katlanmis_derle(
 )
 RE_TUTAR_UST_LIMIT = _katlanmis_derle(
     rf"{_TUTAR}\s*TL['’]?\s*(?:ye|ya)?\s*kadar", re.IGNORECASE
+)
+
+# "kadar" ICERMEYEN AYRI BIR UST LIMIT IFADESI (olculdu 25 Agustos 2026,
+# HF-006): bazi sayfalar "X TL'ye kadar" yerine "(kampanya) ust limit(i)
+# X TL('dir)" bicimini kullaniyor - iki desen de "ust sinir" anlamina
+# gelir ama farkli kelime sirasindadir, RE_TUTAR_UST_LIMIT bunu YAKALAMAZ.
+#
+# _tutar_baglaminda_gecersiz_mi UYGULANMAZ: o guard'in dislama listesinde
+# "limit" kelimesi var (kart limiti gibi ALAKASIZ "limit" gecislerini
+# elemek icin, bkz. RE_TUTAR_UST_LIMIT'in guard'i) - bu desen ise TAM
+# OLARAK "ust limit" ifadesine dayandigi icin ayni guard'i uygulamak
+# kendi kendini elerdi. Bunun yerine ozgulluk desenin KENDISINDEN gelir:
+# "ust limit" + tutar + TL dogrudan yan yana gecmeli, bu ayrimin
+# gerektirdigi kesinligi tek basina sagliyor.
+RE_TUTAR_UST_LIMIT_BEYANI = _katlanmis_derle(
+    rf"üst\s*limit\w*\s+{_TUTAR}\s*TL", re.IGNORECASE
 )
 
 # BAGLAM GUARD - "X TL'ye kadar" TEK BASINA finansman tutari DEGILDIR.
@@ -455,6 +488,15 @@ _ILGISIZ_ICERIK_DESENLERI = tuple(
         "sayfayi paylas",
         "tumunu goster",
         "ilginizi cekebilecek kampanyalar",
+        # "İlginizi Çekebilir" (tekil) - Kuveyt Turk/T.O.M. Katilim/
+        # Albaraka'nin kullandigi kisa bicim. OLCULDU (24 Agustos 2026):
+        # T.O.M. Katilim'in 4 AYRI kampanya sayfasinda (TOM-007/009/011/
+        # 012) BIREBIR AYNI carousel metni ("Hadi Alisveris Kredisi ile
+        # Klima, Supurge ve Televizyonlarda Vade Farksiz 12 Taksit!")
+        # bulundu - motor bunu HER dorduncu sayfaya "kendi" taksit
+        # sayisi olarak yaziyordu. Corpus'ta 29 kayitta gecen, en erken
+        # konumu %67,6 olan guvenilir bir isaret (esik %30'un uzerinde).
+        "ilginizi cekebilir",
     )
 )
 _ILGISIZ_ICERIK_ASGARI_ORAN = 0.30
@@ -1003,6 +1045,17 @@ def kaydi_cikar(ham_metin: str) -> dict:
             izler["finansman_tutari"] = (_ham_span(ham_metin, tm), 0.75)
             break
 
+        # "X TL'ye kadar" bulunamadiysa "ust limit(i) X TL" denenir - bkz.
+        # RE_TUTAR_UST_LIMIT_BEYANI tanimindaki gerekce (guard BILEREK
+        # uygulanmaz, ozgulluk desenden gelir).
+        if alanlar["finansman_tutari"] is None:
+            tm = RE_TUTAR_UST_LIMIT_BEYANI.search(katlanmis)
+            if tm:
+                tutar = tutara_cevir(_ham_span(ham_metin, tm))
+                if tutar is not None:
+                    alanlar["finansman_tutari"] = tutar
+                    izler["finansman_tutari"] = (_ham_span(ham_metin, tm), 0.75)
+
     # --- Vade / taksit sayisi / erteleme suresi (UC AYRI kavram) -------
     span = _ilk_eslesme(RE_VADE, katlanmis, ham_metin)
     if span:
@@ -1014,11 +1067,31 @@ def kaydi_cikar(ham_metin: str) -> dict:
         alanlar["erteleme_suresi_ay"] = aya_cevir(span)
         izler["erteleme_suresi_ay"] = (span, 0.85)
 
-    span = _ilk_eslesme(RE_TAKSIT_SAYISI, katlanmis, ham_metin)
-    if span:
-        sayi_m = re.search(r"\d+", span)
-        alanlar["taksit_sayisi"] = int(sayi_m.group(0)) if sayi_m else None
-        izler["taksit_sayisi"] = (span, 0.85)
+    # ARALIK ELENIR, FARKLI DEGERLER TOPLANIR (olculdu 24 Agustos 2026):
+    # kaydi_cikar TUM gecerli (aralik-disi) taksit adaylarini toplar.
+    # Tek bir FARKLI deger varsa (ayni sayi birden fazla yerde
+    # gecebilir - "12 taksit ... 12 aya varan taksit") o deger atanir.
+    # BIRDEN FAZLA FARKLI deger varsa alan BOS birakilir - bu, sabit bir
+    # tutari degil COK KADEMELI bir teklifi isaret eder ("1.000 TL ve
+    # uzerinde 3 taksit, 6.000 TL ve uzerinde 6 taksit" gibi) ve gold bu
+    # durumlarda tutarli sekilde "belirtilmemis" diyor: kampanyanin TEK
+    # bir taksit sayisi yok, harcama tutarina gore degisen bir tablo var.
+    # Uydurma bir sayi (ilk gorulen) SECMEK yerine BOS birakmak, rapor
+    # Bolum 5.7/15'teki "supheli deger yerine bos birak" ilkesiyle
+    # tutarlidir.
+    _taksit_adaylari: dict[int, str] = {}
+    for tm in RE_TAKSIT_SAYISI.finditer(katlanmis):
+        if _taksit_araliginin_ikinci_sayisi_mi(katlanmis, tm.start()):
+            continue
+        tm_span = _ham_span(ham_metin, tm)
+        sayi_m = re.search(r"\d+", tm_span)
+        if sayi_m is None:
+            continue
+        _taksit_adaylari.setdefault(int(sayi_m.group(0)), tm_span)
+    if len(_taksit_adaylari) == 1:
+        (_taksit_deger, _taksit_span), = _taksit_adaylari.items()
+        alanlar["taksit_sayisi"] = _taksit_deger
+        izler["taksit_sayisi"] = (_taksit_span, 0.85)
 
     # --- Odul miktari/birimi -------------------------------------------
     m = RE_ODUL_MIL.search(katlanmis)

@@ -259,11 +259,11 @@ beklenen davranış, çünkü rank-1 en küçük skor farkına duyarlı olan yer
 **Sonuç olarak Recall@1 tek bir sayı olarak raporlanamaz.** Gözlenen aralık
 28–30/32 (dört ayrı koşu: 29, 28, 29, 30).
 
-> **Öneri (henüz uygulanmadı):** Ölçüm koşusu `exact=True` ile yapılmalı —
-> üretimde ANN kalabilir, ama *benchmark* tekrar üretilebilir olmalı. Aksi
-> hâlde bir iyileştirmenin gerçek mi gürültü mü olduğunu ayırt edemeyiz.
-> Bu, LLM katmanı için zaten uyguladığımız "birden çok koşunun ortalaması"
-> disiplininin retrieval karşılığıdır.
+> **Öneri — UYGULANDI (25 Ağustos 2026).** `scraper/scripts/rag_degerlendirme.py::kategori_bazli_recall_olc`
+> ve `abstention_olc`'un `exact` parametresi artık **varsayılan `True`** —
+> üretimde (`agent/router.py`) `exact=False` (yaklaşık, hızlı) kalmaya
+> devam ediyor, bu ikisi kasıtlı olarak farklı varsayılan kullanıyor:
+> benchmark'ta tekrar üretilebilirlik, üretimde hız önceliklidir.
 
 #### Bulgu 2 — Recall@5 bir kampanya geriledi
 
@@ -575,7 +575,15 @@ CI'da servis olmadığı için ilgili testler (`test_rag_kalip_kirliligi.py`, `t
 
 **Doğrulama:** Düzeltmeler sonrası `.qdrant_yerel` üzerinden (1979 nokta, 23 Ağustos indeksinden) `test_rag_uctan_uca.py`, `test_kaynak_guncelligi.py`, `test_qdrant_baglanti.py` ve `test_rag_kalip_kirliligi.py` **ilk kez gerçek bir indekse karşı çalıştırıldı**: 27/27 geçti.
 
-**Yan bulgu — parçalayıcıda kalıntı site kalıbı:** `test_rag_kalip_kirliligi.py` ilk kez gerçekten çalışınca, bu belgenin daha önce hiç yakalayamadığı gerçek bir kalıntı ortaya çıktı: "Kuveyt Türk'ün konut finansmanı oranı ne" sorusunun döndürdüğü iki parçada `chunking/parcalayici.py`'nin menü/site-kalıbı elemesinin kaçırdığı bir footer bloğu var — *"...İştiraklerimiz Şube ve ATM'ler Bize Ulaşın Müşteri İletişim Merkezi Arabuluculuk..."*. Mevcut eleme, art arda **kısa etiket satırlarından** oluşan bloklara dayanıyor (`_etiket_gibi_mi`); bu footer metni muhtemelen tek/uzun bir satır olarak geldiği için o kalıba uymuyor. Bu, ayrı bir düzeltme gerektiren yeni bir bulgu — bu oturumda kapsam dışı tutuldu, kayıt altına alınıyor.
+**Yan bulgu — parçalayıcıda kalıntı site kalıbı:** `test_rag_kalip_kirliligi.py` ilk kez gerçekten çalışınca, bu belgenin daha önce hiç yakalayamadığı gerçek bir kalıntı ortaya çıktı: "Kuveyt Türk'ün konut finansmanı oranı ne" sorusunun döndürdüğü iki parçada `chunking/parcalayici.py`'nin menü/site-kalıbı elemesinin kaçırdığı bir footer bloğu var — *"...İştiraklerimiz Şube ve ATM'ler Bize Ulaşın Müşteri İletişim Merkezi Arabuluculuk..."*.
+
+**Kök neden bulundu (25 Ağustos 2026, aynı gün) — düzeltme DENENDİ ve GERİ ALINDI.** Gerçek kaynak satırları izlendi: sorun "tek uzun satıra düşme" değil — footer zaten ayrı satırlara bölünmüş durumda, ama iki ayrı sebeple `_menu_bloklarini_ele` bloğu parçalıyor: (1) `MENU_BLOK_ASGARI=5` altında kalan kısa artıklar ("Devam Faydalı Linkler Ürün ve Hizmet Ücretleri" gibi) hâlâ korunuyor; (2) "Fonum Ne Getirdi?" / "444 0 123" gibi menü öğeleri kendileri de `kalip_satirlar` içinde olduğu hâlde noktalama/rakam içerdikleri için `_etiket_gibi_mi` onları "düzyazı" sanıp bloğu ikiye bölüyor.
+
+İki düzeltme denendi, ikisi de gerçek korpusta ölçülüp **güvensiz** bulundu:
+- **Deneme 1:** `kalip_orani == 1.0` olan kısa blokları uzunluktan bağımsız eleme. Ölçüldü: 417 blok yeni elendi, örneklemin büyük kısmı **gerçek kampanya koşuluydu** (ör. "Kampanyadan Dünya Katılım Paraf kartlar faydalanabilecektir. | Sanal kartlar kampanyaya dahildir. | ParafPara kullanılarak yapılan işlemler ile iptal ve iade işlemleri dahil değildir.") — modül başı Tasarım Kararı 4'ün tam uyardığı hata.
+- **Deneme 2:** Yalnızca blok-devamlılığını `kalip_satirlar` üyeliğiyle de tanımak (eşikleri değiştirmeden). Toplam parça sayısı 1875→1443'e düştü (-432, beklenenden çok daha büyük); rastgele örneklemde gerçek kampanya cümlelerinin **parçaları** (ör. "Bankkart Lira kazanabilmek için alışveriş yapmadan önce") kaybolduğu görüldü — Ziraat Katılım gibi bankaların şablon tabanlı kampanya metinleri, tıpkı navigasyon gibi, aynı cümle parçasını 4+ farklı sayfada tekrarlayabiliyor; mevcut `kalip_satirlar` mekanizması "site kalıbı" ile "şablonlanmış gerçek içerik"i ayırt edemiyor.
+
+**Sonuç:** İki deneme de geri alındı, `chunking/parcalayici.py` bu oturumdan **değişmeden** çıktı. Bu, tahmin edilenden çok daha derin bir problem — güvenli bir çözüm muhtemelen kalıp-üyeliğinin yanına EK bir sinyal ister (ör. satırın CÜMLE PARÇASI mı yoksa TAM etiket mi olduğunu ayırt eden bir noktalama/büyük-harf deseni, ya da tam `rag_degerlendirme.py` regresyon ölçümüyle doğrulanan kademeli bir eşik taraması). Sıradaki denemenin gold sete karşı Recall/precision ölçümüyle doğrulanması şart — yalnızca örnekleme yeterli değil (bu oturumda tam da bunu öğrendik).
 
 ---
 

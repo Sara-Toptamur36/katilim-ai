@@ -5,13 +5,25 @@ TASARIM: Gercek scraper/raw_data verisiyle test edilir (sentetik degil) -
 ancak gercek veriyle anlamlidir. Kullanilan URL'ler 11 Agustos 2026'da
 dogrulandi (bkz. modul docstring'i): 230 benzersiz URL'den 33'unde
 icerik gercekten degisti.
+
+DENETIM BULGUSU (25 Agustos 2026): eskiden _DEGISEN_URL Dunya Katilim'in
+"avantajli-kurlar" kampanyasiydi ("bitis tarihi 2026-07-30'dan
+2026-08-06'ya degisti" iddiasiyla). Bu YANLIS bir okumaydi: sayfanin
+kendisi "Bitiş Tarihi: -" yaziyor (kampanyanin sabit bir bitis tarihi
+YOK, doviz kuruna bagli surekli bir program) - degisen deger aslinda
+sayfa altligindaki "Son Guncelleme Tarihi" idi, gercek bir kampanya_bitis
+degeri degil. `kaydi_cikar` bunu DOGRU sekilde None donduruyordu; hata
+testin ornek secimindeydi, cikarim kodunda degil. Tum korpus tarandi ve
+GERCEKTEN kampanya_bitis'i degisen 21 URL bulundu; asagidaki, degerleri
+elle dogrulanan biridir.
 """
 
 from scraper.scripts.kampanya_tarihcesi import degisen_alanlari_bul, tarihce_getir
 
-# Dunya Katilim'in "avantajli-kurlar" kampanyasi - bitis tarihi
-# 2026-07-30'dan 2026-08-06'ya degisti (kampanya suresi uzatildi).
-_DEGISEN_URL = "https://www.dunyakatilim.com.tr/kampanyalar/avantajli-kurlar"
+# Emlak Katilim'in elektrikli arac sarj istasyonu ParafPara kampanyasi -
+# bitis tarihi 2026-07-31'den 2026-08-31'e degisti (aylik yenilenen bir
+# kampanya donemi).
+_DEGISEN_URL = "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/elektrikli-arac-sarj-istasyonu-harcamalariniza-200-tl-parafpara"
 
 # Tek bir tarihte tarandigi bilinen, hic degismemis bir kampanya
 # (T.O.M. yalnizca 1 Agustos'ta tarandi, bkz. sayfa_takip_tablosu.csv).

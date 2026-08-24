@@ -64,3 +64,8 @@ tiktoken==0.13.0
 
 # --- Altin Veri Seti (Excel okuma) ---
 openpyxl==3.1.5
+
+# --- EVREN istemcisi (TEKNOFEST'in sagladigi yardimci bulut altyapisi) ---
+# Not: production pipeline'a BAGLI DEGIL, bkz. evren/istemci.py kapsam
+# siniri. OpenAI-uyumlu API icin resmi istemci kutuphanesi.
+openai==3.3.1

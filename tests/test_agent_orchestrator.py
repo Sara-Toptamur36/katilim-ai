@@ -89,6 +89,27 @@ def test_toplam_maliyet_sorusu_calculator_araciyla_cevaplanir():
     assert sonuc["fallback"] is False
 
 
+def test_kapsam_disi_soru_rag_hic_cagrilmadan_cevaplanir():
+    """23 Agustos 2026: KAPSAM_DISI niyeti RAG'in belirsiz lexical
+    ortusme kontrolune hic girmemeli - dogrudan sabit, durust bir
+    cevapla kapanmali (bkz. agent/intent.py::Niyet.KAPSAM_DISI)."""
+    from agent.orchestrator import soru_isle
+
+    def _rag_cagrilirsa_patlar(soru: str, kayit_getirici=None) -> dict:
+        raise AssertionError("KAPSAM_DISI sorusunda RAG hic cagrilmamali")
+
+    sonuc = soru_isle(
+        "Katılım bankasında hesap açmak için hangi belgeler gerekir?",
+        _sahte_getirici,
+        rag_araci=_rag_cagrilirsa_patlar,
+    )
+    assert sonuc["audit_ekstra"]["intent"] == "kapsam_disi"
+    assert sonuc["audit_ekstra"]["cagrilan_arac"] == "kapsam_disi"
+    assert sonuc["fallback"] is False
+    assert sonuc["confidence"] == 1.0
+    assert "bankanızla iletişime geçin" in sonuc["cevap"]
+
+
 def test_kaynak_bulunamayan_soru_fallbacke_duser_ve_sebep_belirtilir():
     """Rapor Bolum 5.7/15: RAG de kaynak bulamazsa sistem ACIKCA
     cekimser kalir - sessizce yanlis/uydurma cevap uretilmez."""

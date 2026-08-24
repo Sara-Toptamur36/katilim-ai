@@ -17,6 +17,26 @@ class Niyet(str, Enum):
     KARSILASTIRMA = "karsilastirma"
     TOPLAM_MALIYET = "toplam_maliyet"
     SOZLUK = "sozluk"
+    # KAPSAM_DISI: genel bankacilik ISLEMI sorulari ("hesap nasil acilir",
+    # "sifremi unuttum", "TMSF guvencesi", "sube adresi") - bunlar katilim
+    # BANKACILIGI kavramlari degil, herhangi bir bankanin musteri hizmetleri
+    # islemleridir ve sistemin hicbir katmaninda (kampanya verisi, RAG
+    # indeksi, terminoloji sozlugu) cevabi yoktur.
+    #
+    # NEDEN AYRI BIR NIYET GEREKTI (23 Agustos 2026, olculdu): bu sorular
+    # BILINMIYOR'a dusup RAG'e gidiyordu. RAG'in cekimserlik kontrolu
+    # LEXICAL ORTUSMEYE dayanir (bkz. chunking/retriever.py) ve "hesap",
+    # "belge", "TMSF", "sifre" gibi kelimeler kampanya metinlerinin genel
+    # bankacilik kelime dagarcigindan oldugu icin ortusme YANLISLIKLA
+    # esigi (%60) asiyordu - 185 soruluk kategori bazli olcumde
+    # alan_ici_kapsam_disi abstention dogrulugu yalnizca %50 (5/10) cikti.
+    # Tam dagilim olculdu: bu kategorinin araligi (0,50-0,83) gercekten
+    # cevaplanabilir banka_ve_konu/kismi_ad sorularinin araligiyla (ikisi
+    # de 0,50'den basliyor) IC ICE - yani RAG esigini yukseltmek bu
+    # sorunu cozmez, gercek cevaplanabilir sorulari da susturur (bkz.
+    # docs/rag_tasarim_ve_olcum.md Bulgu 8). Dogru cozum RAG'e hic
+    # sormadan, niyet katmaninda ayiklamaktir.
+    KAPSAM_DISI = "kapsam_disi"
     # BILGI: belirli bir araca uymayan ama kaynaklarda aranabilecek
     # serbest bilgi sorusu ("X kampanyasinin sartlari neler?"). Anahtar
     # kelimeyle tespit EDILMEZ - acik uclu oldugu icin kelime listesiyle
@@ -57,7 +77,7 @@ _HESAPLAMA_ANAHTAR_KELIMELER = [
 ]
 _KARSILASTIRMA_ANAHTAR_KELIMELER = [
     "karsilastir", "hangisi daha", "en dusuk", "en avantajli",
-    "en iyi", "hangi banka", "fark ne", " mi yoksa ",
+    "en iyi", "hangi banka", "fark ne kadar", " mi yoksa ",
 ]
 # KARSILASTIRMA'dan AYRI: yalnizca alan bazli siralama degil, gercek bir
 # anapara icin AMORTISMAN hesabi gerektirir (calculator/calculator.py::
@@ -71,6 +91,16 @@ _SOZLUK_ANAHTAR_KELIMELER = [
     "ne demek", "nedir", "anlamina gelir", "aciklar misin",
     "ne anlama", "tanimi ne",
 ]
+# Genel bankacilik ISLEMI kaliplari - bilerek COK KELIMELI ve dar tutuldu
+# (Niyet.KAPSAM_DISI docstring'inde gerekce var). Tek basina "hesap" veya
+# "sube" gibi genel kelimeler BURAYA KONULMADI - kampanya sorularinda da
+# gecebilir, yanlis pozitife yol acar. Yalnizca ölçümde gercekten karsilasilan,
+# baska hicbir aracin/RAG'in dogru cevaplayamadigi somut kaliplar var.
+_KAPSAM_DISI_ANAHTAR_KELIMELER = [
+    "nasil acilir", "hangi belgeler gerekir", "en yakin sube",
+    "sifremi unuttum", "tmsf", "bakiyeyi nasil ogrenirim",
+    "limitimi nasil artirabilirim",
+]
 
 _NIYET_KELIMELERI = {
     # TOPLAM_MALIYET EN BASTA: esitlik durumunda max() ilk gordugu anahtari
@@ -78,10 +108,26 @@ _NIYET_KELIMELERI = {
     # hem HESAPLAMA'nin "hesapla"si hem TOPLAM_MALIYET'in "toplam maliyet"i
     # ile 1-1 esleserdi - daha ozgul olan (TOPLAM_MALIYET) kazanmali.
     Niyet.TOPLAM_MALIYET: _TOPLAM_MALIYET_ANAHTAR_KELIMELER,
+    # KAPSAM_DISI de erken kontrol edilir: kaliplari cok kelimeli/ozgul
+    # oldugu icin (ornek: "hesap ac" degil "nasil acilir") HESAPLAMA'nin
+    # "hesap"~"hesapla" bulanik eslesme hatasina hic girmeden once
+    # (bkz. modul ici bilinen sinirlama notu) tam eslesmeyle kazanir.
+    Niyet.KAPSAM_DISI: _KAPSAM_DISI_ANAHTAR_KELIMELER,
     Niyet.HESAPLAMA: _HESAPLAMA_ANAHTAR_KELIMELER,
     Niyet.KARSILASTIRMA: _KARSILASTIRMA_ANAHTAR_KELIMELER,
     Niyet.SOZLUK: _SOZLUK_ANAHTAR_KELIMELER,
 }
+
+# DUZELTILDI (23 Agustos 2026): "X ile Y arasindaki fark nedir" gibi TANIM
+# sorulari onceden KARSILASTIRMA'nin "fark ne" kalibiyla SOZLUK'un "nedir"
+# kalibi arasinda esitlik yaratiyordu; dict sirasinda KARSILASTIRMA once
+# geldigi icin kazaniyordu (ornek: "Mudarebe ile musareke arasindaki fark
+# nedir?" -> yanlislikla KARSILASTIRMA, oysa ikisi de terminology/
+# sozluk.json'da tanimli gercek SOZLUK adaylaridir). Kok neden "fark ne"
+# kalibinin gercekte HICBIR teste/gercek soruya dayanmadan eklenmis
+# olmasiydi (grep dogruladi) - bu yuzden "fark ne kadar" ile
+# DEGISTIRILDI: gercek miktar sorularini ("...arasindaki fark ne kadar?")
+# hala yakalar ama "fark nedir" tanim sorusuyla artik CAKISMAZ.
 
 
 # Bulanik eslesme esigi. OLCULDU: "karsilatin" ("karsilastir" yazim hatasi)
@@ -90,6 +136,16 @@ _NIYET_KELIMELERI = {
 # hesaplama isterken karsilastirma araci cagrilirsa sessizce YANLIS cevap
 # uretilir, bu da cevapsiz kalmaktan kotudur.
 _BULANIK_ESIK = 0.82
+
+# Niyet.KAPSAM_DISI icin sabit, durust cevap - RAG'e hic sorulmaz. Sistemin
+# ne bildigini/bilmedigini acikca soyler (rapor Bolum 5.7/15 ile ayni ilke:
+# belirsizlik/kapsam disi gizlenmez).
+KAPSAM_DISI_CEVABI = (
+    "Bu sistem katılım bankalarının kampanya ve ürün bilgilerine odaklanır; "
+    "hesap açma, şifre yenileme, TMSF güvencesi veya şube/limit işlemleri "
+    "gibi genel bankacılık işlemleri kapsamımızda değildir. Bu konu için "
+    "lütfen doğrudan ilgili bankanızla iletişime geçin."
+)
 
 
 def _bulanik_eslesme_sayilari(s: str) -> dict:

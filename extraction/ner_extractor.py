@@ -59,6 +59,7 @@ ayrica degerlendirilir.
 
 from __future__ import annotations
 
+import os
 import re
 from typing import Optional
 
@@ -158,14 +159,20 @@ _model = None
 
 
 def _model_yukle():
-    """GLiNER modelini bir kere yukler, sonraki cagrilar cache'ten doner
-    (model yuklemesi/indirmesi pahalidir, her metin icin tekrar yapilmamali)."""
+    """GLiNER modelini bir kere yukler, sonraki cagrilar cache'ten doner.
+    Donanim/bellek yetersizse (or. Windows paging file os error 1455) veya
+    KATILIMAI_GLINER_DISABLE=1 ayarliysa sessizce None doner.
+    """
     global _model
+    if os.environ.get("KATILIMAI_GLINER_DISABLE") == "1":
+        return None
     if _model is None:
-        from gliner import GLiNER
-
-        _model = GLiNER.from_pretrained(_MODEL_ADI)
-    return _model
+        try:
+            from gliner import GLiNER
+            _model = GLiNER.from_pretrained(_MODEL_ADI)
+        except Exception:
+            _model = False  # Tekrar tekrar indirmeye/yuklemeye calisip vakit kaybetmesin
+    return _model if _model is not False else None
 
 
 def ner_ile_cikar(
@@ -184,6 +191,10 @@ def ner_ile_cikar(
     dogrudan birlestirilebilsin diye.
     """
     model = _model_yukle()
+    if model is None:
+        sonuc = {alan: None for alan in _TUM_ALAN_ADLARI}
+        sonuc["_izler"] = {}
+        return sonuc
 
     kar_payi_isteniyor = sadece_bu_alanlar is None or bool(
         sadece_bu_alanlar & {"kar_payi_orani_percent", "kar_payi_orani_decimal"}

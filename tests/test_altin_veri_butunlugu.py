@@ -178,11 +178,19 @@ def test_kanit_spani_bilinen_alanlara_ait(kayitlar):
 
 def test_sprint_ilerlemesi_raporlanir(kayitlar, capsys):
     """Bu test hicbir sey DOGRULAMAZ; sprint ilerlemesini gorunur kilar.
-    Hedef 200-300 kayit (gorev 21) ve nerede oldugumuz her kosuda yazilir."""
-    spani_olan = sum(1 for k in kayitlar if k.get("kanit_spanlari"))
+    Hedef 200-300 kayit (gorev 21) ve nerede oldugumuz her kosuda yazilir.
+
+    IMZALI VE TASLAK AYRI SAYILIR: kuyruktan acilan taslak satirlar da bu
+    dosyada durur ama hicbiri olcume girmez. Tek sayida birlestirmek
+    "303 kayit (hedef 200-300)" gibi HEDEFE ULASILMIS gorunen bir satir
+    uretiyordu - oysa imzali kayit 103'tu."""
+    imzali = [k for k in kayitlar if (k.get("giren_kisi") or "").strip()]
+    taslak = [k for k in kayitlar if not (k.get("giren_kisi") or "").strip()]
+    spani_olan = sum(1 for k in imzali if k.get("kanit_spanlari"))
     with capsys.disabled():
         print(
-            f"\n  Altin Veri Seti: {len(kayitlar)} kayit "
-            f"(hedef 200-300) | kanit spani girilmis: {spani_olan}"
+            f"\n  Altin Veri Seti: {len(imzali)} IMZALI kayit (hedef 200-300)"
+            f" | kanit spani girilmis: {spani_olan}"
+            f"\n  Kuyrukta bekleyen taslak: {len(taslak)} (olcum disi)"
         )
     assert kayitlar, "altin veri seti bos olamaz"

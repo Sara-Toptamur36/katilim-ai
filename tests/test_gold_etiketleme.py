@@ -120,6 +120,33 @@ def test_hicbir_listede_yer_almayan_sutunlar_bilinir_listede():
     )
 
 
+def test_imzasiz_kayit_hicbir_alan_iddiasi_tasimaz(tmp_path):
+    """Etiketleme sprintinin bedava puan kapisi.
+
+    Kuyruktan acilan taslak satirlarin butun olculen hucreleri bostur.
+    Imza aranmasaydi bunlarin hepsi "kaynakta belirtilmemis" sayilir ve
+    motor o satirlarda hicbir sey uretmeyerek DOGRU kabul edilirdi -
+    177 satirlik bir kuyruk, olculmeden kazanilan 177 kayit demek olurdu.
+
+    Kural 3: imza bir iddiadir. Imza yoksa iddia da yoktur."""
+    yol = _excel_yaz(tmp_path, [{
+        "kayit_id": "KT-900", "banka": "Kuveyt Türk", "kampanya_adi": "Taslak",
+        "kaynak_url": "https://ornek.com/taslak",
+        # giren_kisi YOK - satir henuz imzalanmadi
+    }])
+    kayit = donustur(yol)[0][0]
+    assert kayit["alan_belirtilmemis"] == {}, (
+        "imzasiz kayit olcume giriyor - bos hucreleri 'kaynakta yok' sayilmis"
+    )
+
+
+def test_imza_gelince_alanlar_olcume_girer(tmp_path):
+    """Ustteki testin ters yonu: imza atildigi anda satir olculur."""
+    yol = _excel_yaz(tmp_path, [_temel_kayit(vade_ay=None)])
+    kayit = donustur(yol)[0][0]
+    assert kayit["alan_belirtilmemis"]["vade_ay"] is True
+
+
 def test_incelenmis_sutunda_bos_hucre_bayraklanir(tmp_path):
     """Mevcut davranis KORUNMALI: bu alanlar 28 Temmuz oturumunda tek tek
     incelendi, bos olmalari bilincli bir karardir."""

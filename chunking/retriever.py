@@ -148,7 +148,15 @@ def getir(
     if not terimler:
         return RetrieverSonucu(sebep="Soruda aranabilir bir terim bulunamadi")
 
-    # Ilk asamada RRF ile daha genis bir aday havuzu (örn. 20) aliyoruz
+    # Ilk asamada RRF ile daha genis bir aday havuzu (örn. 20) aliyoruz.
+    #
+    # DENENDI VE GERI ALINDI (23 Agustos 2026, olculdu): 40'a cikarilinca
+    # banka_ve_konu Recall@1 %14,29->%19,05 iyilesti AMA ayni kategoride
+    # Recall@5 %52,38->%38,1'e, dogal_soru Recall@5 %92,86->%71,43'e,
+    # GENEL Recall@5 %88,24->%83,19'a geriledi. Daha genis havuz cross-
+    # encoder'a daha fazla dikkat dagitici aday sunuyor ve @1'deki kucuk
+    # kazanci @3/@5'te daha buyuk bir kayipla odetiyor - net etki olumsuz.
+    # Bkz. docs/rag_tasarim_ve_olcum.md Bulgu 6.
     genis_limit = max(20, limit * 2)
     parcalar = hibrit_ara(
         yogun_sorgu=sorguyu_vektore_cevir(soru),

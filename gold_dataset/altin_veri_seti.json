@@ -4406,15 +4406,24 @@
     "kampanya_bitis": "2026-07-13",
     "hedef_kitle": "Emlak Katilim Paraf ve Paraf Premium kart sahipleri",
     "ekran_goruntusu": null,
-    "giren_kisi": null,
-    "giris_tarihi": null,
-    "notlar": "MAKINE ADAYI - dogrulanmadi, imzasiz, olcum disi\nBELIRSIZ kampanya_baslangic: sayfa yalnizca bitis tarihi veriyor\nBELIRSIZ taksit_sayisi: metin tutara gore dort ayri deger veriyor (3 / 6 / 9 / 12 taksit) - tek deger secilemez\nBELIRSIZ finansman_tutari: 100 / 1.000 / 6.000 / 10.000 TL harcama ESIKLERI, kampanyanin finansman tutari degil",
+    "giren_kisi": "Sara Toptamur",
+    "giris_tarihi": "2026-08-24",
+    "notlar": "BELIRSIZ kampanya_baslangic: sayfa yalnizca bitis tarihi veriyor\nBELIRSIZ taksit_sayisi: metin tutara gore dort ayri deger veriyor (3 / 6 / 9 / 12 taksit) - tek deger secilemez\nBELIRSIZ finansman_tutari: 100 / 1.000 / 6.000 / 10.000 TL harcama ESIKLERI, kampanyanin finansman tutari degil\n24.08.2026: ekran goruntusu ALINAMADI - emlakkatilim.com.tr otomatik tarayiciyi bloklyor (uc denemede de 237 karakterlik engel sayfasi dondu). Imza sayfanin tarayicida elle gorulmesine dayaniyor; goruntu kaniti yok.",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
       "kampanya_bitis": "13 Temmuz 2026 tarihine kadar www.hepsiburada.com ve mobil uygulamasından tek seferde yapılacak alışverişlerde vade farksız 3-6 taksit imkanı sunulacaktır."
     },
-    "alan_belirtilmemis": {}
+    "alan_belirtilmemis": {
+      "kar_payi_orani": true,
+      "vade_ay": true,
+      "odul_miktari": true,
+      "masraf_durumu": true,
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true,
+      "odul_birimi": true
+    }
   },
   {
     "kayit_id": "TF-010",
@@ -5210,9 +5219,9 @@
     "kampanya_bitis": "2026-07-31",
     "hedef_kitle": "SMS ile kampanyaya katilan Emlak Katilim Paraf ve Paraf Premium kart sahipleri (sanal ve ek kartlar dahil)",
     "ekran_goruntusu": null,
-    "giren_kisi": null,
-    "giris_tarihi": null,
-    "notlar": "MAKINE ADAYI - dogrulanmadi, imzasiz, olcum disi\nBELIRSIZ finansman_tutari: 10.000 / 24.999 TL harcama ESIKLERI, kampanyanin finansman tutari degil",
+    "giren_kisi": "Sara Toptamur",
+    "giris_tarihi": "2026-08-24",
+    "notlar": "BELIRSIZ finansman_tutari: 10.000 / 24.999 TL harcama ESIKLERI, kampanyanin finansman tutari degil\n24.08.2026: ekran goruntusu ALINAMADI - emlakkatilim.com.tr otomatik tarayiciyi bloklyor (uc denemede de 237 karakterlik engel sayfasi dondu). Imza sayfanin tarayicida elle gorulmesine dayaniyor; goruntu kaniti yok.",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
@@ -5221,7 +5230,14 @@
       "odul_miktari": "Kampanya müşteri bazlı olup bir müşteri kampanyadan bir defa yararlanabilir ve ilk alışveriş tutarına göre 500 TL ya da 1.000 TL ParafPara t",
       "odul_birimi": "Kampanya müşteri bazlı olup bir müşteri kampanyadan bir defa yararlanabilir ve ilk alışveriş tutarına göre 500 TL ya da 1.000 TL ParafPara t"
     },
-    "alan_belirtilmemis": {}
+    "alan_belirtilmemis": {
+      "kar_payi_orani": true,
+      "vade_ay": true,
+      "masraf_durumu": true,
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
+    }
   },
   {
     "kayit_id": "TF-013",
@@ -6125,9 +6141,9 @@
     "kampanya_bitis": "2026-08-31",
     "hedef_kitle": "SMS ile kampanyaya katilan Emlak Katilim Paraf ve Paraf Premium kart sahipleri (sanal ve ek kartlar dahil)",
     "ekran_goruntusu": null,
-    "giren_kisi": null,
-    "giris_tarihi": null,
-    "notlar": "MAKINE ADAYI - dogrulanmadi, imzasiz, olcum disi\nBELIRSIZ finansman_tutari: 7.500 TL bir harcama ESIGI ('ve uzeri'), kampanyanin finansman tutari degil",
+    "giren_kisi": "Sara Toptamur",
+    "giris_tarihi": "2026-08-24",
+    "notlar": "BELIRSIZ finansman_tutari: 7.500 TL bir harcama ESIGI ('ve uzeri'), kampanyanin finansman tutari degil\n24.08.2026: ekran goruntusu ALINAMADI - emlakkatilim.com.tr otomatik tarayiciyi bloklyor (uc denemede de 237 karakterlik engel sayfasi dondu). Imza sayfanin tarayicida elle gorulmesine dayaniyor; goruntu kaniti yok.",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
@@ -6136,7 +6152,14 @@
       "odul_miktari": "Kampanya müşteri bazlı olup, bir müşteri kampanyaya bir kez katılabilir ve en fazla 800 TL ParafPara kazanabilir.",
       "odul_birimi": "Kampanya müşteri bazlı olup, bir müşteri kampanyaya bir kez katılabilir ve en fazla 800 TL ParafPara kazanabilir."
     },
-    "alan_belirtilmemis": {}
+    "alan_belirtilmemis": {
+      "kar_payi_orani": true,
+      "vade_ay": true,
+      "masraf_durumu": true,
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
+      "erteleme_suresi_ay": true
+    }
   },
   {
     "kayit_id": "ZK-026",
@@ -8871,16 +8894,24 @@
     "kampanya_bitis": "2026-07-31",
     "hedef_kitle": "Emlak Katilim Paraf ve Paraf Premium kart sahipleri (sanal ve ek kartlar dahil)",
     "ekran_goruntusu": null,
-    "giren_kisi": null,
-    "giris_tarihi": null,
-    "notlar": "MAKINE ADAYI - dogrulanmadi, imzasiz, olcum disi\nBELIRSIZ kampanya_baslangic: sayfa yalnizca bitis tarihi veriyor\nBELIRSIZ finansman_tutari: 3.000 TL bir harcama ESIGI ('ve uzeri'), kampanyanin finansman tutari degil\nvade farksiz kampanya -> kar_payi_orani 0 (altin set konvansiyonu)",
+    "giren_kisi": "Sara Toptamur",
+    "giris_tarihi": "2026-08-24",
+    "notlar": "BELIRSIZ kampanya_baslangic: sayfa yalnizca bitis tarihi veriyor\nBELIRSIZ finansman_tutari: 3.000 TL bir harcama ESIGI ('ve uzeri'), kampanyanin finansman tutari degil\nvade farksiz kampanya -> kar_payi_orani 0 (altin set konvansiyonu)\n24.08.2026: ekran goruntusu ALINAMADI - emlakkatilim.com.tr otomatik tarayiciyi bloklyor (uc denemede de 237 karakterlik engel sayfasi dondu). Imza sayfanin tarayicida elle gorulmesine dayaniyor; goruntu kaniti yok.",
     "taksit_sayisi": 2,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
       "taksit_sayisi": "Paraf ile 31 Temmuz 2026 tarihine kadar www.pttavm.com adresinden tek seferde yapılacak alışverişlerde vade farksız 2 taksit imkanı sunulacaktır.",
       "kampanya_bitis": "Paraf ile 31 Temmuz 2026 tarihine kadar www.pttavm.com adresinden tek seferde yapılacak alışverişlerde vade farksız 2 taksit imkanı sunulacaktır."
     },
-    "alan_belirtilmemis": {}
+    "alan_belirtilmemis": {
+      "kar_payi_orani": true,
+      "vade_ay": true,
+      "odul_miktari": true,
+      "masraf_durumu": true,
+      "finansman_tutari": true,
+      "erteleme_suresi_ay": true,
+      "odul_birimi": true
+    }
   },
   {
     "kayit_id": "ZK-041",

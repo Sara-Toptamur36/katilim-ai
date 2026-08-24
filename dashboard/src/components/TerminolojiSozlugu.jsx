@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Alert, Collapse, Empty, Input, Skeleton, Tag, Typography } from "antd";
+import { Alert, Collapse, Empty, Input, Skeleton, Space, Tag, Typography } from "antd";
+import { SearchOutlined } from "@ant-design/icons";
 import { terminolojiGetir } from "../api/client";
 
 // Sozluk artik API'den gelir (GET /terminoloji). Onceki surumde bu bilesen
@@ -27,6 +28,38 @@ const turkceKatla = (metin) =>
     .replace(/İ/g, "i")
     .toLowerCase()
     .replace(/[şığüöçâîû]/g, (h) => TR_KATLAMA[h]);
+
+// Eşleşen metin parçasını <mark> etiketi ile vurgulama fonksiyonu
+const vurgula = (metin, aramaMetni) => {
+  if (!metin) return "";
+  const q = turkceKatla((aramaMetni || "").trim());
+  if (!q) return metin;
+
+  const katlanmis = turkceKatla(metin);
+  const sonuclar = [];
+  let kalisIndeks = 0;
+  let bulmaIndeksi = katlanmis.indexOf(q, kalisIndeks);
+
+  while (bulmaIndeksi !== -1) {
+    if (bulmaIndeksi > kalisIndeks) {
+      sonuclar.push(metin.slice(kalisIndeks, bulmaIndeksi));
+    }
+    const eslesenParca = metin.slice(bulmaIndeksi, bulmaIndeksi + q.length);
+    sonuclar.push(
+      <mark key={bulmaIndeksi} className="arama-vurgu">
+        {eslesenParca}
+      </mark>
+    );
+    kalisIndeks = bulmaIndeksi + q.length;
+    bulmaIndeksi = katlanmis.indexOf(q, kalisIndeks);
+  }
+
+  if (kalisIndeks < metin.length) {
+    sonuclar.push(metin.slice(kalisIndeks));
+  }
+
+  return sonuclar.length > 0 ? sonuclar : metin;
+};
 
 export default function TerminolojiSozlugu() {
   const [terimler, setTerimler] = useState([]);
@@ -57,16 +90,19 @@ export default function TerminolojiSozlugu() {
     return (
       <Alert
         type="error"
-        title="Terminoloji sözlüğü alınamadı"
+        message="Terminoloji sözlüğü alınamadı"
         description={hata}
         showIcon
       />
     );
   }
 
+  const aramaTerm = turkceKatla(arama.trim());
+
   return (
     <>
-      <Input.Search
+      <Input
+        prefix={<SearchOutlined style={{ color: "var(--yazi-soluk)" }} />}
         value={arama}
         onChange={(e) => setArama(e.target.value)}
         placeholder="Kavram ara: kâr payı, murabaha, mevduat..."
@@ -83,44 +119,66 @@ export default function TerminolojiSozlugu() {
         <Empty description="Bu aramaya uyan kavram yok" />
       ) : (
         <Collapse
-          items={suzulmus.map((t) => ({
-            key: t.anahtar,
-            label: (
-              <span>
-                {t.standart_terim}
-                <Tag style={{ marginLeft: 8 }}>{t.gelenek_karsilik}</Tag>
-              </span>
-            ),
-            children: (
-              <>
-                <p>
-                  <strong>Geleneksel bankacılıktaki karşılığı:</strong>{" "}
-                  {t.gelenek_karsilik}
-                </p>
-                <p>
-                  <strong>Açıklama:</strong> {t.aciklama}
-                </p>
-                <p>
-                  <strong>Tanım kaynağı:</strong> {t.kaynak}
-                </p>
-                {t.ornek_kaynak && (
+          items={suzulmus.map((t) => {
+            // Eşleşmenin nerede olduğunu tespit et (terimde / geleneksel karşılığında / açıklamada)
+            const eslesmeYerleri = [];
+            if (aramaTerm) {
+              if (turkceKatla(t.standart_terim || "").includes(aramaTerm)) {
+                eslesmeYerleri.push({ key: "terim", label: "terimde", color: "blue" });
+              }
+              if (turkceKatla(t.gelenek_karsilik || "").includes(aramaTerm)) {
+                eslesmeYerleri.push({ key: "gelenek", label: "geleneksel karşılığında", color: "purple" });
+              }
+              if (turkceKatla(t.aciklama || "").includes(aramaTerm)) {
+                eslesmeYerleri.push({ key: "aciklama", label: "açıklamada", color: "orange" });
+              }
+            }
+
+            return {
+              key: t.anahtar,
+              label: (
+                <Space size="small" wrap align="center">
+                  <span>{vurgula(t.standart_terim, arama)}</span>
+                  <Tag style={{ margin: 0 }}>{vurgula(t.gelenek_karsilik, arama)}</Tag>
+                  {eslesmeYerleri.map((ey) => (
+                    <Tag key={ey.key} color={ey.color} style={{ fontSize: 11, margin: 0 }}>
+                      {ey.label}
+                    </Tag>
+                  ))}
+                </Space>
+              ),
+              children: (
+                <>
                   <p>
-                    <strong>Gerçek veride görüldüğü yer:</strong> {t.ornek_kaynak}
+                    <strong>Geleneksel bankacılıktaki karşılığı:</strong>{" "}
+                    {vurgula(t.gelenek_karsilik, arama)}
                   </p>
-                )}
-                {t.sema_alani.length > 0 && (
                   <p>
-                    <strong>Karşılık geldiği veri alanı:</strong>{" "}
-                    {t.sema_alani.map((alan) => (
-                      <Tag key={alan}>{alan}</Tag>
-                    ))}
+                    <strong>Açıklama:</strong> {vurgula(t.aciklama, arama)}
                   </p>
-                )}
-              </>
-            ),
-          }))}
+                  <p>
+                    <strong>Tanım kaynağı:</strong> {t.kaynak}
+                  </p>
+                  {t.ornek_kaynak && (
+                    <p>
+                      <strong>Gerçek veride görüldüğü yer:</strong> {t.ornek_kaynak}
+                    </p>
+                  )}
+                  {t.sema_alani && t.sema_alani.length > 0 && (
+                    <p>
+                      <strong>Karşılık geldiği veri alanı:</strong>{" "}
+                      {t.sema_alani.map((alan) => (
+                        <Tag key={alan}>{alan}</Tag>
+                      ))}
+                    </p>
+                  )}
+                </>
+              ),
+            };
+          })}
         />
       )}
     </>
   );
 }
+

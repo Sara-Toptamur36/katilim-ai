@@ -67,9 +67,15 @@ DAMGA = "MAKINE ADAYI - dogrulanmadi, imzasiz, olcum disi"
 YASAK_SUTUNLAR = frozenset({"giren_kisi", "giris_tarihi", "kayit_id",
                             "banka", "kaynak_url", "ekran_goruntusu"})
 
-# Deger yazilabilecek alanlar - hepsi span ister.
+# Deger yazilabilecek alanlar - SPAN_ISTEMEYEN disindakiler span ister.
+#
+# maliyet_orani BURADA YOK: excel_to_json'un SPAN_VERILEBILIR_ALANLAR
+# listesinde yer almadigi icin ona kanit spani yazilamiyor. Span
+# dogrulanamayan bir alana deger yazmak, bu betigin tek koruma
+# mekanizmasini o alan icin devre disi birakirdi. Alan gerekirse once
+# excel_to_json tarafinda span verilebilir hale getirilmeli.
 IZINLI_ALANLAR = frozenset({
-    "kar_payi_orani", "maliyet_orani", "oran_periyodu", "vade_ay",
+    "kar_payi_orani", "oran_periyodu", "vade_ay",
     "finansman_tutari", "odul_miktari", "odul_birimi", "kampanya_avantaji",
     "masraf_durumu", "kampanya_baslangic", "kampanya_bitis", "hedef_kitle",
     "taksit_sayisi", "erteleme_suresi_ay", "kampanya_turu",
@@ -77,7 +83,14 @@ IZINLI_ALANLAR = frozenset({
 
 # Serbest metin alanlari: okuyucunun kendi cumlesiyle ozetledigi alanlar,
 # kaynakta birebir aranmaz. Sayisal/olculen alanlar bu listede DEGIL.
-SPAN_ISTEMEYEN = frozenset({"kampanya_avantaji", "kampanya_turu", "hedef_kitle"})
+#
+# oran_periyodu de buradadir ama farkli bir sebeple: degeri sayfadan
+# kopyalanan bir metin degil, sabit bir siniflandirmadir (aylik/yillik/
+# belirsiz). excel_to_json'un SPAN_VERILEBILIR_ALANLAR listesinde yer
+# almadigi icin span yazmak "taninmayan alan" uyarisi uretiyordu.
+SPAN_ISTEMEYEN = frozenset({
+    "kampanya_avantaji", "kampanya_turu", "hedef_kitle", "oran_periyodu",
+})
 
 
 def _kayitlari_al() -> dict[str, dict]:
@@ -87,11 +100,17 @@ def _kayitlari_al() -> dict[str, dict]:
 
 def dogrula(adaylar: list[dict]) -> tuple[list[dict], list[str]]:
     """Yazilabilir adaylari ve reddedilenlerin gerekcelerini dondurur."""
+    # TEK KAYNAK: kaydin ham metnini cozen mantik burada KOPYALANMAZ.
+    # Olculdu: bu betik once _ham_kampanyalar() ile EN GUNCEL snapshot'a
+    # bakiyordu, tests/test_altin_veri_butunlugu.py ise
+    # scraper_kaydini_bul ile BASKA bir snapshot'a. Sonuc: betik span'i
+    # kabul ediyor, test ayni span'i reddediyordu (TEK-025). Iki taraf
+    # ayni cozumleyiciyi kullanmazsa "arac gecti ama test kirildi"
+    # durumu kacinilmazdir.
     from gold_dataset.excel_to_json import span_metinde_var
-    from gold_dataset.sprint_is_listesi import _ham_kampanyalar, _slug
+    from scraper.scripts.gold_eslesme import scraper_kaydini_bul
 
     kayitlar = _kayitlari_al()
-    ham = _ham_kampanyalar()
     kabul: list[dict] = []
     ret: list[str] = []
 
@@ -105,8 +124,11 @@ def dogrula(adaylar: list[dict]) -> tuple[list[dict], list[str]]:
             ret.append(f"{kid}: IMZALI kayit - bu betik imzali satira dokunmaz")
             continue
 
-        metin = (ham.get(_slug(kayit.get("kaynak_url") or "")) or {}).get(
-            "normalize_metin") or ""
+        try:
+            eslesen = scraper_kaydini_bul(kayit) or {}
+        except Exception:  # noqa: BLE001 - eslesme yoksa span dogrulanamaz
+            eslesen = {}
+        metin = eslesen.get("normalize_metin") or eslesen.get("ham_metin") or ""
         alanlar = dict(aday.get("alanlar") or {})
         spanlar = dict(aday.get("spanlar") or {})
 

@@ -74,7 +74,7 @@ _ALAN_ACIKLAMALARI = {
     "vade_ay": "vade süresi, ay cinsinden tam sayı (taksit sayısı DEĞİL)",
     "taksit_sayisi": "taksit sayısı, tam sayı (vade ile karıştırma - bunlar farklı kavramlar)",
     "erteleme_suresi_ay": "ödemesiz dönem/erteleme süresi, ay cinsinden tam sayı",
-    "finansman_tutari": "finansman/kredi tutarı, TL cinsinden sayı (ödül tutarı DEĞİL)",
+    "finansman_tutari": "finansman/kredi tutarı veya azami/üst tutar, TL cinsinden sayı (ör. 100000) (ödül tutarı DEĞİL)",
     "odul_miktari": "ödül/hediye miktarı, sayı (finansman tutarı DEĞİL)",
     "odul_birimi": "ödül birimi: TL, Mil, Gram, Bankkart Lira, ParafPara, Worldpuan gibi",
     "masraf_durumu": "masraf/ücret durumu hakkında kısa metin",
@@ -106,24 +106,24 @@ _OLLAMA_DURUM_CACHE_SURESI_SN = 30.0
 
 
 def _ollama_hazir_mi() -> bool:
-    """DENETIM BULGUSU: Ollama kapaliyken "localhost"a baglanma denemesi
-    ~4 saniye suruyor (Windows'ta once IPv6 (::1) sonra IPv4 (127.0.0.1)
-    denendigi icin, olcumle dogrulandi) - anlik bir "reddedildi" hatasi
-    DEGIL. hibrit_extraction_accuracy.py gibi cok sayida kaydi sirayla
-    isleyen bir akiste, Ollama kapaliyken HER kayit bu bedeli ayri ayri
-    oderdi (ornegin 36 kayit x ~4sn = 2.5 dakika sirf baglanti
-    denemesinde harcanirdi) - rapor Bolum 8'in "internet/GPU olmasa bile
-    hizli calisir" ilkesine aykiri. Bu fonksiyon durumu 30 saniye
-    onbellekte tutar: Ollama kapaliysa ilk kontrolden sonraki cagrilar
-    aga hic gitmeden ANINDA None doner; sure dolunca tekrar kontrol
-    edilir (Ollama sonradan baslatilmis olabilir)."""
+    """Ollama servisinin calisip calismadigini VE gerekli modelin
+    (qwen2.5) yuklu olup olmadigini kontrol eder. Servis kapali veya model
+    yuksuz ise aninda False doner. Durum 30 saniye cache'lenir.
+    """
     simdi = time.monotonic()
     son_kontrol = _OLLAMA_DURUM_CACHE.get("zaman")
     if son_kontrol is not None and (simdi - son_kontrol) < _OLLAMA_DURUM_CACHE_SURESI_SN:
         return bool(_OLLAMA_DURUM_CACHE["hazir"])
     try:
-        requests.get(_OLLAMA_TAGS_URL, timeout=2)
-        hazir = True
+        r = requests.get(_OLLAMA_TAGS_URL, timeout=2)
+        if r.status_code == 200:
+            modeller = [
+                m.get("name") or m.get("model") or ""
+                for m in r.json().get("models", [])
+            ]
+            hazir = any(_MODEL_ADI in m or m.startswith("qwen2.5") for m in modeller)
+        else:
+            hazir = False
     except requests.RequestException:
         hazir = False
     _OLLAMA_DURUM_CACHE["hazir"] = hazir
@@ -282,7 +282,7 @@ def _llm_sayisini_dogrula(deger):
     return None
 
 
-def _json_gövdesini_ayikla(ham_yanit: str) -> Optional[dict]:
+def _json_govdesini_ayikla(ham_yanit: str) -> Optional[dict]:
     """LLM bazen JSON'un etrafina aciklama metni ekleyebiliyor (ör.
     '```json\\n{...}\\n```' veya 'Iste sonuc: {...}'). Ilk '{' ile son '}'
     arasini alip parse etmeyi dener - basarisiz olursa None doner (asla
@@ -360,7 +360,7 @@ def llm_ile_cikar(
         sonuc["_izler"] = izler
         return sonuc
 
-    veri = _json_gövdesini_ayikla(ham_yanit)
+    veri = _json_govdesini_ayikla(ham_yanit)
     if veri is None:
         sonuc["_izler"] = izler
         return sonuc

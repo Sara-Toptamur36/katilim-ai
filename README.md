@@ -37,15 +37,21 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 tarihinde sabittir, aşağıda belirtilmiştir). Tüm sayılar depodaki komutlarla
 yeniden üretilebilir — üretim komutları [Test](#test) bölümünde.*
 
+> **Çıkarım doğruluğu yeniden ölçülmeyi bekliyor.** Altın Veri Seti 24
+> Ağustos'ta 103'ten 298 kayda çıktı; aşağıdaki çıkarım doğruluk
+> satırları hâlâ 103 kayıtlık sete aittir. Genişletilmiş sete karşı
+> `python scraper/scripts/extraction_accuracy.py` çalıştırılıp bu tablo
+> ve ölçüm tarihi güncellenmelidir.
+
 | Gösterge | Değer |
 |---|---|
 | Kapsanan katılım bankası | **9 / 10** (BDDK listesi; Adil Katılım gerekçeli hariç — ürün/kampanya yayımlamıyor) |
 | Toplanan gerçek kampanya | **251** tekil kampanya (300 tarihli anlık görüntü) |
 | Değişimi yakalanan kampanya | **40 / 251** içerik güncellemesi; **25**'inde izlenen alan değişti |
-| Altın Veri Seti (elle doğrulanmış referans) | **103** kayıt + ekran görüntüsü kanıtı (etiketleme sprinti sürüyor, hedef 200-300) |
-| Çıkarım — dolu alan doğruluğu | **%98,48** (65/66 alan) |
-| Çıkarım — boş alan doğruluğu (yanlış pozitif) | **%99,17** (120/121 alan) — 1 yanlış pozitif |
-| Çıkarım — alan bazlı makro F1 | **%98,28** (7 ölçülebilir alan; 5'i %100) |
+| Altın Veri Seti (elle doğrulanmış referans) | **298** kayıt (24 Ağustos'ta 195 kayıt eklendi; şartname hedefi 200-300 karşılandı) |
+| Çıkarım — dolu alan doğruluğu | **%98,48** (65/66 alan) — *103 kayıtlık sette ölçüldü* |
+| Çıkarım — boş alan doğruluğu (yanlış pozitif) | **%99,17** (120/121 alan) — 1 yanlış pozitif — *103 kayıtlık sette* |
+| Çıkarım — alan bazlı makro F1 | **%98,28** (7 ölçülebilir alan; 5'i %100) — *103 kayıtlık sette* |
 | Terminoloji sözlüğü | **31** kavram (geleneksel karşılığı + tanım kaynağıyla) |
 | Kapsam ölçümü (Scope Guard) | hassasiyet **24/24**, özgüllük **10/10** |
 | RAG — indekslenen parça | **878** (300 belgeden, 21 Ağustos'ta yeniden kuruldu) |

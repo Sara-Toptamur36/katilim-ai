@@ -44,6 +44,8 @@ HENUZ_CIKARILMAMIS_ALANLAR = [
     "kampanya_avantaji",
     "masraf_durumu",
     "tahsis_ucreti",
+    "nakit_iade_orani",
+    "indirim_orani_percent",
     "kampanya_baslangic",
     "kampanya_bitis",
     "hedef_kitle",

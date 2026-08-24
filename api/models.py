@@ -45,6 +45,20 @@ class Kampanya(Base):
     kampanya_avantaji = Column(String(1000), nullable=True)
     masraf_durumu = Column(String(300), nullable=True)
     tahsis_ucreti = Column(Float, nullable=True)
+    # DENETIM BULGUSU (24.08.2026): bu iki alan api/schemas.py'de VARDI ve
+    # extraction/regex_extractor.py onlari GERCEKTEN cikariyordu (RE_NAKIT_IADE
+    # / RE_INDIRIM_ORANI), ama veritabaninda sutunlari yoktu - deger her
+    # calistirmada hesaplanip ATILIYORDU. Olculdu: 60 kayit etkileniyor
+    # (52 indirim, 8 nakit iade). Ornekler: "Enterprise Arac Kiralamalarinda
+    # %35 Indirim", "Biletinial'da %20 Indirim" - yani bu kampanyalarin ANA
+    # avantaji sistemde hicbir yerde gorunmuyordu.
+    #
+    # Bu alanlarin kendi sutunlarinin olmasi ayrica bir KESINLIK korumasidir:
+    # regex bu yuzdeleri kar_payi_orani'na girmesinler diye ayirir (bkz.
+    # regex_extractor.py, "Nakit iade / indirim orani" bolumu). Gidecek yer
+    # olmayinca ayirmanin yarisi bosa gidiyordu.
+    nakit_iade_orani = Column(Float, nullable=True)
+    indirim_orani_percent = Column(Float, nullable=True)
 
     # Yasam dongusu
     kampanya_baslangic = Column(Date, nullable=True)

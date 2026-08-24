@@ -76,6 +76,11 @@ CIKARILABILEN_ALANLAR = [
     "odul_birimi",
     "masraf_durumu",
     "tahsis_ucreti",
+    # 24.08.2026: sutunlari yeni eklendi. Motor bu degerleri zaten
+    # uretiyordu ama gidecek yer yoktu, her calistirmada atiliyordu
+    # (bkz. api/models.py'deki ayni tarihli not).
+    "nakit_iade_orani",
+    "indirim_orani_percent",
     "kampanya_avantaji",
     "kampanya_baslangic",
     "kampanya_bitis",

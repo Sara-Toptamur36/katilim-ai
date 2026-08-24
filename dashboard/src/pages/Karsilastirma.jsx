@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Alert, Card, Select, Space, Tag, Typography } from "antd";
 import { kampanyalariGetir } from "../api/client";
 import KarsilastirmaPaneli from "../components/KarsilastirmaPaneli";
+import RakipMatrisi from "../components/RakipMatrisi";
 import TerminolojiSozlugu from "../components/TerminolojiSozlugu";
 
 const { Title, Text } = Typography;
@@ -46,6 +47,17 @@ export default function Karsilastirma() {
       return aDolu ? -1 : 1; // Dolu verisi olanlar üstte
     });
   }, [kampanyalar, seciliAlan]);
+
+  // RakipMatrisi'nin tür süzgeci için: veride gerçekten bulunan türler.
+  // Sabit liste yazmak yerine veriden türetilir - şemaya yeni bir tür
+  // eklendiğinde süzgeç kendiliğinden öğrenir, kimse güncellemeyi unutamaz.
+  const kampanyaTurleri = useMemo(() => {
+    const bulunan = new Set(
+      (kampanyalar ?? []).map((k) => k.kampanya_turu).filter(Boolean)
+    );
+    bulunan.delete("Belirlenemedi"); // süzgeç olarak anlamsız
+    return [...bulunan].sort();
+  }, [kampanyalar]);
 
   // Seçili kriterde verisi olan kampanya sayısını hesapla
   const veriOlanKampanyaSayisi = useMemo(() => {
@@ -154,14 +166,16 @@ export default function Karsilastirma() {
         />
       </Card>
 
-      {/* Bölüm 2: Rakip Analizi */}
+      {/* Bölüm 2: Rakip Analizi — Şartname Md. 5.7
+          Buraya bir süre "durum hesaplandığında görünecek" yer tutucusu
+          konmuştu: veritabanındaki kayıtların TAMAMI durum=BILINMIYOR
+          olduğu için matris boş dönüyordu. Sebep backend'deydi
+          (storage/yasam_dongusu.durum_hesapla üretim kodunda hiç
+          çağrılmıyordu) ve 24.08.2026'da giderildi; durum artık okuma
+          anında tarihlerden hesaplanıyor. Bileşen o günden beri hazır
+          bekliyordu, geri bağlandı. */}
       <Card title="Rakip Analizi" className="karsilastirma-karti">
-        <Alert
-          type="info"
-          showIcon
-          message="Rakip analizi durumu"
-          description={`Rakip analizi, kampanyaların aktif/süresi dolmuş durumu hesaplandığında görünecek. Şu an ${kampanyalar.length} kampanyanın durumu belirlenmemiş.`}
-        />
+        <RakipMatrisi turler={kampanyaTurleri} />
       </Card>
 
       {/* Bölüm 3: Terminoloji Sözlüğü */}

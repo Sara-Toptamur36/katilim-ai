@@ -379,13 +379,105 @@ def _odul_baglaminda_mi(metin: str, baslangic: int, bitis: int, pencere: int = 8
     return any(k in baglam for k in _ODUL_BAGLAM_KELIMELERI)
 
 _TR_AY_ADLARI = r"Ocak|Şubat|Mart|Nisan|Mayıs|Haziran|Temmuz|Ağustos|Eylül|Ekim|Kasım|Aralık"
-RE_TARIH = _katlanmis_derle(
-    rf"\d{{1,2}}[./]\d{{1,2}}[./]\d{{4}}|\d{{1,2}}\s+(?:{_TR_AY_ADLARI})\s+\d{{4}}", re.IGNORECASE
+
+# TEK TARIH - uc bicim (olculdu 23 Agustos 2026, Ziraat Katilim 11 kayit):
+# gg.aa.yyyy / gg-aa-yyyy / gg Ay yyyy. Tire ayracli bicim eskiden hic
+# desteklenmiyordu - Ziraat Katilim sayfalari "Kampanya Donemi 10-07-2025
+# - 31-08-2026" ve "Kampanya 09-08-2026 Tarihinde Sona Ermistir" bicimini
+# kullaniyor, ikisi de nokta/slash DEGIL tire kullaniyor. Sonuc: bu
+# kayitlarda kampanya_bitis hep BOS kaliyordu (ya da - daha kotusu - motor
+# sayfanin ILERISINDEKI baska bir tarihi (ör. "Diger Kampanyalar"
+# carousel'indeki "Son Gun dd.mm.yyyy") yanlislikla buluyordu).
+_TARIH_TEK = (
+    rf"\d{{1,2}}[./]\d{{1,2}}[./]\d{{4}}"
+    rf"|\d{{1,2}}-\d{{1,2}}-\d{{4}}"
+    rf"|\d{{1,2}}\s+(?:{_TR_AY_ADLARI})\s+\d{{4}}"
 )
+RE_TARIH = _katlanmis_derle(_TARIH_TEK, re.IGNORECASE)
+# Grup sayisi SABIT olmali (cagiran taraf hep grup 1/2 okur) - bu yuzden
+# alternasyon ({_TARIH_TEK}) TEK bir yakalama grubunun ICINE alinir,
+# hangi bicim eslesirse eslessin grup 1 = baslangic, grup 2 = bitistir.
 RE_TARIH_ARALIGI = _katlanmis_derle(
-    rf"(\d{{1,2}}\s+(?:{_TR_AY_ADLARI})\s+\d{{4}})\s*[-–]\s*(\d{{1,2}}\s+(?:{_TR_AY_ADLARI})\s+\d{{4}})",
+    rf"({_TARIH_TEK})\s*[-–]\s*({_TARIH_TEK})",
     re.IGNORECASE,
 )
+
+# SITE FOOTER TARIH DAMGASI (olculdu 23 Agustos 2026, Dunya Katilim - 57
+# kayit etkileniyor, 4'u altin veride yanlis pozitif olarak yakalandi:
+# DK-001/002/003/004 hepsi AYNI tarihi ("17/08/2026") kampanya_bitis
+# olarak aldi). Sebep: sitenin HER sayfasinin footer'inda "Son Guncelleme
+# Tarihi: dd/mm/yyyy" damgasi var - bu SITE GENELI bir zaman damgasidir,
+# o kampanyanin bitis tarihi degildir. Eski kod _ilk_eslesme ile SAYFADAKI
+# ILK tarihi aliyordu ve footer genelde sayfa govdesinden once metne
+# giriyordu (kaynak: <footer> HTML govdenin sonunda ama metin cikarma
+# sirasi kaynagini garanti etmiyor).
+_TARIH_BAGLAM_DISLAMA_KELIMELERI = _katla_hepsi([
+    "son güncelleme", "güncelleme tarihi", "yayın tarihi",
+    "tüm hakları saklıdır", "telif hakkı",
+])
+
+
+def _tarih_baglaminda_gecersiz_mi(metin: str, baslangic: int, bitis: int, pencere: int = 60) -> bool:
+    """Tarihin AYNI CUMLESINDE onu site-geneli bir damga kilan kelime var mi?"""
+    baglam = _cumleye_kirpilmis_baglam(metin, baslangic, bitis, pencere)
+    return any(k in baglam for k in _TARIH_BAGLAM_DISLAMA_KELIMELERI)
+
+
+# ILGISIZ KAMPANYA CAROUSEL'I - sayfanin KENDI icerigi biten yerden sonra
+# baslayan "Diger Kampanyalar / Ilginizi Cekebilecek Kampanyalar" bolumu.
+#
+# OLCULDU (23 Agustos 2026, 4 gercek yanlis pozitif): Ziraat Katilim'in
+# "A101'de 6 Taksit" sayfasi kendi icerigini bitirdikten sonra "SAYFAYI
+# PAYLAS" ve ardindan baska kampanyalarin karti geliyor - "Veteriner ve
+# Petshop Harcamalariniza 2000 TL Bankkart Lira!" gibi. Bu BASKA bir
+# kampanyanin odulu, "A101'de 6 Taksit"in degil - ama motor tum ham_metin
+# icinde arama yaptigi icin ilk gordugu odul ifadesini bu kampanyaya
+# yaziyordu (ZK-009, ZK-014, ZK-015, VK-010 - hepsi ayni desen).
+#
+# NEDEN BASIT "BUL VE KES" YETMEZ (olculdu): "Diger Kampanyalar" gibi
+# ayni ifadeler bazi bankalarda NAV MENU OGESI olarak sayfanin en
+# BASINDA da geciyor (Turkiye Finans: konum toplam uzunlugun %1,7'sinde;
+# Albaraka "Tum Kampanyalar": %3,9'da - "Size Ozel" kisisellestirme
+# widget'i). Isareti kosulsuz kesme noktasi saymak bu sayfalarin TUM
+# icerigini silerdi. Bu yuzden asagidaki iki koruma birlikte calisir:
+#
+#   1. Yalnizca corpus'ta CAROUSEL BASLANGICI oldugu DOGRULANMIS
+#      ifadeler listelenir (asagida, min konum >= %58 olarak olculdu -
+#      "Diger Kampanyalar" / "Tum Kampanyalar" listede YOK, cunku
+#      Turkiye Finans/Albaraka'da nav ogesi olarak COK ERKEN cikiyor).
+#   2. Yine de ASGARI ORAN esigi var: isaret sayfanin ilk %30'unda
+#      geciyorsa GUVENILMEZ sayilir ve kesme yapilmaz - boylece daha
+#      once test edilmemis bir bankada ayni ifadenin nav ogesi olarak
+#      erken cikma ihtimaline karsi bir guvenlik agi kalir.
+_ILGISIZ_ICERIK_DESENLERI = tuple(
+    _katlanmis_derle(k)
+    for k in (
+        "sayfayi paylas",
+        "tumunu goster",
+        "ilginizi cekebilecek kampanyalar",
+    )
+)
+_ILGISIZ_ICERIK_ASGARI_ORAN = 0.30
+
+
+def _kendi_icerigine_kirp(ham_metin: str, katlanmis: str) -> tuple[str, str]:
+    """Sayfanin KENDI icerigi bitip "diger kampanyalar" basladiginda kirpar.
+
+    Kesme yapilmazsa (guvenilir bir isaret bulunamazsa) girdiler DEGISMEDEN
+    doner - bu fonksiyon hicbir zaman mevcut davranisi KOTULESTIRMEZ.
+    """
+    adaylar = [
+        m.start()
+        for desen in _ILGISIZ_ICERIK_DESENLERI
+        for m in (desen.search(katlanmis),)
+        if m is not None
+    ]
+    esik = len(katlanmis) * _ILGISIZ_ICERIK_ASGARI_ORAN
+    gecerli = [a for a in adaylar if a >= esik]
+    if not gecerli:
+        return ham_metin, katlanmis
+    kirpma = min(gecerli)
+    return ham_metin[:kirpma], katlanmis[:kirpma]
 
 # --- Masraf / ucret -------------------------------------------------------
 # BU DESENLER 234 GERCEK BELGE TARANARAK YAZILDI. Ilk surumde yalnizca
@@ -808,6 +900,13 @@ def kaydi_cikar(ham_metin: str) -> dict:
     # kendi icinde `turkce_ascii_kucult` uyguluyor.
     katlanmis = turkce_ascii_katla(ham_metin)
 
+    # ILGISIZ KAMPANYA CAROUSEL'I kirpilir (bkz. _kendi_icerigine_kirp
+    # docstring'i). TEK NOKTADA yapilir: bu fonksiyondaki HER alan asagida
+    # `ham_metin`/`katlanmis` degiskenlerini kullaniyor, tek bir kirpma
+    # tum alanlari (odul, tarih, taksit, tutar, kar payi, kampanya_turu)
+    # aynı anda korur - her deseni ayri ayri yamak yerine.
+    ham_metin, katlanmis = _kendi_icerigine_kirp(ham_metin, katlanmis)
+
     # --- Kar payi orani -----------------------------------------------
     m = RE_KAR_PAYI_SAYI_ONCE.search(katlanmis)
     if m and _kar_payi_ata(alanlar, izler, _ham_span(ham_metin, m), 0.9):
@@ -1023,16 +1122,33 @@ def kaydi_cikar(ham_metin: str) -> dict:
                     izler["masraf_durumu"] = (span, 0.5)
 
     # --- Kampanya suresi: once tarih ARALIGI, sonra tek tarih -----------
-    m = RE_TARIH_ARALIGI.search(katlanmis)
-    if m:
-        alanlar["kampanya_baslangic"] = tarihe_cevir(_ham_span(ham_metin, m, 1))
-        alanlar["kampanya_bitis"] = tarihe_cevir(_ham_span(ham_metin, m, 2))
-        izler["kampanya_bitis"] = (_ham_span(ham_metin, m), 0.9)
+    #
+    # ILK GECERLI eslesme aranir, ILK eslesme degil (olculdu, DK-001/002/
+    # 003/004): Dunya Katilim'in her sayfasinin footer'inda "Son Guncelleme
+    # Tarihi: dd/mm/yyyy" damgasi var. Eskiden _ilk_eslesme sayfadaki ILK
+    # tarihi alip 4 farkli kampanyaya AYNI (yanlis) bitis tarihini
+    # yaziyordu. Simdi her aday _tarih_baglaminda_gecersiz_mi ile elenir;
+    # gecerli aday bulunamazsa alan BOS kalir (rapor Bolum 5.7/15: supheli
+    # deger uydurmaktan iyidir).
+    aralik_gecerli = None
+    for am in RE_TARIH_ARALIGI.finditer(katlanmis):
+        if _tarih_baglaminda_gecersiz_mi(ham_metin, am.start(), am.end()):
+            continue
+        aralik_gecerli = am
+        break
+
+    if aralik_gecerli is not None:
+        alanlar["kampanya_baslangic"] = tarihe_cevir(_ham_span(ham_metin, aralik_gecerli, 1))
+        alanlar["kampanya_bitis"] = tarihe_cevir(_ham_span(ham_metin, aralik_gecerli, 2))
+        izler["kampanya_bitis"] = (_ham_span(ham_metin, aralik_gecerli), 0.9)
     else:
-        span = _ilk_eslesme(RE_TARIH, katlanmis, ham_metin)
-        if span:
+        for tm in RE_TARIH.finditer(katlanmis):
+            if _tarih_baglaminda_gecersiz_mi(ham_metin, tm.start(), tm.end()):
+                continue
+            span = _ham_span(ham_metin, tm)
             alanlar["kampanya_bitis"] = tarihe_cevir(span)
             izler["kampanya_bitis"] = (span, 0.85)
+            break
 
     # --- Kampanya turu / hedef kitle (anahtar kelime siniflandirma) -----
     alanlar["kampanya_turu"] = _kampanya_turunu_tespit_et(ham_metin)

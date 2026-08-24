@@ -152,10 +152,24 @@ TR_AY_ADLARI: tuple[str, ...] = tuple(_TR_AYLAR)
 
 
 def tarihe_cevir(ham: str) -> str | None:
-    """'31.12.2026' / '31/12/2026' / '31 Aralık 2026' -> '2026-12-31' (ISO8601)."""
+    """'31.12.2026' / '31/12/2026' / '31-12-2026' / '31 Aralık 2026' -> '2026-12-31' (ISO8601)."""
     ham = ham.strip().lower()
 
+    # TIRE AYRACLI (olculdu 23 Agustos 2026, Ziraat Katilim 11 kayit):
+    # regex_extractor.RE_TARIH bu bicimi zaten yakaliyordu ("Kampanya
+    # Donemi 10-07-2025 - 31-08-2026") ama burasi cevirmeyi bilmiyordu -
+    # span dogru bulunuyor, deger sessizce None donuyordu. Nokta/slash
+    # ile AYNI [./] karakter sinifina tire EKLENMEDI (bilinci tercih):
+    # ayni desende ikisini birlestirmek "10-07.2025" gibi KARISIK
+    # ayraçlari da kabul ederdi - gercek veride hic gorulmeyen, anlamsiz
+    # bir bicim. Ayri desen, yalnizca GERCEKTEN gozlenen bicimleri kabul
+    # eder.
     m = re.match(r"(\d{1,2})[./](\d{1,2})[./](\d{4})", ham)
+    if m:
+        g, a, y = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        return f"{y:04d}-{a:02d}-{g:02d}"
+
+    m = re.match(r"(\d{1,2})-(\d{1,2})-(\d{4})", ham)
     if m:
         g, a, y = int(m.group(1)), int(m.group(2)), int(m.group(3))
         return f"{y:04d}-{a:02d}-{g:02d}"

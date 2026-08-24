@@ -251,7 +251,15 @@ def hibrit_ara(
     en ustteki sonuc her zaman ~1.0 civari alir; ham vektor skoru ise
     gercek anlam benzerligini gosterir (0-1 arasi cosine similarity).
     """
-    from qdrant_client.models import Fusion, FusionQuery, Prefetch, SearchParams, SparseVector
+    from qdrant_client.models import (
+        Filter,
+        Fusion,
+        FusionQuery,
+        HasIdCondition,
+        Prefetch,
+        SearchParams,
+        SparseVector,
+    )
 
     indeksler, degerler = seyrek_sorgu
     arama_params = SearchParams(exact=exact) if exact else None
@@ -289,12 +297,44 @@ def hibrit_ara(
     # Ham vektor skorlarini ayri bir aramadan al (menu kirliligi kontrolu icin)
     # YALNIZCA yogun vektor aramasinin skorlari - seyrek arama keyword bazli,
     # menu kirliligi zaten keyword eslesmesindendir.
-    ham_vektor_sonuclari = istemci_al().search(
-        collection_name=koleksiyon,
-        query_vector=(YOGUN_AD, yogun_sorgu),
-        limit=limit,
-        query_filter=filtre,
-        search_params=arama_params,
+    # API NOTU: `.search()` qdrant-client 1.18'de KALDIRILDI (kurulu surum
+    # 1.18.0). Cagrildiginda AttributeError firlatiyor ve bu satir hibrit
+    # aramanin ICINDE oldugu icin TUM RAG yolunu dusuruyordu - `getir()`
+    # istisna atiyor, chatbot hicbir soruya cevap veremiyordu (olculdu
+    # 25.08.2026: tests/test_rag_uctan_uca.py'de 10 hata).
+    #
+    # Ayni islemin guncel karsiligi `query_points`: yogun vektor uzerinde
+    # tek basina arama yapmak icin `using=` ile vektor adi verilir.
+    # Yukaridaki RRF cagrisi zaten bu API'yi kullaniyordu; yalnizca bu
+    # ikinci cagri eski imzada kalmisti.
+    # SKORLAR RRF SONUCLARININ KENDISI ICIN SORULUR.
+    #
+    # Onceki hali ayri bir "en iyi `limit` yogun sonuc" araması yapiyor ve
+    # ID'leriyle eslestirmeye calisiyordu. Ama RRF, yogun VE seyrek aramanin
+    # FUZYONUDUR - dondurdugu kayitlar yogun-only ilk N ile buyuk olcude
+    # ortusmez. Olculdu (25.08.2026): tipik bir sorguda 5 parcanin 2-3'u
+    # eslesmiyor ve `0.0` aliyordu.
+    #
+    # Bedeli sessizdi ama gercekti: retriever `max(vektor_skoru)` alip
+    # ASGARI_VEKTOR_SKORU ile karsilastiriyor. Hicbiri eslesmezse max=0.0
+    # cikar ve MESRU bir soru "vektor skoru cok dusuk" diye reddedilir -
+    # yani cekimserlik karari, ID ortusmesinin rastlantisina baglanmis olur.
+    #
+    # Dogrusu: skoru, elde olan kayitlarin TAM KENDISI icin sormak.
+    kimlikler = [s.id for s in sonuclar]
+    ham_vektor_sonuclari = (
+        istemci_al()
+        .query_points(
+            collection_name=koleksiyon,
+            query=yogun_sorgu,
+            using=YOGUN_AD,
+            limit=len(kimlikler),
+            query_filter=Filter(must=[HasIdCondition(has_id=kimlikler)]),
+            search_params=arama_params,
+        )
+        .points
+        if kimlikler
+        else []
     )
     
     # RRF sonuc ID'leriyle ham vektor skorlarini eslestir

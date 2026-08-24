@@ -1454,3 +1454,49 @@ html[data-tema="koyu"] .analiz-istatistik-kutu.vurgulu {
 
 
 
+
+/* ---------------------------------------------------------------------
+   LOGO GORSELLERI
+
+   Bu bes sinif once harf amblemi icindi (yesil zemin + beyaz harf: NN,
+   K, PT). Artik seffaf PNG logo tasiyorlar. Sinif adlari BILEREK ayni
+   birakildi - boylece boyut ve yerlesim kurallari (width/height/margin)
+   aynen gecerli kaliyor; yalnizca gorsel icin anlamsiz olan zemin,
+   golge ve yazi ozellikleri geri aliniyor. Zemin birakilsaydi logonun
+   arkasinda dolu bir yesil kare gorunurdu.
+   --------------------------------------------------------------------- */
+img.marka-logo,
+img.profil-avatar,
+img.sohbet-bos-amblem,
+img.asistan-avatar,
+img.giris-logo-amblem {
+  background: none;
+  box-shadow: none;
+  object-fit: contain;
+  padding: 0;
+}
+
+/* Logo koyu yesil + altin. Koyu temanin zemini (#0a0e0c) de koyu oldugu
+   icin logo neredeyse kayboluyordu. Cozum logoyu degistirmek degil -
+   arkasina acik bir daire koymak: marka renkleri bozulmadan her iki
+   temada da okunur kaliyor. */
+html[data-tema="koyu"] img.profil-avatar,
+html[data-tema="koyu"] img.sohbet-bos-amblem,
+html[data-tema="koyu"] img.asistan-avatar,
+html[data-tema="koyu"] img.giris-logo-amblem {
+  background: rgba(255, 255, 255, 0.93);
+  padding: 3px;
+}
+
+/* Sol ust logo: kenar cubugu HER IKI temada da koyu yesil (#0d3f36) ve
+   logonun kendisi de koyu yesil - ust uste gelince neredeyse gorunmuyordu.
+   Koyu tema kurali burada iste yaramaz cunku sorun acik temada da var.
+   Bu yuzden marka logosu her zaman beyaz daire uzerinde duruyor. */
+img.marka-logo {
+  background: #ffffff;
+  border-radius: 50%;
+  padding: 4px;
+  width: 44px;
+  height: 44px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+}

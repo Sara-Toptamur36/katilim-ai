@@ -12,7 +12,7 @@
 // dogruluk olcumleri hala 251'lik set uzerinde yapilmis degerlerdir.
 // "447 kampanyada %98,28 dogruluk" demek yanlis olur - o oran o sette
 // olculmedi. Yeniden olcum yapilana kadar ayrim ekranda korunur.
-export const VERI_TARIHI = "23 Ağustos 2026";
+export const VERI_TARIHI = "24 Ağustos 2026";
 export const OLCUM_TARIHI = "18 Ağustos 2026";
 export const OLCUM_VERI_SETI = "251 tekil kampanya / 817 parçalık indeks";
 
@@ -25,8 +25,12 @@ export const OLCUMLER = {
     toplamBanka: 10,
     haricBanka: "Adil Katılım",
     haricSebep: "kampanya/ürün yayını bulunmadığı için hariç",
-    goldKayit: 64,
-    goldGercekBanka: 60,
+    // gold_dataset/altin_veri_seti.json'dan sayildi (24 Agustos 2026).
+    // 64 iken bayat kalmisti - Sara'nin etiketleme sprinti 195 kayit
+    // daha imzalayinca set 302'ye cikti ama ekran hala 64 gosteriyordu.
+    // Sartname hedefi 200-300; bu sayi hedefin TUTTURULDUGUNU gosterir.
+    goldKayit: 302,
+    goldGercekBanka: 298,
     goldOrnekSenaryo: 4, // sartnamedeki A/B/C/D Bankasi ornegi
   },
   // --- OLCUM: 251'lik set uzerinde, 18 Agustos (OLCUM_TARIHI) ---

@@ -177,7 +177,15 @@ function MenuIcerigi({ tiklaCalistir = () => {} }) {
       {/* Marka bloğu */}
       <div className="marka-blogu">
         <div className="marka-ust">
-          <div className="marka-logo">NN</div>
+          {/* BASE_URL kullaniliyor: production build /katilim-ai/ on ekiyle
+              aliniyor (deploy-pages.yml). Duz "/logo.png" yazilirsa yerelde
+              calisir ama GitHub Pages'te logo kirik cikar - fark edilmesi
+              zor bir hata olurdu. */}
+          <img
+            className="marka-logo"
+            src={`${import.meta.env.BASE_URL}logo.png`}
+            alt="KatılımAI"
+          />
           <div className="marka-yazi">
             <span className="marka-baslik">KatılımAI</span>
             <span className="marka-alt-baslik">Intelligence Platform</span>
@@ -308,10 +316,14 @@ function UstBar({ koyuMu, temaToggle, cekmeceyiAc }) {
         {/* Kullanıcı profili */}
         <div className="profil-blogu">
           <div className="profil-bilgi">
-            <span className="profil-isim">PeacewAI Takımı</span>
-            <span className="profil-rol">Proje yöneticisi</span>
+            <span className="profil-isim">KatılımAI Ekibi</span>
+            <span className="profil-rol">Demo oturumu</span>
           </div>
-          <div className="profil-avatar">PT</div>
+          <img
+            className="profil-avatar"
+            src={`${import.meta.env.BASE_URL}logo-64.png`}
+            alt=""
+          />
         </div>
       </div>
     </Header>

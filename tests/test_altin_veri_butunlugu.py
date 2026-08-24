@@ -139,6 +139,87 @@ def test_kanit_spani_kaynak_metinde_GERCEKTEN_geciyor(kayitlar):
     )
 
 
+def test_kaynak_url_kampanya_sayfasini_gosterir(kayitlar):
+    """Her kayit KENDI kampanya sayfasini gostermeli - liste sayfasini degil.
+
+    Rehber E sutunu: "Kampanyanin TAM adresi (ana sayfa degil)". Denetimde
+    uc kayit (TOM-001/002/003) ayni adresi gosteriyordu:
+    tombank.com.tr/kampanyalar.html. TOM Bank kampanyalarini tek sayfada
+    anchor olarak yayimliyor; scraper fragment'i dogru yakalamisti ama
+    altin sete yazilirken dusmustu.
+
+    Iki sonucu vardi: kayitlar mukerrer gorunuyordu ve split kaynak_url'ye
+    gore grupladigi icin ucu tek grup sayiliyordu.
+    """
+    from collections import Counter
+
+    urller = [
+        (k["kayit_id"], (k.get("kaynak_url") or "").rstrip("/"))
+        for k in kayitlar
+        if k.get("kaynak_url")
+    ]
+
+    sayim = Counter(u for _kid, u in urller)
+    mukerrer = {u: n for u, n in sayim.items() if n > 1}
+    assert not mukerrer, (
+        "ayni kaynak_url birden fazla kayitta - muhtemelen liste sayfasi "
+        f"yazilmis, kampanyanin kendi adresi degil: {mukerrer}"
+    )
+
+
+def test_kanit_spani_ALANIN_DEGERINI_destekliyor(kayitlar):
+    """Span kaynakta gecmesi YETMEZ - o alanin DEGERINI de icermeli.
+
+    Ustteki test spanin kaynakta bulundugunu dogrular; bu test spanin
+    DOGRU cumle oldugunu dogrular. Aradaki fark halusinasyonun saklandigi
+    yerdir: kaynaktan alinmis ama ILGISIZ bir cumle ustteki testi gecer,
+    cunku metinde gercekten vardir. Denetimde boyle bir kayit bulundu -
+    TF-010'un tarih spani, tarih GECMEYEN bir cumleydi; kayit "kanitli"
+    gorunuyordu ama kanit baska bir seyi soyluyordu.
+
+    Yalnizca sayisal ve tarih alanlari kontrol edilir; hedef_kitle gibi
+    serbest metin alanlarinda etiket bir insan ozetidir ve kaynakta
+    birebir gecmez.
+    """
+    from gold_dataset.excel_to_json import span_metinde_var
+    from gold_dataset.kanit_spani_oner import _sayi_bicimleri, _tarih_bicimleri
+
+    SAYISAL = {"kar_payi_orani", "maliyet_orani", "vade_ay", "finansman_tutari",
+               "odul_miktari", "taksit_sayisi", "erteleme_suresi_ay"}
+    TARIH = {"kampanya_baslangic", "kampanya_bitis"}
+
+    def aralik_destekliyor(deger: str, span: str) -> bool:
+        """'1-30 Haziran 2026' iki ucu da destekler; tam tarih kaliplari
+        boyle bir spanla eslesmez, bu yuzden ayrica bakilir."""
+        from gold_dataset.tarih_celiskisi_raporu import _araliklari_cikar
+
+        return any(
+            deger in (a["baslangic"], a["bitis"]) for a in _araliklari_cikar(span)
+        )
+
+    hatalar = []
+    for k in kayitlar:
+        for alan, span in (k.get("kanit_spanlari") or {}).items():
+            deger = k.get(alan)
+            if deger is None or not span:
+                continue
+            if alan in TARIH:
+                if aralik_destekliyor(str(deger), span):
+                    continue
+                bicimler = _tarih_bicimleri(str(deger))
+            elif alan in SAYISAL:
+                bicimler = _sayi_bicimleri(deger)
+            else:
+                continue
+            if bicimler and not any(span_metinde_var(b, span) for b in bicimler):
+                hatalar.append(f"{k['kayit_id']}.{alan}={deger!r} span={span[:50]!r}")
+
+    assert not hatalar, (
+        f"{len(hatalar)} kanit spani, dayandigi alanin degerini icermiyor: "
+        + "; ".join(hatalar[:5])
+    )
+
+
 def test_kanit_spani_yalnizca_DOLU_alanlara_verilir(kayitlar):
     """Bos bir alanin kaniti olamaz: "kaynakta yok" iddiasinin kaniti,
     metinde bir cumle GOSTERMEK degil, gosterememektir."""

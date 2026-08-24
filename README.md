@@ -38,9 +38,11 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 
 > **Çıkarım doğruluğu yeniden ölçülmeyi bekliyor.** Altın Veri Seti 24
 > Ağustos'ta 107'den **298 imzalı kayda** çıktı (kuyruktaki 195 taslak
-> insan doğrulamasından geçip imzalandı). Aşağıdaki çıkarım doğruluk
-> satırları hâlâ **93 imzalı canlı kayıt** üzerinde ölçülmüştür — örneklem
-> üç katına çıktığı için sayıların yeniden üretilmesi gerekir:
+> insan doğrulamasından geçip imzalandı; kampanya olmayan bir kayıt ve
+> kaynağı otomatik tarayıcıya kapalı dört kayıt setten çıkarıldı).
+> Aşağıdaki çıkarım doğruluk satırları hâlâ **93 imzalı canlı kayıt**
+> üzerinde ölçülmüştür — örneklem üç katına çıktığı için sayıların
+> yeniden üretilmesi gerekir:
 >
 > ```bash
 > python scraper/scripts/extraction_accuracy.py
@@ -51,7 +53,7 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 | Kapsanan katılım bankası | **9 / 10** (BDDK listesi; Adil Katılım gerekçeli hariç — ürün/kampanya yayımlamıyor) |
 | Toplanan gerçek kampanya | **251** tekil kampanya (300 tarihli anlık görüntü) |
 | Değişimi yakalanan kampanya | **40 / 251** içerik güncellemesi; **25**'inde izlenen alan değişti |
-| Altın Veri Seti | **306** satır; **298 imzalı** (ölçüme giren), 4 taslak (ekran görüntüsü bekliyor) |
+| Altın Veri Seti | **298** kayıt, tamamı imzalı (ölçüme giren); taslak kalmadı |
 | Çıkarım — dolu alan doğruluğu | **%52,07** (239/459 alan, 11 alan · 93 imzalı canlı kayıt) — *ölçüm 23 Ağustos* |
 | Çıkarım — boş alan doğruluğu (yanlış pozitif) | **%95,15** (490/515 alan) — 25 yanlış pozitif — *ölçüm 23 Ağustos* |
 | Çıkarım — makro F1 (11 alan) | **%67,09** (makro P %75,33 / R %66,08) — *ölçüm 23 Ağustos* |

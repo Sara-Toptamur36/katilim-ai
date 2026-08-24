@@ -126,10 +126,14 @@ def _sec(adaylar: list[str], alan: str) -> tuple[str | None, str]:
 
 
 def onerileri_uret() -> list[dict]:
+    # TEK KAYNAK: kaydin ham metnini cozen mantik burada KOPYALANMAZ.
+    # Olculdu (TEK-025): _ham_kampanyalar() EN GUNCEL snapshot'i verir,
+    # tests/test_altin_veri_butunlugu.py ise scraper_kaydini_bul ile
+    # BASKA bir snapshot'a bakar. Iki taraf ayrilinca bu betik span'i
+    # kabul ediyor, butunluk testi ayni span'i reddediyordu.
     from gold_dataset.excel_to_json import SPAN_VERILEBILIR_ALANLAR, span_metinde_var
-    from gold_dataset.sprint_is_listesi import _ham_kampanyalar, _slug
+    from scraper.scripts.gold_eslesme import scraper_kaydini_bul
 
-    ham = _ham_kampanyalar()
     with open(GOLD, encoding="utf-8") as f:
         kayitlar = json.load(f)
 
@@ -137,10 +141,13 @@ def onerileri_uret() -> list[dict]:
     for k in kayitlar:
         if k["kayit_id"].startswith(("A-", "B-", "C-", "D-")):
             continue
-        kaynak = ham.get(_slug(k.get("kaynak_url") or ""))
+        try:
+            kaynak = scraper_kaydini_bul(k)
+        except Exception:  # noqa: BLE001 - eslesme yoksa span onerilemez
+            kaynak = None
         if not kaynak:
             continue
-        metin = kaynak.get("normalize_metin") or ""
+        metin = kaynak.get("normalize_metin") or kaynak.get("ham_metin") or ""
         mevcut = k.get("kanit_spanlari") or {}
 
         for alan in SPAN_VERILEBILIR_ALANLAR:

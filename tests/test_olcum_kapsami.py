@@ -39,20 +39,63 @@ def test_imzasiz_kayitlar_olcume_girmez():
     dogruluk olcumu filtreyi uygulamiyordu: butunluk testi 107 kayit
     sayarken olcum 293 kayit uzerinden kosuyordu. "Kac kayit uzerinde
     olctunuz?" sorusunun tek bir cevabi olmali.
+
+    GERCEK VERIYE BAGLI DEGIL: burada once `len(imzali) < len(gold)` on
+    kosulu vardi ve "veri setinde imzasiz kayit VARDIR" varsayiyordu. 24
+    Agustos'ta kuyruktaki 200 taslagin tamami imzalanip set %100 imzali
+    hale gelince test kirildi - oysa kural hala geceriydi, yalnizca
+    ornegi kalmamisti. Filtre artik SENTETIK bir imzasiz kayitla
+    dogrulanir; kural, gercek verinin o anki halinden bagimsiz olarak
+    test edilir.
     """
-    from scraper.scripts.extraction_accuracy import extraction_accuracy_hesapla
+    import json as _json
+    import tempfile
+    from pathlib import Path as _Path
+
+    from scraper.scripts import extraction_accuracy as olcum
 
     gold = _gold()
     imzali = [k for k in gold if (k.get("giren_kisi") or "").strip()]
-    assert len(imzali) < len(gold), (
-        "Bu test taslak (imzasiz) kayit bulunmasini varsayiyor; veri seti "
-        "tamamen imzaliysa test anlamini yitirir ve guncellenmelidir."
+
+    # 1. Gercek veri uzerindeki degismez: olculen kayit sayisi imzali
+    #    kayit sayisini asamaz.
+    taban = olcum.extraction_accuracy_hesapla()
+    assert taban["canli_kayit_sayisi"] <= len(imzali), (
+        f"Olcum {taban['canli_kayit_sayisi']} kayit saydi ama yalnizca "
+        f"{len(imzali)} imzali kayit var - imza filtresi devre disi kalmis."
     )
 
-    sonuc = extraction_accuracy_hesapla()
-    assert sonuc["canli_kayit_sayisi"] <= len(imzali), (
-        f"Olcum {sonuc['canli_kayit_sayisi']} kayit saydi ama yalnizca "
-        f"{len(imzali)} imzali kayit var - imza filtresi devre disi kalmis."
+    # 2. Filtrenin kendisi: TUM imzalar kaldirildiginda olcum hicbir
+    #    kayit saymamali.
+    #
+    #    Neden "yeni bir imzasiz kayit ekle" degil: denendi ve test
+    #    BOSUNA geciyordu. Eklenen sentetik kayit, kaynak metni
+    #    bulunamadigi icin zaten olcume girmiyordu; imzasi olsa da
+    #    olmasa da sayi degismiyordu, yani filtre hic sinanmiyordu.
+    #    Mevcut kayitlarin imzasini kaldirmak bu tuzagi kapatir: taban
+    #    olcumde sayilan kayitlarin AYNISI, yalnizca imzasiz halleriyle
+    #    olculur.
+    if taban["canli_kayit_sayisi"] == 0:
+        return  # olculebilir kayit yok, filtre denenemez
+
+    imzasiz_gold = [dict(k, giren_kisi="") for k in gold]
+
+    with tempfile.TemporaryDirectory() as gecici:
+        sahte_gold = _Path(gecici) / "gold.json"
+        sahte_gold.write_text(
+            _json.dumps(imzasiz_gold, ensure_ascii=False), encoding="utf-8"
+        )
+        gercek_yol = olcum.GOLD
+        try:
+            olcum.GOLD = sahte_gold
+            imzasiz_sonuc = olcum.extraction_accuracy_hesapla()
+        finally:
+            olcum.GOLD = gercek_yol
+
+    assert imzasiz_sonuc["canli_kayit_sayisi"] == 0, (
+        f"Butun imzalar kaldirildigi halde olcum "
+        f"{imzasiz_sonuc['canli_kayit_sayisi']} kayit saydi "
+        "- imza filtresi devre disi."
     )
 
 

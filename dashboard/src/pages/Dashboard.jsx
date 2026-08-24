@@ -6,7 +6,7 @@ import {
   SwapOutlined,
   AuditOutlined,
 } from "@ant-design/icons";
-import client from "../api/client";
+import client, { tazelikGetir } from "../api/client";
 import {
   OLCUMLER,
   OLCUM_TARIHI,
@@ -47,6 +47,12 @@ export default function Dashboard() {
   const [kontrolEdildi, setKontrolEdildi] = useState(false);
   const [metrikPaneliAcik, setMetrikPaneliAcik] = useState(false);
   const [veriPaneliAcik, setVeriPaneliAcik] = useState(false);
+  // GET /sistem/tazelik - hacim sayilari CANLI gelir, koda gomulmez.
+  // Gerekce: bu sayilar Zeynep tarama yaptikca degisiyor; gomulu olduklari
+  // surece sessizce bayatliyorlardi (24 Agustos'ta ekran 447 diyordu,
+  // veritabani 425 idi). Uc nokta erisilemezse olcumler.js'teki deger
+  // yedek olarak kullanilir - ekranda bos sayi gosterilmez.
+  const [tazelik, setTazelik] = useState(null);
 
   // Paneller arası geçiş kontrolü (biri açılırken diğeri kapanır)
   const modelPaneliniAc = () => {
@@ -66,7 +72,26 @@ export default function Dashboard() {
       .then(() => setApiBagli(true))
       .catch(() => setApiBagli(false))
       .finally(() => setKontrolEdildi(true));
+
+    tazelikGetir()
+      .then(setTazelik)
+      .catch(() => setTazelik(null));
   }, []);
+
+  // Canli deger varsa onu, yoksa olcumler.js'teki yedegi kullan.
+  const tekilKampanya = tazelik?.tekil_kampanya ?? OLCUMLER.veri.tekilKampanya;
+  const anlikGoruntu = tazelik?.anlik_goruntu ?? OLCUMLER.veri.anlikGoruntu;
+  const ragParca = tazelik?.rag_parca_sayisi ?? SISTEM_DURUMU.qdrantParca;
+  const ragBelge = tazelik?.rag_belge_sayisi ?? SISTEM_DURUMU.qdrantBelge;
+  // Sayi canli mi yoksa yedek mi - jurinin ayirt edebilmesi icin.
+  const hacimCanli = tazelik != null;
+
+  // Halka grafigin toplami VERIDEN hesaplanir. Onceden 251 sabiti
+  // yaziliydi ama URUN_AILESI 447'lik sete gore guncellenmisti; yuzdeler
+  // 251'e bolundugu icin toplamlari %100'u asiyordu (%93,2 + %61,0 = %154).
+  const urunAilesiToplam = URUN_AILESI.reduce((t, u) => t + u.sayi, 0);
+  // Alan doluluk tablosunun paydasi da ayni sekilde veriden gelir.
+  const alanDolulukToplam = ALAN_DOLULUGU[0]?.toplam ?? urunAilesiToplam;
 
   return (
     <div
@@ -814,7 +839,7 @@ export default function Dashboard() {
               marginTop: 4,
             }}
           >
-            {OLCUMLER.veri.tekilKampanya}
+            {tekilKampanya}
           </span>
           <span
             style={{
@@ -833,7 +858,7 @@ export default function Dashboard() {
               marginTop: 4,
             }}
           >
-            {OLCUMLER.veri.anlikGoruntu} tarihli anlık görüntü
+            {anlikGoruntu} tarihli anlık görüntü
           </span>
         </div>
 
@@ -1030,7 +1055,7 @@ export default function Dashboard() {
           ...ilkBes.map((u, i) => ({ ad: u.ad, sayi: u.sayi, renk: halkaRenkler[i] })),
           { ad: "Diğer", sayi: digerToplam, renk: halkaRenkler[5] },
         ];
-        const toplam = 251;
+        const toplam = urunAilesiToplam;
         const yaricap = 74;
         const kalinlik = 26;
         const merkez = 100;
@@ -1080,7 +1105,7 @@ export default function Dashboard() {
                     marginTop: 2,
                   }}
                 >
-                  251 kampanyanın ürün ailesine göre dağılımı
+                  {urunAilesiToplam} kampanyanın ürün ailesine göre dağılımı
                 </div>
               </div>
 
@@ -1134,7 +1159,7 @@ export default function Dashboard() {
                         lineHeight: 1,
                       }}
                     >
-                      251
+                      {urunAilesiToplam}
                     </div>
                     <div
                       style={{
@@ -1284,7 +1309,7 @@ export default function Dashboard() {
                       marginTop: 2,
                     }}
                   >
-                    251 kampanyada hangi alan ne sıklıkta dolu
+                    {alanDolulukToplam} kampanyada hangi alan ne sıklıkta dolu
                   </div>
                 </div>
 
@@ -1436,7 +1461,7 @@ export default function Dashboard() {
                         lineHeight: 1.2,
                       }}
                     >
-                      {SISTEM_DURUMU.qdrantParca} parça
+                      {ragParca} parça
                     </div>
                     <div
                       style={{
@@ -1445,7 +1470,7 @@ export default function Dashboard() {
                         marginTop: 4,
                       }}
                     >
-                      {SISTEM_DURUMU.qdrantBelge} belgeden · {SISTEM_DURUMU.indeksTarihi}
+                      {ragBelge} belgeden · {SISTEM_DURUMU.indeksTarihi}
                     </div>
                   </div>
 
@@ -1964,7 +1989,7 @@ export default function Dashboard() {
                 >
                   {/* Uyarı ikonu */}
                   <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>⚠</span>
-                  <span>Bu değerler canlı telemetri değildir. {OLCUM_TARIHI} tarihinde <strong>{OLCUM_VERI_SETI}</strong> üzerinde ölçülmüştür. Veri o tarihten sonra büyüdü ({OLCUMLER.veri.tekilKampanya} tekil kampanya, {SISTEM_DURUMU.qdrantParca} parçalık indeks) — bu oranlar <strong>yeni set üzerinde yeniden ölçülmedi</strong>.</span>
+                  <span>Bu değerler canlı telemetri değildir. {OLCUM_TARIHI} tarihinde <strong>{OLCUM_VERI_SETI}</strong> üzerinde ölçülmüştür. Veri o tarihten sonra büyüdü ({tekilKampanya} tekil kampanya, {ragParca} parçalık indeks) — bu oranlar <strong>yeni set üzerinde yeniden ölçülmedi</strong>.</span>
                 </div>
               </>
             );
@@ -2025,11 +2050,11 @@ export default function Dashboard() {
                 <div style={bentoKartStil}>
                   <div style={bentoBaslikStil}>TEKİL KAMPANYA</div>
                   <div style={{ fontSize: 34, fontWeight: 700, color: "#0c5144", lineHeight: 1 }}>
-                    {OLCUMLER.veri.tekilKampanya}
+                    {tekilKampanya}
                   </div>
                   <div style={{ fontSize: 12, color: "var(--yazi-normal)", marginTop: 4 }}>Toplanan</div>
                   <div style={{ fontSize: 11, color: "var(--yazi-soluk)", marginTop: 14 }}>
-                    {OLCUMLER.veri.anlikGoruntu} tarihli anlık görüntü
+                    {anlikGoruntu} tarihli anlık görüntü
                   </div>
                 </div>
 
@@ -2151,7 +2176,7 @@ export default function Dashboard() {
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <span style={{ color: "var(--yazi-normal)" }}>Değişen kampanya</span>
-                      <span style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>{ZAMAN_EKSENI.degisenKampanya} / {OLCUMLER.veri.tekilKampanya}</span>
+                      <span style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>{ZAMAN_EKSENI.degisenKampanya} / {tekilKampanya}</span>
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <span style={{ color: "var(--yazi-normal)" }}>Ortalama versiyon</span>

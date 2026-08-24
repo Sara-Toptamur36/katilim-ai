@@ -129,9 +129,9 @@ function BeklemeBalonu({ bekleniyor }) {
         <div className="bekleme-sayac">
           yanıt bekleniyor… {saniye} sn
         </div>
-        {saniye >= 15 && (
+        {saniye >= 10 && (
           <div className="bekleme-isinma-notu">
-            İlk sorguda model ısınması 80 saniyeye kadar sürebilir.
+            İlk soru, dil modeli belleğe yüklenirken daha uzun sürebilir. Sonraki sorular hızlanacak.
           </div>
         )}
       </div>
@@ -308,10 +308,16 @@ export default function Chatbot() {
         })
       );
       auditEkle(yanit.audit, soru);
-    } catch {
+    } catch (hata) {
+      // Sorun 3: 90 saniyelik zaman aşımı (timeout) hatasında kullanıcıya özel mesaj verilir
+      const zamanAsimi = hata?.code === "ECONNABORTED" || hata?.message?.includes("timeout");
+      const botMetin = zamanAsimi
+        ? "Yanıt 90 saniyede gelmedi - model hâlâ yükleniyor olabilir, tekrar deneyin."
+        : "Üzgünüm, şu anda yanıt veremiyorum. Lütfen tekrar deneyin.";
+
       const hataMesaji = {
         rol: "bot",
-        metin: "Üzgünüm, şu anda yanıt veremiyorum. Lütfen tekrar deneyin.",
+        metin: botMetin,
         hata: true,
       };
       setSohbetler((onceki) =>
@@ -319,6 +325,20 @@ export default function Chatbot() {
           if (s.id !== hedefId) return s;
           return { ...s, mesajlar: [...s.mesajlar, hataMesaji], zaman: Date.now() };
         })
+      );
+
+      // Sorun 2: Hata alan sorular da audit kaydına eklenir. Uydurma değer üretilmez.
+      const hataMetni = zamanAsimi
+        ? "Yanıt 90 saniyede gelmedi - model hâlâ yükleniyor olabilir, tekrar deneyin."
+        : (hata?.response?.data?.detail || hata?.message || "Üzgünüm, şu anda yanıt veremiyorum. Lütfen tekrar deneyin.");
+
+      auditEkle(
+        {
+          cagrilan_arac: null,
+          hata: hataMetni,
+          basarisiz: true,
+        },
+        soru
       );
     } finally {
       setBekleniyor(false);

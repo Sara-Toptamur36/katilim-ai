@@ -9,14 +9,24 @@ const AuditContext = createContext(null);
 const GECMIS_ANAHTARI = "katilimai_audit_gecmisi";
 const MAKS_GECMIS = 20;
 
+// Audit geçmişi, sohbet geçmişiyle (localStorage) aynı ömre sahip olmalıdır;
+// aksi halde tarayıcı kapatılıp açıldığında Jüri Audit Paneli sebepsiz yere boş görünür.
 export function AuditProvider({ children }) {
   const [auditGecmisi, setAuditGecmisi] = useState(() => {
-    const kayitli = sessionStorage.getItem(GECMIS_ANAHTARI);
-    return kayitli ? JSON.parse(kayitli) : [];
+    try {
+      const kayitli = localStorage.getItem(GECMIS_ANAHTARI);
+      return kayitli ? JSON.parse(kayitli) : [];
+    } catch {
+      return [];
+    }
   });
 
   useEffect(() => {
-    sessionStorage.setItem(GECMIS_ANAHTARI, JSON.stringify(auditGecmisi));
+    try {
+      localStorage.setItem(GECMIS_ANAHTARI, JSON.stringify(auditGecmisi));
+    } catch {
+      /* localStorage dolu olabilir */
+    }
   }, [auditGecmisi]);
 
   const auditEkle = (audit, soru) => {

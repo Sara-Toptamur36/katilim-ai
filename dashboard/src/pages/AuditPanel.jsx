@@ -290,17 +290,22 @@ const gecmisKolonlari = [
     title: "Zaman",
     dataIndex: "zaman",
     key: "zaman",
-    render: (z) => (z ? new Date(z).toLocaleTimeString("tr-TR") : "Belirtilmemiş"),
+    render: (z) => (z ? new Date(z).toLocaleTimeString("tr-TR") : "—"),
   },
   { title: "Soru / İşlem", dataIndex: "soru", key: "soru", ellipsis: true },
-  { title: "Niyet", dataIndex: "intent", key: "intent", render: (v) => v ?? "Belirtilmemiş" },
-  { title: "Araç", dataIndex: "cagrilan_arac", key: "cagrilan_arac", render: (v) => v ?? "Belirtilmemiş" },
-  { title: "Gecikme (ms)", dataIndex: "latency_ms", key: "latency_ms", render: (v) => v ?? "Belirtilmemiş" },
+  { title: "Niyet", dataIndex: "intent", key: "intent", render: (v) => v ?? "—" },
+  { title: "Araç", dataIndex: "cagrilan_arac", key: "cagrilan_arac", render: (v) => v ?? "—" },
+  { title: "Gecikme (ms)", dataIndex: "latency_ms", key: "latency_ms", render: (v) => v ?? "—" },
   {
-    title: "Cache",
+    title: "Durum / Cache",
     dataIndex: "cache_hit",
     key: "cache_hit",
-    render: (v) => <Tag color={v ? "green" : "default"}>{v ? "HIT" : "MISS"}</Tag>,
+    render: (v, rec) => {
+      if (rec.basarisiz) {
+        return <Tag color="error">Başarısız</Tag>;
+      }
+      return <Tag color={v ? "green" : "default"}>{v ? "HIT" : "MISS"}</Tag>;
+    },
   },
 ];
 
@@ -447,23 +452,43 @@ export default function AuditPanel() {
         </div>
 
         <Space size="large" wrap align="center">
+          {sonAudit.basarisiz && (
+            <div>
+              <Text type="secondary" style={{ fontSize: 11, display: "block" }}>
+                Durum
+              </Text>
+              <Tag color="error" style={{ fontSize: 13, padding: "2px 8px", marginTop: 2 }}>
+                Başarısız
+              </Tag>
+            </div>
+          )}
           <div>
             <Text type="secondary" style={{ fontSize: 11, display: "block" }}>
               Çağrılan Araç
             </Text>
             <Tag color="purple" style={{ fontSize: 13, padding: "2px 8px", marginTop: 2 }}>
-              {sonAudit.cagrilan_arac ?? "Belirtilmemiş"}
+              {sonAudit.cagrilan_arac ?? "—"}
             </Tag>
           </div>
 
           <Statistic
             title={<Text type="secondary" style={{ fontSize: 11 }}>Toplam Yanıt Süresi</Text>}
-            value={sonAudit.latency_ms ?? "Belirtilmemiş"}
+            value={sonAudit.latency_ms ?? "—"}
             suffix={sonAudit.latency_ms != null ? "ms" : ""}
             valueStyle={{ color: "var(--marka-600)", fontWeight: 700, fontSize: 24 }}
           />
         </Space>
       </div>
+
+      {sonAudit.hata && (
+        <Alert
+          type="error"
+          message="İşlem Başarısız Oldu"
+          description={sonAudit.hata}
+          showIcon
+          style={{ marginBottom: 16 }}
+        />
+      )}
 
       {/* 2-SÜTUNLU DÜZEN: Solda Karar Zinciri (Steps), Sağda Skorlar & Parametreler */}
       <Row gutter={[20, 20]} style={{ marginBottom: 20 }}>
@@ -529,11 +554,10 @@ export default function AuditPanel() {
                     }
                     value={
                       sonAudit.extraction_confidence != null
-                        ? sonAudit.extraction_confidence * 100
-                        : 0
+                        ? (sonAudit.extraction_confidence * 100).toFixed(1)
+                        : "—"
                     }
-                    suffix={sonAudit.extraction_confidence != null ? "%" : "—"}
-                    precision={1}
+                    suffix={sonAudit.extraction_confidence != null ? "%" : ""}
                     valueStyle={{ fontSize: 20 }}
                   />
                 </div>
@@ -550,11 +574,10 @@ export default function AuditPanel() {
                     }
                     value={
                       sonAudit.response_confidence != null
-                        ? sonAudit.response_confidence * 100
-                        : 0
+                        ? (sonAudit.response_confidence * 100).toFixed(1)
+                        : "—"
                     }
-                    suffix={sonAudit.response_confidence != null ? "%" : "—"}
-                    precision={1}
+                    suffix={sonAudit.response_confidence != null ? "%" : ""}
                     valueStyle={{ fontSize: 20 }}
                   />
                 </div>

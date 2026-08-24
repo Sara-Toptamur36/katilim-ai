@@ -2147,7 +2147,11 @@
     "notlar": "Sadece Cumartesi/Pazar, yalnizca yurt ici restoran/online yemek siparisi; once Katil butonuna basmak sart",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "kampanya_bitis": "Kampanya 6 Mart-31 Ağustos 2026 tarihleri arasında yapılacak harcamalarda geçerlidir.",
+      "kampanya_baslangic": "Kampanya 6 Mart-31 Ağustos 2026 tarihleri arasında yapılacak harcamalarda geçerlidir.",
+      "odul_miktari": "Kampanya döneminde günlük kazanılabilecek maksimum iade 100 TL, bir takvim ayında kazanılabilecek maksimum iade ise 500 TL, kampanya dönemi boyunca kazanılabilecek iade 2.500 TL ile sınırlıdır."
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -2181,7 +2185,11 @@
     "notlar": "4 paket var (Standart/Orta/Ust/Ekstra: 250K-1,5M TL); en dusuk paket temel alindi. Vade farki iadesi, Gunluk Kazandiran Hesabinda ilgili tutar kadar birikim VEYA kredi bakiyesi sartina bagli - karmasik, notlarda ozetlendi | [9 Agu] vade_ay->taksit_sayisi tasindi (Ozel Okul Odemelerinde 10 Taksit); sayfada vade ifadesi yok",
     "taksit_sayisi": 10,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "kampanya_bitis": "Kampanya 19.01.2026 – 30.09.2026 tarihleri arasında Hadi Black Kredi Kartı ile yapılacak özel okul ödemelerinde geçerlidir.",
+      "kampanya_baslangic": "Kampanya 19.01.2026 – 30.09.2026 tarihleri arasında Hadi Black Kredi Kartı ile yapılacak özel okul ödemelerinde geçerlidir.",
+      "taksit_sayisi": "Özel Okul Ödemelerinde 10 Taksit, üstelik vade farksız!"
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -2215,7 +2223,10 @@
     "notlar": "En az 5 farkli gunde market harcamasi + ekstrenin zamaninda odenmesi sart; diger market kampanyalariyla birlesse de ekstre basina max 1.250 TL",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "kampanya_bitis": "Kampanya 26 Aralık 2025 - 25 Mart 2026 tarihleri arasında geçerlidir.",
+      "kampanya_baslangic": "Kampanya 26 Aralık 2025 - 25 Mart 2026 tarihleri arasında geçerlidir."
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -8290,7 +8301,8 @@
     "kanit_spanlari": {
       "kampanya_baslangic": "20.08.2026 - 31.12.2026",
       "odul_miktari": "Kampanya kapsamında müşteri başına toplamda en fazla 300 TL Altın Puan kazanılabilir.",
-      "odul_birimi": "Kampanya kapsamında müşteri başına toplamda en fazla 300 TL Altın Puan kazanılabilir."
+      "odul_birimi": "Kampanya kapsamında müşteri başına toplamda en fazla 300 TL Altın Puan kazanılabilir.",
+      "kampanya_bitis": "20.08.2026 - 31.12.2026"
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,

@@ -1164,4 +1164,43 @@ html[data-tema="koyu"] .sohbet-audit-ozet {
   color: var(--yazi-normal, #c3d1cc);
 }
 
+/* ==========================================================
+   Karşılaştırma Sayfası ve Terminoloji Sözlüğü Sınıfları
+   ========================================================== */
+.karsilastirma-karti {
+  background: var(--kart);
+  border: 1px solid var(--kenarlik);
+  border-radius: 12px;
+  box-shadow: var(--golge-kart);
+  margin-bottom: 24px;
+}
+
+html[data-tema="koyu"] .karsilastirma-karti {
+  background: var(--kart);
+  border-color: var(--kenarlik);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+html[data-tema="koyu"] .karsilastirma-karti .ant-card-head {
+  border-bottom-color: var(--kenarlik);
+  color: var(--yazi-koyu);
+}
+
+html[data-tema="koyu"] .karsilastirma-karti .ant-card-head-title {
+  color: var(--yazi-koyu);
+}
+
+mark.arama-vurgu {
+  background-color: var(--altin-100);
+  color: var(--yazi-koyu);
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+html[data-tema="koyu"] mark.arama-vurgu {
+  background-color: var(--marka-800);
+  color: var(--yazi-koyu);
+}
+
+
 

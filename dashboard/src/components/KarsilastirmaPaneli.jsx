@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Select, Button, Space, Table, Alert, Tag } from "antd";
+import { Select, Button, Space, Table, Alert, Tag, Typography } from "antd";
 import { karsilastir } from "../api/client";
 
 // api/comparison/compare_engine.py'daki KRITERLER sozlugu ile BIREBIR ayni
@@ -39,8 +39,14 @@ const sonucKolonlari = [
   },
 ];
 
-export default function KarsilastirmaPaneli({ secilenIdler }) {
-  const [kriter, setKriter] = useState("en_dusuk_kar_payi");
+// Kriter state'i ana bileşene (Karsilastirma.jsx) taşındı. Böylece kampanya seçicisi
+// seçili kritere göre dolu verisi olan kampanyaları üst sıraya alabilir.
+export default function KarsilastirmaPaneli({
+  secilenIdler,
+  kriter = "en_dusuk_kar_payi",
+  onKriterDegis,
+  veriOlanSayisi = 0,
+}) {
   const [sonuc, setSonuc] = useState(null);
   const [yukleniyor, setYukleniyor] = useState(false);
   const [hata, setHata] = useState(null);
@@ -60,14 +66,17 @@ export default function KarsilastirmaPaneli({ secilenIdler }) {
   };
 
   return (
-    <div style={{ marginBottom: 24 }}>
-      <Space wrap style={{ marginBottom: 12 }}>
+    <div style={{ marginBottom: 12 }}>
+      <Space wrap style={{ marginBottom: 12 }} align="center">
         <Select
           style={{ width: 260 }}
           value={kriter}
-          onChange={setKriter}
+          onChange={onKriterDegis}
           options={KRITERLER}
         />
+        <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+          Bu kriterde veri olan {veriOlanSayisi} kampanya var
+        </Typography.Text>
         <Button
           type="primary"
           onClick={karsilastirmayiCalistir}
@@ -79,13 +88,19 @@ export default function KarsilastirmaPaneli({ secilenIdler }) {
       </Space>
 
       {secilenIdler.length < 2 && (
-        <p style={{ color: "#888" }}>
-          Karşılaştırmak için tablodan en az 2 kampanya seçin.
+        <p style={{ color: "var(--yazi-soluk)", marginBottom: 12 }}>
+          Karşılaştırmak için yukarıdaki listeden en az 2 kampanya seçin.
         </p>
       )}
 
       {hata && (
-         <Alert type="error" title="Karşılaştırma başarısız" description={hata} showIcon />
+        <Alert
+          type="error"
+          title="Karşılaştırma başarısız"
+          description={hata}
+          showIcon
+          style={{ marginBottom: 12 }}
+        />
       )}
 
       {sonuc && (
@@ -111,3 +126,4 @@ export default function KarsilastirmaPaneli({ secilenIdler }) {
     </div>
   );
 }
+

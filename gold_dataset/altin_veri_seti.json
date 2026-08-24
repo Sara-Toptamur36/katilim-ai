@@ -4408,12 +4408,12 @@
     "ekran_goruntusu": null,
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-08-24",
-    "notlar": "BELIRSIZ kar_payi_orani: metindeki 99/1 bir KAR PAYLASIM orani (banka-musteri paylasim anahtari), kar payi getiri orani degil - Rehber F sutunu\nBELIRSIZ vade_ay: vade GUN cinsinden ve araliksal veriliyor: '31-35 gun'; ay karsiligi tek bir sayiya indirgenemez\nBELIRSIZ finansman_tutari: 10.000 TL minimum / 10.000.000 TL maksimum HESAP ACILIS araligi, kampanyanin finansman tutari degil",
+    "notlar": "BELIRSIZ kar_payi_orani: metindeki 99/1 bir KAR PAYLASIM orani (banka-musteri paylasim anahtari), kar payi getiri orani degil - Rehber F sutunu\nBELIRSIZ vade_ay: vade GUN cinsinden ve araliksal veriliyor: '31-35 gun'; ay karsiligi tek bir sayiya indirgenemez\nBELIRSIZ finansman_tutari: 10.000 TL minimum / 10.000.000 TL maksimum HESAP ACILIS araligi, kampanyanin finansman tutari degil\n24.08.2026 denetim: tarih kanit spani duzeltildi - onceki span tarih icermiyordu.",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
-      "kampanya_baslangic": "Kampanya kapsamında, son üç aydır bankamızda TL mevduatı bulunmayan ve yukarıda belirtilen tarih aralığında TL cinsinden katılım hesabı açan bireysel müşterilerimize azami 99/1 kâr paylaşım oranı ile hesap açma avantajı sunulacaktır.",
-      "kampanya_bitis": "Kampanya kapsamında, son üç aydır bankamızda TL mevduatı bulunmayan ve yukarıda belirtilen tarih aralığında TL cinsinden katılım hesabı açan bireysel müşterilerimize azami 99/1 kâr paylaşım oranı ile hesap açma avantajı sunulacaktır."
+      "kampanya_baslangic": "Kampanya 31 Aralık 2025 ​- 31 Ağustos​ 2026 tarihleri arasında geçerlidir.",
+      "kampanya_bitis": "Kampanya 31 Aralık 2025 ​- 31 Ağustos​ 2026 tarihleri arasında geçerlidir."
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,

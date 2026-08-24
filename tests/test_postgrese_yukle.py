@@ -101,3 +101,22 @@ def test_yuklenen_kayitlarda_alan_belirtilmemis_isaretlenmis():
         assert satir.alan_belirtilmemis.get("kar_payi_orani_percent") is True
     finally:
         oturum.close()
+
+
+def test_url_slug_basligi_dosya_uzantisini_atar():
+    """Kampanya adi arayuzde "... .aspx" olarak gorunmemeli.
+
+    Olculdu (24.08.2026): 436 kaydin 28'inde kampanya adi bir dosya adiydi
+    ("Yakininizi Davet Edin.aspx"), cogu .aspx tabanli Turkiye Finans
+    sitesinden. Karsilastirma ekrani juriye gosterilen yerdir; orada dosya
+    uzantisi gormek verinin islenmemis oldugu izlenimi verir.
+    """
+    from scraper.scripts.postgrese_yukle import _url_slug_to_baslik
+
+    assert _url_slug_to_baslik("https://x.com/tr/Yakininizi-Davet-Edin.aspx") == (
+        "Yakininizi Davet Edin"
+    )
+    assert _url_slug_to_baslik("https://x.com/a/kampanyalar.html") == "Kampanyalar"
+    assert _url_slug_to_baslik("https://x.com/a/sayfa.PHP") == "Sayfa"
+    # Uzantisi olmayan slug'lar degismemeli
+    assert _url_slug_to_baslik("https://x.com/a/konut-finansmani") == "Konut Finansmani"

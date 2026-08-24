@@ -59,6 +59,12 @@ def _url_slug_to_baslik(url: str) -> str:
     """
     son_parca = url.rstrip("/").split("/")[-1]
     son_parca = re.sub(r"[?#].*$", "", son_parca)  # sorgu string'i varsa at
+    # DOSYA UZANTISI ATILIR: uzanti birakildiginda kampanya adi arayuzde
+    # "Yakininizi Davet Edin.aspx" olarak gorunuyordu - olculdu, 436 kaydin
+    # 28'i boyleydi (cogu Turkiye Finans, .aspx tabanli site). Karsilastirma
+    # ekrani juriye gosterilecek yerdir; orada dosya adi gormek, verinin
+    # islenmemis oldugu izlenimi verir.
+    son_parca = re.sub(r"\.(aspx|html?|php|jsp)$", "", son_parca, flags=re.IGNORECASE)
     kelimeler = son_parca.replace("_", "-").split("-")
     return " ".join(k.capitalize() for k in kelimeler if k) or "Baslik Belirlenemedi"
 

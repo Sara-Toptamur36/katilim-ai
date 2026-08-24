@@ -1,9 +1,34 @@
-import { Descriptions, Tag, Table, Card, Row, Col, Statistic, Typography, Empty } from "antd";
-import { CheckOutlined, ExclamationOutlined } from "@ant-design/icons";
+import { useMemo } from "react";
+import { Link } from "react-router-dom";
+import {
+  Alert,
+  Button,
+  Card,
+  Col,
+  Descriptions,
+  List,
+  Row,
+  Space,
+  Statistic,
+  Steps,
+  Table,
+  Tag,
+  Tooltip,
+  Typography,
+} from "antd";
+import {
+  CalculatorOutlined,
+  CheckOutlined,
+  ClockCircleOutlined,
+  ExclamationOutlined,
+  InfoCircleOutlined,
+  RobotOutlined,
+  SwapOutlined,
+} from "@ant-design/icons";
 import { useAudit } from "../context/AuditContext";
 import KopyalaButonu from "../components/KopyalaButonu";
 
-const { Title } = Typography;
+const { Title, Text, Paragraph } = Typography;
 
 // Alan adları haritası
 const ALAN_ADLARI = {
@@ -18,7 +43,12 @@ const ALAN_ADLARI = {
 };
 
 // Yığılmış çubuk alt bileşeni (kayit_sayisi genişliğinde)
-function YigilmisCubuk({ dogrulanan = 0, dogrulanamayan = 0, calistirilmamis = 0, kayitSayisi = 0 }) {
+function YigilmisCubuk({
+  dogrulanan = 0,
+  dogrulanamayan = 0,
+  calistirilmamis = 0,
+  kayitSayisi = 0,
+}) {
   if (!kayitSayisi || kayitSayisi <= 0) return null;
 
   const pctDogrulanan = (dogrulanan / kayitSayisi) * 100;
@@ -110,7 +140,7 @@ const dogrulamaKolonlari = [
   },
 ];
 
-// Kaynakta Doğrulama Ana Bölüm Bileşeni
+// Kaynakta Doğrulama Ana Bölüm Bileşeni (KORUNDU)
 function KaynaktaDogrulamaBolumu({ sonAudit }) {
   const dogrulama = sonAudit?.dogrulama;
   const dogrulananAlanlar = sonAudit?.dogrulanan_alanlar;
@@ -186,11 +216,11 @@ function KaynaktaDogrulamaBolumu({ sonAudit }) {
   }
 
   return (
-    <Card size="small" style={{ marginBottom: 24 }}>
+    <Card size="small" className="audit-karti">
       {/* 1) BAŞLIK SATIRI */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
         <div style={{ fontSize: 16, fontWeight: 600, color: "var(--yazi-koyu, #192b27)" }}>
-          Kaynakta Doğrulama
+          Kaynakta Doğrulama (Fact-Checking)
         </div>
         {headerBadge}
       </div>
@@ -256,11 +286,16 @@ function KaynaktaDogrulamaBolumu({ sonAudit }) {
 }
 
 const gecmisKolonlari = [
-  { title: "Zaman", dataIndex: "zaman", key: "zaman", render: (z) => new Date(z).toLocaleTimeString("tr-TR") },
-  { title: "Soru", dataIndex: "soru", key: "soru", ellipsis: true },
-  { title: "Niyet", dataIndex: "intent", key: "intent" },
-  { title: "Araç", dataIndex: "cagrilan_arac", key: "cagrilan_arac" },
-  { title: "Gecikme (ms)", dataIndex: "latency_ms", key: "latency_ms" },
+  {
+    title: "Zaman",
+    dataIndex: "zaman",
+    key: "zaman",
+    render: (z) => (z ? new Date(z).toLocaleTimeString("tr-TR") : "Belirtilmemiş"),
+  },
+  { title: "Soru / İşlem", dataIndex: "soru", key: "soru", ellipsis: true },
+  { title: "Niyet", dataIndex: "intent", key: "intent", render: (v) => v ?? "Belirtilmemiş" },
+  { title: "Araç", dataIndex: "cagrilan_arac", key: "cagrilan_arac", render: (v) => v ?? "Belirtilmemiş" },
+  { title: "Gecikme (ms)", dataIndex: "latency_ms", key: "latency_ms", render: (v) => v ?? "Belirtilmemiş" },
   {
     title: "Cache",
     dataIndex: "cache_hit",
@@ -269,178 +304,357 @@ const gecmisKolonlari = [
   },
 ];
 
-const retrieverKolonlari = [
-  { title: "Chunk ID", dataIndex: "chunk_id", key: "chunk_id" },
-  {
-    title: "Benzerlik",
-    dataIndex: "similarity_score",
-    key: "similarity_score",
-    render: (v) => (v != null ? v.toFixed(3) : "Belirtilmemiş"),
-  },
-  {
-    title: "Rerank Skoru",
-    dataIndex: "rerank_score",
-    key: "rerank_score",
-    render: (v) => (v != null ? v.toFixed(3) : "Belirtilmemiş"),
-  },
-  { title: "Metin (kısa)", dataIndex: "metin_ozeti", key: "metin_ozeti", ellipsis: true },
-];
-
 export default function AuditPanel() {
   const { sonAudit, auditGecmisi } = useAudit();
 
+  // SORUN 5: Reranker skoru kontrolü - veride rerank_score alanı gerçekten varsa ayrı kolon ekle
+  const varMiRerankSkoru = useMemo(() => {
+    if (!sonAudit?.retriever_sonuclari) return false;
+    return sonAudit.retriever_sonuclari.some((r) => r.rerank_score != null);
+  }, [sonAudit]);
+
+  const retrieverKolonlari = useMemo(() => {
+    const kolonlar = [
+      { title: "Chunk ID", dataIndex: "chunk_id", key: "chunk_id", render: (v) => v ?? "Belirtilmemiş" },
+      {
+        title: () => (
+          <Tooltip title="Vektör arama benzerliği (0-1) — accuracy değil">
+            <span>Vektör Benzerliği ⓘ</span>
+          </Tooltip>
+        ),
+        dataIndex: "similarity_score",
+        key: "similarity_score",
+        render: (v) => (v != null ? v.toFixed(3) : "Belirtilmemiş"),
+      },
+    ];
+
+    if (varMiRerankSkoru) {
+      kolonlar.push({
+        title: "Rerank Skoru",
+        dataIndex: "rerank_score",
+        key: "rerank_score",
+        render: (v) => (v != null ? v.toFixed(3) : "Belirtilmemiş"),
+      });
+    }
+
+    kolonlar.push({
+      title: "Metin (kısa)",
+      dataIndex: "metin_ozeti",
+      key: "metin_ozeti",
+      ellipsis: true,
+      render: (v) => v ?? "Belirtilmemiş",
+    });
+
+    return kolonlar;
+  }, [varMiRerankSkoru]);
+
+  // SORUN 2: Boş Ekran Tanıtım Kılavuzu (Sahte veri üretilmez)
   if (!sonAudit) {
     return (
-      <div>
-        <Title level={3}>Jüri Audit Paneli</Title>
-        <Empty description="Henüz sorgu yok. Önce Chatbot ekranından bir soru sorun." />
+      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <Title level={3} style={{ marginBottom: 16 }}>
+          Jüri Audit Paneli
+        </Title>
+
+        <Card className="audit-karti">
+          <Space direction="vertical" size={16} style={{ width: "100%" }}>
+            <div>
+              <Title level={4} style={{ margin: 0 }}>
+                Henüz denetlenecek sorgu yok
+              </Title>
+              <Paragraph
+                type="secondary"
+                style={{ marginTop: 8, fontSize: 14, lineHeight: 1.6 }}
+              >
+                Bu panel, sistemin bir soruya veya işleme nasıl cevap verdiğini adım
+                adım gösterir. Bir işlem yapıldığında burada şunlar görünür:
+              </Paragraph>
+            </div>
+
+            <div
+              style={{
+                background: "var(--zemin-yumusak)",
+                padding: "16px 20px",
+                borderRadius: 10,
+                border: "1px solid var(--kenarlik)",
+              }}
+            >
+              <List
+                size="small"
+                dataSource={[
+                  "🎯 Algılanan Niyet (Intent) ve niyet güven skoru",
+                  "🛠️ Çağrılan Araç (Tool) ve parametreleri",
+                  "🔍 Çalıştırılan SQL Sorgusu ve veritabanı sonuçları",
+                  "📊 Retriever Benzerlik Skorları ve vektör arama chunk'ları",
+                  "🛡️ Güven Skorları (çıkarım ve yanıt güvenilirlikleri)",
+                  "⏱️ Yanıt Süresi & Cache Durumu (milisaniye cinsinden gecikme)",
+                  "✅ Kaynakta Doğrulama (Fact-Checking/Verifier) sonuçları",
+                ]}
+                renderItem={(item) => (
+                  <List.Item
+                    style={{ border: "none", padding: "4px 0", fontSize: 13 }}
+                  >
+                    {item}
+                  </List.Item>
+                )}
+              />
+            </div>
+
+            <Space wrap size="middle" style={{ marginTop: 8 }}>
+              <Link to="/chatbot">
+                <Button type="primary" icon={<RobotOutlined />}>
+                  AI Asistan'a git
+                </Button>
+              </Link>
+              <Link to="/hesapla">
+                <Button icon={<CalculatorOutlined />}>
+                  Hesap Makinesi'ne git
+                </Button>
+              </Link>
+              <Link to="/karsilastirma">
+                <Button icon={<SwapOutlined />}>
+                  Karşılaştırma'ya git
+                </Button>
+              </Link>
+            </Space>
+          </Space>
+        </Card>
       </div>
     );
   }
 
+  // SORUN 3: Düzen Şeridi & 2-Sütunlu Yapı
   return (
-    <div>
-      <Title level={3}>Jüri Audit Paneli</Title>
+    <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+      <Title level={3} style={{ marginBottom: 16 }}>
+        Jüri Audit Paneli
+      </Title>
 
-      <Descriptions title="Son Sorgu Denetim Bilgisi" bordered column={2} style={{ marginBottom: 24 }}>
-        <Descriptions.Item label="Algılanan Niyet">
-          {sonAudit.intent ?? "Belirtilmemiş"}{" "}
-          {sonAudit.intent_confidence != null && (
-            <Tag color="blue">{(sonAudit.intent_confidence * 100).toFixed(0)}%</Tag>
+      {/* ÜST ŞERİT: Soru metni + trace zamanı + çağrılan araç + yanıt süresi */}
+      <div className="audit-ust-serit">
+        <div style={{ flex: 1, minWidth: 260 }}>
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            Sorgu / İşlem Detayı
+          </Text>
+          <div style={{ fontSize: 16, fontWeight: 600, color: "var(--yazi-koyu)" }}>
+            {sonAudit.soru || sonAudit.sebep || "Denetim Kaydı"}
+          </div>
+          {sonAudit.zaman && (
+            <Text type="secondary" style={{ fontSize: 12, display: "flex", alignItems: "center", gap: 4, marginTop: 2 }}>
+              <ClockCircleOutlined /> İzleme Zamanı: {new Date(sonAudit.zaman).toLocaleTimeString("tr-TR")}
+            </Text>
           )}
-        </Descriptions.Item>
-        <Descriptions.Item label="Çağrılan Araç">
-          <Tag color="purple">{sonAudit.cagrilan_arac ?? "Belirtilmemiş"}</Tag>
-        </Descriptions.Item>
-        <Descriptions.Item label="Yanıt Süresi">
-          {sonAudit.latency_ms != null ? `${sonAudit.latency_ms} ms` : "Belirtilmemiş"}
-        </Descriptions.Item>
-        <Descriptions.Item label="Cache">
-          <Tag color={sonAudit.cache_hit ? "green" : "default"}>
-            {sonAudit.cache_hit ? "HIT" : "MISS"}
-          </Tag>
-        </Descriptions.Item>
-        <Descriptions.Item label="Model">{sonAudit.model ?? "Belirtilmemiş"}</Descriptions.Item>
-        <Descriptions.Item label="Temperature">
-          {sonAudit.temperature ?? "Belirtilmemiş"}
-        </Descriptions.Item>
-        {sonAudit.regex_basari_orani != null && (
-          <Descriptions.Item label="Regex/Model Başarı Oranı" span={2}>
-            {(sonAudit.regex_basari_orani * 100).toFixed(1)}%
-          </Descriptions.Item>
-        )}
-        {sonAudit.sebep && (
-          <Descriptions.Item label="Sebep / Açıklama" span={2}>
-            {sonAudit.sebep}
-          </Descriptions.Item>
-        )}
-      </Descriptions>
+        </div>
 
-      <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col span={12}>
-          <Card size="small">
-            <Statistic
-              title="Extraction Confidence"
-              value={sonAudit.extraction_confidence != null ? sonAudit.extraction_confidence * 100 : 0}
-              suffix="%"
-              precision={1}
+        <Space size="large" wrap align="center">
+          <div>
+            <Text type="secondary" style={{ fontSize: 11, display: "block" }}>
+              Çağrılan Araç
+            </Text>
+            <Tag color="purple" style={{ fontSize: 13, padding: "2px 8px", marginTop: 2 }}>
+              {sonAudit.cagrilan_arac ?? "Belirtilmemiş"}
+            </Tag>
+          </div>
+
+          <Statistic
+            title={<Text type="secondary" style={{ fontSize: 11 }}>Toplam Yanıt Süresi</Text>}
+            value={sonAudit.latency_ms ?? "Belirtilmemiş"}
+            suffix={sonAudit.latency_ms != null ? "ms" : ""}
+            valueStyle={{ color: "var(--marka-600)", fontWeight: 700, fontSize: 24 }}
+          />
+        </Space>
+      </div>
+
+      {/* 2-SÜTUNLU DÜZEN: Solda Karar Zinciri (Steps), Sağda Skorlar & Parametreler */}
+      <Row gutter={[20, 20]} style={{ marginBottom: 20 }}>
+        {/* SOL SÜTUN: Karar Zinciri (antd Steps dikey) */}
+        <Col xs={24} lg={10}>
+          <Card title="Karar Zinciri Pipeline" className="audit-karti" style={{ height: "100%" }}>
+            <Steps
+              direction="vertical"
+              size="small"
+              current={4}
+              items={[
+                {
+                  title: `Niyet: ${sonAudit.intent ?? "Belirtilmemiş"}`,
+                  description: (
+                    <Tooltip title="Niyet güven skoru — doğruluk oranı değil">
+                      <span>
+                        Niyet Güven Skoru ⓘ:{" "}
+                        {sonAudit.intent_confidence != null
+                          ? `${(sonAudit.intent_confidence * 100).toFixed(0)}%`
+                          : "Belirtilmemiş"}
+                      </span>
+                    </Tooltip>
+                  ),
+                },
+                {
+                  title: `Araç: ${sonAudit.cagrilan_arac ?? "Belirtilmemiş"}`,
+                  description: "Çalıştırılan handler motoru",
+                },
+                {
+                  title: "Veri Erişimi (Retrieval)",
+                  description: sonAudit.sql_sorgusu
+                    ? "SQL Veritabanı Sorgusu Çalıştırıldı"
+                    : `${sonAudit.retriever_sonuclari?.length ?? 0} Vektör Chunk'ı Bulundu`,
+                },
+                {
+                  title: "Kaynakta Doğrulama",
+                  description: `Durum: ${sonAudit.dogrulama?.durum ?? "Yapılmadı / N/A"}`,
+                },
+                {
+                  title: "Yanıt Üretimi",
+                  description: `Cache: ${sonAudit.cache_hit ? "HIT" : "MISS"} | Model: ${
+                    sonAudit.model ?? "Standart"
+                  }`,
+                },
+              ]}
             />
           </Card>
         </Col>
-        <Col span={12}>
-          <Card size="small">
-            <Statistic
-              title="Response Confidence"
-              value={sonAudit.response_confidence != null ? sonAudit.response_confidence * 100 : 0}
-              suffix="%"
-              precision={1}
-            />
+
+        {/* SAĞ SÜTUN: Bileşen Skorları + Model Parametreleri (SORUN 4 Tooltipler) */}
+        <Col xs={24} lg={14}>
+          <Card title="Bileşen Skorları & Model Parametreleri" className="audit-karti" style={{ height: "100%" }}>
+            <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
+              <Col span={12}>
+                <div className="audit-istatistik-kutu">
+                  <Statistic
+                    title={
+                      <Tooltip title="Çıkarım güven skoru — doğruluk oranı değil">
+                        <Text type="secondary" style={{ fontSize: 12 }}>
+                          Çıkarım Güven Skoru ⓘ
+                        </Text>
+                      </Tooltip>
+                    }
+                    value={
+                      sonAudit.extraction_confidence != null
+                        ? sonAudit.extraction_confidence * 100
+                        : 0
+                    }
+                    suffix={sonAudit.extraction_confidence != null ? "%" : "—"}
+                    precision={1}
+                    valueStyle={{ fontSize: 20 }}
+                  />
+                </div>
+              </Col>
+              <Col span={12}>
+                <div className="audit-istatistik-kutu">
+                  <Statistic
+                    title={
+                      <Tooltip title="Yanıt güven skoru — doğruluk oranı değil">
+                        <Text type="secondary" style={{ fontSize: 12 }}>
+                          Yanıt Güven Skoru ⓘ
+                        </Text>
+                      </Tooltip>
+                    }
+                    value={
+                      sonAudit.response_confidence != null
+                        ? sonAudit.response_confidence * 100
+                        : 0
+                    }
+                    suffix={sonAudit.response_confidence != null ? "%" : "—"}
+                    precision={1}
+                    valueStyle={{ fontSize: 20 }}
+                  />
+                </div>
+              </Col>
+            </Row>
+
+            <Descriptions bordered size="small" column={2}>
+              <Descriptions.Item label="Niyet">
+                {sonAudit.intent ?? "Belirtilmemiş"}
+              </Descriptions.Item>
+              <Descriptions.Item
+                label={
+                  <Tooltip title="Niyet güven skoru — doğruluk oranı değil">
+                    <span>Niyet Güven Skoru ⓘ</span>
+                  </Tooltip>
+                }
+              >
+                {sonAudit.intent_confidence != null ? (
+                  <Tag color="blue">{(sonAudit.intent_confidence * 100).toFixed(0)}%</Tag>
+                ) : (
+                  "Belirtilmemiş"
+                )}
+              </Descriptions.Item>
+              <Descriptions.Item label="Model">{sonAudit.model ?? "Belirtilmemiş"}</Descriptions.Item>
+              <Descriptions.Item label="Temperature">
+                {sonAudit.temperature ?? "Belirtilmemiş"}
+              </Descriptions.Item>
+              <Descriptions.Item label="Cache Durumu">
+                <Tag color={sonAudit.cache_hit ? "green" : "default"}>
+                  {sonAudit.cache_hit ? "HIT" : "MISS"}
+                </Tag>
+              </Descriptions.Item>
+              {sonAudit.regex_basari_orani != null && (
+                <Descriptions.Item label="Regex/Model Başarı">
+                  {(sonAudit.regex_basari_orani * 100).toFixed(1)}%
+                </Descriptions.Item>
+              )}
+              {sonAudit.sebep && (
+                <Descriptions.Item label="Açıklama / Sebep" span={2}>
+                  {sonAudit.sebep}
+                </Descriptions.Item>
+              )}
+            </Descriptions>
           </Card>
         </Col>
       </Row>
 
-      <KaynaktaDogrulamaBolumu sonAudit={sonAudit} />
-
+      {/* ALT TAM GENİŞLİK 1: Çalıştırılan SQL (KopyalaButonu ile) */}
       {sonAudit.sql_sorgusu && (
         <Card
           title="Çalıştırılan SQL Sorgusu"
           size="small"
+          className="audit-karti"
           extra={<KopyalaButonu metin={sonAudit.sql_sorgusu} />}
-          style={{ marginBottom: 24 }}
         >
-          <pre style={{ background: "#f5f5f5", padding: 12, overflow: "auto" }}>
+          <pre
+            style={{
+              background: "var(--zemin-yumusak)",
+              color: "var(--yazi-koyu)",
+              padding: 12,
+              borderRadius: 8,
+              overflow: "auto",
+              margin: 0,
+              fontSize: 13,
+            }}
+          >
             {sonAudit.sql_sorgusu}
           </pre>
         </Card>
       )}
 
-      {sonAudit.dogrulama && (
-        <Card
-          title="Çıkarım ve Doğrulama (Extraction Audit)"
-          size="small"
-          style={{ marginBottom: 24, borderLeft: "4px solid #52c41a" }}
-        >
-          <Descriptions size="small" column={2}>
-            <Descriptions.Item label="Doğrulama Durumu">
-              <Tag color={
-                sonAudit.dogrulama.durum === "dogrulandi" ? "green" :
-                sonAudit.dogrulama.durum === "kismi" ? "warning" : "default"
-              }>
-                {sonAudit.dogrulama.durum.toUpperCase()}
-              </Tag>
-            </Descriptions.Item>
-            <Descriptions.Item label="Kaynak">
-              {sonAudit.dogrulama.kaynak}
-            </Descriptions.Item>
-          </Descriptions>
-          {sonAudit.dogrulama.alanlar && sonAudit.dogrulama.alanlar.length > 0 && (
-            <Table
-              size="small"
-              dataSource={sonAudit.dogrulama.alanlar}
-              rowKey="alan"
-              pagination={false}
-              columns={[
-                { title: "Alan", dataIndex: "alan", key: "alan" },
-                { title: "Kullanılan Değer", dataIndex: "kullanilan_deger", key: "kullanilan_deger" },
-                {
-                  title: "Doğrulandı mı?",
-                  dataIndex: "dogrulandi_mi",
-                  key: "dogrulandi_mi",
-                  render: (v) => <Tag color={v ? "green" : "red"}>{v ? "Evet" : "Hayır"}</Tag>
-                },
-                { title: "Gerekçe", dataIndex: "gerekce", key: "gerekce" },
-              ]}
-              style={{ marginTop: 12 }}
-            />
-          )}
-          <Typography.Text type="secondary" style={{ fontSize: 12, display: "block", marginTop: 8 }}>
-            Not: Model adayları, evidence span ve conflict kararları (Regex vs NER) backend servisine eklendiğinde burada görüntülenecektir.
-          </Typography.Text>
+      {/* ALT TAM GENİŞLİK 2: Kaynakta Doğrulama Bölümü (Korundu) */}
+      <KaynaktaDogrulamaBolumu sonAudit={sonAudit} />
+
+      {/* ALT TAM GENİŞLİK 3: Retriever Sonuçları Tablosu */}
+      {sonAudit.retriever_sonuclari && sonAudit.retriever_sonuclari.length > 0 && (
+        <Card title="Retriever Sonuçları" className="audit-karti">
+          <Table
+            size="small"
+            dataSource={sonAudit.retriever_sonuclari}
+            rowKey="chunk_id"
+            columns={retrieverKolonlari}
+            pagination={false}
+          />
         </Card>
       )}
 
-      {sonAudit.retriever_sonuclari && sonAudit.retriever_sonuclari.length > 0 && (
+      {/* EN ALT: Sorgu Geçmişi Tablosu (Korundu) */}
+      <Card title="Sorgu Geçmişi (Son 20 İşlem)" className="audit-karti">
         <Table
-          title={() => "Retriever Sonuçları"}
           size="small"
-          dataSource={sonAudit.retriever_sonuclari}
-          rowKey="chunk_id"
-          columns={retrieverKolonlari}
+          dataSource={auditGecmisi}
+          rowKey={(rec, idx) => rec.zaman || idx}
+          columns={gecmisKolonlari}
           pagination={false}
-          style={{ marginBottom: 24 }}
+          scroll={{ x: "max-content" }}
         />
-      )}
-
-      <Table
-        title={() => "Sorgu Geçmişi (son 20)"}
-        size="small"
-        dataSource={auditGecmisi}
-        rowKey="zaman"
-        columns={gecmisKolonlari}
-        pagination={false}
-        scroll={{ x: "max-content" }}
-      />
+      </Card>
     </div>
   );
 }
+
 

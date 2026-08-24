@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Select, Button, Space, Table, Alert, Tag, Typography } from "antd";
 import { karsilastir } from "../api/client";
+import { useAudit } from "../context/AuditContext";
 
 // api/comparison/compare_engine.py'daki KRITERLER sozlugu ile BIREBIR ayni
 // olmali - sunucu, bu listenin disindaki bir kriteri 422 ile reddeder.
@@ -11,6 +12,14 @@ const KRITERLER = [
   { value: "en_dusuk_masraf", label: "En düşük masraf/tahsis ücreti" },
   { value: "en_yuksek_tutar", label: "En yüksek finansman tutarı" },
 ];
+
+const KRITER_ETIKETLERI = {
+  en_dusuk_kar_payi: "En düşük kâr payı oranı",
+  en_yuksek_odul: "En yüksek ödül miktarı",
+  en_uzun_vade: "En uzun vade seçeneği",
+  en_dusuk_masraf: "En düşük masraf/tahsis ücreti",
+  en_yuksek_tutar: "En yüksek finansman tutarı",
+};
 
 const sonucKolonlari = [
   { title: "#", dataIndex: "sira", key: "sira", width: 50 },
@@ -47,6 +56,7 @@ export default function KarsilastirmaPaneli({
   onKriterDegis,
   veriOlanSayisi = 0,
 }) {
+  const { auditEkle } = useAudit();
   const [sonuc, setSonuc] = useState(null);
   const [yukleniyor, setYukleniyor] = useState(false);
   const [hata, setHata] = useState(null);
@@ -57,6 +67,12 @@ export default function KarsilastirmaPaneli({
     try {
       const veri = await karsilastir(secilenIdler, kriter);
       setSonuc(veri);
+
+      // POST /karsilastir yanıtında gelen audit verisi Jüri Audit Paneline iletilir
+      if (veri?.audit) {
+        const kriterAdi = KRITER_ETIKETLERI[kriter] || kriter;
+        auditEkle(veri.audit, `Karşılaştırma: ${kriterAdi}`);
+      }
     } catch (e) {
       setHata(e.response?.data?.detail || e.message);
       setSonuc(null);
@@ -64,6 +80,7 @@ export default function KarsilastirmaPaneli({
       setYukleniyor(false);
     }
   };
+
 
   return (
     <div style={{ marginBottom: 12 }}>

@@ -1378,6 +1378,67 @@ html[data-tema="koyu"] .audit-istatistik-kutu {
   border-color: var(--kenarlik);
 }
 
+/* ==========================================================
+   Metin Analizi Sınıfları
+   ========================================================== */
+.analiz-karti {
+  background: var(--kart);
+  border: 1px solid var(--kenarlik);
+  border-radius: 12px;
+  box-shadow: var(--golge-kart);
+  margin-bottom: 20px;
+}
+
+html[data-tema="koyu"] .analiz-karti {
+  background: var(--kart);
+  border-color: var(--kenarlik);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+html[data-tema="koyu"] .analiz-karti .ant-card-head {
+  border-bottom-color: var(--kenarlik);
+  color: var(--yazi-koyu);
+}
+
+html[data-tema="koyu"] .analiz-karti .ant-card-head-title {
+  color: var(--yazi-koyu);
+}
+
+.analiz-istatistik-kutu {
+  background: var(--zemin-yumusak);
+  border: 1px solid var(--kenarlik);
+  border-radius: 10px;
+  padding: 12px 16px;
+  height: 100%;
+}
+
+html[data-tema="koyu"] .analiz-istatistik-kutu {
+  background: var(--kart-ustu);
+  border-color: var(--kenarlik);
+}
+
+.analiz-istatistik-kutu.vurgulu {
+  background: var(--marka-50);
+  border-color: var(--marka-200);
+}
+
+html[data-tema="koyu"] .analiz-istatistik-kutu.vurgulu {
+  background: rgba(12, 118, 95, 0.15);
+  border-color: var(--marka-700);
+}
+
+.analiz-sag-kolon {
+  max-height: calc(100vh - 170px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.analiz-kanit-metin {
+  font-style: italic;
+  color: var(--yazi-koyu);
+}
+
+
 
 
 

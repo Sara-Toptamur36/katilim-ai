@@ -111,6 +111,8 @@ class CampaignRecord(BaseModel):
         None, description="Ornek: 'Dosya masrafi yok' / 'Belirtilmemis'"
     )
     tahsis_ucreti: float | None = None
+    nakit_iade_orani: float | None = Field(None, description="Ornek: 10.0 (yani %10 nakit iade)")
+    indirim_orani_percent: float | None = Field(None, description="Ornek: 25.0 (yani %25 indirim)")
 
     # --- Yasam dongusu ---
     kampanya_baslangic: date | None = None

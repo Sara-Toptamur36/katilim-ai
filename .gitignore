@@ -45,6 +45,10 @@ models/
 *.tmp
 .cache/
 
+# Qdrant yerel dosya modu indeksi (QDRANT_YEREL_YOL) - uretilebilir veri,
+# depoya girmez. Yeniden kurmak icin: python -m chunking.indeksleyici
+.qdrant_yerel/
+
 # --- Imzalanmamis kayitlarin ekran goruntuleri ---
 # Etiketleme kuyrugundan acilan 200 taslak icin alinan goruntuler 132 MB
 # tutuyordu; depo 65 MB'dan 200 MB'a cikacakti. Taslaklar zaten olcum

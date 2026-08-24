@@ -94,8 +94,22 @@ def yuzdeye_cevir(ham: str) -> float | None:
 # "250 bin" varyantini uretip metinde arar.
 _BUYUKLUK_EKLERI = {"bin": 1_000, "milyon": 1_000_000, "milyar": 1_000_000_000}
 
+# AYRAÇSIZ TUTAR TUZAGI (olculdu 23 Agustos 2026): ilk alternatifteki
+# `(?:\.\d{3})*` YILDIZ oldugu icin ayrac olmayan sayilarda da eslesiyordu
+# ve alternation soldan saga calistigi icin "2000" girdisinde ilk alternatif
+# "200"i yakalayip donuyordu. Sonuc: ayrac kullanmadan yazilmis HER tutar
+# sessizce 10-100 kat kucuk okunuyordu -
+#     tutara_cevir("2000 TL")  -> 200.0     (olmasi gereken: 2000.0)
+#     tutara_cevir("10000 TL") -> 100.0     (olmasi gereken: 10000.0)
+# Gercek veride bu bicim yaygin: ZK-009 "2000 TL Bankkart Lira",
+# DK-006 "10000 TL". Finansal bir uygulamada sessizce yanlis buyuklukte
+# bir tutar gostermek, tutari hic bulamamaktan daha tehlikelidir.
+#
+# DUZELTME: ilk alternatif artik EN AZ BIR ayrac grubu ister (`+`), yani
+# yalnizca "10.000" bicimini karsilar; ayracsiz sayilar ikinci alternatife
+# (`\d+`) duser ve tam uzunlugunda yakalanir.
 _TUTAR_DESENI = re.compile(
-    r"([\d]{1,3}(?:\.\d{3})*(?:,\d+)?|\d+(?:,\d+)?)\s*(bin|milyon|milyar)?",
+    r"(\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:,\d+)?)\s*(bin|milyon|milyar)?",
     re.IGNORECASE,
 )
 

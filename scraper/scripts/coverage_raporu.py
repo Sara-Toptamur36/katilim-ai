@@ -144,7 +144,11 @@ def _gold_sayilari_banka_bazinda(kod_ad_haritasi: dict[str, str]) -> dict[str, i
         onek = kayit.get("kayit_id", "").split("-")[0]
         kod = KOD_HARITASI.get(onek)
         if kod:
-            sayac[kod_ad_haritasi.get(kod, kod)] += 1
+            # TOM gibi birden fazla klasore denk gelen kodlar tuple doner
+            # (bkz. gold_eslesme.KOD_HARITASI) - hepsi ayni banka gorunum
+            # adina eslendigi icin ilk elemani temsilci olarak yeterli.
+            temsilci = kod[0] if isinstance(kod, tuple) else kod
+            sayac[kod_ad_haritasi.get(temsilci, temsilci)] += 1
     return dict(sayac)
 
 

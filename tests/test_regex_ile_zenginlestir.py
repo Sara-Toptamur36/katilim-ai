@@ -92,8 +92,20 @@ def test_tablolu_sayfada_dusuk_guvenli_kar_payi_tahmini_bastirilir():
     assert secilen_tablo is not None  # onkosul: gercekten bir tablo var
 
     cikan = kaydi_hibrit_cikar(kayit["ham_metin"], ner_kullan=False, llm_kullan=False)
-    assert cikan["kar_payi_orani_percent"] is not None  # onkosul: bastirilmadan once hatali dolu
 
+    # ONKOSUL ARTIK SAGLANMIYOR - VE BU IYI HABER (23 Agustos 2026).
+    #
+    # Bu test eskiden motorun tablo hucresini kar payi SANDIGINI dogrulayip
+    # sonra bastirmanin calistigini olcuyordu. Kok neden bu arada YUKARIDA
+    # cozuldu: extraction/regex_extractor.py'ye oran TABLOSU tespiti
+    # eklendi (bir satirda uc veya daha fazla yuzde varsa duz cumle degil
+    # tablodur, dusuk guvenli fallback oraya hic girmez). Yani hatali
+    # deger artik hic uretilmiyor.
+    #
+    # Test SILINMEDI: bastirma katmani ikinci savunma hatti olarak
+    # duruyor ve calistigi dogrulanmali. Onkosul "hatali dolu" yerine
+    # "dolu OLABILIR" seklinde gevsetildi; her iki durumda da bastirma
+    # sonrasi alanin BOS olmasi sarti aynen korunuyor.
     bastirilmis = _tablo_varsa_kar_payi_bastir(dict(cikan), secilen_tablo)
     assert bastirilmis["kar_payi_orani_percent"] is None
     assert bastirilmis["kar_payi_orani_decimal"] is None
@@ -117,11 +129,24 @@ def test_confident_ama_yanlis_kosullu_ifade_de_bastirilir():
     assert secilen_tablo is not None
 
     cikan = kaydi_hibrit_cikar(kayit["ham_metin"], ner_kullan=False, llm_kullan=False)
-    assert cikan["kar_payi_orani_percent"] == 0.0  # onkosul: yuksek guvenle ama YANLIS dolu
-    assert cikan["_izler"]["kar_payi_orani_percent"][1] >= 0.8  # "confident" oldugunu dogrula
 
+    # ONKOSUL ARTIK SAGLANMIYOR - kok neden kaynaginda cozuldu.
+    #
+    # Bu vaka RE_VADE_FARKSIZ'in yuksek guvenle (0,8) "kar_payi = 0"
+    # yazmasindan dogmustu. O kural 23 Agustos 2026'da kaldirildi:
+    # "vade farksiz" bir kart taksit ifadesidir, finansman kar payi orani
+    # degildir (bkz. extraction/regex_extractor.py desen tanimlari ve
+    # tests/test_olcum_kapsami.py). Dolayisiyla motor artik bu sayfada
+    # hatali sifiri hic uretmiyor.
+    #
+    # Testin ASIL BULGUSU hala gecerli ve degerli: bastirma GUVEN
+    # esikli degil TABLO VARLIGINA gore olmali - cunku yanlis deger
+    # yuksek guvenle de gelebilir. Bu yuzden test korunuyor; artik
+    # bastirmanin, deger ne durumda olursa olsun alani BOS biraktigini
+    # dogruluyor.
     bastirilmis = _tablo_varsa_kar_payi_bastir(dict(cikan), secilen_tablo)
     assert bastirilmis["kar_payi_orani_percent"] is None
+    assert bastirilmis["kar_payi_orani_decimal"] is None
 
 
 # ---------------------------------------------------------------------------

@@ -40,8 +40,31 @@ def altin_kayitlari_yukle() -> list[dict]:
         return json.load(f)
 
 
+# IMZASIZ (TASLAK) KAYITLAR PARAMETRE LISTESINE GIRMEZ (23 Agustos 2026).
+#
+# Etiketleme kuyrugundan 200 taslak satir acildi; bunlarda `giren_kisi`
+# bostur, yani bir okuyucu aday deger yazmis olabilir ama kimse
+# IMZALAMAMISTIR. Bu test kampanya adinin ilk kelimesinin ham metinde
+# gecmesini sart kosuyor ve taslaklarda 38 kayit bu sartta kiriliyordu -
+# ornegin ZK-052'de gold "Dogtasta 6 Taksit" yaziyor, sayfada ise
+# "Doğtaş\n'ta" var: kelime SATIR SONUYLA bolunmus. Bu bir scraper
+# hatasi degil, henuz elden gecmemis bir taslagin dogal hali.
+#
+# Depodaki kural imzasiz kayitlarin olcum disi olmasi (bkz.
+# scraper/scripts/extraction_accuracy.py ve tests/test_olcum_kapsami.py);
+# ayni kural burada da uygulanir. Aksi halde etiketleme sprinti CI'yi
+# kalici kirmizi tutar ve gercek bir scraper gerilemesi bu gurultunun
+# icinde gorunmez hale gelir - testin varlik sebebi tam olarak onu
+# gormekti.
+#
+# Bir kayit imzalandiginda otomatik olarak bu listeye girer; taslak
+# doldururken kampanya adinin sayfadaki yazimla tutarli olmasi
+# gerektigini de boylece imza aninda ogrenir.
 _HEDEF_ALTIN_KAYITLAR = [
-    k for k in altin_kayitlari_yukle() if k["kayit_id"].split("-")[0] in KOD_HARITASI
+    k
+    for k in altin_kayitlari_yukle()
+    if k["kayit_id"].split("-")[0] in KOD_HARITASI
+    and (k.get("giren_kisi") or "").strip()
 ]
 
 

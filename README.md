@@ -33,26 +33,71 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 
 ### Ölçülebilir durum
 
-*Son ölçüm: 18 Ağustos 2026 (veri toplama satırları; diğerleri kendi ölçüm
-tarihinde sabittir, aşağıda belirtilmiştir). Tüm sayılar depodaki komutlarla
-yeniden üretilebilir — üretim komutları [Test](#test) bölümünde.*
+*Son ölçüm: 23 Ağustos 2026. Tüm sayılar depodaki komutlarla yeniden
+üretilebilir — üretim komutları [Test](#test) bölümünde.*
 
 | Gösterge | Değer |
 |---|---|
 | Kapsanan katılım bankası | **9 / 10** (BDDK listesi; Adil Katılım gerekçeli hariç — ürün/kampanya yayımlamıyor) |
 | Toplanan gerçek kampanya | **251** tekil kampanya (300 tarihli anlık görüntü) |
 | Değişimi yakalanan kampanya | **40 / 251** içerik güncellemesi; **25**'inde izlenen alan değişti |
-| Altın Veri Seti (elle doğrulanmış referans) | **103** kayıt + ekran görüntüsü kanıtı (etiketleme sprinti sürüyor, hedef 200-300) |
-| Çıkarım — dolu alan doğruluğu | **%98,48** (65/66 alan) |
-| Çıkarım — boş alan doğruluğu (yanlış pozitif) | **%99,17** (120/121 alan) — 1 yanlış pozitif |
-| Çıkarım — alan bazlı makro F1 | **%98,28** (7 ölçülebilir alan; 5'i %100) |
+| Altın Veri Seti | **307** satır; **107 imzalı** (ölçüme giren), 200 aday-değerli taslak |
+| Çıkarım — dolu alan doğruluğu | **%52,07** (239/459 alan, 11 alan · 93 imzalı canlı kayıt) |
+| Çıkarım — boş alan doğruluğu (yanlış pozitif) | **%95,15** (490/515 alan) — 25 yanlış pozitif |
+| Çıkarım — makro F1 (11 alan) | **%67,09** (makro P %75,33 / R %66,08) |
+| Çıkarım — makro F1 (sayısal çekirdek, 7 alan) | **%81,66** — oran/tutar/süre alanları |
 | Terminoloji sözlüğü | **31** kavram (geleneksel karşılığı + tanım kaynağıyla) |
 | Kapsam ölçümü (Scope Guard) | hassasiyet **24/24**, özgüllük **10/10** |
 | RAG — indekslenen parça | **878** (300 belgeden, 21 Ağustos'ta yeniden kuruldu) |
 | RAG — değerlendirme seti | **185** soru, 6 kategori (32'lik dar setten büyütüldü — aşağıya bakınız) |
-| RAG — Recall@5 (genel / kategori bazlı) | **%86,21** genel — tam_ad %96,88, kısmi_ad %93,33, doğal_soru %88,89, **banka_ve_konu %50,0** |
-| RAG — abstention doğruluğu | **%86,67** (13/15) — ilk kez %100 değil, bkz. aşağıda |
-| Otomatik test | **865** test (+46 `slow`), CI her push'ta çalışır |
+| RAG — Recall@5 (genel / kategori bazlı) | **%88,24** genel — doğal_soru %92,86, **banka_ve_konu %52,38** (Recall@1 %14,29) |
+| RAG — abstention doğruluğu | alan dışı **%86,67** · alan içi kapsam dışı **%50,0** (ayrı raporlanır) |
+| Otomatik test | **1269** test (toplanan), CI her push'ta çalışır |
+
+> ### Çıkarım metrikleri 23 Ağustos'ta AŞAĞI yönlü düzeltildi — nedeni önemli
+>
+> Bu satırlar önceki sürümde **%98,48 / %99,17 / %98,28** yazıyordu. O sayılar
+> doğruydu ama **başka bir şeyi** ölçüyordu: 64 kayıtlık altın veri setinde,
+> **yalnızca 7 sayısal alan** üzerinde. O günden bu yana iki şey değişti ve
+> ikisi de ölçümü zorlaştırdı:
+>
+> 1. **Ölçüm kapsamı 7 alandan 11 alana çıktı.** Şartname Md. 5.4 (kampanya
+>    türü) ve Md. 5.3 (hedef kitle, kampanya süresi) alanları ölçüme dahil
+>    edildi. Bu dördü **sınıflandırma ve tarih** işidir — regex katmanının
+>    zayıf olduğu, farklı yöntem gerektiren alanlar. Kapsam dışında
+>    bırakılsalardı sayı yüksek kalırdı ama şartnamenin sorduğu şey
+>    ölçülmemiş olurdu.
+> 2. **Altın veri seti 64 → 307 satıra büyüdü** (107'si imzalı). Örneklem
+>    büyüdükçe motorun gerçek seviyesi ortaya çıktı.
+>
+> Yani **kalite düşmedi, ölçüm dürüstleşti.** İki sayı ayrı ayrı verilir:
+> sınıflandırma/tarih alanlarını da içeren toplam (**%67,09**) ve regex
+> katmanının asıl sorumluluğu olan sayısal çekirdek (**%81,66**). Tek bir
+> ortalama, iki farklı işi birbirinin arkasına saklardı.
+>
+> **Aynı gün kapatılan üç hata ve ölçülmüş etkileri:**
+>
+> | Düzeltme | Etki |
+> |---|---|
+> | `vade farksız` kararı tek yöne sabitlendi | kâr payı oranı F1 **%26,09 → %80,00** (R %15,38 → %80,00) |
+> | `hedef_kitle` segment düzeyinde ölçülüyor | F1 **%0,00 → %30,00** (önce ölçülemezdi) |
+> | Ölçüme imza filtresi eklendi | 293 kayıt → **93 imzalı** kayıt |
+>
+> `vade farksız` hatası nasıl oluştu, kayda değer: iki ayrı commit **zıt
+> yönde** karar verdi — biri altın veriye `kar_payi_orani = 0` yazdı, diğeri
+> motordan aynı kuralı kaldırdı. İkisi ayrı ayrı savunulabilirdi, birlikte
+> tutarsızdı ve kâr payı recall'unu %90,91'den %15,38'e düşürdü. Kombinasyonu
+> kimse yeniden ölçmediği için fark edilmedi.
+> [`tests/test_olcum_kapsami.py`](tests/test_olcum_kapsami.py) artık bu
+> kombinasyonu imkânsız kılıyor; çelişkili etiketleri listeleyen rapor:
+> `python -m gold_dataset.etiket_celiskisi_raporu`
+>
+> **Bilinen zayıf alanlar (açıkça raporlanır):** `kampanya_turu` F1 %35,63
+> (anahtar kelime sınıflandırması — Md. 5.4 için yetersiz),
+> `kampanya_baslangic` R %20,27 (precision %100 — bulduğunda doğru buluyor,
+> ama çoğu sayfada başlangıç tarihi hiç yazmıyor), `hedef_kitle` R %19,67
+> (altın veri etiketi bir insan özeti; o cümle sayfada aynen geçmiyor —
+> regex'in ulaşamadığı bir alan, NER/LLM katmanının işi).
 
 **Kayıt sayısı neden iki türlü:** Scraper eski taramaları **silmez** — değişiklik
 takibi (SHA-256 delta) bunu gerektirir. Bu yüzden diskte 300 tarihli dosya var
@@ -105,10 +150,30 @@ reranker ihtiyacını daha güçlü gösteriyor. Abstention da ilk kez **%100
 değil** (%86,67, 13/15) — kök nedeni henüz araştırılmadı. Ayrıntı:
 [`docs/rag_tasarim_ve_olcum.md`](docs/rag_tasarim_ve_olcum.md#yeniden-doğrulama--2021-ağustos-2026-indeks-yeniden-kuruldu--soru-seti-32den-185e-çıkarıldı)
 
-Kalan iki çıkarım hatası bilerek açık bırakıldı ve kök nedenleri belgelendi:
-`DK-002` (ödül miktarı — gold değeri doğrulandı, motor yanılıyor) ve `TF-001`
-(sayfanın ortasındaki farklı bir ürünün ifadesinden gelen yanlış pozitif;
-dar kapsamlı, bilinen sınırlama). Ayrıntı:
+`TF-001` **23 Ağustos'ta çözüldü.** Aylarca "sayfanın ortasındaki farklı bir
+ürünün ifadesinden gelen, dar kapsamlı yanlış pozitif" diye kayıtlıydı; kök
+neden aslında daha genel çıktı. Türkiye Finans'ın *"Aylık/Yıllık Toplam
+Maliyet"* tablosu bir satırda yan yana beş-altı yüzde taşıyor
+(`3 | 4,20% | 0,50% | 5,77% | 96,05%`) ve 45 karakterlik bağlam penceresi satır
+başındaki `Maliyet` başlığına yetişemediği için tablonun ortasındaki bir hücre
+kâr payı oranı sanılıyordu. Aynı kök neden `TF-008`'i de düzeltti. Tablolardaki
+gerçek oranları zaten ayrı bir katman okuyor
+(`extraction/tablo_extractor.py`), bu yüzden düşük güvenli fallback'in oraya
+hiç girmemesi doğru davranış.
+
+Aynı gün bulunan ve kapatılan ikinci sessiz hata **tutar ayrıştırmasındaydı**:
+binlik ayraç olmadan yazılan her tutar 10-100 kat küçük okunuyordu
+(`tutara_cevir("2000 TL")` → **200.0**, `"10000 TL"` → **100.0**). Desenin ilk
+alternatifi `\d{1,3}(?:\.\d{3})*` olduğu ve alternation soldan sağa çalıştığı
+için `"2000"` girdisinde `"200"` yakalanıp dönülüyordu; `ZK-009`'da ise sondan
+`"000 TL"` eşleşip ödül miktarı **0.0** çıkıyordu. Aynı kusur altı ayrı desende
+tekrarlıyordu, hepsi tek bir `_SAYI` parçasına çekildi. Uydurma sıfır yalnızca
+yanlış değil aktif olarak zararlıydı: `en_dusuk_kar_payi` kriteri ASC
+sıraladığı için her karşılaştırmayı kazanıyordu.
+
+`DK-002` bilerek açık bırakıldı ve kök nedeni belgelendi (ödül miktarı — gold
+davet başına birim ödülü, motor metnin öne çıkardığı toplam tavanı esas alıyor;
+hangisinin "doğru" olduğu yorum gerektiriyor). Ayrıntı:
 [`docs/extraction_accuracy_raporu.md`](docs/extraction_accuracy_raporu.md)
 
 > Çıkarım kalitesi **tek bir yüzdeyle** değil iki metrikle raporlanır: bir

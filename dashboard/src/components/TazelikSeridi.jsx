@@ -7,6 +7,9 @@ import { tazelikGetir } from "../api/client";
 // TASARIM: "Bilinmiyor" ile "eski" AYNI SEY DEGILDIR ve ayni gri hucreye
 // indirgenmez. Indeks durum dosyasi yoksa API None doner ve burada
 // "bilinmiyor" yazar - "guncel" gibi gostermek yaniltici olurdu.
+//
+// YENİ: demo_mode, dataset_version, rag_index_version, model_version,
+// rule_version, git_commit alanları da gösteriliyor (TazelikYanit).
 
 const BAYAT_ESIGI_GUN = 3;
 
@@ -42,6 +45,29 @@ function TazelikEtiketi({ baslik, tarih, gunOnce, ipucu }) {
   );
 }
 
+function VersiyonEtiketi({ baslik, deger, ipucu, renk = "default" }) {
+  if (!deger) {
+    return (
+      <Tooltip title={`${baslik} bilgisi bilinmiyor — tahmin üretilmiyor`}>
+        <span>
+          <Typography.Text type="secondary">{baslik}: </Typography.Text>
+          <Tag>—</Tag>
+        </span>
+      </Tooltip>
+    );
+  }
+  return (
+    <Tooltip title={ipucu}>
+      <span>
+        <Typography.Text type="secondary">{baslik}: </Typography.Text>
+        <Tag color={renk} style={{ fontFamily: "monospace", fontSize: 11 }}>
+          {deger}
+        </Tag>
+      </span>
+    </Tooltip>
+  );
+}
+
 export default function TazelikSeridi() {
   const [veri, setVeri] = useState(null);
   const [yukleniyor, setYukleniyor] = useState(true);
@@ -70,6 +96,22 @@ export default function TazelikSeridi() {
 
   return (
     <div style={{ marginBottom: 16 }}>
+      {/* DEMO MODE banneri — backend DEMO_MODE=true veya mock veri akarken */}
+      {veri.demo_mode && (
+        <Alert
+          type="warning"
+          showIcon
+          message={
+            <span>
+              🟡 <strong>DEMO MODE</strong> — Yerel doğrulanmış veri (PostgreSQL/Qdrant/Ollama).
+              Gerçek canlı veri değil.
+            </span>
+          }
+          style={{ marginBottom: 10 }}
+        />
+      )}
+
+      {/* Tazelik satırı */}
       <Space wrap size={16}>
         <TazelikEtiketi
           baslik="Son tarama"
@@ -93,6 +135,41 @@ export default function TazelikSeridi() {
               <Typography.Text type="secondary">Kampanya: </Typography.Text>
               <Tag>
                 {veri.tekil_kampanya} tekil · {veri.anlik_goruntu} anlık görüntü
+              </Tag>
+            </span>
+          </Tooltip>
+        )}
+      </Space>
+
+      {/* Versiyon satırı */}
+      <Space wrap size={12} style={{ marginTop: 10 }}>
+        <VersiyonEtiketi
+          baslik="Model"
+          deger={veri.model_version}
+          ipucu="Kullanılan LLM model adı"
+          renk="blue"
+        />
+        <VersiyonEtiketi
+          baslik="Dataset"
+          deger={veri.dataset_version}
+          ipucu="Veri seti versiyonu. DATASET_VERSION ortam değişkeninden okunur."
+        />
+        <VersiyonEtiketi
+          baslik="RAG indeks"
+          deger={veri.rag_index_version}
+          ipucu="RAG vektör indeks versiyonu. RAG_INDEX_VERSION ortam değişkeninden okunur."
+        />
+        <VersiyonEtiketi
+          baslik="Kural"
+          deger={veri.rule_version}
+          ipucu="Guardrail/kapsam kural versiyonu. RULE_VERSION ortam değişkeninden okunur."
+        />
+        {veri.git_commit && (
+          <Tooltip title={`Son git commit: ${veri.git_commit}`}>
+            <span>
+              <Typography.Text type="secondary">Commit: </Typography.Text>
+              <Tag style={{ fontFamily: "monospace", fontSize: 10 }}>
+                {veri.git_commit.slice(0, 7)}
               </Tag>
             </span>
           </Tooltip>

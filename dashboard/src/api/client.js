@@ -209,4 +209,12 @@ export const musteriSesiYogunlukOzetiGetir = async () => {
   return yanit.data;
 };
 
+// GET /audit/extraction/{kampanya_id} - Bir kampanya icin cikarim katman
+// izlerini gosterir (Regex→GLiNER→Qwen→Resolver zinciri).
+// ROL KISITI: yalnizca banka_calisani/denetleyici/yonetici.
+export const extractionAuditGetir = async (kampanyaId) => {
+  const yanit = await client.get(`/audit/extraction/${kampanyaId}`);
+  return yanit.data;
+};
+
 export default client;

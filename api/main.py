@@ -1,4 +1,4 @@
-﻿"""KatilimAI API - FastAPI uygulamasi.
+"""KatilimAI API - FastAPI uygulamasi.
 
 DURUM: Yedi uc nokta da gercek verilerle calisir. /chat, Ajan
 Orkestratoru uzerinden Intent Detection -> Tool Router -> (SQL /
@@ -23,15 +23,18 @@ Swagger:
     http://localhost:8000/docs
 """
 
+import asyncio
 import json
 import os
 import time
+import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from fastapi.security import OAuth2PasswordRequestForm
 
 from agent.orchestrator import soru_isle
@@ -164,16 +167,28 @@ SENTETIK_MUSTERI_SESI_YOLU = (
 # Varsayilan "false" (bkz. dosya basi aciklamasi, VERI KAYNAGI).
 GERCEK_VERI_AKTIF = os.environ.get("GERCEK_VERI_AKTIF", "false").lower() == "true"
 
+# DEMO_MODE: Frontend demo banner + demo_snapshot flag'i icin.
+# GERCEK_VERI_AKTIF=false iken otomatik True sayilir (mock veri = demo).
+# Gercek veri akilken de DEMO_MODE=true cevrimicdisi senaryo icin set edilebilir.
+DEMO_MODE = not GERCEK_VERI_AKTIF or os.environ.get("DEMO_MODE", "false").lower() == "true"
+
 
 def _bos_audit(**kwargs) -> AuditBilgisi:
     """Audit blogunu her uc nokta icin ortak varsayilanlarla (model,
-    temperature, cache_hit) kurar; cagiran uc nokta kendi alanlarini
-    ustune yazar. Bir alanin o uc noktada anlami yoksa None kalir -
-    uydurulmaz (rapor Bolum 5.7/15)."""
+    temperature, cache_hit, trace_id, demo_snapshot) kurar; cagiran
+    uc nokta kendi alanlarini ustune yazar. Bir alanin o uc noktada
+    anlami yoksa None kalir - uydurulmaz (rapor Bolum 5.7/15).
+
+    trace_id: Her istege ait UUID - Decision Trace modali + log arama.
+    demo_snapshot: GERCEK_VERI_AKTIF=false iken otomatik True - frontend
+      DEMO SNAPSHOT rozeti gosterir.
+    """
     varsayilan = {
         "model": MODEL_ADI,
         "temperature": TEMPERATURE,
         "cache_hit": False,
+        "trace_id": str(uuid.uuid4()),
+        "demo_snapshot": DEMO_MODE,
     }
     varsayilan.update(kwargs)
     return AuditBilgisi(**varsayilan)
@@ -320,6 +335,22 @@ def tazelik(kullanici: dict = Depends(token_dogrula)):
         indeks_ham_veriden_eski_mi=eski_mi,
         tekil_kampanya=tekil,
         anlik_goruntu=anlik,
+        # System Health / Versiyon alanlari.
+        # Oncelik sirasi: indeks_durumu dosyasi > ortam degiskeni > None.
+        # Hicbiri yoksa None doner - tahmin edilmez.
+        dataset_version=(
+            durum.get("dataset_version")
+            or os.environ.get("DATASET_VERSION")
+        ),
+        rag_index_version=(
+            durum.get("rag_index_version")
+            or os.environ.get("RAG_INDEX_VERSION")
+        ),
+        model_version=MODEL_ADI,
+        rule_version=os.environ.get("RULE_VERSION"),
+        demo_mode=DEMO_MODE,
+        git_commit=os.environ.get("GIT_COMMIT"),
+        last_ci=os.environ.get("LAST_CI"),
     )
 
 
@@ -1004,3 +1035,212 @@ def chat(istek: ChatIstek, kullanici: dict = Depends(token_dogrula)):
             sql_sorgusu=ekstra["sql_sorgusu"],
         ),
     )
+
+
+@app.post("/chat/stream", tags=["Chatbot"])
+async def chat_stream(istek: ChatIstek, kullanici: dict = Depends(token_dogrula)):
+    """SSE ile token token streaming yanit - demo canli his icin.
+
+    TASARIM NOTU (demo gercekligi): agent/orchestrator.py::soru_isle
+    sync bir fonksiyon oldugundan gercek LLM token streaming'i burada
+    mumkun degil (orchestrator async generator'a donusturulmeli - P1).
+
+    DEMO ICIN - Sahte streaming (Secenek B):
+      Sync cevap alindiktan sonra kelime kelime SSE ile gonderilir.
+      Juri gozunden: cevap ekranda canli yaziliyor gibi gorukur.
+      Teknik gozunden: LLM cevabi hala tek seferde hesaplaniyor.
+
+    SSE formati:
+      data: {"token": "kelime "}   - her kelime icin
+      data: {"done": true, "audit": {...}, "kaynaklar": [...], "fallback": bool}
+
+    Frontend EventSource veya fetch + ReadableStream ile baglanir.
+    """
+    log.info(
+        "chat/stream sorgusu | kullanici=%s | soru=%s",
+        kullanici.get("kullanici"), istek.soru,
+    )
+
+    # Orchestrator cevabi hesapla (sync)
+    sonuc = soru_isle(istek.soru, _banka_kayitlarini_getir)
+    ekstra = sonuc["audit_ekstra"]
+
+    # DB audit yaz (sync cagri ile ayni)
+    _audit_kaydet(
+        kullanici,
+        "chat_stream",
+        ekstra["latency_ms"],
+        soru=istek.soru,
+        intent=ekstra["intent"],
+        intent_confidence=ekstra["intent_confidence"],
+        cagrilan_arac=ekstra["cagrilan_arac"],
+        sql_sorgusu=ekstra["sql_sorgusu"],
+    )
+
+    audit = _bos_audit(
+        intent=ekstra["intent"],
+        intent_confidence=ekstra["intent_confidence"],
+        cagrilan_arac=ekstra["cagrilan_arac"],
+        extraction_confidence=ekstra["extraction_confidence"],
+        regex_basari_orani=ekstra["regex_basari_orani"],
+        retriever_sonuclari=ekstra["retriever_sonuclari"],
+        response_confidence=sonuc["confidence"],
+        latency_ms=ekstra["latency_ms"],
+        sebep=ekstra["sebep"],
+        terminoloji_tutarli=ekstra["terminoloji_tutarli"],
+        terminoloji_sorunlari=ekstra["terminoloji_sorunlari"],
+        dogrulama=ekstra["dogrulama"],
+        sql_sorgusu=ekstra["sql_sorgusu"],
+    )
+
+    cevap = sonuc["cevap"]
+
+    async def jenerator():
+        # Kelime kelime gonder - canli yazma hissi
+        kelimeler = cevap.split(" ")
+        for i, kelime in enumerate(kelimeler):
+            parca = kelime + (" " if i < len(kelimeler) - 1 else "")
+            yield f"data: {json.dumps({'token': parca}, ensure_ascii=False)}\n\n"
+            await asyncio.sleep(0.03)  # ~30ms - gercekci his, demo'da yeterli
+
+        # Tamamlandi: audit + kaynaklar + fallback
+        yield f"data: {json.dumps({'done': True, 'audit': audit.model_dump(), 'kaynaklar': [k.model_dump() for k in sonuc['kaynaklar']], 'fallback': sonuc['fallback']}, ensure_ascii=False, default=str)}\n\n"
+
+    return StreamingResponse(
+        jenerator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+            "Access-Control-Allow-Origin": "*",
+        },
+    )
+
+
+@app.get(
+    "/audit/extraction/{kampanya_id}",
+    tags=["Denetim"],
+)
+def extraction_audit(
+    kampanya_id: int,
+    kullanici: dict = Depends(
+        rol_gerekli(["banka_calisani", "denetleyici", "yonetici"])
+    ),
+):
+    """Bir kampanya icin cikarim katman izlerini gosterir.
+
+    ExtractionAudit sayfasi (Juri Audit - "hangi katman ne deger verdi?")
+    icin tasarlanmistir. CampaignRecord'daki mevcut degerleri
+    CikarimIzi formatinda dondurur.
+
+    NOT: Bu uc nokta ham kaynak metni yeniden taramaz - DB'deki mevcut
+    cikarim sonuclari kullanilir (cikarim_yontemi + confidence alanlari).
+    Ham metin tarama gerektiren tam iz: POST /cikar (hibrit=false).
+
+    ROL KISITI: yalnizca banka_calisani/denetleyici/yonetici -
+    musteri rolu icin cikarim motoru ic/analiz araci.
+    """
+    baslangic = time.time()
+
+    if GERCEK_VERI_AKTIF:
+        oturum = next(oturum_al())
+        try:
+            kayit = id_ile_getir_db(oturum, kampanya_id)
+        finally:
+            oturum.close()
+    else:
+        kayit = id_ile_getir(kampanya_id)
+
+    if kayit is None:
+        raise HTTPException(status_code=404, detail="Kampanya bulunamadi")
+
+    # CampaignRecord'daki sayisal alanlar + cikarim bilgileri
+    IZLENECEK_ALANLAR = [
+        ("kar_payi_orani_percent", "Kar Payi Orani (%)", "aylik yuzde"),
+        ("vade_ay", "Vade (Ay)", "ay"),
+        ("finansman_tutari", "Finansman Tutari (TL)", "TL"),
+        ("taksit_sayisi", "Taksit Sayisi", "adet"),
+        ("erteleme_suresi_ay", "Erteleme Suresi (Ay)", "ay"),
+        ("tahsis_ucreti", "Tahsis Ucreti (TL)", "TL"),
+        ("odul_miktari", "Odul Miktari", None),
+    ]
+
+    cikarim_yontemi = (
+        kayit.cikarim_yontemi.value if kayit.cikarim_yontemi else "regex"
+    )
+    genel_guven = kayit.confidence
+
+    alanlar = []
+    for alan_adi, alan_label, birim in IZLENECEK_ALANLAR:
+        deger = getattr(kayit, alan_adi, None)
+        belirtilmemis = kayit.alan_belirtilmemis.get(alan_adi, False)
+        dogrulandi = kayit.dogrulanan_alanlar.get(alan_adi)
+
+        alanlar.append({
+            "alan": alan_adi,
+            "label": alan_label,
+            "birim": birim,
+            "mevcut_deger": deger,
+            "belirtilmemis": belirtilmemis,
+            "katmanlar": [
+                {
+                    "katman": cikarim_yontemi,
+                    "deger": str(deger) if deger is not None else None,
+                    "confidence": genel_guven if deger is not None else None,
+                    "evidence": None,  # ham metin bu uc noktada mevcut degil
+                }
+            ] if deger is not None else [],
+            "resolver": {
+                "secilen": cikarim_yontemi,
+                "sebep": "tek_katman",
+                "deger": str(deger) if deger is not None else None,
+            },
+            # gold_dataset klasoru icin: gold_dataset/gold_records.json
+            "gold_reference": _gold_referans_bul(kampanya_id, alan_adi),
+            "dogrulandi": dogrulandi,
+        })
+
+    latency = int((time.time() - baslangic) * 1000)
+    _audit_kaydet(
+        kullanici, "extraction-audit", latency, cagrilan_arac="extraction"
+    )
+
+    return {
+        "kampanya_id": kampanya_id,
+        "banka": kayit.banka,
+        "kampanya_adi": kayit.kampanya_adi,
+        "kaynak_url": kayit.kaynak_url,
+        "cikarim_yontemi": cikarim_yontemi,
+        "genel_guven": genel_guven,
+        "alanlar": alanlar,
+        "audit": _bos_audit(
+            cagrilan_arac="extraction", latency_ms=latency
+        ).model_dump(),
+    }
+
+
+def _gold_referans_bul(kampanya_id: int, alan_adi: str) -> dict | None:
+    """gold_dataset/gold_records.json'dan kampanya + alan icin referans deger arar.
+
+    Dosya yoksa ya da kayit bulunamazsa None doner - uydurulmaz.
+    Gold kayit yapisi: [{"kampanya_id": 1, "alan": "kar_payi_orani_percent",
+                         "deger": "1.89", "dogrulandi": true}, ...]
+    """
+    gold_dosya = Path(__file__).resolve().parent.parent / "gold_dataset" / "gold_records.json"
+    if not gold_dosya.exists():
+        return None
+    try:
+        with open(gold_dosya, encoding="utf-8") as f:
+            kayitlar = json.load(f)
+        for kayit in kayitlar:
+            if kayit.get("kampanya_id") == kampanya_id and kayit.get("alan") == alan_adi:
+                return {
+                    "deger": kayit.get("deger"),
+                    "dogrulandi": kayit.get("dogrulandi", False),
+                }
+    except (OSError, json.JSONDecodeError, KeyError):
+        log.warning(
+            "Gold referans okunamadi | kampanya_id=%s | alan=%s",
+            kampanya_id, alan_adi, exc_info=True,
+        )
+    return None

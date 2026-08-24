@@ -70,6 +70,11 @@ def _kayda_cevir(satir: Kampanya, bugun: date | None = None) -> CampaignRecord:
         "kampanya_avantaji": satir.kampanya_avantaji,
         "masraf_durumu": satir.masraf_durumu,
         "tahsis_ucreti": satir.tahsis_ucreti,
+        # Sutunlari 24.08.2026'da eklendi; buraya konmazsa deger DB'ye
+        # yazilir ama API sessizce dusurur - dogrulanan_alanlar'in daha
+        # once yasadigi ayni API-siniri hatasi (bkz. asagidaki not).
+        "nakit_iade_orani": satir.nakit_iade_orani,
+        "indirim_orani_percent": satir.indirim_orani_percent,
         "kampanya_baslangic": satir.kampanya_baslangic,
         "kampanya_bitis": satir.kampanya_bitis,
         "durum": _durum_coz(satir, bugun),

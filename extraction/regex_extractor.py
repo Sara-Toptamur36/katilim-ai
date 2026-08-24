@@ -98,11 +98,40 @@ RE_KAR_PAYI_BAGLAM_ONCE = _katlanmis_derle(
 RE_KAR_PAYSIZ = _katlanmis_derle(r"k[aâ]r\s*pays[ıi]z", re.IGNORECASE)
 # "0 kar payli" gibi yuzde isareti OLMADAN sifir oran ifadeleri de var.
 RE_KAR_PAYI_SIFIR = _katlanmis_derle(r"\b0\s*k[aâ]r\s*pay\w*", re.IGNORECASE)
-# "Vade farksiz" (katilim bankaciliginda "vade farki" gelenek faiz kavramina
-# karsilik gelir - farksiz olmasi kar payi oraninin o islem icin 0 oldugu
-# anlamina gelir). Gercek veride en yaygin sifir-oran ifadesi budur (62
-# Altin Veri Seti kaydindan 13'unde gorulmustur).
-RE_VADE_FARKSIZ = _katlanmis_derle(r"vade\s*farks[ıi]z", re.IGNORECASE)
+# RE_VADE_FARKSIZ KALDIRILDI (23 Agustos 2026, kart precision duzeltmesi).
+#
+# GEREKCE (olculdu - extraction_accuracy_raporu.md): "vade farksiz 6 taksit"
+# bir KART kampanyasi ifadesidir - finansman kar payi orani DEGILDIR.
+# Altin veri setinde bu ifadeyi tasiyan 13 kaydin tamami card_kampanyasi
+# turunde ve altin etiketleyenler kar_payi_orani'ni "kaynakta belirtilmemis"
+# isaret etmis. Motor ile gold sozlesmesi catisiyor; motor %33 precision
+# uretiyordu (40 yanlis pozitifin 13'u buradan). "Vade farksiz" kart taksit
+# ozelligini belirtir (vade farki = geleneksel bankaciliktaki faiz eki;
+# farksiz = ek uygulama yok), ama bu finansman kar payi oraniyla AYNI SEY
+# DEGILDIR - domain analizi gold etiketleyenlerle tutarli.
+#
+# "Kar paysiz" (RE_KAR_PAYSIZ) ve "0 kar payli" (RE_KAR_PAYI_SIFIR) kurallari
+# KORUNUYOR: bunlar dogru sekilde sifir kar payli finansman kampanyalarini
+# yakaliyor (ornekleri altin veride dogrulanmis: AL-002, VK-001 vb.).
+
+# Nakit iade / indirim orani - Sartname Md. 5.3 "Indirim Orani" alani.
+# NEDEN GEREKLI: "%10 nakit iade" ve "%30 indirim" ifadelerinin gidecek
+# bir alan yoktu; kucuk guvenli fallback (RE_KAR_PAYI_GENEL, 0.6) bunlari
+# kar_payi_orani'na sokuyordu - olculdu: HF-010, ZK-016 yanlis pozitif.
+# Artik bu ifadeler AYRI bir alana (nakit_iade_orani / indirim_orani_percent)
+# cikarilir ve kar payi mantigi bu baglamda CALISTIRILMAZ.
+RE_NAKIT_IADE = _katlanmis_derle(
+    r"%\s*\d{1,2}(?:[.,]\d{1,4})?"
+    r"(?:[^%\n]{0,30}(?:nakit\s*iade|cashback|geri\s*iade))"
+    r"|(?:nakit\s*iade|cashback)[^%\n]{0,30}%\s*\d{1,2}(?:[.,]\d{1,4})?",
+    re.IGNORECASE,
+)
+RE_INDIRIM_ORANI = _katlanmis_derle(
+    r"%\s*\d{1,2}(?:[.,]\d{1,4})?"
+    r"(?:[^%\n]{0,25}indirim)"
+    r"|(?:indirim)[^%\n]{0,25}%\s*\d{1,2}(?:[.,]\d{1,4})?",
+    re.IGNORECASE,
+)
 # Dusuk guvenli fallback: kisa kampanya basliklarinda "kar payi" kelimesi
 # hic gecmeden sadece "%X oranla" denebiliyor. Bu durumda, yakininda ucret/
 # masraf/maliyet baglami YOKSA genel yuzdeyi kar payi say (dusuk guven).
@@ -123,7 +152,50 @@ _UCRET_BAGLAM_DISLAMA_KELIMELERI = _katla_hepsi([
     # "kar_payi_orani ILE KARISTIRILMAMALI" diye isaretlemis ama kural
     # regex'e baglanmamisti.
     "makas", "kur",
+    # SADAKAT PARA BIRIMLERI (olculdu 23 Agustos: ZK-011, ZK-016).
+    # "tum harcamalara %10, toplamda 5.000 TL Bankkart Lira!" - buradaki
+    # %10 bir KAZANIM oranidir, kar payi orani degil. Listede zaten "puan"
+    # ve "odul" vardi ama bankalarin KENDI birim adlari yoktu; oysa bu
+    # birimler depoda baska yerde tanimli (comparison/compare_engine.py
+    # BIRIM_BAGIMLI_EKSENLER, altin veri setinde alti ayri birim). Ayni
+    # bilgi iki yerde ayri ayri tutulunca biri guncellenip digeri
+    # unutuluyordu.
+    "bankkart lira", "worldpuan", "parafpara", "bonus", "mil",
+    # HARCAMA YUZDESI: bir yuzde "harcama"ya uygulaniyorsa o bir iade/
+    # kazanim oranidir (olculdu: ZK-011, ZK-016, HF-010). Bu kelime
+    # yalnizca DUSUK GUVENLI fallback'i (0.6) etkiler - metinde acikca
+    # "kar payi/kar orani" gecen kayitlar zaten 0.9 guvenli yoldan
+    # atanir ve buraya hic ugramaz.
+    "harcama",
+    # "... TUTARININ %X'i kadar": bir tutarin yuzdesi olarak ifade edilen
+    # deger, o urunun kar payi orani DEGIL, ondan turetilen bir kazanim
+    # ya da kesintidir (olculdu: HF-008 "transfer tutarinin %0,1'i").
+    "tutarın", "tutarin", "transfer",
 ])
+
+# ORAN TABLOSU ESIGI: Turkiye Finans'in "Aylik/Yillik Toplam Maliyet"
+# tablolari bir satirda yan yana bes-alti yuzde tasiyor
+# ("3 | 4,20% | 0,50% | 5,77% | 96,05%"). Baglam penceresi 45 karakter
+# oldugu icin satirin BASINDAKI "Maliyet" basligi uzaktaki hucrelere
+# yetismiyordu ve tablonun ortasindaki bir hucre kar payi orani
+# saniliyordu (olculdu: TF-001, TF-008 - TF-001 zaten "bilinen yanlis
+# pozitif" olarak belgelenmisti, kok nedeni buymus).
+#
+# NEDEN SAYIYLA AYIRT EDILIYOR: duz metinde bir cumlenin icinde ucten
+# fazla yuzde yan yana gecmez; bu yogunluk TABLO oldugunun kendisi kadar
+# guvenilir bir isaretidir. Tablolardaki gercek oranlari zaten ayri bir
+# katman okuyor (extraction/tablo_extractor.py), bu yuzden fallback'in
+# oraya hic girmemesi dogru davranistir.
+_ORAN_TABLOSU_PENCERE = 60
+_ORAN_TABLOSU_ASGARI_YUZDE = 3
+
+
+def _oran_tablosu_baglaminda_mi(metin: str, baslangic: int, bitis: int) -> bool:
+    """Eslesmenin cevresi bir oran TABLOSU satiri mi (duz cumle degil)?"""
+    pencere = metin[
+        max(0, baslangic - _ORAN_TABLOSU_PENCERE) : bitis + _ORAN_TABLOSU_PENCERE
+    ]
+    return pencere.count("%") >= _ORAN_TABLOSU_ASGARI_YUZDE
 
 
 def _ucret_baglaminda_mi(metin: str, baslangic: int, bitis: int, pencere: int = 45) -> bool:
@@ -194,7 +266,21 @@ RE_TAKSIT_SAYISI = _katlanmis_derle(
 # BUYUKLUK EKI: T.O.M. Katilim tutarlari kelimeyle yaziyor ("250 Bin TL ye
 # kadar"), binlik ayiracli degil. Bu bicim desende yoksa tutar HIC
 # bulunamaz (olculdu: TOM-002 finansman_tutari None donuyordu).
-_TUTAR = r"\d{1,3}(?:\.\d{3})*(?:,\d+)?\s*(?:bin|milyon|milyar)?"
+# ORTAK SAYI PARCASI - ayni kusur eskiden 6 ayri desende tekrarliyordu.
+# `\d{1,3}(?:\.\d{3})*` yazimi, ayrac KULLANILMAYAN sayilarda en fazla 3
+# hane alabildigi icin "2000 TL"de bastan degil SONDAN eslesiyordu:
+# regex "2"den baslayip TL'ye ulasamayinca ilerliyor ve "000 TL"yi
+# yakaliyordu -> odul_miktari = 0.0 (olculdu: ZK-009). Sifir degeri hem
+# yanlis pozitif uretiyor hem de karsilastirmada "en dusuk" siralamasini
+# haksiz kazaniyordu.
+#
+# Ayracli bicim ONCE denenir ("10.000" tek sayi olarak okunsun, "10" +
+# "000" diye ikiye bolunmesin); ayracsiz sayilar `\d+` ile tam uzunlukta
+# yakalanir. Tum desenler gruplarsiz (?:...) oldugu icin cagiran taraftaki
+# grup numaralari DEGISMEZ.
+_SAYI = r"(?:\d{1,3}(?:\.\d{3})+|\d+)(?:,\d+)?"
+
+_TUTAR = rf"{_SAYI}\s*(?:bin|milyon|milyar)?"
 
 RE_TUTAR_ARALIK = _katlanmis_derle(
     rf"({_TUTAR})\s*TL\s*[-–]\s*({_TUTAR})\s*TL\s*aras", re.IGNORECASE
@@ -364,7 +450,7 @@ RE_TAHSIS_ORANI = _katlanmis_derle(
 # henuz gorulmedi ama bankadan bankaya degistigi icin desen hazir tutulur.
 RE_MASRAF_TUTARI = _katlanmis_derle(
     r"(?:dosya masraf[ıi]|tahsis [üu]creti|ekspertiz [üu]creti)\s*[:=]?\s*"
-    r"(\d{1,3}(?:\.\d{3})*(?:,\d+)?)\s*(?:TL|₺)",
+    rf"({_SAYI})\s*(?:TL|₺)",
     re.IGNORECASE,
 )
 
@@ -372,13 +458,26 @@ RE_MASRAF_TUTARI = _katlanmis_derle(
 # "10.000 Mil'e varan hediye" (TL disi birim!), "250 TL ParafPara",
 # "2.000 TL'ye varan Bankkart Lira" (banka-ozel sadakat birimleri),
 # "1.000 TL'ye kadar iade", "1.250 TL Worldpuan".
+# OLCULDU (23 Agustos 2026) - "indirim" anahtar kelimesi KALDIRILMAK
+# ISTENDI, OLCUM REDDETTI: ZK-014 ("3.000 TL'ye Varan Indirim") ve VK-010
+# ("200 TL Indirim") altin veride odul_miktari = "belirtilmemis" oldugu
+# icin yanlis pozitif sayiliyor. "indirim" listeden cikarildiginda:
+#     bos alan dogrulugu  %93,16 -> %93,96  (34 -> 30 yanlis pozitif)
+#     dolu alan dogrulugu %84,42 -> %83,12  (2 dogru sonuc KAYBEDILDI)
+#     makro F1            %78,39 -> %78,60  (+0,21 - gurultu seviyesinde)
+# Yani altin veri setinin KENDISI tutarsiz: bazi kayitlarda indirim odul
+# sayilmis, bazilarinda sayilmamis. Motoru tek yone cekmek toplam kaliteyi
+# artirmiyor, yalnizca hatayi bir sutundan digerine tasiyor. Karar:
+# DEGISIKLIK YAPILMADI; cozulmesi gereken yer gold'daki etiket kurali
+# (bkz. docs/extraction_accuracy_raporu.md - gold etiket incelemesi).
+#
 # NOT: "nakit ödül"/"ödül" bilerek BURAYA eklenmedi - bu kelimeler genelde
 # kisi-basi/birim tutari da tasir (ör. "500 TL nakit ödül... toplamda
 # maksimum 10.000 TL"), .search() ILK eslesmeyi aldigi icin erken/yanlis
 # (kisi basi) tutari yakalardi. Bu durumlar asagidaki RE_ODUL_TAVAN
 # ("en fazla"/"maksimum" tetikleyicili) desenine birakildi.
 RE_ODUL = _katlanmis_derle(
-    r"\d{1,3}(?:\.\d{3})*(?:,\d+)?\s*(?:TL|₺)"
+    rf"{_SAYI}\s*(?:TL|₺)"
     r"(?:['’](?:ye|ya|e|a))?\s*"
     r"(?:değerinde\s*|varan\s*|kadar\s*)?"
     r"(?:alışveriş çeki|alışveriş kartı|hediye çeki|alışveriş puanı|hediye|kazan\w*"
@@ -388,23 +487,23 @@ RE_ODUL = _katlanmis_derle(
 # Banka-ozel sadakat birimleri (Mil, Gram) TL disinda oldugu icin ayri
 # desenler gerekir. NOT: gercek metinlerde egik/tipografik apostrof (’,
 # U+2019) kullanilir, duz apostrof (') degil - ikisi de kapsanmali.
-RE_ODUL_MIL = _katlanmis_derle(r"\d{1,3}(?:\.\d{3})*(?:,\d+)?\s*Mil['’]?[ea]?\s*varan\s*hediye", re.IGNORECASE)
+RE_ODUL_MIL = _katlanmis_derle(rf"{_SAYI}\s*Mil['’]?[ea]?\s*varan\s*hediye", re.IGNORECASE)
 # Tavan/limit ifadeleri: "en fazla 5 gram", "maksimum 10.000 TL", "kişi
 # başı maksimum 2.000 TL, toplamda ... maksimum 10.000 TL nakit ödül" gibi
 # cok sayida aday oldugunda SONUNCUSU (genelde "toplamda" olan) tercih
 # edilir - finditer + son eslesme.
 RE_ODUL_TAVAN = _katlanmis_derle(
     r"(?:en fazla|maksimum)\s+(?:\S+\s+){0,4}?"
-    r"(\d{1,3}(?:\.\d{3})*(?:,\d+)?)\s*(TL|₺|gram\w*|gr\b)",
+    rf"({_SAYI})\s*(TL|₺|gram\w*|gr\b)",
     re.IGNORECASE,
 )
 # "2.500 TL ile sınırlıdır" gibi "sinirli/sinirlidir" ile biten tavan ifadesi.
 RE_ODUL_SINIRLI = _katlanmis_derle(
-    r"(\d{1,3}(?:\.\d{3})*(?:,\d+)?)\s*(TL|₺)['’]?\s*(?:ile\s+)?s[ıi]n[ıi]rl[ıi]",
+    rf"({_SAYI})\s*(TL|₺)['’]?\s*(?:ile\s+)?s[ıi]n[ıi]rl[ıi]",
     re.IGNORECASE,
 )
 RE_ODUL_GRAM = _katlanmis_derle(
-    r"\d{1,3}(?:,\d+)?\s*gram\w*\s*(?:['’]?[ea]?\s*kadar\s*)?(?:hediye|kazan\w*)", re.IGNORECASE
+    rf"{_SAYI}\s*gram\w*\s*(?:['’]?[ea]?\s*kadar\s*)?(?:hediye|kazan\w*)", re.IGNORECASE
 )
 
 # Kampanya turu anahtar kelimeleri - degerler api/schemas.py KampanyaTuru
@@ -420,11 +519,95 @@ KAMPANYA_TURU_ANAHTAR_KELIMELERI = {
     "Finansman Kampanyasi": ["finansman"],
 }
 
+# HEDEF KITLE - Sartname Md. 5.3 "Hedef Kitle Bilgileri" sutunundaki DORT
+# segment. Sartname bu alani serbest metin olarak degil KATEGORI olarak
+# tanimliyor: "Yeni Musterilere Ozel", "Mevcut Musterilere Ozel", "Maas
+# Musterilerine Ozel", "Belirli Musteri Segmentlerine Yonelik".
+#
+# NEDEN DORDUNCU SEGMENT EKLENDI (olculdu 23 Agustos 2026): altin veri
+# setinde hedef_kitle 299 kayitta dolu ama 177 TEKIL serbest metin degeri
+# var ("Ziraat Katilim Bankkart kredi karti sahipleri (ucretsiz ve ticari
+# kartlar haric)" gibi). Motor yalnizca ilk uc kategoriyi uretebildigi
+# icin alan bazli olcumde F1 = %0,00 cikiyordu - 287 destekle. Bu bir
+# motor zayifligi DEGIL, olculemez bir karsilastirmaydi: 177 farkli
+# serbest metni 3 kategoriyle tam eslestirmek matematiksel olarak
+# imkansiz. Sartnamenin dorduncu segmenti tam bu vakayi karsiliyor.
+#
+# CATCH-ALL DEGIL - KANIT ISTER: "Belirli segment" yalnizca metinde
+# ACIK bir uygunluk ifadesi varsa atanir ("... kart sahipleri", "...
+# musterilerine ozel"). Her kayda varsayilan olarak yazilsaydi olcum
+# bedava yukselirdi; oyle bir kural bilgi tasimaz.
 HEDEF_KITLE_ANAHTAR_KELIMELERI = {
-    "Yeni müşteri": ["yeni müşteri", "yeni ev sahibi olmak isteyen"],
-    "Mevcut müşteri": ["mevcut müşteri"],
-    "Maaş müşterisi": ["maaş müşteri", "maaş getiren"],
+    "Yeni müşteri": [
+        "yeni müşteri", "yeni ev sahibi olmak isteyen", "ilk kez",
+        "yeni kart müşteri", "müşterimiz olun", "yeni müşterilere",
+    ],
+    "Maaş müşterisi": ["maaş müşteri", "maaş getiren", "maaşını", "emekli"],
+    "Mevcut müşteri": ["mevcut müşteri", "mevcut müşterilere"],
+    "Belirli segment": [
+        "kart sahipleri", "kart sahiplerine", "kartı sahipleri",
+        "müşterilerine özel", "sahiplerine özel", "kart müşterileri",
+        "kullanıcılarına özel", "üyelerine özel",
+    ],
 }
+
+# SIRA ONEMLI: bir metin birden fazla ipucu tasiyabilir. Sira ozelden
+# genele gider - en bilgi verici segment once yakalanir. "Maas musterisi"
+# ilk sirada: maas/emekli ifadesi cok belirgin bir sinyal ve olculdu
+# (TF-002) ki "yeni musteri" once denenirse "emekli maasini tasiyan yeni
+# musteriler" yanlis segmente dusuyor.
+HEDEF_KITLE_SIRASI = ("Maaş müşterisi", "Yeni müşteri", "Mevcut müşteri", "Belirli segment")
+
+# DESEN GENISLETMESI DENENDI VE GERI ALINDI (23 Agustos 2026, olculdu).
+#
+# Alt-dize yerine regex kullanip "yeni ... musteri" bosluklu kalibi ve
+# "yalnizca ... kart ile" uygunluk kosulunu da yakalamayi denedim. Tek
+# tek denemelerde dogru calisiyordu (KT-005, ZK-002, TF-002 duzeliyordu)
+# ama TOPLAM olcumde geriletti:
+#
+#     hedef_kitle F1  %30,00 -> %27,59
+#     precision       %63,16 -> %48,00
+#     recall          %19,67 -> %19,35   (yani yeni dogru sonuc GELMEDI)
+#
+# Sebep: altin verideki hedef_kitle etiketi bir INSAN OZETI ("Bireysel
+# Bankkart kredi karti sahipleri"); o ozet sayfada aynen gecmiyor ve
+# sayfadaki uygunluk kosullari cogu zaman segmenti TEK BASINA belirlemeye
+# yetmiyor. Genis desenler bu yuzden yalnizca yanlis segment atamasi
+# uretti. Bu alanin recall'unu yukseltmek kural genisletmekle degil,
+# muhtemelen NER/LLM katmaniyla mumkun - regex'in dogru isi burada
+# emin oldugu az sayida vakayi yakalamak.
+_HEDEF_KITLE_KATLANMIS = {
+    etiket: _katla_hepsi(kelimeler)
+    for etiket, kelimeler in HEDEF_KITLE_ANAHTAR_KELIMELERI.items()
+}
+
+
+def hedef_kitle_segmenti(metin: Optional[str]) -> Optional[str]:
+    """Serbest metni Sartname Md. 5.3 segmentlerinden birine indirger.
+
+    TEK KAYNAK OLMASI ONEMLI: hem cikarim motoru (kampanya sayfasindan)
+    hem dogruluk olcumu (altin verideki serbest metin etiketinden) AYNI
+    fonksiyonu cagirir. Iki taraf ayri kural kullanirsa olcum, motorun
+    basarisini degil iki kural arasindaki farki olcer.
+    """
+    if not metin:
+        return None
+    metin_l = turkce_ascii_kucult(metin)
+    for etiket in HEDEF_KITLE_SIRASI:
+        if any(k in metin_l for k in _HEDEF_KITLE_KATLANMIS[etiket]):
+            return etiket
+    return None
+    katlanmis = turkce_ascii_katla(metin)
+    for etiket in HEDEF_KITLE_SIRASI:
+        if any(d.search(katlanmis) for d in _HEDEF_KITLE_DERLENMIS[etiket]):
+            return etiket
+    return None
+    metin_l = turkce_ascii_kucult(metin)
+    for etiket in HEDEF_KITLE_SIRASI:
+        kelimeler = [turkce_ascii_kucult(k) for k in HEDEF_KITLE_ANAHTAR_KELIMELERI[etiket]]
+        if any(k in metin_l for k in kelimeler):
+            return etiket
+    return None
 
 # YALNIZCA DEGERLER (aranacak kelimeler) katlanir - ANAHTARLAR katlanmaz:
 # onlar cikti etiketidir ve api/schemas.py'deki enum degerleriyle BIREBIR
@@ -434,10 +617,10 @@ _KAMPANYA_TURU_KATLANMIS = {
     etiket: _katla_hepsi(kelimeler)
     for etiket, kelimeler in KAMPANYA_TURU_ANAHTAR_KELIMELERI.items()
 }
-_HEDEF_KITLE_KATLANMIS = {
-    etiket: _katla_hepsi(kelimeler)
-    for etiket, kelimeler in HEDEF_KITLE_ANAHTAR_KELIMELERI.items()
-}
+# NOT: hedef kitle icin ayri bir katlanmis sozluk TUTULMUYOR - segment
+# kurali `hedef_kitle_segmenti` icinde, cagri aninda katlanarak
+# uygulaniyor. Iki yerde iki kopya, olcum tarafiyla motorun ayrisma
+# riskini geri getirirdi.
 
 
 def _kar_payi_makul_mu(percent: float) -> bool:
@@ -492,11 +675,12 @@ def _kampanya_turunu_tespit_et(metin: str) -> Optional[str]:
 
 
 def _hedef_kitleyi_tespit_et(metin: str) -> Optional[str]:
-    metin_l = turkce_ascii_kucult(metin)
-    for etiket, kelimeler in _HEDEF_KITLE_KATLANMIS.items():
-        if any(k in metin_l for k in kelimeler):
-            return etiket
-    return None
+    """Kampanya metninden hedef kitle SEGMENTINI belirler.
+
+    Paylasilan `hedef_kitle_segmenti` uzerinden gider - olcum tarafi da
+    ayni fonksiyonu cagirdigi icin iki taraf hicbir zaman ayrisamaz.
+    """
+    return hedef_kitle_segmenti(metin)
 
 
 def _tr_sayi(deger: float) -> str:
@@ -611,6 +795,8 @@ def kaydi_cikar(ham_metin: str) -> dict:
         "kampanya_bitis": None,
         "kampanya_turu": None,
         "hedef_kitle": None,
+        "nakit_iade_orani": None,
+        "indirim_orani_percent": None,
     }
     izler: dict[str, tuple[str, float]] = {}  # alan -> (kaynak_span, guven)
 
@@ -641,20 +827,56 @@ def kaydi_cikar(ham_metin: str) -> dict:
             alanlar["kar_payi_orani_decimal"] = 0.0
             alanlar["kar_payi_orani_percent"] = 0.0
             izler["kar_payi_orani_percent"] = ("kâr paysız / 0 kâr paylı", 0.85)
-        elif RE_VADE_FARKSIZ.search(katlanmis):
-            # "Vade farksiz" katilim bankaciliginda o islem icin kar payi
-            # oraninin 0 oldugu anlamina gelir (Extraction Accuracy raporu +
-            # terminology/sozluk.json'daki sifir_oran_ifadesi kavramiyla
-            # tutarli). Dogrudan "kar paysiz" kadar yuksek guvenli degil
-            # (0.8 < 0.85) - farkli bir ifade oldugu icin.
-            alanlar["kar_payi_orani_decimal"] = 0.0
-            alanlar["kar_payi_orani_percent"] = 0.0
-            izler["kar_payi_orani_percent"] = ("vade farksız", 0.8)
         else:
+            # RE_VADE_FARKSIZ BURADA ARTIK YOK (23 Agustos 2026).
+            # Bkz. desen tanimlari bolumu - kart taksit ifadesi, finansman
+            # kar payi degildir.
+            # SIRA ONEMLI - YONLENDIRME, ELEMEDEN ONCE GELIR.
+            #
+            # OLCULDU (23 Agustos 2026): baglam korumalari (_ucret_baglaminda_mi
+            # ve _oran_tablosu_baglaminda_mi) once kosuyordu ve nakit iade /
+            # indirim yuzdesini `continue` ile atiyordu. Sonuc: yuzde
+            # kar_payi'na DOGRU sekilde girmiyordu ama dogru alanina da
+            # (nakit_iade_orani / indirim_orani_percent) hic yazilmiyordu -
+            # bilgi sessizce kayboluyordu. "Tum harcamalarinizda %10 nakit
+            # iade" cumlesinde `harcama` kelimesi ucret dislama listesinde
+            # oldugu icin eleme once tetikleniyordu.
+            #
+            # Dogru sira: bir yuzdenin NE OLDUGU belirlenebiliyorsa once
+            # oraya yazilir; yalnizca hicbir alana ait olmadigi anlasilanlar
+            # atilir. Eleme, siniflandirmanin yerine gecmemeli.
             for gm in RE_KAR_PAYI_GENEL.finditer(katlanmis):
-                if not _ucret_baglaminda_mi(ham_metin, gm.start(), gm.end()):
-                    if _kar_payi_ata(alanlar, izler, _ham_span(ham_metin, gm), 0.6):
-                        break
+                # Nakit iade veya indirim baglamindasak kar payi DEGIL -
+                # bu yuzden nakit_iade_orani / indirim_orani_percent'e
+                # cikarip kar_payi_orani'na GIRME.
+                span_ham = _ham_span(ham_metin, gm)
+                if RE_NAKIT_IADE.search(katlanmis[max(0, gm.start()-50):gm.end()+50]):
+                    yuzde = yuzdeye_cevir(span_ham)
+                    if yuzde is not None:
+                        # BIRIM: yuzdeye_cevir ONDALIK doner (%10 -> 0.1).
+                        # Bu alanlar YUZDE tasiyor (alan adi da oyle diyor:
+                        # indirim_orani_percent) - _kar_payi_ata ile ayni
+                        # donusum uygulanmali, yoksa "%10 nakit iade"
+                        # arayuzde %0,1 olarak gorunur.
+                        alanlar["nakit_iade_orani"] = round(yuzde * 100, 4)
+                        izler["nakit_iade_orani"] = (span_ham, 0.8)
+                    continue  # kar_payi'na girme
+                if RE_INDIRIM_ORANI.search(katlanmis[max(0, gm.start()-50):gm.end()+50]):
+                    yuzde = yuzdeye_cevir(span_ham)
+                    if yuzde is not None:
+                        # Ayni birim gerekcesi (bkz. nakit_iade_orani).
+                        alanlar["indirim_orani_percent"] = round(yuzde * 100, 4)
+                        izler["indirim_orani_percent"] = (span_ham, 0.75)
+                    continue  # kar_payi'na girme
+                # Buraya gelen yuzde bilinen bir alana ait DEGIL. Simdi
+                # elenebilir: ucret/masraf baglami ya da oran tablosu
+                # hucresi ise kar payi olarak da atanmamali.
+                if _ucret_baglaminda_mi(ham_metin, gm.start(), gm.end()):
+                    continue
+                if _oran_tablosu_baglaminda_mi(ham_metin, gm.start(), gm.end()):
+                    continue
+                if _kar_payi_ata(alanlar, izler, span_ham, 0.6):
+                    break
 
     # --- Finansman tutari ----------------------------------------------
     # ARALIK DESENINE BAGLAM GUARD'I UYGULANMAZ (olculdu): "X TL - Y TL

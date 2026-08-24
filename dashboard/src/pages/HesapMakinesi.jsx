@@ -9,6 +9,7 @@ import {
   Select,
   Space,
   Statistic,
+  Switch,
   Table,
   Tag,
   Tooltip,
@@ -115,20 +116,57 @@ export default function HesapMakinesi() {
     setVade(String(k.vade_ay ?? ""));
   };
 
-  const secenekler = useMemo(
-    () => [
-      { value: ELLE_GIRIS, label: "Elle giriş (kampanyadan bağımsız)" },
-      ...kampanyalar.map((k) => ({
-        value: k.id,
-        // Hesaplanamayan kampanya listeden CIKARILMAZ - sebebi yazilir.
-        label: hesaplanabilir(k)
-          ? `${k.banka} — ${k.kampanya_adi}`
-          : `${k.banka} — ${k.kampanya_adi} (oran/vade eksik)`,
-        disabled: !hesaplanabilir(k),
-      })),
-    ],
+  // Sorun 4.b: "Yalnızca hesaplanabilir kampanyalar" anahtarı (varsayılan açık)
+  const [yalnizcaHesaplanabilir, setYalnizcaHesaplanabilir] = useState(true);
+
+  // Sorun 4.a: Ekranda görünen sayılar API verisinden hesaplanır, koda gömülmez
+  const toplamKampanyaSayisi = kampanyalar.length;
+  const hesaplanabilirSayisi = useMemo(
+    () => kampanyalar.filter(hesaplanabilir).length,
     [kampanyalar]
   );
+
+  // Sorun 4.c: Seçilebilir kampanyalar listenin EN ÜSTÜNDE yer almalıdır.
+  // yalnizcaHesaplanabilir açıkken seçilemeyenler gizlenir; kapalıyken alt sırada disabled gösterilir.
+  const secenekler = useMemo(() => {
+    const hesaplanabilenler = kampanyalar.filter(hesaplanabilir);
+    const hesaplanamayanlar = kampanyalar.filter((k) => !hesaplanabilir(k));
+
+    const secilebilirSecenekler = hesaplanabilenler.map((k) => ({
+      value: k.id,
+      label: `${k.banka} — ${k.kampanya_adi}`,
+      disabled: false,
+    }));
+
+    const secilemeyenSecenekler = hesaplanamayanlar.map((k) => ({
+      value: k.id,
+      label: `${k.banka} — ${k.kampanya_adi} (oran/vade eksik)`,
+      disabled: true,
+    }));
+
+    if (yalnizcaHesaplanabilir) {
+      return [
+        { value: ELLE_GIRIS, label: "Elle giriş (kampanyadan bağımsız)" },
+        ...secilebilirSecenekler,
+      ];
+    }
+
+    return [
+      { value: ELLE_GIRIS, label: "Elle giriş (kampanyadan bağımsız)" },
+      ...secilebilirSecenekler,
+      ...secilemeyenSecenekler,
+    ];
+  }, [kampanyalar, yalnizcaHesaplanabilir]);
+
+  const filtreDegisti = (checked) => {
+    setYalnizcaHesaplanabilir(checked);
+    if (checked && secilenKampanya !== ELLE_GIRIS) {
+      const k = kampanyalar.find((x) => x.id === secilenKampanya);
+      if (k && !hesaplanabilir(k)) {
+        setSecilenKampanya(ELLE_GIRIS);
+      }
+    }
+  };
 
   // Noktanin Turkce'de IKI anlami var: binlik ayraci ("500.000") ve -
   // makineden gelen degerlerde - ondalik ayraci ("1.89"). Kor bir
@@ -159,13 +197,14 @@ export default function HesapMakinesi() {
     return null;
   };
 
-  const hesapla_ = async () => {
+  const hesapla_ = async (overridePlanIstiyor) => {
     const sorun = girdiHatasi();
     if (sorun) {
       setHata(sorun);
       setSonuc(null);
       return;
     }
+    const hedefPlanIstiyor = overridePlanIstiyor !== undefined ? overridePlanIstiyor : planIstiyor;
     setHesaplaniyor(true);
     setHata(null);
     try {
@@ -173,7 +212,7 @@ export default function HesapMakinesi() {
         anapara: sayi(anapara),
         aylik_oran_percent: sayi(oran),
         vade_ay: sayi(vade),
-        odeme_plani_istiyor: planIstiyor,
+        odeme_plani_istiyor: hedefPlanIstiyor,
       });
       setSonuc(yanit);
       // Juri Audit Paneli bu hesabi da gorsun - sohbet yaniti gibi
@@ -217,11 +256,45 @@ export default function HesapMakinesi() {
           >
             <Space size={14} direction="vertical" style={{ width: "100%" }}>
               <div>
-                <Text type="secondary" style={{ fontSize: 13, fontWeight: 500 }}>
+                <Text type="secondary" style={{ fontSize: 13, fontWeight: 500, display: "block", marginBottom: 4 }}>
                   Kampanya Seçimi
                 </Text>
+
+                {/* Sorun 4.a: Dynamic bilgi satırı - sayılar veriden hesaplanır */}
+                {!kampanyaYukleniyor && (
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: "var(--yazi-soluk)",
+                      marginBottom: 8,
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {toplamKampanyaSayisi} kampanyanın {hesaplanabilirSayisi}'sında hesaplama için gereken kâr payı oranı ve vade birlikte mevcut. Diğerleri seçilemez çünkü kaynakta bu iki alan birlikte belirtilmemiş.
+                  </div>
+                )}
+
+                {/* Sorun 4.b: "Yalnızca hesaplanabilir kampanyalar" anahtarı (Switch) */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: 8,
+                  }}
+                >
+                  <Text style={{ fontSize: 12, color: "var(--yazi-normal)" }}>
+                    Yalnızca hesaplanabilir kampanyalar
+                  </Text>
+                  <Switch
+                    size="small"
+                    checked={yalnizcaHesaplanabilir}
+                    onChange={filtreDegisti}
+                  />
+                </div>
+
                 <Select
-                  style={{ width: "100%", marginTop: 6 }}
+                  style={{ width: "100%" }}
                   value={secilenKampanya}
                   onChange={kampanyaSecildi}
                   loading={kampanyaYukleniyor}
@@ -277,15 +350,18 @@ export default function HesapMakinesi() {
                 <Button
                   type="primary"
                   icon={<CalculatorOutlined />}
-                  onClick={hesapla_}
+                  onClick={() => hesapla_()}
                   loading={hesaplaniyor}
                 >
                   Hesapla
                 </Button>
                 <Button
                   onClick={() => {
-                    setPlanIstiyor(!planIstiyor);
-                    setSonuc(null);
+                    const yeniPlanState = !planIstiyor;
+                    setPlanIstiyor(yeniPlanState);
+                    if (sonuc) {
+                      hesapla_(yeniPlanState);
+                    }
                   }}
                 >
                   {planIstiyor ? "Ödeme planı: açık" : "Ödeme planı: kapalı"}
@@ -300,7 +376,7 @@ export default function HesapMakinesi() {
           {hata && (
             <Alert
               type="error"
-              title="Hesaplama yapılamadı"
+              message="Hesaplama yapılamadı"
               description={hata}
               showIcon
               style={{ marginBottom: 16 }}

@@ -4,8 +4,8 @@
   "test_orani_hedef": 0.2,
   "kumeleme": "uygulandi",
   "toplam_kume": 253,
-  "onceki_surumden_korunan_kume": 94,
-  "yeni_atanan_kume": 159,
+  "onceki_surumden_korunan_kume": 253,
+  "yeni_atanan_kume": 0,
   "toplam_kayit": 298,
   "toplam_kampanya_url": 296,
   "train": [

@@ -98,7 +98,11 @@ def _indekste_olan_sluglar() -> set[str]:
     return sluglar
 
 
-def kategori_bazli_recall_olc(k: int = 5) -> dict:
+def kategori_bazli_recall_olc(
+    k: int = 5,
+    banka_otomatik: bool | None = None,
+    yeniden_sirala: bool | None = None,
+) -> dict:
     """Her KATEGORI icin ayri Recall@k.
 
     Tek bir ortalama sayi vermek yaniltici olurdu: kategoriler farkli
@@ -136,7 +140,12 @@ def kategori_bazli_recall_olc(k: int = 5) -> dict:
         ozet = kategoriler.setdefault(kategori, {"isabet": 0, "toplam": 0})
         ozet["toplam"] += 1
 
-        sonuc = getir(kayit["soru"], limit=k)
+        sonuc = getir(
+            kayit["soru"],
+            limit=k,
+            banka_otomatik=banka_otomatik,
+            yeniden_sirala=yeniden_sirala,
+        )
         bulunan = {
             (p.get("ustveri") or {}).get("kaynak_url", "").rstrip("/").split("/")[-1]
             for p in sonuc.parcalar
@@ -170,7 +179,10 @@ def kategori_bazli_recall_olc(k: int = 5) -> dict:
     }
 
 
-def abstention_olc() -> dict:
+def abstention_olc(
+    banka_otomatik: bool | None = None,
+    yeniden_sirala: bool | None = None,
+) -> dict:
     """Cevabi kaynaklarda OLMAYAN sorularda sistem cekimser kaliyor mu?
 
     Iki kategori AYRI raporlanir - ortalamak, zor vakayi kolay vakanin
@@ -187,7 +199,12 @@ def abstention_olc() -> dict:
         yanlis: list[dict] = []
 
         for kayit in kume:
-            sonuc = getir(kayit["soru"], limit=3)
+            sonuc = getir(
+                kayit["soru"],
+                limit=3,
+                banka_otomatik=banka_otomatik,
+                yeniden_sirala=yeniden_sirala,
+            )
             if sonuc.yeterli_kaynak_var:
                 yanlis.append({
                     "soru": kayit["soru"],

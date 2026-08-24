@@ -62,7 +62,7 @@ export default function Karsilastirma() {
       {hata && (
         <Alert
           type="error"
-          title="Veri alınamadı"
+          message="Veri alınamadı"
           description={hata}
           style={{ marginBottom: 16 }}
           showIcon
@@ -159,7 +159,7 @@ export default function Karsilastirma() {
         <Alert
           type="info"
           showIcon
-          title="Rakip analizi durumu"
+          message="Rakip analizi durumu"
           description={`Rakip analizi, kampanyaların aktif/süresi dolmuş durumu hesaplandığında görünecek. Şu an ${kampanyalar.length} kampanyanın durumu belirlenmemiş.`}
         />
       </Card>

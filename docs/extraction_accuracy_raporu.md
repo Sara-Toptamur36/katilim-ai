@@ -37,13 +37,8 @@ Gold'da boş olup bayraklanmamış alanlar ölçüm dışıdır — orada "kayna
 ile "etiketleyici bu sütunu doldurmadı" ayırt edilemez, ikisini karıştırmak
 motoru haksız yere cezalandırırdı.
 
-> **Veri kalitesi notu:** Bu bayrak şu an 7 alandan yalnızca 3'ünde tutarlı
-> doldurulmuş (`kar_payi_orani`, `vade_ay`, `odul_miktari`).
-> `odul_birimi` ve `finansman_tutari` boş bırakılmış ama bayraklanmamış;
-> `taksit_sayisi` ve `erteleme_suresi_ay` sütunları ise Altın Veri Seti'nde
-> hiç doldurulmamış (şemaya sonradan eklendiler). Bu alanlar için yanlış
-> pozitif **ölçülemiyor** — Altın Veri Seti genişletilirken bu boşluğun
-> kapatılması önerilir.
+> **Kapsam Genişletmesi (23 Ağustos 2026):**
+> Alan bazlı ölçüm 7 alandan **11 alana** genişletildi: `kar_payi_orani_percent`, `vade_ay`, `odul_miktari`, `odul_birimi`, `finansman_tutari`, `taksit_sayisi`, `erteleme_suresi_ay`, `kampanya_turu` (Şartname Md. 5.4), `hedef_kitle`, `kampanya_baslangic`, `kampanya_bitis`. Şartname Md. 5.4 doğrudan ölçüm kapsamındadır.
 
 ### Sonuç — 6 Ağustos 2026 (regex-only)
 

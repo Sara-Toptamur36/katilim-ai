@@ -12,6 +12,13 @@ from pathlib import Path
 RAW_DATA = Path(__file__).resolve().parent.parent / "raw_data"
 
 # kayit_id onekinden scraper klasor koduna (rehber Bolum 13.3/Tablo 6)
+#
+# TOM birden fazla klasore denk gelir: "tombank" T.O.M. Katilim'in kendi
+# sitesi, "tombankhadi" ise ayni bankanin Hadi mikrositesi
+# (hadiyanindakibanka.com, 22 Agustos 2026'da bankalar.json'a eklendi).
+# Ikisi de kayit_id'de "TOM-" onekini paylasir (banka-duzeyi ayni "ad"
+# altinda toplanmak icin bilerek boyle kuruldu) - bu yuzden TEK klasore
+# bakmak, Hadi kaynakli TOM- kayitlarini sessizce "kaynaksiz" gosterirdi.
 KOD_HARITASI = {
     "KT": "kuveytturk",
     "AL": "albaraka",
@@ -21,7 +28,7 @@ KOD_HARITASI = {
     "TEK": "emlakkatilim",
     "DK": "dunyakatilim",
     "HF": "hayatfinans",
-    "TOM": "tombank",
+    "TOM": ("tombank", "tombankhadi"),
 }
 
 # T.O.M. gibi "tek sayfada coklu kampanya" bankalarinda (Bolum 13.3) her
@@ -79,20 +86,22 @@ def scraper_kaydini_bul(altin_kayit: dict) -> dict | None:
     kod = KOD_HARITASI.get(altin_kayit["kayit_id"].split("-")[0])
     if kod is None:
         return None
-    json_klasor = RAW_DATA / kod / "json"
-    if not json_klasor.exists():
-        return None
+    kodlar = (kod,) if isinstance(kod, str) else kod
 
     slug = altin_kayit["kaynak_url"].rstrip("/").split("/")[-1]
     if not slug:
         return None
 
     adaylar = []
-    for dosya in json_klasor.glob("*.json"):
-        with open(dosya, encoding="utf-8") as f:
-            aday = json.load(f)
-        if slug in aday.get("url", ""):
-            adaylar.append(aday)
+    for tek_kod in kodlar:
+        json_klasor = RAW_DATA / tek_kod / "json"
+        if not json_klasor.exists():
+            continue
+        for dosya in json_klasor.glob("*.json"):
+            with open(dosya, encoding="utf-8") as f:
+                aday = json.load(f)
+            if slug in aday.get("url", ""):
+                adaylar.append(aday)
 
     if not adaylar:
         return None
@@ -109,7 +118,11 @@ def scraper_kaydini_bul(altin_kayit: dict) -> dict | None:
     #
     # Bir sayfanin anlik goruntusu sorusunun TEK cevabi olmali: en yenisi.
     # Eski dosyalar diskte kalir (kampanya_tarihcesi.py onlara dayanir).
-    if kod not in TEK_SAYFALI_KODLAR or len(adaylar) == 1:
+    #
+    # `kodlar` tuple olabilir (TOM gibi birden fazla klasore denk gelen
+    # kodlar icin) - TEK_SAYFALI_KODLAR kontrolu bu yuzden `kod` yerine
+    # kume kesisimiyle yapilir.
+    if not (set(kodlar) & TEK_SAYFALI_KODLAR) or len(adaylar) == 1:
         return _en_yeni(adaylar)
 
     # DENETIM BULGUSU (9 Agustos 2026): Eskiden hedef kelime adayin TUM

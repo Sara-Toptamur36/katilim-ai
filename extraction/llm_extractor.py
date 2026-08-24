@@ -282,7 +282,7 @@ def _llm_sayisini_dogrula(deger):
     return None
 
 
-def _json_gövdesini_ayikla(ham_yanit: str) -> Optional[dict]:
+def _json_govdesini_ayikla(ham_yanit: str) -> Optional[dict]:
     """LLM bazen JSON'un etrafina aciklama metni ekleyebiliyor (ör.
     '```json\\n{...}\\n```' veya 'Iste sonuc: {...}'). Ilk '{' ile son '}'
     arasini alip parse etmeyi dener - basarisiz olursa None doner (asla
@@ -360,7 +360,7 @@ def llm_ile_cikar(
         sonuc["_izler"] = izler
         return sonuc
 
-    veri = _json_gövdesini_ayikla(ham_yanit)
+    veri = _json_govdesini_ayikla(ham_yanit)
     if veri is None:
         sonuc["_izler"] = izler
         return sonuc

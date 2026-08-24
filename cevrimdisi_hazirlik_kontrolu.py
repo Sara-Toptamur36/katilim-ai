@@ -19,12 +19,16 @@ Kullanim:
 
 from __future__ import annotations
 
+import ortam_yukle  # noqa: F401 - side effect: .env process ortamina yuklenir, HER SEYDEN ONCE
+
 import json
 import shutil
 import subprocess
 from pathlib import Path
 
 import requests
+
+import evren_istemci
 
 _GEREKLI_DOCKER_IMAJLARI = ("postgres:16", "qdrant/qdrant:v1.18.1", "ollama/ollama:0.32.5")
 _GEREKLI_OLLAMA_MODELI = "qwen2.5:7b-instruct-q4_K_M"
@@ -119,6 +123,15 @@ def postgres_semasi_kontrol_et() -> bool:
     return _sonuc(surum is not None, f"alembic_version = {surum}")
 
 
+def evren_durumunu_goster() -> None:
+    """EVREN, tanim geregi CEVRIMICI bir bagimlilik - bu yuzden yukaridaki
+    dort kontrolun aksine `sonuclar` listesine KATILMAZ (opsiyonel
+    oldugu icin pasif olmasi "eksik" sayilmaz, offline-hazirlik SONUCUNU
+    etkilemez). Yalnizca bilgi amaclidir - bkz. docs/adr/0002."""
+    _baslik("5) EVREN (opsiyonel, cevrimici - offline hazirligi ETKILEMEZ)")
+    print(f"  {evren_istemci.ozet()}")
+
+
 def main() -> None:
     sonuclar = [
         docker_imajlari_kontrol_et(),
@@ -126,6 +139,7 @@ def main() -> None:
         embedding_modeli_onbellek_kontrol_et(),
         postgres_semasi_kontrol_et(),
     ]
+    evren_durumunu_goster()
 
     _baslik("SONUC")
     if all(sonuclar):

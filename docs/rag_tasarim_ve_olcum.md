@@ -537,6 +537,48 @@ tam koşu yapılmadan eşik değiştirilmedi.
 
 ---
 
+### Yeniden doğrulama — 25 Ağustos 2026 (abstention/rerank sıralama hatası düzeltildi + gizli bir API kırılması bulundu)
+
+**Bulgu 9 — Abstention eşikleri (`ASGARI_VEKTOR_SKORU`, `ASGARI_TERIM_ORTUSMESI`) reranker'dan SONRA hesaplanıyordu.**
+
+24 Ağustos'ta eklenen `ASGARI_VEKTOR_SKORU` menü-kirliliği eşiği ve mevcut terim örtüşmesi kontrolü, kodda **reranker zaten `limit`e (3-5) kestikten sonraki** listede hesaplanıyordu. Yorum satırı "ilk parçadaki en yüksek vektör skoru" diyordu ama bu, reranker'ın **çapraz-kodlayıcı skoruna göre** seçtiği son listeydi — gerçek en yüksek vektör skorlu aday reranker'ın kestiği `limit` dışında kalmış olabilirdi. Bu etkileşim hiç ölçülmemişti: `ASGARI_VEKTOR_SKORU` eşiği 24 Ağustos'ta, reranker'ın koşulsuz bağlanması ise 23 Ağustos'ta eklendi; ikisinin birlikte davranışı bu belgenin hiçbir ölçümüne girmedi.
+
+**İlk düzeltme denemesi (aynı gün, GERİ ALINDI — ölçülerek yanlış çıktı):** İki sinyal de reranker'dan önce ama **tüm geniş aday havuzunda** (`genis_limit=20+`) hesaplanacak şekilde değiştirildi. Ölçüldü: `alan_disi` abstention doğruluğu %86,67→%66,67, `alan_ici_kapsam_disi` %50,0→%20,0'e **düştü**. Sebep: `ASGARI_TERIM_ORTUSMESI=0,60` eşiği 20/21 Ağustos'ta yalnızca **dar** (limit boyutundaki) bir kümeye göre kalibre edilmişti; `_terim_ortusmesi` tüm parçaların metnini tek bir birleşik dizgede arıyor — 20 adayın birleşik metni çok daha geniş bir "rastgele eşleşme yüzeyi" yaratıyor. "Fotosentez hangi organelde gerçekleşir?" gibi alanla tamamen alakasız sorular, sırf 20 farklı parçanın birleşik kelime dağarcığı geniş olduğu için yanlışlıkla eşiği geçti.
+
+**Doğru kapsamlı düzeltme (`chunking/retriever.py::getir`):** İki sinyal de reranker'dan **önce**, ama aday havuzunun **tamamında değil, ilk `limit` adayında** (`aday_havuzu[:limit]` — Qdrant'ın kendi getirme sırasına göre, çapraz-kodlayıcıya göre DEĞİL) hesaplanıyor. Bu hem orijinal hatayı çözüyor (kontrol artık reranker'in yeniden sıraladığı kümeye değil, gerçek getirme sırasına bakıyor) hem de terim örtüşmesi kalibrasyonunun dayandığı küme BOYUTUNU koruyor. Reranker yalnızca `yeterli=True` iken ve yalnızca **gösterilecek** parçaları sıralamak için çalışıyor — cevaplanabilirlik kararına artık karışmıyor; `yeterli=False` durumunda hiç çalıştırılmıyor (`agent/router.py::rag_aracini_cagir` zaten `sonuc.parcalar`'a bakmıyor), gereksiz çapraz-kodlayıcı çağrısı ortadan kalktı.
+
+**Doğrulama (düzeltilmiş kapsamla, 185 soruluk set):**
+
+| Metrik | Önce (belgelenmiş, 23 Ağustos) | Sonra (25 Ağustos, düzeltme sonrası) |
+|---|---|---|
+| Abstention `alan_disi` | %86,67 (13/15) | **%93,33** (14/15) |
+| Abstention `alan_ici_kapsam_disi` | %50,0 (5/10) | %40,0 (4/10) — 1 soru, örneklem gürültüsü |
+| Recall@5 GENEL | %88,24 | **%88,24** (değişmedi) |
+
+Recall birebir korunuyor (reranker'a giden aday havuzu ve final sıralama değişmedi — yalnızca abstention kararının hangi kümeye baktığı değişti), `alan_disi` abstention'da net iyileşme var.
+
+**Bulgu 11 — `banka_tespit.py` (yazılmış ama varsayılan kapalıydı) ölçüldü: gerçekten kazanç sağlıyor, varsayılan `true` yapıldı.**
+
+`retriever.py`'nin kendi "ölçüm yolu" notu takip edilerek `KATILIMAI_BANKA_OTOMATIK` açık/kapalı karşılaştırması (düzeltilmiş retriever koduyla) koşuldu:
+
+| k | `banka_ve_konu` (kapalı → açık) | Genel (kapalı → açık) |
+|---|---|---|
+| 1 | %9,52 → **%23,81** | %66,39 → %68,91 |
+| **3 (üretimde fiilen kullanılan)** | %28,57 → **%38,10** | %80,67 → **%82,35** |
+| 5 | %52,38 → %47,62 (1 soru, gürültü) | %88,24 → %87,39 |
+
+`agent/router.py::rag_aracini_cagir` üretimde **her zaman** `limit=3` kullanıyor (bkz. §6, "Recall@5 hiç kullanılmıyor" notu) — yani k=1/k=3'teki net kazanç gerçekten kullanılan yol için geçerli. k=5'teki küçük düşüş (21 sorudan 1'i) örneklem gürültüsü ve zaten kullanılmayan bir k değeri. `chunking/retriever.py::getir`'de `KATILIMAI_BANKA_OTOMATIK` varsayılanı `true` yapıldı.
+
+**Bulgu 10 — `qdrant-client==1.18.0`'da `.search()` metodu artık yok; `hibrit_ara`'nın "ham vektör skoru" adımı (24 Ağustos, menü-kirliliği önlemi) hiçbir zaman gerçek bir Qdrant'a karşı çalıştırılmamıştı.**
+
+CI'da servis olmadığı için ilgili testler (`test_rag_kalip_kirliligi.py`, `test_rag_uctan_uca.py`) hep skip ediliyordu; yerel dosya modundaki gerçek indeksle (`.qdrant_yerel`) ilk kez çalıştırıldığında `AttributeError: 'QdrantClient' object has no attribute 'search'` alındı. `chunking/qdrant_baglanti.py::hibrit_ara` ve yeni `yogun_ara` fonksiyonundaki `.search(...)` çağrıları `.query_points(query=..., using=YOGUN_AD, ...)`'e çevrildi (modern qdrant-client API'si). Ayrıca `tests/test_rag_kalip_kirliligi.py::_indeks_hazir_mi` doğrudan `QdrantClient(url=QDRANT_URL)` oluşturuyordu — yerel dosya modunu (`QDRANT_YEREL_YOL`) tanımıyordu, bu yüzden bu dosyadaki testler Docker olmadan **hiçbir zaman** çalışmamıştı. `istemci_al()` kullanacak şekilde düzeltildi.
+
+**Doğrulama:** Düzeltmeler sonrası `.qdrant_yerel` üzerinden (1979 nokta, 23 Ağustos indeksinden) `test_rag_uctan_uca.py`, `test_kaynak_guncelligi.py`, `test_qdrant_baglanti.py` ve `test_rag_kalip_kirliligi.py` **ilk kez gerçek bir indekse karşı çalıştırıldı**: 27/27 geçti.
+
+**Yan bulgu — parçalayıcıda kalıntı site kalıbı:** `test_rag_kalip_kirliligi.py` ilk kez gerçekten çalışınca, bu belgenin daha önce hiç yakalayamadığı gerçek bir kalıntı ortaya çıktı: "Kuveyt Türk'ün konut finansmanı oranı ne" sorusunun döndürdüğü iki parçada `chunking/parcalayici.py`'nin menü/site-kalıbı elemesinin kaçırdığı bir footer bloğu var — *"...İştiraklerimiz Şube ve ATM'ler Bize Ulaşın Müşteri İletişim Merkezi Arabuluculuk..."*. Mevcut eleme, art arda **kısa etiket satırlarından** oluşan bloklara dayanıyor (`_etiket_gibi_mi`); bu footer metni muhtemelen tek/uzun bir satır olarak geldiği için o kalıba uymuyor. Bu, ayrı bir düzeltme gerektiren yeni bir bulgu — bu oturumda kapsam dışı tutuldu, kayıt altına alınıyor.
+
+---
+
 ## 7. Bilinçli sınırlar
 
 - **LLM ile özetleme yok.** RAG, bulduğu kaynak parçalarını **birebir**
@@ -551,3 +593,12 @@ tam koşu yapılmadan eşik değiştirilmedi.
   kök nedeni henüz araştırılmadı.
 - **Zamansal filtre yok.** Metadata'da `erisim_zamani` tutuluyor ancak
   "soru tarihinde geçerli olan sürüm" filtresi henüz uygulanmıyor.
+- **`banka_tespit.py` artık varsayılan AÇIK (25 Ağustos'tan itibaren).**
+  bkz. Bulgu 11 — ölçülüp `banka_ve_konu` kategorisinde ve üretimde
+  fiilen kullanılan k=3'te net kazanç doğrulandı.
+- **Parçalayıcıda kalıntı bir site kalıbı türü var (25 Ağustos'ta
+  bulundu, henüz düzeltilmedi).** `chunking/parcalayici.py`'nin menü
+  eleme mantığı kısa/art-arda etiket satırlarına dayanıyor; footer
+  bloklarının bazıları (ör. "İştiraklerimiz Şube ve ATM'ler Bize
+  Ulaşın...") bu kalıba uymadığı için indekste kalabiliyor. Bkz. Bulgu
+  10'un yan bulgusu.

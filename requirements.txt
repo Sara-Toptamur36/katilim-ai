@@ -36,8 +36,24 @@ psycopg[binary]==3.3.4
 # --- Streaming (Havin'in chatbot arayuzu icin) ---
 sse-starlette==3.4.6
 
+# --- Ortam degiskenleri (.env yukleme) ---
+# DENETIM BULGUSU (24 Agustos 2026): bu paket daha once HIC yoktu - .env
+# dosyasi hicbir yerde process ortamina yuklenmiyordu, icindeki hicbir
+# deger (KATILIMAI_PROFIL, EVREN_API_KEY, ...) gercekten etkili olmuyordu.
+# bkz. ortam_yukle.py.
+python-dotenv==1.2.3
+
 # --- Yerel LLM'e istek (Ollama) ---
 requests==2.34.0
+
+# --- EVREN cikarim altyapisi (opsiyonel, bkz. docs/adr/0002) ---
+# `openai` PAKETI kendisi acik kaynak (Apache-2.0); EVREN, TEKNOFEST 2026
+# tarafindan yarisma icin saglanan RESMI cikarim altyapisidir (SSB EVREN) -
+# ucretli/kapali kaynak UCUNCU TARAF servisi degildir, bu yuzden Md. 5.10/8
+# kapsami disindadir. EVREN_API_KEY tanimli DEGILSE bu paket hic devreye
+# girmez, sistem yerel Ollama/sentence-transformers ile calismaya devam
+# eder (bkz. evren_istemci.py).
+openai==2.15.0
 
 # --- Veri toplama / scraper (Zeynep) ---
 # Not: requests yukarida zaten tanimli, tekrar eklenmedi.
@@ -64,8 +80,3 @@ tiktoken==0.13.0
 
 # --- Altin Veri Seti (Excel okuma) ---
 openpyxl==3.1.5
-
-# --- EVREN istemcisi (TEKNOFEST'in sagladigi yardimci bulut altyapisi) ---
-# Not: production pipeline'a BAGLI DEGIL, bkz. evren/istemci.py kapsam
-# siniri. OpenAI-uyumlu API icin resmi istemci kutuphanesi.
-openai==3.3.1

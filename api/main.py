@@ -23,6 +23,8 @@ Swagger:
     http://localhost:8000/docs
 """
 
+import ortam_yukle  # noqa: F401 - side effect: .env process ortamina yuklenir, HER SEYDEN ONCE
+
 import asyncio
 import json
 import os

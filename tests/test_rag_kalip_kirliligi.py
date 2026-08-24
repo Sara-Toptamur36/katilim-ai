@@ -43,15 +43,21 @@ import pytest
 
 def _indeks_hazir_mi() -> bool:
     try:
-        from chunking.qdrant_baglanti import VARSAYILAN_KOLEKSIYON, qdrant_hazir_mi
+        from chunking.qdrant_baglanti import (
+            VARSAYILAN_KOLEKSIYON,
+            istemci_al,
+            qdrant_hazir_mi,
+        )
 
         if not qdrant_hazir_mi():
             return False
-        from qdrant_client import QdrantClient
-
-        from chunking.qdrant_baglanti import QDRANT_URL
-
-        bilgi = QdrantClient(url=QDRANT_URL).get_collection(VARSAYILAN_KOLEKSIYON)
+        # DENETIM BULGUSU (25 Agustos 2026): burada dogrudan
+        # QdrantClient(url=QDRANT_URL) olusturuluyordu - bu, YEREL DOSYA
+        # modunu (QDRANT_YEREL_YOL) yok sayardi ve Docker calismiyorsa bu
+        # dosyadaki TUM testler HER ZAMAN atlanirdi, yerel indeks mevcut
+        # olsa bile. istemci_al() (modulun kendi baglanti fonksiyonu) her
+        # iki modu da dogru yonetir.
+        bilgi = istemci_al().get_collection(VARSAYILAN_KOLEKSIYON)
         return (bilgi.points_count or 0) > 0
     except Exception:  # noqa: BLE001 - erisilemiyorsa test atlanir
         return False

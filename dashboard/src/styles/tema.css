@@ -1573,3 +1573,28 @@ img.marka-logo {
   margin-top: 6px;
   line-height: 1.3;
 }
+
+/* Sohbet gecmisini toplu silme dugmesi. "Yeni Sohbet"in hemen altinda
+   durur ama onunla ayni agirlikta olmamali - bu yikici bir islem, birincil
+   eylem degil. Bu yuzden zemini yok, yalnizca metin. */
+.gecmisi-sil-dugme {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 8px;
+  padding: 7px 10px;
+  background: none;
+  border: 1px solid var(--kenarlik);
+  border-radius: 8px;
+  color: var(--yazi-soluk);
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: color 150ms, border-color 150ms;
+}
+
+.gecmisi-sil-dugme:hover {
+  color: #c94f4f;
+  border-color: #c94f4f;
+}

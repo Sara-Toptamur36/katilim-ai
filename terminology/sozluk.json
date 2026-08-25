@@ -126,7 +126,7 @@
   "sifir_oran_ifadesi": {
     "standart_terim": "Niteliksel Sıfır Oran İfadesi",
     "gelenek_karsilik": "Faizsiz Kredi",
-    "aciklama": "Sayı içermeden sıfır maliyeti anlatan ifadeler (\"kâr payı yok\", \"vade farksız\"). Bunlar bilginin EKSİK olduğu anlamına gelmez; oranın sıfır olduğu anlamına gelir.",
+    "aciklama": "Sayı içermeden sıfır maliyeti anlatan ifadeler (\"kâr payı yok\", \"kâr paysız\", \"0 kâr paylı\"). Bunlar bilginin EKSİK olduğu anlamına gelmez; oranın sıfır olduğu anlamına gelir.",
     "kaynak": "Ön Değerlendirme Raporu Bölüm 3 (Albaraka Türk örneği)",
     "sema_alani": ["kar_payi_orani_percent"],
     "sema_notu": "Bulundugunda kar_payi_orani_percent = 0.0 olarak yorumlanir (Md. 5.2 - niteliksel ifade katmani); NULL/bulunamadi ile karistirilmaz.",
@@ -134,11 +134,9 @@
       "kar payi yok",
       "beklemek yok",
       "faizsiz",
-      "faizsiz finansman",
-      "vade farksiz",
-      "vade farksiz taksit"
+      "faizsiz finansman"
     ],
-    "ornek_kaynak": "Albaraka Turk (On Degerlendirme Raporu Bolum 3); vade farksiz - Altin Veri Seti'nde 62 kayittan 13'unde gorulen en yaygin sifir-oran ifadesi"
+    "ornek_kaynak": "Albaraka Turk (On Degerlendirme Raporu Bolum 3). DUZELTME (25 Agustos 2026): 'vade farksiz'/'vade farksiz taksit' bu listeden CIKARILDI - 23 Agustos 2026'da ayrica olculdu ve TERS karar verildi: bu ifade cogunlukla bir KART TAKSIT ozelligidir (finansman kar payi orani degil), motordan RE_VADE_FARKSIZ kurali bilerek kaldirildi (extraction/regex_extractor.py) ve altin sette gold_dataset/vade_farksiz_duzelt.py ile 0 -> bos donusturuldu. Gercek sifirlar hala 'kar paysiz'/'0 kar payli' gibi ACIK ifadelerle yakalaniyor."
   },
   "odemesiz_donem": {
     "standart_terim": "Ödemesiz Dönem",
@@ -323,10 +321,10 @@
   "vade_farki": {
     "standart_terim": "Vade Farkı",
     "gelenek_karsilik": "Faiz Tutarı",
-    "aciklama": "Peşin fiyat ile vadeli fiyat arasındaki fark. Kampanyalarda \"vade farksız\" ifadesi bu farkın sıfır olduğunu anlatır.",
+    "aciklama": "Peşin fiyat ile vadeli fiyat arasındaki fark. Kampanyalarda \"vade farksız\" ifadesi bu farkın sıfır olduğunu anlatır - ANCAK bu çoğunlukla bir kart taksit özelliğidir, finansman kâr payı oranı DEĞİLDİR (bkz. sifir_oran_ifadesi notu).",
     "kaynak": "TKBB Faizsiz Bankacılık Standartları; Altın Veri Seti gözlemi",
-    "sema_alani": ["kar_payi_orani_percent"],
-    "sema_notu": "'vade farksiz' ifadesi sifir_oran_ifadesi kavramina aittir (kar_payi_orani_percent = 0.0). Bu kavram farkin KENDISINI adlandirir.",
+    "sema_alani": [],
+    "sema_notu": "DUZELTME (25 Agustos 2026): 'vade farksiz' ifadesi ARTIK sifir_oran_ifadesi kavramina DAHIL DEGIL (23 Agustos 2026 karari - bkz. gold_dataset/vade_farksiz_duzelt.py). Bu terim yalnizca farkin KENDISINI adlandirir; kar_payi_orani_percent icin gecerli bir kanit degildir.",
     "varyantlar": [
       "vade farki",
       "vadeli fiyat farki",

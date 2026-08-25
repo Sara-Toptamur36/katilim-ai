@@ -119,7 +119,14 @@ def test_benzer_terim_bul_tam_cumlede_zayif_kalir():
 @pytest.mark.parametrize(
     "ifade,beklenen_anahtar",
     [
-        ("vade farksiz", "sifir_oran_ifadesi"),  # 62 kayittan 13'unde gorulen en yaygin sifir-oran ifadesi
+        # DUZELTME (25 Agustos 2026): "vade farksiz" ARTIK sifir_oran_ifadesi
+        # DEGIL. 23 Agustos 2026'da ayrica olculdu ve TERS karar verildi: bu
+        # ifade cogunlukla bir KART TAKSIT ozelligidir (finansman kar payi
+        # orani degil) - bkz. gold_dataset/vade_farksiz_duzelt.py,
+        # extraction/regex_extractor.py (RE_VADE_FARKSIZ kaldirildi) ve
+        # terminology/sozluk.json (sifir_oran_ifadesi varyantlarindan cikarildi).
+        # "vade_farki" terimin KENDISIDIR, dogru eslesme budur.
+        ("vade farksiz", "vade_farki"),
         ("katilma hesabi", "katilim_fonu"),  # TEK-007, HF-004 - "katilim hesabi" degil gercek terim
         ("bonus", "odul_miktari"),  # Turkiye Finans'in kendi odul birimi
         ("indirim kodu", "avantajli_finansman"),  # VK-004

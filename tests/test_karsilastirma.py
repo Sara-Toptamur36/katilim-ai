@@ -8,7 +8,7 @@ Ozellikle iki seyi kilitler:
 import pytest
 
 from api.mock_data import MOCK_KAMPANYALAR
-from api.schemas import CampaignRecord
+from api.schemas import CampaignRecord, KampanyaTuru
 from comparison.compare_engine import (
     KRITERLER,
     BilinmeyenKriter,
@@ -197,10 +197,16 @@ def test_en_avantajli_eksen_kirilimi_sartname_metniyle_uyusuyor():
 
 def test_en_avantajli_esitlikte_tek_kazanan_uydurulmaz():
     """Iki kayit ayni sayida eksende one cikarsa, sahte bir tek kazanan
-    secilmez - durustluk ilkesi (rapor Bolum 5.7/15) ile ayni gerekce."""
+    secilmez - durustluk ilkesi (rapor Bolum 5.7/15) ile ayni gerekce.
+
+    kampanya_turu FINANSMAN turunden secilir: kar_payi_orani ekseni yalnizca
+    finansman urunlerinde karsilastirilabilir sayilir (bkz.
+    compare_engine.kar_payi_karsilastirilabilir_mi) - varsayilan
+    KampanyaTuru.BELIRSIZ ile eksen "tur_karisik" olur ve bu testin asil
+    amacini (esitlikte kazanan uydurulmamasi) olcemez hale gelirdi."""
     esit = [
-        CampaignRecord(banka="X Bankasi", kampanya_adi="X Kampanya", kaynak_url="https://x.com", kar_payi_orani_percent=1.5, vade_ay=60),
-        CampaignRecord(banka="Y Bankasi", kampanya_adi="Y Kampanya", kaynak_url="https://y.com", kar_payi_orani_percent=1.8, vade_ay=96),
+        CampaignRecord(banka="X Bankasi", kampanya_adi="X Kampanya", kaynak_url="https://x.com", kampanya_turu=KampanyaTuru.KONUT, kar_payi_orani_percent=1.5, vade_ay=60),
+        CampaignRecord(banka="Y Bankasi", kampanya_adi="Y Kampanya", kaynak_url="https://y.com", kampanya_turu=KampanyaTuru.KONUT, kar_payi_orani_percent=1.8, vade_ay=96),
     ]
     sonuc = karsilastir_bellekte(esit, "en_avantajli")
     assert sonuc["kazanan"] is None

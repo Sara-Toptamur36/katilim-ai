@@ -1,45 +1,237 @@
 [
   {
+    "kayit_id": "AL-007",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Kampanya adi sayfada baslik satiri olmadigi icin URL slug'indan turetildi. Talimat basina 500 TL, musteri basina tavan 2.000 TL. Kampanya 1.000...",
+    "slug": "agustos-ayina-ozel-fatura-kampanyasi"
+  },
+  {
     "kayit_id": "AL-008",
     "tur": "NOT YENIDEN OKUNMALI",
-    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Parasal odul YOK: 'ayda 2 defa ucretsiz park' hizmet avantajidir, 10.000 TL ise uygunluk esigi",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Parasal odul YOK: 'ayda 2 defa ucretsiz park' hizmet avantajidir, 10.000 TL ise uygunluk esigidir - ikisi de odul_miktari DEGILDIR (bu kayit, mo...",
     "slug": "albarakalilara-ozel-ucretsiz-ispark-kampanyasi-1"
+  },
+  {
+    "kayit_id": "AL-009",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. kar_payi_orani BILEREK BOS: '98/2 kar paylasim orani' bir yuzde DEGIL, paylasim seklidir (musteriye 98, bankaya 2). Bu kayit, motorun 98'i oran...",
+    "slug": "dijital-katilma-hesabina-ozel-paylasim-oranlari-10"
+  },
+  {
+    "kayit_id": "HF-006",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Baslangic tarihi sayfada belirtilmemis. Yalnizca fiziksel magazalar.",
+    "slug": "bana-bunu-al-is-ortagim-ile-troy-magaza-firsatlari"
+  },
+  {
+    "kayit_id": "KT-008",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Ticari kartlar kampanya disi. Ust limit belirtilmemis.",
+    "slug": "colinsde-vade-farksiz-4-aya-varan-taksit-firsati"
+  },
+  {
+    "kayit_id": "VK-009",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. TUM SAYISAL ALANLAR BILEREK BOS: sayfadaki tek sayi 'en az 6 kriter' olup katilim sartidir, taksit/odul degil. Odul tutari sayfada yok (mobil uy...",
+    "slug": "tamamla-kazan"
+  },
+  {
+    "kayit_id": "ZK-009",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. 300 TL alt esik, finansman tutari degil. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayit, statik tarayicinin EKSIK yakaladig...",
+    "slug": "a101de-6-taksit"
+  },
+  {
+    "kayit_id": "AL-010",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. MCC 5942/5943 harcamalari icin gecerli. Business ve Master Gold kart haric.",
+    "slug": "kirtasiye-kampanyasi"
+  },
+  {
+    "kayit_id": "DK-008",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. SAYFA 'Kampanya Suresi Dolmustur' diyor - kampanya bitmis, ama metin cikarim icin gecerli bir ornek. odul_miktari en YUKSEK kademedir (tam altin...",
+    "slug": "fiziki-altin"
   },
   {
     "kayit_id": "HF-007",
     "tur": "NOT YENIDEN OKUNMALI",
-    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. kar_payi_orani BILEREK BOS: %10-%50 anlasmali isyeri INDIRIMIDIR, kar payi orani degil. Kampan",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. kar_payi_orani BILEREK BOS: %10-%50 anlasmali isyeri INDIRIMIDIR, kar payi orani degil. Kampanya tarihi sayfada YOK. DUZELTME (23 Agustos 2026):...",
     "slug": "hayat-finans-ile-gastroclub-ayricaliklari"
+  },
+  {
+    "kayit_id": "KT-009",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. 1.000 TL alt esik. Ekstre basina en fazla 2 islem (Biz Bize 6, Ozel Bankacilik 10). Taksitlendirme otomatik degil, elle yapiliyor.",
+    "slug": "egitim-ve-saglik-harcamalarinizda-5-taksit-firsati"
+  },
+  {
+    "kayit_id": "VK-010",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. TUM SAYISAL ALANLAR BILEREK BOS: sayfa indirim orani VERMIYOR ('musteri ozelinde degisiklik gosterebilmektedir'). Tarih de yok. GastroClub is bi...",
+    "slug": "vclub-dunyasi-artik-vakif-katilim-mobilde"
   },
   {
     "kayit_id": "ZK-010",
     "tur": "NOT YENIDEN OKUNMALI",
-    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Alt/ust harcama siniri sayfada YOK. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VAR",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Alt/ust harcama siniri sayfada YOK. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayit, statik tarayicinin EKSIK yakaladigi anl...",
     "slug": "abdullah-kigilida-2-taksit"
+  },
+  {
+    "kayit_id": "AL-011",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. DIKKAT - AL-007 ile KARISTIRILMASIN: ikisi de Agustos 2026 fatura kampanyasi ve ikisinin de tavani 2.000 TL Worldpuan, ama AL-007 talimat basina...",
+    "slug": "otomatik-fatura-odeme-talimatlariniza-toplamda-2000-tl-worldpuan-12"
   },
   {
     "kayit_id": "DK-009",
     "tur": "NOT YENIDEN OKUNMALI",
-    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Toplam tavan YOK, her 3.000 TL+ islemde tekrar kazanilir; odul_miktari ISLEM BASINA tutardir. ",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Toplam tavan YOK, her 3.000 TL+ islemde tekrar kazanilir; odul_miktari ISLEM BASINA tutardir. Havalimani/yurtdisi magazalari ve self-servis kasa...",
     "slug": "lc-waikiki"
+  },
+  {
+    "kayit_id": "HF-008",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. odul_miktari BILEREK BOS: kampanyanin tek bir odul tutari yok. Bes ayri islem turunun ayri tavanlari var (transfer ayda 100 TL, doviz ayda 200 T...",
+    "slug": "hayatfinansla-islem-yaptikca-kazan"
+  },
+  {
+    "kayit_id": "KT-010",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Musteri basina en fazla 2 islem; kampanya 75.000 kisi ile sinirli. Katilim ONAY VERGI SMS'i ile.",
+    "slug": "gelir-vergisi-odemelerinizde-3-taksit-firsati"
+  },
+  {
+    "kayit_id": "TEK-009",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Dort kademeli odul; musteri yalnizca BIRINI kazanir, odul_miktari en yuksek kademedir. Pazar yeri e-ticaret haric.",
+    "slug": "beyaz-esya-ve-elektronik-alisverislerinize-3000-tlye-varan-parafpara"
+  },
+  {
+    "kayit_id": "ZK-011",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. kar_payi_orani BILEREK BOS: %5 ve %10 NAKIT IADE oranidir, kar payi orani degil. Bireysel/ticari/ucretsiz kartlar haric.",
+    "slug": "aile-karta-ozel-2000-tlye-varan-bankkart-lira-1"
+  },
+  {
+    "kayit_id": "KT-011",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. TUM SAYISAL ALANLAR BILEREK BOS: %35 bir PocketSIM INDIRIM KODU oranidir (kar payi degil), 1 GB parasal odul degildir. Motorun %35'i kar_payi_or...",
+    "slug": "kuveyt-turk-ile-yurt-disi-seyahatlerinde-ayricaliklar-sizinle"
+  },
+  {
+    "kayit_id": "AL-012",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. kar_payi_orani BILEREK BOS: sayfadaki %5 / %3,90 / %3,85 oranlari PRATIK FINANSMAN KARTA DEGIL, ayni sayfada tanitilan 'hos geldin finansmani'ni...",
+    "slug": "dijital-musterilere-ozel-pratik-finansman-kart"
+  },
+  {
+    "kayit_id": "HF-010",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. odul_miktari AYLIK tavandir (gunluk tavan 100 TL). kar_payi_orani BILEREK BOS: %10 nakit iade oranidir.",
+    "slug": "biz-kart-yemek-harcamasi-nakit-iade-kampanyasi"
   },
   {
     "kayit_id": "TF-008",
     "tur": "NOT YENIDEN OKUNMALI",
-    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. kar_payi_orani BILEREK BOS: 'size ozel kar payi oranlari' deniyor ama SAYI verilmiyor. Kampany",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. kar_payi_orani BILEREK BOS: 'size ozel kar payi oranlari' deniyor ama SAYI verilmiyor. Kampanya tarihi de sayfada YOK. DUZELTME (23 Agustos 2026...",
     "slug": "kamu-calisanlarina-ozel-ihtiyac-finansmani.aspx"
+  },
+  {
+    "kayit_id": "KT-012",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. SEMSIYE SAYFA: alt kampanyalarin toplamini duyuruyor (davet 10.500 + hos geldin 500 + kart harcamasi 1.500 + yurt disi cikis harci). odul_miktar...",
+    "slug": "kuveyt-turk-kampuse-gelenlere-toplamda-13500-tl-hediye"
+  },
+  {
+    "kayit_id": "KT-013",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. TUM SAYISAL ALANLAR BILEREK BOS: sayfa 'avantajli kur' ve 'ozel oranlar' diyor, tek bir sayi vermiyor. Kurlar mobil uygulamada musteriye ozel ta...",
+    "slug": "kuveyt-turk-mobilden-musterimiz-olun-ozel-kur-firsatini-kacirmayin"
+  },
+  {
+    "kayit_id": "TEK-010",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. odul_miktari BILEREK BOS: indirim yalnizca YUZDE olarak veriliyor, TL tavani yok. kar_payi_orani da bos: %20 kupon indirimidir. Sepete en fazla...",
+    "slug": "biletinialda-20-indirim"
+  },
+  {
+    "kayit_id": "KT-014",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. SEMSIYE SAYFA: davet 5.500 + fatura talimati 500 + yurt disi cikis harci iadesi. odul_miktari basliktaki TOPLAMDIR. Kampus surumuyle (13.500 TL)...",
+    "slug": "mobilden-kuveyt-turklu-olanlara-toplamda-7250-tl-hediye"
+  },
+  {
+    "kayit_id": "TEK-011",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. odul_miktari BILEREK BOS: 'ilgili ayin uyelik ucreti kadar iade' deniyor, TUTAR YAZMIYOR. Trendyol Plus kaydiyla (75 TL acikca yazili) karsilast...",
+    "slug": "emlak-katilim-paraftan-tabii-premium-uyeligi-hediye"
   },
   {
     "kayit_id": "ZK-012",
     "tur": "NOT YENIDEN OKUNMALI",
-    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Harcama siniri sayfada YOK. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayi",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Harcama siniri sayfada YOK. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayit, statik tarayicinin EKSIK yakaladigi anlik gorun...",
     "slug": "alarko-carrierda-6-taksit"
+  },
+  {
+    "kayit_id": "KT-015",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. 1.000 TL indirim yalnizca ILK KAYITTA ve 10.000 TL uzeri rezervasyonda gecerli - o tutar bir ESIKTIR, odul degil.",
+    "slug": "saglam-kart-sahipleri-halalbookingde-de-avantajli"
+  },
+  {
+    "kayit_id": "TEK-012",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. tabii Premium kaydiyla ayni yapi ama burada tutar (75 TL) ACIKCA yazili; orada yazmiyor ve o alan bos birakildi.",
+    "slug": "emlak-katilim-paraftan-trendyol-plus-uyelik-ucretiniz-iade"
   },
   {
     "kayit_id": "ZK-013",
     "tur": "NOT YENIDEN OKUNMALI",
-    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Harcama siniri sayfada YOK. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayi",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Harcama siniri sayfada YOK. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayit, statik tarayicinin EKSIK yakaladigi anlik gorun...",
     "slug": "alfemoda-5-taksit"
+  },
+  {
+    "kayit_id": "KT-016",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. odul_miktari DAVET EDENIN tavanidir (5.000 TL); davet edilen ayrica 500 TL alir. Bu kampanya KT-012 ve KT-014'teki semsiye sayfalarin bir BILESE...",
+    "slug": "yakinlarini-kuveyt-turke-davet-et-toplamda-5000-tlye-varan-hediye-kazan"
+  },
+  {
+    "kayit_id": "TEK-013",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. odul_miktari ve kar_payi_orani BILEREK BOS: %35 bir liste fiyati indirimidir, TL tavani yok. Baslangic tarihi yok.",
+    "slug": "enterprise-arac-kiralamalarinda-35-indirim-firsati"
+  },
+  {
+    "kayit_id": "KT-017",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. 100.000 TL ustu basvurularda liste fiyati uygulaniyor, yani 100.000 TL kampanyanin TAVANI. oran_periyodu 'aylik': %1,99 yillik olsaydi piyasa di...",
+    "slug": "yeni-musterilere-ozel-ihtiyac-kartta-199-oran-firsati"
+  },
+  {
+    "kayit_id": "TEK-014",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. 1.300 TL = en yuksek barem (1.250) + mobil/QR ekstrasi (50). Uc kademe: 500/800/1.250. AYNI AILEDEN IKI SURUM DAHA VAR (Temmuz 1.000 TL ve Temmu...",
+    "slug": "giyim-ve-kozmetik-alisverislerinize-1300-tl-parafpara"
+  },
+  {
+    "kayit_id": "ZK-014",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Uc kademe (3/6/9); 9 taksit yalnizca SECILI URUNLERDE ve 10.000 TL uzeri. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayit, s...",
+    "slug": "amazonda-9a-varan-taksit"
+  },
+  {
+    "kayit_id": "ZK-015",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. 4.000 TL bir ALT ESIKTIR, finansman tutari degil. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayit, statik tarayicinin EKSIK...",
+    "slug": "atasun-optikte-6-taksit"
+  },
+  {
+    "kayit_id": "ZK-016",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. kar_payi_orani BILEREK BOS: %10 nakit iade oranidir. Bir sonraki donemi (8 Agustos - 7 Eylul) ayri sayfada duruyor ama metin neredeyse ayni - et...",
+    "slug": "bagimsiz-karta-ozel-5000-tlye-varan-bankkart-lira-1"
   },
   {
     "kayit_id": "TEK-015",
@@ -56,7 +248,25 @@
   {
     "kayit_id": "ZK-017",
     "tur": "NOT YENIDEN OKUNMALI",
-    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Harcama siniri sayfada YOK. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayi",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Harcama siniri sayfada YOK. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayit, statik tarayicinin EKSIK yakaladigi anlik gorun...",
     "slug": "bauhausta-3-taksit"
+  },
+  {
+    "kayit_id": "TOM-004",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Odul KADEMELI: 1.000 TL uzeri her harcamada sirasiyla 100/200/300/400/500 TL; odul_miktari TOPLAM TAVANDIR. 1.000 TL bir ALT ESIKTIR, finansman...",
+    "slug": "toplam-1500-tl-hos-geldin-hediyesi-tom1500-koduyla-musterimiz-ol-1500-tl-senin-olsun"
+  },
+  {
+    "kayit_id": "TOM-005",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Taksit kademeleri 3-6-9-12; en yuksek kademe yazildi. 5.000 TL ALT ESIKTIR, finansman tutari degil. Yalnizca A101 Ekstra ve yalnizca klima/supur...",
+    "slug": "hadi-alisveris-kredisi-ile-klima-supurge-ve-televizyonlarda-vade-farksiz-12-taksit"
+  },
+  {
+    "kayit_id": "TOM-006",
+    "tur": "NOT YENIDEN OKUNMALI",
+    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Ekstre donemi basina EN FAZLA BIR vergi odemesi taksitlendirilir. Katilim islemden ONCE uygulamadan yapilmali.",
+    "slug": "vergi-kampanyasi"
   }
 ]

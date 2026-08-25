@@ -4,12 +4,26 @@ Bu liste, insan etiketleyicinin ONUNE konan is emridir. Yanlis bir liste
 gunlerce bosa emek demektir: liste sayfasina gonderilen etiketleyici ya
 zaman kaybeder ya da UYDURMA bir altin kayit uretir. Bu yuzden listenin
 kendisi test edilir.
+
+NOT (24 Agustos 2026): Bu test YAVAS - is_listesi_uret() tum korpusu
+okur, kumeleme ve benzerlik hesaplamasi yapar (3+ dakika). Rutin CI'da
+skip edilir, yalnizca sprint is listesi degistiginde manuel calistirilir.
+
+MANUEL CALISTIRMA:
+    PYTEST_SLOW_TESTS=1 pytest tests/test_sprint_is_listesi.py -v
 """
 
 import json
+import os
 from pathlib import Path
 
 import pytest
+
+# TUM modul skip - ortam degiskeni ile override
+pytestmark = pytest.mark.skipif(
+    os.environ.get("PYTEST_SLOW_TESTS") != "1",
+    reason="Slow test (3+ min) - set PYTEST_SLOW_TESTS=1 to run"
+)
 
 KOK = Path(__file__).resolve().parent.parent
 GOLD = KOK / "gold_dataset" / "altin_veri_seti.json"

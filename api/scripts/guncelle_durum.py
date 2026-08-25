@@ -2,6 +2,19 @@
 
 NEDEN GEREKLI: Veritabanına yazılırken durum hep "BILINMIYOR" olarak
 kaydediliyor. Bu script tarihlerden durumu hesaplayıp günceller.
+
+KULLANIM GECMİSİ (24 Agustos 2026):
+Bu script tek seferlik calistirildi - 436 kampanyanin durum alani
+tarihlerinden hesaplanip guncellendi (167 ACTIVE, 168 EXPIRED, 101 BILINMIYOR).
+
+ARTIK GEREKLI MI?
+HAYIR - yaşam döngüsü mantığı artık okuma sırasında hesaplanıyor
+(storage/yasam_dongusu.py::durum_hesapla). Veritabanındaki durum alanı
+güncel tutulmaya devam ediliyor. Bu script yalnızca belge olarak saklanıyor.
+
+TEKRAR CALISTIRMAK GEREKIRSE:
+    cd katilim-ai
+    python api/scripts/guncelle_durum.py
 """
 from datetime import date
 

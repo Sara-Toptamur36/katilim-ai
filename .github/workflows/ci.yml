@@ -42,6 +42,27 @@ jobs:
           fi
           echo "Temiz."
 
+          # DENETIM BULGUSU (24 Agustos 2026): yukaridaki kontrol yalnizca
+          # DOSYA ADINA bakiyordu - biri gercek bir EVREN/Qdrant anahtarini
+          # bir .py/.md/.json dosyasinin ICINE hardcode edip commit etseydi
+          # bu adim onu YAKALAMAZDI (bkz. evren_istemci.py, .env.ornek -
+          # anahtarlar SADECE os.environ.get() ile okunmali, hicbir yerde
+          # literal yazilmamali). Bu ikinci kontrol dosya ICERIGINI tarar.
+          #
+          # teamNN/XXXXXXXX HARIC TUTULUR: bunlar dokumantasyon ve
+          # .env.ornek'teki BILINCLI YER TUTUCULARDIR (gercek takim kodu
+          # sayisal olur, ör. team07 - harfle yazilan "NN" gercek bir
+          # anahtarda olmaz), aksi halde bu kontrol kendi ornek metnimize
+          # yanlis pozitif verirdi.
+          echo "Kod/dokuman icinde hardcode edilmis gercek gorunumlu bir EVREN/Qdrant anahtari var mi kontrol ediliyor..."
+          BULUNAN=$(git grep -nIE '(sk-evren-|qdr-team)[A-Za-z0-9_-]+' -- '*.py' '*.md' '*.json' '*.yml' '*.yaml' ':!.github/workflows/*' 2>/dev/null | grep -viE 'teamNN|XXXXXXXX' || true)
+          if [ -n "$BULUNAN" ]; then
+            echo "HATA: Hardcode edilmis gercek gorunumlu bir anahtar bulundu:"
+            echo "$BULUNAN"
+            exit 1
+          fi
+          echo "Temiz."
+
   # Arayuz Python testlerinden bagimsiz bozulabiliyordu: bir bilesen
   # derlenmese bile CI yesil kaliyordu. Bu job, demo videosunun cekilecegi
   # dashboard'un her push'ta gercekten derlendigini garanti eder.
@@ -225,5 +246,15 @@ jobs:
       # dogrulama vb.). Yalnizca YUKSEK guvenli bulgular kapiya cevrilir;
       # dusuk guvenli bulgular gurultu uretip taramanin gormezden
       # gelinmesine yol acar.
+      #
+      # DENETIM BULGUSU (24 Agustos 2026): bu tarama repo KOKUNDEKI
+      # modulleri (evren_istemci.py, ortam_yukle.py, donanim.py, ...)
+      # ve calculator/ terminology/ storage/ preprocessing/ paketlerini
+      # KAPSAMIYORDU - yalnizca acikca listelenen alt klasorler taranir,
+      # yeni bir kok-seviye dosya sessizce tarama disinda kalirdi. `-r .`
+      # ile TUM repo taranir, bilinen gurultulu yollar (bagimlilik/derleme
+      # klasorleri, test verisi, arayuz) ACIKCA disarida birakilir.
       - name: Statik guvenlik analizi
-        run: bandit -r api/ agent/ extraction/ chunking/ complaint/ validation/ -ll -ii
+        run: |
+          bandit -r . -ll -ii \
+            --exclude ./dashboard,./node_modules,./.git,./tests,./gold_dataset,./scraper/raw_data,./.qdrant_yerel,./alembic/versions

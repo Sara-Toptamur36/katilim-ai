@@ -393,13 +393,20 @@ def test_kampanya_tarihce_gercek_degisen_kampanyada_calisir(monkeypatch):
     """DENETIM BULGUSU: scraper/scripts/kampanya_tarihcesi.py yazilip test
     edilmisti ama hicbir uc noktaya baglanmamisti. Bilinen, gercekten
     zaman icinde degismis bir URL uzerinden uctan uca dogrulanir (bkz.
-    tests/test_kampanya_tarihcesi.py ile ayni URL)."""
+    tests/test_kampanya_tarihcesi.py ile ayni URL - o dosyanin modul
+    dokstring'inde 25 Agustos 2026 tarihli duzeltme gerekcesi var: eski
+    ornek "Bitiş Tarihi: -" yazan, sabit bitis tarihi olmayan bir
+    kampanyaydi, degisen deger sayfa altligindaki "Son Guncelleme
+    Tarihi"ydi - gercek bir kampanya_bitis degil)."""
     import api.main as main_modulu
     from api.schemas import CampaignRecord
 
-    gercek_url = "https://www.dunyakatilim.com.tr/kampanyalar/avantajli-kurlar"
+    gercek_url = (
+        "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/"
+        "elektrikli-arac-sarj-istasyonu-harcamalariniza-200-tl-parafpara"
+    )
     sahte_kayit = CampaignRecord(
-        banka="Dünya Katılım", kampanya_adi="Avantajlı Kurlar", kaynak_url=gercek_url
+        banka="Türkiye Emlak Katılım", kampanya_adi="Elektrikli Araç Şarj İstasyonu", kaynak_url=gercek_url
     )
     monkeypatch.setattr(main_modulu, "id_ile_getir", lambda kid: sahte_kayit)
 

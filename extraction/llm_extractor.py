@@ -1,4 +1,4 @@
-"""Qwen2.5 (Ollama) Tabanli Bilgi Cikarim Motoru (Faz 3 - son care katman).
+"""LLM Tabanli Bilgi Cikarim Motoru (Faz 3 - son care katman).
 
 Sartname madde 5.3 "Finansal Bilgi Cikarimi" icin regex ve NER'in ikisinin
 de kacirdigi, yorum/baglam gerektiren dolayli ifadeleri isleyen en son ve
@@ -6,6 +6,17 @@ en dusuk guvenli katman. Rapor Bolum 5.6: "regex + LLM hibrit kullanilir
 cunku regex sayisal alanlarda halusinasyon riski tasimadan yuksek kesinlik
 saglar; LLM ise regex'in yakalayamadigi dolayli ifadeleri genelleyebilir.
 Asla yalnizca LLM'e guvenilmez."
+
+IKI SAGLAYICI (bkz. docs/adr/0002-evren-cikarim-entegrasyonu.md):
+  - EVREN (evren_istemci.py, llm-fast alias) - EVREN_API_KEY set edilmisse
+    ONCELIKLI yol. TEKNOFEST'in resmi cikarim altyapisi; sema-kisitli JSON
+    ciktisi kullanir (ayristirma hatasi riski yok).
+  - Yerel Ollama (qwen2.5) - EVREN_API_KEY YOKSA varsayilan/fallback yol.
+    Demonun "internet gerekmiyor" ozelligini korur (bkz. docs/PROJE_TANITIMI.md
+    SS8) ve EVREN erisilemez oldugunda kesintisiz devreye girer.
+Ikisi de AYNI kademeli-fallback sozlesmesini kullanir: baglanti/zaman asimi
+hatasinda None doner, hata firlatmaz - cagiran taraf (hybrid_pipeline) bu
+durumda regex/NER sonucuyla yetinir.
 
 TEMPERATURE=0: LLM ciktisinin tutarli/tekrarlanabilir olmasini saglar -
 halusinasyonu TEK BASINA azaltmaz, bunun icin asagidaki guard'lar
@@ -24,11 +35,12 @@ import json
 import os
 import re
 import time
-from typing import Optional
+from typing import Any, Optional
 
 import requests
 import tiktoken
 
+import evren_istemci
 from donanim import ayarlar as _donanim_ayarlari
 from extraction.normalizer import tarihe_cevir, turkce_kucult
 
@@ -140,9 +152,23 @@ _VARSAYILAN_ZAMAN_ASIMI = _ayarlar.llm_zaman_asimi_sn
 
 
 def llm_ile_sor(
-    prompt: str, model: str = _MODEL_ADI, zaman_asimi: int = _VARSAYILAN_ZAMAN_ASIMI
+    prompt: str,
+    model: str = _MODEL_ADI,
+    zaman_asimi: int = _VARSAYILAN_ZAMAN_ASIMI,
+    sema: Optional[dict] = None,
 ) -> Optional[str]:
-    """Ollama'nin yerel API'sine istek atar, Temperature=0 ile (rapor
+    """LLM'e prompt gonderip ham metin yanit alir.
+
+    SAGLAYICI SECIMI: evren_istemci.aktif_mi() True ise (EVREN_API_KEY
+    tanimliysa) istek EVREN'in llm-fast alias'ina gider - `sema` verilmisse
+    (bkz. _cikarim_semasi_olustur) sema-kisitli JSON istenir. EVREN
+    erisilemezse (hazir_mi()=False) None doner - bu fonksiyon Ollama'ya
+    OTOMATIK DUSMEZ, cunku EVREN_API_KEY tanimliyken sessizce yerel bir
+    modele gecmek olcum raporlarinda hangi modelin cevap uretti belirsiz
+    birakirdi (bkz. docs/adr/0002). EVREN_API_KEY tanimli DEGILSE bu dal
+    hic calismaz, dogrudan asagidaki Ollama yoluna gecilir.
+
+    Ollama'nin yerel API'sine istek atar, Temperature=0 ile (rapor
     Bolum 8: tutarli/tekrarlanabilir cevap icin). Baglanti/zaman asimi
     hatasinda None doner - cagiran taraf (hybrid_pipeline) bu durumda
     regex/NER sonucuyla yetinmeli (kademeli fallback, rapor Bolum 8).
@@ -164,6 +190,8 @@ def llm_ile_sor(
     yapilir - Ollama kapaliyken her cagrida ayri ayri ~4 saniyelik
     baglanti-reddi beklemesi odenmesin diye (bkz. _ollama_hazir_mi
     docstring'i)."""
+    if evren_istemci.aktif_mi():
+        return evren_istemci.sohbet_ile_sor(prompt, max_tokens=1024, response_format=sema)
     if not _ollama_hazir_mi():
         return None
     try:
@@ -297,6 +325,46 @@ def _json_govdesini_ayikla(ham_yanit: str) -> Optional[dict]:
         return None
 
 
+def _cikarim_semasi_olustur(alanlar: set[str]) -> dict:
+    """EVREN yolu icin (bkz. evren_istemci.sohbet_ile_sor) sema-kisitli JSON
+    response_format'i uretir - dokumantasyonun kendi ölçümünde bu, ayristirma
+    hatasi riskini ortadan kaldiriyor (SS9/SS23: strict:True). Yerel Ollama
+    yolunda KULLANILMAZ (Ollama /api/generate sema zorlamasi desteklemiyor,
+    ayristirma orada halen _json_govdesini_ayikla ile serbest metinden yapilir).
+
+    kar_payi_orani_percent turu BILEREK ["number","string","null"] - model
+    '98/2' gibi kesirli bir paylasim ifadesini metin olarak yazabilsin diye;
+    saf "number" turu modeli bu durumda bir sayi UYDURMAYA zorlardi (rapor
+    Bolum 5.7/15'in tam uyardigi turden bir halusinasyon). Asagi akista
+    _kesirli_oran_mi() bu stringi zaten reddediyor - guard degismedi, yalnizca
+    modelin dogru degeri ("bu bir oran degil") ifade edebilmesi korundu.
+    """
+    ozellikler: dict[str, dict] = {}
+    for alan in sorted(alanlar):
+        if alan == "kar_payi_orani_percent":
+            tur: Any = ["number", "string", "null"]
+        elif alan in ("vade_ay", "taksit_sayisi", "erteleme_suresi_ay"):
+            tur = ["integer", "null"]
+        elif alan in ("finansman_tutari", "odul_miktari"):
+            tur = ["number", "null"]
+        else:
+            tur = ["string", "null"]
+        ozellikler[alan] = {"type": tur, "description": _ALAN_ACIKLAMALARI[alan]}
+    return {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "kampanya_cikarimi",
+            "strict": True,
+            "schema": {
+                "type": "object",
+                "properties": ozellikler,
+                "required": sorted(alanlar),
+                "additionalProperties": False,
+            },
+        },
+    }
+
+
 def llm_ile_cikar(
     ham_metin: str, sadece_bu_alanlar: Optional[set[str]] = None, model: str = _MODEL_ADI
 ) -> dict:
@@ -355,7 +423,7 @@ def llm_ile_cikar(
         "JSON:"
     )
 
-    ham_yanit = llm_ile_sor(prompt, model=model)
+    ham_yanit = llm_ile_sor(prompt, model=model, sema=_cikarim_semasi_olustur(sorgulanacak))
     if ham_yanit is None:
         sonuc["_izler"] = izler
         return sonuc

@@ -42,7 +42,13 @@ GELENEK_TERIM_ESLESTIRMELERI = [
         "kok": "mevduat",
         "standart_terim": "Katılım Fonu",
         "guvenli_ek_onekleri": [],
-        "guvenli_sonraki_kelime_onekleri": [],
+        # "mevduat bakiyesi" - uygunluk kriteri baglaminda (musterinin
+        # MEVCUT bakiyesi, katilim bankasinin sattigi bir urun degil)
+        # "kredi bakiyesi/limiti" ile AYNI mantik: TF-010'da Turkiye
+        # Finans'in kendi resmi sayfasi "son uc aydir TL mevduat bakiyesi
+        # 10.000 TL altinda olan musteriler" diyor - hedef kitle tanimi,
+        # urun tanitimi degil. Denetlendi (25 Agustos 2026).
+        "guvenli_sonraki_kelime_onekleri": ["bakiye"],
         "guvenli_onceki_kelimeler": [],
     },
     {

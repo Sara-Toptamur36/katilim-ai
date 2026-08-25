@@ -102,6 +102,7 @@ def kategori_bazli_recall_olc(
     k: int = 5,
     banka_otomatik: bool | None = None,
     yeniden_sirala: bool | None = None,
+    exact: bool = True,
 ) -> dict:
     """Her KATEGORI icin ayri Recall@k.
 
@@ -117,6 +118,15 @@ def kategori_bazli_recall_olc(
 
     COKLU DOGRU CEVAP: `beklenen_sluglar` bir listedir; ilk k sonuctan
     HERHANGI BIRI listede varsa isabet sayilir.
+
+    `exact` VARSAYILAN TRUE (bkz. docs/rag_tasarim_ve_olcum.md, Bulgu 1 -
+    "Recall@1 tek bir sayi olarak raporlanamaz" bulgusu ve orada verilen
+    oneri): Qdrant'in varsayilan HNSW yaklasik aramasi Recall@1'i kosudan
+    kosuya oynatiyordu (olculdu: 29/30/29, yalnizca en yakin skorlu 1.
+    sirada). Bu script bir BENCHMARK'tir - tekrar uretilebilirlik dogruluk
+    kadar onemlidir; uretim yolunda (agent/router.py) hizli yanit onemli
+    oldugu icin `exact=False` (yaklasik) kalmaya devam eder, bu ikisi
+    KASITLI olarak farkli varsayilanlar kullanir.
     """
     from chunking.retriever import getir
 
@@ -145,6 +155,7 @@ def kategori_bazli_recall_olc(
             limit=k,
             banka_otomatik=banka_otomatik,
             yeniden_sirala=yeniden_sirala,
+            exact=exact,
         )
         bulunan = {
             (p.get("ustveri") or {}).get("kaynak_url", "").rstrip("/").split("/")[-1]
@@ -182,11 +193,15 @@ def kategori_bazli_recall_olc(
 def abstention_olc(
     banka_otomatik: bool | None = None,
     yeniden_sirala: bool | None = None,
+    exact: bool = True,
 ) -> dict:
     """Cevabi kaynaklarda OLMAYAN sorularda sistem cekimser kaliyor mu?
 
     Iki kategori AYRI raporlanir - ortalamak, zor vakayi kolay vakanin
     arkasina gizlerdi (bkz. CEKIMSERLIK_KATEGORILERI).
+
+    `exact` VARSAYILAN TRUE - bkz. kategori_bazli_recall_olc'daki AYNI
+    gerekce (Bulgu 1, HNSW yaklasik aramanin kosu-arasi oynakligi).
     """
     from chunking.retriever import getir
 
@@ -204,6 +219,7 @@ def abstention_olc(
                 limit=3,
                 banka_otomatik=banka_otomatik,
                 yeniden_sirala=yeniden_sirala,
+                exact=exact,
             )
             if sonuc.yeterli_kaynak_var:
                 yanlis.append({

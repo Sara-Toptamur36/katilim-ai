@@ -24,8 +24,10 @@ duser ve yorumlanabilir bir gerekce uretir ("hangi terimler eslesti?").
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass, field
 
+import evren_istemci
 from chunking.banka_tespit import banka_tespit
 from chunking.embedding import sorguyu_vektore_cevir
 from chunking.qdrant_baglanti import (
@@ -33,6 +35,7 @@ from chunking.qdrant_baglanti import (
     coklu_filtre,
     hibrit_ara,
     qdrant_hazir_mi,
+    yogun_ara,
 )
 from chunking.reranker import rerank
 from chunking.seyrek_vektor import (
@@ -66,7 +69,15 @@ ASGARI_TERIM_ORTUSMESI = 0.60
 # Ölcüldü: gerçek sorularda (Recall@5 %88.24 olan sette) en düşük top-1
 # skor ~0.45 civari. Menu kirliliği sorununda 0.17. Esik 0.40 bu ikisinin
 # arasina oturur.
-ASGARI_VEKTOR_SKORU = 0.40
+#
+# UYARI - BU ESIK YALNIZCA YEREL e5-base ICIN OLCULDU (bkz. docs/adr/0002):
+# EVREN'in bge-m3-embed'i FARKLI bir model, kosinus benzerlik dagilimi
+# ayni oldugunun garantisi yok. Gercek EVREN_API_KEY ile yeniden
+# olculmeden bu deger EVREN yolunda da (dense VEYA hibrit modda) aynen
+# kullaniliyor - bu BILINCLI bir gecici karar, kalibre edilmis bir
+# sonuc DEGIL. ASGARI_VEKTOR_SKORU ortam degiskeniyle ezilebilir; EVREN
+# ile gercek olcum yapildiginda burasi guncellenmeli.
+ASGARI_VEKTOR_SKORU = float(os.environ.get("ASGARI_VEKTOR_SKORU", "0.40"))
 
 # Cok kisa sorgularda ("murabaha nedir") tek terim bile yeterli olabilir;
 # bu uzunlugun altinda oran yerine "en az 1 terim" kurali uygulanir.
@@ -132,6 +143,7 @@ def getir(
     exact: bool | None = None,
     banka_otomatik: bool | None = None,
     yeniden_sirala: bool | None = None,
+    rag_modu: str | None = None,
 ) -> RetrieverSonucu:
     """Soruya en ilgili parcalari getirir; kaynak yetersizse bunu bildirir.
 
@@ -157,20 +169,42 @@ def getir(
     hedefi). `banka` parametresi ACIKCA verilmisse otomatik tespit
     devreye GIRMEZ - cagiranin karari her zaman ustundur.
 
-    VARSAYILAN KAPALI - BILINCLI KARAR (23 Agustos 2026): bu katmanin
-    retrieval kalitesine katkisi HENUZ OLCULMEDI. Depodaki kural, bir
-    kalite degisikliginin olcum olmadan varsayilan yola girmemesidir;
-    tam da bu kuralin atlanmasi yuzunden cross-encoder reranker aylardir
-    olculmeden devrede (bkz. docs/rag_tasarim_ve_olcum.md). Ayni hatayi
-    tekrarlamamak icin varsayilan `false`.
+    VARSAYILAN ACIK (25 Agustos 2026 - olculup dogrulandi). Onceden
+    "henuz olculmedi" gerekcesiyle kapaliydi (bkz. asagidaki OLCUM YOLU).
+    Duzeltilmis retriever koduyla (bkz. Bulgu 9, docs/rag_tasarim_ve_
+    olcum.md) 185 soruluk sette KAPALI/ACIK karsilastirmasi kosuldu:
 
-    OLCUM YOLU: `KATILIMAI_BANKA_OTOMATIK=true` ile
-    `python -m scraper.scripts.rag_degerlendirme` kosulur ve
-    `banka_ve_konu` kategorisinin Recall@5'i kapali kosuyla
-    karsilastirilir. Kazanc dogrulanirsa varsayilan `true` yapilir.
+        k=1  banka_ve_konu %9,52  -> %23,81   (GENEL %66,39 -> %68,91)
+        k=3  banka_ve_konu %28,57 -> %38,10   (GENEL %80,67 -> %82,35)
+        k=5  banka_ve_konu %52,38 -> %47,62   (GENEL %88,24 -> %87,39)
+
+    Uretimde agent/router.py::rag_aracini_cagir HER ZAMAN limit=3
+    kullaniyor (limit=5 yalnizca bu olcum script'inde) - yani k=1/k=3'teki
+    net kazanc GERCEKTEN KULLANILAN yol icin gecerli. k=5'teki kucuk
+    dusus (21 sorudan 1'i) 21'lik ornekte gurultu seviyesinde ve
+    kullanilmayan bir k degerinde - kazanci geciktirmeye deger degil.
+
+    ELLE KAPATMAK ICIN: `KATILIMAI_BANKA_OTOMATIK=false` (ya da
+    parametreyi acikca `banka_otomatik=False` vererek).
+
+    OLCUM YOLU (tekrar dogrulamak icin): `KATILIMAI_BANKA_OTOMATIK=true`
+    ile `python -m scraper.scripts.rag_degerlendirme` kosulur ve
+    `banka_ve_konu` kategorisinin Recall'u kapali kosuyla karsilastirilir.
 
     `yeniden_sirala` cross-encoder reranker'i acar/kapatir. None verilirse
     KATILIMAI_RERANK okunur, varsayilan ACIK.
+
+    `rag_modu` "hibrit" (yogun+seyrek, RRF) ya da "dense" (yalniz yogun)
+    degerini alir. None verilirse RAG_MODE ortam degiskeni okunur; o da
+    tanimli degilse SAGLAYICIYA GORE otomatik secilir - bkz.
+    docs/adr/0002-evren-cikarim-entegrasyonu.md: EVREN'in bge-m3-embed'iyle
+    hibrit fuzyon bu projede HENUZ OLCULMEDI (EVREN'in kendi olcumu farkli
+    bir gomme modeliyle yapildi, bu depoya dogrudan tasinamaz), bu yuzden
+    EVREN aktifken varsayilan "dense"tir. Yerel e5-base ile hibrit yolu
+    docs/rag_tasarim_ve_olcum.md'de ZATEN OLCULUP varsayilan yapilmisti -
+    bu davranis DEGISMEDI, yerel saglayicida varsayilan hala "hibrit"tir.
+    Bu bayrak, iki modu ayni gold set uzerinde karsilastirmali olarak
+    olcmeyi (Recall@1/@3, gecikme) mumkun kilmak icin var.
 
     NEDEN BAYRAKLI (metodoloji): bu iki katman da retrieval sonucunu
     degistirir. Kapatilabilir olmadiklari surece "katkisi ne kadar?"
@@ -178,14 +212,18 @@ def getir(
     (bkz. docs/rag_tasarim_ve_olcum.md), bu ikisi de ayni cubuga tabi.
     scraper/scripts/rag_degerlendirme.py bu bayraklarla A/B kosar.
     """
-    import os
-
     if exact is None:
         exact = os.environ.get("KATILIMAI_RAG_EXACT_MOD", "false").lower() == "true"
     if banka_otomatik is None:
-        banka_otomatik = os.environ.get("KATILIMAI_BANKA_OTOMATIK", "false").lower() == "true"
+        banka_otomatik = os.environ.get("KATILIMAI_BANKA_OTOMATIK", "true").lower() == "true"
     if yeniden_sirala is None:
         yeniden_sirala = os.environ.get("KATILIMAI_RERANK", "true").lower() == "true"
+    if rag_modu is None:
+        rag_modu = os.environ.get(
+            "RAG_MODE", "dense" if evren_istemci.aktif_mi() else "hibrit"
+        ).strip().lower()
+    if rag_modu not in ("hibrit", "dense"):
+        raise ValueError(f"Bilinmeyen RAG_MODE: {rag_modu!r} (beklenen: 'hibrit' | 'dense')")
 
     if not qdrant_hazir_mi():
         return RetrieverSonucu(sebep="Vektor veritabanina (Qdrant) erisilemiyor")
@@ -212,39 +250,70 @@ def getir(
         # kazanci @3/@5'te daha buyuk bir kayipla odetiyor - net etki olumsuz.
         # Bkz. docs/rag_tasarim_ve_olcum.md Bulgu 6.
         genis_limit = max(20, limit * 2)
+        filtre = coklu_filtre(banka=filtre_bankasi, hedef_tarih=hedef_tarih)
+        if rag_modu == "dense":
+            return yogun_ara(
+                yogun_sorgu=sorguyu_vektore_cevir(sorgu_metni),
+                limit=genis_limit,
+                koleksiyon=koleksiyon,
+                filtre=filtre,
+                exact=exact,
+            )
         return hibrit_ara(
             yogun_sorgu=sorguyu_vektore_cevir(sorgu_metni),
             seyrek_sorgu=seyrek_vektor_uret(sorgu_metni),
             limit=genis_limit,
             koleksiyon=koleksiyon,
-            filtre=coklu_filtre(banka=filtre_bankasi, hedef_tarih=hedef_tarih),
+            filtre=filtre,
             exact=exact,
         )
 
-    parcalar = _ara(banka, arama_sorgusu)
+    aday_havuzu = _ara(banka, arama_sorgusu)
 
     # GERI DUSME: otomatik tespit yanlis bir bankaya daraltmis olabilir
     # (ör. indeks payload'indaki yazim bu listeyle uyusmuyorsa filtre HIC
     # nokta eslemez). Boyle bir durumda sessizce "kaynak yok" demek yerine
     # filtresiz aramayi tekrarlariz - otomatik tespit sistemi hicbir
     # kosulda mevcut davranistan KOTU hale getirmemelidir.
-    if not parcalar and tespit_edilen_banka is not None:
+    if not aday_havuzu and tespit_edilen_banka is not None:
         tespit_edilen_banka = None
         banka = None
         arama_sorgusu = soru
         terimler = _ayirt_edici_terimler(soru)
-        parcalar = _ara(None, soru)
+        aday_havuzu = _ara(None, soru)
 
-    # Ikinci asamada (Reranker) sonuclari capraz kodlayiciyla siralayip kesiyoruz
-    if parcalar and yeniden_sirala:
-        parcalar = rerank(soru, parcalar, top_k=limit)
-    else:
-        parcalar = parcalar[:limit]
-
-    if not parcalar:
+    if not aday_havuzu:
         return RetrieverSonucu(sebep="Arama hicbir sonuc dondurmedi")
 
-    # --- Vektor skoru kontrolu (menu kirliligi onlemi) -------------------
+    # --- Vektor skoru + terim ortusmesi kontrolu (menu kirliligi onlemi) --
+    # DENETIM BULGUSU (25 Agustos 2026, IKI ASAMALI): bu iki kontrol
+    # ONCEDEN reranker'in zaten `limit`e (3-5) kestigi SON listede
+    # hesaplaniyordu - yorumdaki "ilk parcadaki en yuksek vektor skoru"
+    # niyetiyle CELISIYORDU, cunku reranker capraz-kodlayici skoruna gore
+    # siralar, vektor skoruna gore degil: gercek en yuksek vektor skorlu
+    # aday reranker'in kestigi limit-disi bir yerde kalmis olabilirdi.
+    #
+    # ILK DUZELTME DENEMESI (ayni gun, GERI ALINDI): iki kontrolu de TUM
+    # genis aday havuzunda (genis_limit=20+) hesaplamak once dogru
+    # gorundu. OLCULDU ve YANLIS cikti: ASGARI_TERIM_ORTUSMESI esigi
+    # (0,60) 20/21 Agustos'ta yalnizca DAR (limit boyutundaki) bir kumeye
+    # gore kalibre edilmisti - `_terim_ortusmesi` butun parcalarin metnini
+    # TEK bir birlesik dizgede arar, 20 adayin birlesik metni cok daha
+    # genis bir "rastgele eslesme yuzeyi" yaratir. Gercek olcum: abstention
+    # dogrulugu alan_disi'nda %86,67->%66,67, alan_ici_kapsam_disi'nda
+    # %50,0->%20,0'e DUSTU (bkz. docs/rag_tasarim_ve_olcum.md, Bulgu 9
+    # guncellemesi) - konuyla alakasiz sorular ("Fotosentez hangi
+    # organelde gerceklesir?" gibi) sirf 20 farkli parcanin birlesik
+    # kelime dagarcigi genisledigi icin yanlislikla esik gecti.
+    #
+    # DOGRU KAPSAM: reranker'dan ONCE ama AYNI BOYUTTA (ilk `limit` aday,
+    # QDRANT'IN KENDI SIRALAMASIYLA - RRF/dense skoruna gore, capraz-
+    # kodlayiciya gore DEGIL). Bu, hem orijinal hatayi cozer (kontrol
+    # artik reranker'in yeniden siraladigi kumeye degil, gercek getirme
+    # sirasina bakiyor) HEM DE terim ortusmesi kalibrasyonunun dayandigi
+    # kume BOYUTUNU korur.
+    on_siralama_ilk_k = aday_havuzu[:limit]
+
     # Ilk parcadaki en yuksek vektor skorunu kontrol et. Parcalarda
     # "score" alani RRF skorudur (siralama birlesimi) - ham vektor skoru
     # degil. Ham vektor skoru "ustveri.vektor_skoru" alaninda korunur
@@ -252,12 +321,12 @@ def getir(
     en_yuksek_vektor_skoru = max(
         (
             (p.get("ustveri") or {}).get("vektor_skoru", 0.0)
-            for p in parcalar
+            for p in on_siralama_ilk_k
         ),
         default=0.0,
     )
 
-    ortusme, eslesen = _terim_ortusmesi(terimler, parcalar)
+    ortusme, eslesen = _terim_ortusmesi(terimler, on_siralama_ilk_k)
 
     if len(terimler) <= KISA_SORGU_TERIM_SAYISI:
         yeterli_ortusme = len(eslesen) >= 1
@@ -289,6 +358,16 @@ def getir(
                 f"vektor skoru cok dusuk ({en_yuksek_vektor_skoru:.2f} < {ASGARI_VEKTOR_SKORU}) - "
                 "muhtemelen genel menu/navigasyon metni"
             )
+
+    # Ucuncu asamada (Reranker) GOSTERILECEK parcalar capraz kodlayiciyla
+    # siralanip kesilir - abstention KARARI yukarida, genis havuzla zaten
+    # verildi. `yeterli=False` iken reranker HIC calistirilmaz: cekimser
+    # sonucta agent/router.py::rag_aracini_cagir `parcalar`'a hic bakmaz
+    # (erken doner), capraz-kodlayiciyi bosuna calistirmanin anlami yok.
+    if yeterli and yeniden_sirala:
+        parcalar = rerank(soru, aday_havuzu, top_k=limit)
+    else:
+        parcalar = aday_havuzu[:limit]
 
     return RetrieverSonucu(
         parcalar=parcalar,

@@ -773,3 +773,66 @@ test_tablolu_sayfada_dusuk_guvenli_kar_payi_tahmini_guvensiz`.
 `None`'a sıfırlandı ve script yeniden çalıştırıldı; artık ya doğru bir
 yüksek güvenli değer ya da dürüst `None` + dolu `kar_payi_tablosu`
 taşıyorlar.
+
+---
+
+## Güncelleme — 25 Ağustos 2026 (altın veri seti 298 kayda büyüdü, sayısal çekirdek F1 %75 eşiğinin altına düştü)
+
+`test_regex_extractor_duzeltmeler.py::test_sayisal_cekirdek_alanlarda_dogruluk_esigin_altina_dusmez`
+kırmızıya döndü: Makro F1 %74,31 (asgari %75). Bu bir kod gerilemesi
+DEĞİL — altın veri seti 23 Ağustos'ta belgelenen 103 kayıttan **298
+kayda** büyüdü, regex desenleri daha önce hiç görmediği çok sayıda yeni
+sayfa üzerinde ölçülüyor.
+
+Alan bazlı: `kar_payi_orani_percent`=%63,16 (en zayıf, incelenmedi),
+`vade_ay`=%70,59, `odul_miktari`=%83,06, `odul_birimi`=%80,87,
+`finansman_tutari`=%48,0 (ikinci en zayıf), `taksit_sayisi`=%85,59,
+`erteleme_suresi_ay`=%88,89.
+
+**`finansman_tutari` 8 hatası tek tek incelendi (kaynak metinle):**
+
+| Kayıt | Beklenen | Bulunan | Kategori |
+|---|---|---|---|
+| HF-006 | 80.000 | (yoktu) | **Düzeltildi** — "üst limiti X TL'dir" kalıbı hiç tanınmıyordu |
+| KT-001 | 100.000 | (yok) | Belirsiz — sayfada birden fazla "X TL'ye kadar" var, hiçbiri seçilmedi |
+| TF-005 | 400.000 | 2.500 | Çok-adaylı — sayfa birden fazla ürünü (Yedek Hesap 2.500 TL, İhtiyaç Finansmanı 400.000 TL) karıştırıyor, motor yanlışını seçti |
+| DK-001 | 16.500 | (yok) | İncelenmedi — bağlam tam çıkarılmadı |
+| DK-006 | 10.000 | 1.000 | Kademeli taksit tablosu (100 TL–1.000 TL–6.000 TL); beklenen değer düz metinde birebir geçmiyor |
+| DK-007 | 2.000 | (yok) | Tartışmalı — "2.000 TL ve üzeri" bir ALIŞVERİŞ EŞİĞİ, klasik finansman üst limiti değil; gold etiketleme kararı sorgulanabilir |
+| AL-012 | 40.000 | 150.000 | Çok-adaylı — TF-005 ile aynı sınıf, sayfada iki farklı ürün limiti var |
+| TOM-006 | 30.000 | (yok) | Aralık ifadesi ("1.000 TL ile 30.000 TL arasındaki işlemler") "arası" değil "arasındaki" yazıyor — `RE_TUTAR_ARALIK` bu varyasyonu yakalamıyor |
+
+**Düzeltilen (`extraction/regex_extractor.py`):** `RE_TUTAR_UST_LIMIT_BEYANI`
+eklendi — "X TL'ye kadar" kalıbının dışında kalan "(kampanya) üst
+limit(i) X TL('dir)" ifadesini yakalar. Mevcut `_tutar_baglaminda_gecersiz_mi`
+guard'ı BİLİNÇLİ OLARAK uygulanmadı: o guard'ın dışlama listesinde "limit"
+kelimesi var (kart limiti gibi alakasız geçişleri elemek için) ve bu yeni
+desenin ayırt ediciliği tam olarak "üst limit" ifadesine dayandığı için
+aynı guard'ı uygulamak kendi kendini elerdi — özgüllük burada guard'dan
+değil desenin kendisinden geliyor. Sonuç: Makro F1 %74,31→%74,59
+(`finansman_tutari` %48,0→%50,0), sıfır regresyonla (`tests/
+test_regex_extractor_duzeltmeler.py` 56/57 → hâlâ eşiğin altında ama
+diğer 56 test etkilenmedi).
+
+**Kalan 7 hata bilerek düzeltilmedi.** İkisi (TF-005, AL-012) "sayfada
+birden fazla geçerli tutar var, doğrusu hangisi" sınıfında — bu tür bir
+disambiguation kuralı, aynı gün `chunking/parcalayici.py`'de denenip
+geri alınan iki değişiklikle AYNI risk profiline sahip (bkz.
+`docs/rag_tasarim_ve_olcum.md`, Bulgu 9 güncellemesi): dar bir örnek
+üzerinde "doğru" görünen bir kural, geniş korpusta başka alanları
+kırabilir. İkisi (DK-007, DK-006) gold etiketleme yorumuna bağlı,
+kod hatası olduğu net değil. Üçü (KT-001, DK-001, TOM-006) henüz kök
+nedene kadar izlenmedi. Ayrıca en zayıf alan olan `kar_payi_orani_percent`
+(%63,16) bu turda hiç incelenmedi — eşiği asıl düşüren bu alan olabilir,
+sıradaki adım muhtemelen orada.
+
+**Sprint iş listesi — ilişkili operasyonel bulgu:** Aynı büyüme
+(103→298 kayıt), `gold_dataset/sprint_is_listesi.py::is_listesi_uret`'in
+`hedef=200` istendiğinde yalnızca **37 aday** döndürmesine ve bu 37'nin
+**hiçbirinin** (0/37) yeni yapısal özellik getirmemesine yol açtı
+(`tests/test_sprint_is_listesi.py::test_ilk_secimler_YENI_ozellik_getirir`
+hâlâ kırmızı). Bu bir seçim algoritması hatası değil — kalan aday
+havuzu artık altın setle yapısal olarak neredeyse tamamen örtüşüyor.
+Pratik anlamı: **200 hedefine ulaşmak için etiketlenebilecek yeni sayfa
+havuzu neredeyse tükenmiş**, yeni sayfa taraması (scraper) veya hedefin
+gözden geçirilmesi gerekebilir.

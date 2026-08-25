@@ -17,6 +17,8 @@ Sonra ayrica (bu script tarafindan baslatilmaz - farkli runtime/ekip alani):
 
 from __future__ import annotations
 
+import ortam_yukle  # noqa: F401 - side effect: .env process ortamina yuklenir, HER SEYDEN ONCE
+
 import argparse
 import os
 import subprocess
@@ -46,7 +48,12 @@ def _native_ollama_calisiyor_mu() -> bool:
     import urllib.request
 
     try:
-        with urllib.request.urlopen("http://localhost:11434/api/tags", timeout=2):
+        # Asagidaki satirdaki bastirma etiketi: URL sabit bir literaldir
+        # (localhost:11434), kullanici girdisi veya disaridan gelen bir
+        # deger degildir; bandit'in blackliste ettigi SSRF/schema riski
+        # burada gecerli degil (bkz. .github/workflows/ci.yml, 24 Agustos
+        # 2026 taramasinin genisletilmesiyle bulundu).
+        with urllib.request.urlopen("http://localhost:11434/api/tags", timeout=2):  # nosec B310
             return True
     except Exception:  # noqa: BLE001 - Ollama kapaliyken beklenen durum
         return False

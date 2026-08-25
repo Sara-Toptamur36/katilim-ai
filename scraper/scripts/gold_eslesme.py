@@ -64,10 +64,50 @@ def karsilastirma_bicimi(metin: str) -> str:
     # Combining karakterleri (Mn category) kaldir
     metin = "".join(c for c in metin if unicodedata.category(c) != "Mn")
     
-    return (metin.replace("'", "'")
-            .replace("'", "'")
-            .replace(".", "")  # Kisaltmalardaki noktalar (E.C.A. -> eca)
-            .replace("İ", "i").lower())
+    # KACIS DIZISI KULLANILIR, HARFIN KENDISI DEGIL.
+    #
+    # DENETIM BULGUSU (25.08.2026): bu iki satir
+    #     .replace("'", "'").replace("'", "'")
+    # seklinde duruyordu - yani U+0027'yi U+0027 ile degistiren IKI
+    # ISLEMSIZ cagri. Tipografik kesme isaretleri, dosya bir noktada
+    # duz ASCII'ye normalize edilirken kaybolmus; fonksiyon o gunden beri
+    # kesme isareti icin HICBIR SEY YAPMIYORDU.
+    #
+    # Bedeli olculdu: test_scraper_regresyon'da 36 hatanin 25'i buydu.
+    # Kampanya sayfada dururken "sayfa degismis veya secici bozulmus"
+    # deniyordu - yani gercek bir scraper gerilemesi bu gurultunun icinde
+    # gorunmez olurdu; testin varlik sebebi tam olarak onu gormekti.
+    # Docstring'de ornek olarak verilen KT-001 bile basarisizdi.
+    #
+    # Korpusta olculen dagilim: sayfalarda U+2019 (805), U+0027 (281),
+    # U+2018 (33); altin sette U+0027 (87), U+2019 (57). Iki taraf da
+    # karisik kullaniyor, bu yuzden normallestirme sart.
+    # KESME ISARETI NORMALLESTIRILMEZ, SILINIR.
+    #
+    # Olculdu (25.08.2026): altin setteki 302 imzali kaydin 69'unda kampanya
+    # adi URL slug'indan turetilmis - kesme isaretleri DUSMUS ve Turkce
+    # harfler ASCII'ye katlanmis ("Trendyol'da" -> "Trendyolda", "Saglik"
+    # <- "Saglik"). Geri kalan 233 kayitta ad duzgun yazilmis. Iki yazim
+    # da altin sette GERCEKTEN var, dolayisiyla karsilastirmanin ikisini de
+    # ayni kanonik bicime indirmesi gerekiyor.
+    #
+    # Kesmeyi tek forma cevirmek YETMEZ ("trendyolda" ile "trendyol'da"
+    # hala farkli); silmek gerekir. Bu, fonksiyonun NOKTA icin zaten
+    # yaptigi seyin aynisi ("E.C.A." -> "eca") - noktalama duyarsiz
+    # karsilastirma. Ayirt edicilik kelime govdesinde kalir: yanlis bir
+    # sayfa hala "trendyol" icermez.
+    metin = (metin.replace("’", "")   # tipografik sag tek tirnak
+             .replace("‘", "")        # tipografik sol tek tirnak
+             .replace("ʼ", "")        # modifier letter apostrophe
+             .replace("'", "")              # duz kesme (U+0027)
+             .replace(".", ""))             # kisaltma noktalari
+
+    # TURKCE KATLAMA TEK KAYNAKTAN: extraction/normalizer.py. Kendi
+    # kopyasini tutmak, motorun kullandigi kuraldan ayrisma riski yaratir -
+    # o zaman bu fonksiyon, olcumun olctugunden baska bir sey olcer.
+    from extraction.normalizer import turkce_ascii_kucult
+
+    return turkce_ascii_kucult(metin)
 
 
 def ilk_kelime(metin: str) -> str:

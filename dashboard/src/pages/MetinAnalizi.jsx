@@ -496,11 +496,62 @@ export default function MetinAnalizi() {
                 {sonuc.catismalar.length > 0 && (
                   <Card size="small" title="Katman Çatışmaları" className="analiz-karti">
                     <Paragraph type="secondary" style={{ fontSize: 12 }}>
-                      Aynı alan için birden fazla katman farklı değer önerdi. Seçilen değer aşağıda:
+                      Aynı alan için birden fazla katman farklı değer önerdi. Hangisinin
+                      neden seçildiği aşağıda — sistemin karar gerekçesi gizlenmez.
                     </Paragraph>
-                    <pre style={{ margin: 0, fontSize: 12, overflowX: "auto" }}>
-                      {JSON.stringify(sonuc.catismalar, null, 2)}
-                    </pre>
+                    {/* ÖNCEDEN JSON.stringify DÖKÜMÜYDÜ.
+                        Çatışma kaydı, "sistem nasıl karar verdi?" sorusunun asıl
+                        kanıtı — Jüri Audit Paneli'nin varlık sebebi. Ham JSON
+                        olarak basmak, o kanıtı okunamaz kılıyordu.
+
+                        İki ayrı çatışma türü var ve ayrımları anlamlı:
+                          red_sebebi VAR  → değer BAĞLAM KONTROLÜNDEN geçemedi
+                            (extraction/hybrid_pipeline._kar_payi_baglami_reddediyor_mu:
+                             regex bir yüzdeyi bilerek reddettiyse NER/LLM onu geri koyamaz)
+                          red_sebebi YOK  → iki katman farklı değer önerdi, güven
+                            eşiğine göre biri devraldı ya da mevcut korundu */}
+                    <Space direction="vertical" size={8} style={{ width: "100%" }}>
+                      {sonuc.catismalar.map((c, i) => {
+                        const reddedildi = Boolean(c.red_sebebi);
+                        return (
+                          <div
+                            key={i}
+                            style={{
+                              padding: "8px 12px",
+                              borderLeft: `3px solid ${reddedildi ? "#c94f4f" : "#c28e28"}`,
+                              background: "var(--kart-ustu)",
+                              borderRadius: "0 4px 4px 0",
+                              fontSize: 13,
+                            }}
+                          >
+                            <div style={{ marginBottom: 4 }}>
+                              <Tag color={reddedildi ? "red" : "gold"}>
+                                {reddedildi ? "Reddedildi" : c.devralindi ? "Devralındı" : "Korundu"}
+                              </Tag>
+                              <strong>{c.alan}</strong>
+                            </div>
+                            <div style={{ color: "var(--metin-ikincil, #666)" }}>
+                              <code>{c.yeni_katman}</code> katmanı{" "}
+                              <strong>{String(c.yeni_deger)}</strong> önerdi
+                              {c.yeni_guven != null && ` (güven ${c.yeni_guven})`}
+                              {!reddedildi && (c.korunan ?? c.onceki) != null && (
+                                <>
+                                  ; mevcut değer <strong>{String(c.korunan ?? c.onceki)}</strong>{" "}
+                                  (<code>{c.onceki_katman}</code>
+                                  {c.onceki_guven != null && `, güven ${c.onceki_guven}`})
+                                </>
+                              )}
+                              .
+                            </div>
+                            {reddedildi && (
+                              <div style={{ marginTop: 4, fontStyle: "italic" }}>
+                                Sebep: {c.red_sebebi}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </Space>
                   </Card>
                 )}
 

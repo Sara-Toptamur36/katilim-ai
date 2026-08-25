@@ -140,7 +140,9 @@ def _tablo_varsa_kar_payi_bastir(cikan: dict, secilen_tablo: list[dict] | None) 
     return cikan
 
 
-def zenginlestir(tazele: bool = False) -> dict:
+def zenginlestir(
+    tazele: bool = False, ner_kullan: bool = True, llm_kullan: bool = True
+) -> dict:
     """Donen ozet: {"guncellendi": N, "atlandi": M, "ham_metin_yok": K,
     "dogrulanamayan": L, "tablo_eklendi": T, "tazelendi": G}.
 
@@ -149,6 +151,15 @@ def zenginlestir(tazele: bool = False) -> dict:
 
     `tazele=True`: motorun bugunku cevabi sutundakiyle celisiyorsa sutun
     GUNCELLENIR - motor None diyorsa eski deger silinir.
+
+    `ner_kullan` / `llm_kullan`: katmanlari kapatir (uretimde ikisi de acik).
+    TESTLER ICIN GEREKLI - bu fonksiyon VERITABANININ TAMAMINI isler ve her
+    kayit icin GLiNER + Ollama cagirir. Ollama acikken tek bir cagri
+    40+ dakika suruyor; testler bunu 5 kez cagirdigi icin test paketi
+    54%'te asili kaliyordu (olculdu 25.08.2026). O testlerin olctugu sey
+    GUNCELLEME SEMANTIGI (dolu alani ezme / bayat degeri tazele), cikarim
+    kalitesi degil - regex katmani ayni kod yolunu saniyeler icinde
+    calistirir ve iddialarin hicbirini degistirmez.
 
     NEDEN GEREKLI (olculdu 24.08.2026): doldur-sadece semantigi, motor
     duzeltildikten sonra DB'yi kendi kendine tazelemiyor. Sutunda duran
@@ -199,7 +210,7 @@ def zenginlestir(tazele: bool = False) -> dict:
                 satir.kar_payi_tablosu = secilen_tablo
                 ozet["tablo_eklendi"] += 1
 
-            cikan = kaydi_hibrit_cikar(ham_metin)
+            cikan = kaydi_hibrit_cikar(ham_metin, ner_kullan, llm_kullan)
             izler = cikan.pop("_izler")
             kaynaklar = cikan.pop("_kaynaklar")
             cikan.pop("_adaylar", None)

@@ -10,7 +10,17 @@ const KRITERLER = [
   { value: "en_yuksek_odul", label: "En yüksek ödül miktarı" },
   { value: "en_uzun_vade", label: "En uzun vade seçeneği" },
   { value: "en_dusuk_masraf", label: "En düşük masraf/tahsis ücreti" },
+  // Şartname Md. 5.7'nin KENDİ örnek senaryosu: "kâr payı açısından C
+  // Bankası, vade açısından A Bankası daha avantajlıdır". Backend bunu
+  // eksen eksen kazanan mantığıyla üretiyordu ama arayüzde çağrılacak
+  // bir yer YOKTU - şartnamenin amiral kriteri erişilemez duruyordu.
+  { value: "en_avantajli", label: "En avantajlı (çok eksenli)" },
   { value: "en_yuksek_tutar", label: "En yüksek finansman tutarı" },
+  // Nakit iade / indirim: çıkarım motoru bu değerleri üretiyor ve 60
+  // kayıtta dolu, ama kriter olmadığı için o kampanyalar ASIL avantajları
+  // üzerinden hiç sıralanamıyordu (bkz. comparison/compare_engine.py).
+  { value: "en_yuksek_nakit_iade", label: "En yüksek nakit iade oranı" },
+  { value: "en_yuksek_indirim", label: "En yüksek indirim oranı" },
 ];
 
 const KRITER_ETIKETLERI = {
@@ -18,7 +28,10 @@ const KRITER_ETIKETLERI = {
   en_yuksek_odul: "En yüksek ödül miktarı",
   en_uzun_vade: "En uzun vade seçeneği",
   en_dusuk_masraf: "En düşük masraf/tahsis ücreti",
+  en_avantajli: "En avantajlı (çok eksenli)",
   en_yuksek_tutar: "En yüksek finansman tutarı",
+  en_yuksek_nakit_iade: "En yüksek nakit iade oranı",
+  en_yuksek_indirim: "En yüksek indirim oranı",
 };
 
 const sonucKolonlari = [
@@ -138,6 +151,61 @@ export default function KarsilastirmaPaneli({
             size="small"
             scroll={{ x: "max-content" }}
           />
+
+          {/* EKSEN KIRILIMI - yalnızca kompozit kriterde döner.
+              Şartname Md. 5.7 tek bir "kazanan" istemiyor; hangi EKSENDE
+              kimin öne çıktığını istiyor. Backend bunu üretiyordu, burada
+              gösterilmiyordu. `durum` alanı da aynen aktarılır: ödül
+              birimleri karışıksa ("Bankkart Lira" ile "TL") o eksen
+              KAZANANSIZ kalır - uydurma bir sıralama yapılmaz. */}
+          {sonuc.eksen_kirilimi?.length > 0 && (
+            <div style={{ marginTop: 16 }}>
+              <Typography.Text strong>Eksen bazında öne çıkanlar</Typography.Text>
+              <Typography.Paragraph type="secondary" style={{ fontSize: 12, marginBottom: 8 }}>
+                Tek bir kazanan yerine her ölçütte kimin önde olduğu ayrı gösterilir.
+              </Typography.Paragraph>
+              <Space direction="vertical" size={6} style={{ width: "100%" }}>
+                {sonuc.eksen_kirilimi.map((e) => {
+                  const kazananlar = e.kazananlar ?? [];
+                  const olculemez = kazananlar.length === 0;
+                  return (
+                    <div
+                      key={e.kriter}
+                      style={{
+                        padding: "6px 10px",
+                        borderLeft: `3px solid ${olculemez ? "#b89a5c" : "#169276"}`,
+                        background: "var(--kart-ustu)",
+                        borderRadius: "0 4px 4px 0",
+                        fontSize: 13,
+                      }}
+                    >
+                      <strong>{e.aciklama ?? e.kriter}</strong>
+                      {olculemez ? (
+                        <span style={{ marginLeft: 8 }}>
+                          <Tag color="default">Ölçülemedi</Tag>
+                          {e.durum === "birim_karisik" && e.birimler?.length > 0 && (
+                            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                              Ödül birimleri karışık ({e.birimler.join(", ")}) — farklı
+                              birimler karşılaştırılmaz.
+                            </Typography.Text>
+                          )}
+                        </span>
+                      ) : (
+                        <span style={{ marginLeft: 8 }}>
+                          {e.deger != null && <Tag color="green">{String(e.deger)}</Tag>}
+                          {kazananlar.map((k, i) => (
+                            <Tag key={i} color="blue">
+                              {k.banka} — {k.kampanya_adi}
+                            </Tag>
+                          ))}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </Space>
+            </div>
+          )}
         </>
       )}
     </div>

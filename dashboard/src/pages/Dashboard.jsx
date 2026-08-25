@@ -6,7 +6,7 @@ import {
   SwapOutlined,
   AuditOutlined,
 } from "@ant-design/icons";
-import client, { tazelikGetir } from "../api/client";
+import client, { tazelikGetir, kampanyalariGetir } from "../api/client";
 import {
   OLCUMLER,
   OLCUM_TARIHI,
@@ -53,6 +53,19 @@ export default function Dashboard() {
   // veritabani 425 idi). Uc nokta erisilemezse olcumler.js'teki deger
   // yedek olarak kullanilir - ekranda bos sayi gosterilmez.
   const [tazelik, setTazelik] = useState(null);
+  // Tur dagilimi ve alan doluluk grafikleri de CANLI veriden hesaplanir.
+  //
+  // DENETIM BULGUSU (25.08.2026): hacim sayilari yukarida canliya
+  // baglanmisti ama bu iki grafik hala olcumler.js'teki anlik goruntuden
+  // besleniyordu ve ciddi sekilde sapmisti - IKI YONDE birden:
+  //   Belirtilmemis tur : ekran 234, gercek  56  (sistem oldugundan KOTU gorunuyordu)
+  //   Taksit sayisi     : ekran 130, gercek 236  (ayni sekilde eksik)
+  //   Kar payi orani    : ekran  34, gercek  11  (sistem oldugundan IYI gorunuyordu)
+  // Sonuncusu en tehlikelisiydi: 34 rakami, sonradan temizlenen uydurma
+  // kar payi degerlerini (nakit iade / vade farksiz sifirlari) iceren
+  // donemden kalmaydi. Ekranin gercekte olandan IYI gostermesi, seffaflik
+  // ilkesinin (rapor Bolum 5.7/15) dogrudan ihlalidir.
+  const [kampanyalar, setKampanyalar] = useState(null);
 
   // Paneller arası geçiş kontrolü (biri açılırken diğeri kapanır)
   const modelPaneliniAc = () => {
@@ -76,6 +89,10 @@ export default function Dashboard() {
     tazelikGetir()
       .then(setTazelik)
       .catch(() => setTazelik(null));
+
+    kampanyalariGetir()
+      .then(setKampanyalar)
+      .catch(() => setKampanyalar(null));
   }, []);
 
   // Canli deger varsa onu, yoksa olcumler.js'teki yedegi kullan.
@@ -89,9 +106,63 @@ export default function Dashboard() {
   // Halka grafigin toplami VERIDEN hesaplanir. Onceden 251 sabiti
   // yaziliydi ama URUN_AILESI 447'lik sete gore guncellenmisti; yuzdeler
   // 251'e bolundugu icin toplamlari %100'u asiyordu (%93,2 + %61,0 = %154).
-  const urunAilesiToplam = URUN_AILESI.reduce((t, u) => t + u.sayi, 0);
+  // --- CANLI TUR DAGILIMI ---
+  // Izlenen bes alan, olcumler.js'teki "doluluk" tanimiyla AYNI olmali:
+  // o urun ailesindeki kampanyalarda bu alanlarin yuzde kaci dolu.
+  const IZLENEN_ALANLAR = [
+    "kar_payi_orani_percent",
+    "vade_ay",
+    "taksit_sayisi",
+    "odul_miktari",
+    "masraf_durumu",
+  ];
+  const urunAilesi = kampanyalar
+    ? Object.entries(
+        kampanyalar.reduce((grup, k) => {
+          const ad = k.kampanya_turu || "Belirtilmemiş";
+          (grup[ad] ??= []).push(k);
+          return grup;
+        }, {})
+      )
+        .map(([ad, uyeler]) => {
+          const dolu = uyeler.reduce(
+            (t, k) => t + IZLENEN_ALANLAR.filter((a) => k[a] != null).length,
+            0
+          );
+          return {
+            ad,
+            sayi: uyeler.length,
+            doluluk:
+              Math.round((1000 * dolu) / (uyeler.length * IZLENEN_ALANLAR.length)) / 10,
+          };
+        })
+        .sort((a, b) => b.sayi - a.sayi)
+    : URUN_AILESI;
+
+  // --- CANLI ALAN DOLULUGU ---
+  const alanDolulugu = kampanyalar
+    ? [
+        { alan: "Taksit sayısı", anahtar: "taksit_sayisi" },
+        { alan: "Ödül miktarı", anahtar: "odul_miktari" },
+        { alan: "Kâr payı oranı", anahtar: "kar_payi_orani_percent" },
+        { alan: "Vade", anahtar: "vade_ay" },
+        { alan: "Masraf durumu", anahtar: "masraf_durumu" },
+      ]
+        .map(({ alan, anahtar }) => ({
+          alan,
+          dolu: kampanyalar.filter((k) => k[anahtar] != null).length,
+          toplam: kampanyalar.length,
+        }))
+        .sort((a, b) => b.dolu - a.dolu)
+    : ALAN_DOLULUGU;
+
+  // Grafiklerin sayilari canli mi yoksa olcumler.js yedegi mi - juri
+  // ayirt edebilmeli (hacimCanli ile ayni gerekce).
+  const dagilimCanli = kampanyalar != null;
+
+  const urunAilesiToplam = urunAilesi.reduce((t, u) => t + u.sayi, 0);
   // Alan doluluk tablosunun paydasi da ayni sekilde veriden gelir.
-  const alanDolulukToplam = ALAN_DOLULUGU[0]?.toplam ?? urunAilesiToplam;
+  const alanDolulukToplam = alanDolulugu[0]?.toplam ?? urunAilesiToplam;
 
   return (
     <div
@@ -1054,8 +1125,8 @@ export default function Dashboard() {
         /* -- Halka grafik verileri -- */
         /* Sıcak renk paleti: koyu yeşil, gri (eksik veri), altın, turuncu, açık yeşil, bej */
         const halkaRenkler = ["#0c6653", "#b9bdb6", "#d4a34b", "#d97736", "#3fb296", "#d8c48c"];
-        const ilkBes = URUN_AILESI.slice(0, 5);
-        const kalanlar = URUN_AILESI.slice(5);
+        const ilkBes = urunAilesi.slice(0, 5);
+        const kalanlar = urunAilesi.slice(5);
         const digerToplam = kalanlar.reduce((t, u) => t + u.sayi, 0);
         const halkaDilimler = [
           ...ilkBes.map((u, i) => ({ ad: u.ad, sayi: u.sayi, renk: halkaRenkler[i] })),
@@ -1321,7 +1392,7 @@ export default function Dashboard() {
 
                 {/* Doluluk satırları */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                  {ALAN_DOLULUGU.map((item) => {
+                  {alanDolulugu.map((item) => {
                     const yuzdeSayi = (item.dolu / item.toplam) * 100;
                     const yuzdeMetin = yuzdeSayi.toFixed(1).replace(".", ",");
                     let cubukRengi = "#d97736"; // < 15 turuncu
@@ -2200,7 +2271,7 @@ export default function Dashboard() {
                   <div style={bentoBaslikStil}>ÜRÜN AİLESİ DAĞILIMI</div>
                   
                   <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                    {URUN_AILESI.map((u) => {
+                    {urunAilesi.map((u) => {
                       const dusukMu = u.doluluk < 25;
                       const yaziRengi = dusukMu ? "#b8873a" : "#0c765f";
                       const cubukRengi = dusukMu ? "#d4a34b" : "#169276";

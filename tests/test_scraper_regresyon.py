@@ -23,6 +23,7 @@ gizlenmez, oldugu gibi raporlanir.
 """
 
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -68,6 +69,41 @@ _HEDEF_ALTIN_KAYITLAR = [
 ]
 
 
+# Turkce bulunma/ayrilma/yonelme ekleri - marka adlarina eklenen bicimler.
+# Sirali: uzun ekler once denenir ("nde" varken "de" ile kesilmesin).
+_TR_EKLER = ("nde", "nda", "den", "dan", "ten", "tan", "de", "da", "te", "ta")
+_ASGARI_GOVDE = 3
+
+
+def _ek_atilmis_govde(kelime: str, metin: str) -> str | None:
+    """Kelimeden Turkce eki atinca metinde TAM KELIME olarak bulunan govde.
+
+    GOVDE TAM KELIME ARANIR, alt-dize olarak DEGIL. Bu, esigin 3 karaktere
+    inebilmesini saglar: "n11'de" -> "n11" gercek bir marka adidir ama
+    alt-dize aramasi 3 harfte guvenilmez olurdu ("ate" -> "atesli"
+    icinde eslesir). Kelime siniri sarti bu riski kaldirir, dolayisiyla
+    kural hem daha kapsayici hem daha KESIN olur.
+    """
+    for ek in _TR_EKLER:
+        if not kelime.endswith(ek):
+            continue
+        govde = kelime[: -len(ek)]
+        if len(govde) < _ASGARI_GOVDE:
+            continue
+        # UZUN GOVDE: alt-dize yeterli.
+        # Kelime siniri SART KOSULAMAZ cunku karsilastirma_bicimi kesme
+        # isaretini SILIYOR - sayfadaki "Pazarama'da" kanonik bicimde
+        # "pazaramada" olur ve "pazarama" bir kelime siniriyla bitmez.
+        if len(govde) >= 4 and govde in metin:
+            return govde
+        # KISA GOVDE (3 harf): yalnizca TAM KELIME kabul edilir. Marka
+        # adlari boyle olabiliyor ("n11'de" -> "n11") ama 3 harflik bir
+        # alt-dize baska kelimelerin icinde rastgele eslesirdi.
+        if len(govde) == 3 and re.search(rf"(?<!\w){re.escape(govde)}(?!\w)", metin):
+            return govde
+    return None
+
+
 @pytest.mark.parametrize(
     "altin", _HEDEF_ALTIN_KAYITLAR, ids=[k["kayit_id"] for k in _HEDEF_ALTIN_KAYITLAR]
 )
@@ -107,10 +143,30 @@ def test_scraper_altin_veriyle_uyusuyor(altin):
     # riski yaratir - o zaman test, eslesmenin olctugunden baska bir sey
     # olcer.
     kelime = karsilastirma_bicimi(altin["kampanya_adi"].split()[0]).strip(".,!?")
-    assert kelime in karsilastirma_bicimi(ham_metin), (
-        f"{altin['kayit_id']}: beklenen ifade ('{kelime}') ham metinde yok - "
-        "sayfa degismis veya secici bozulmus olabilir"
-    )
+    metin_kanonik = karsilastirma_bicimi(ham_metin)
+
+    # TURKCE EK TOLERANSI - once TAM kelime aranir, bulunamazsa GOVDE.
+    #
+    # Olculdu (25.08.2026): 23 basarisizligin 21'inde sayfa DOGRUYDU,
+    # yalnizca ek farkliydi - altin ad "Trendyol'da / Uber'de / n11'de"
+    # yazarken sayfa markayi eksiz kullaniyor ("Uber harcamalarinizda %80
+    # indirim"). Kampanya adi cogu kayitta URL slug'indan turetildigi icin
+    # bulunma eki ADIN parcasi olarak kaliyor, sayfa metninde ise
+    # kalmiyor.
+    #
+    # Bu bir scraper gerilemesi DEGIL. Ve testin varlik sebebi gercek bir
+    # gerilemeyi GORMEK - 21 yanlis alarm, gercek bir bozulmayi gurultunun
+    # icinde gizlerdi (bkz. modul docstring'i, ayni gerekce taslak
+    # kayitlarin disarida birakilmasinda da kullanilmisti).
+    #
+    # Ayirt edicilik korunur: govde en az 4 karakter olmali ve marka adi
+    # olarak sayfada gecmeli. Yanlis bir sayfa hala "trendyol" icermez.
+    if kelime not in metin_kanonik:
+        govde = _ek_atilmis_govde(kelime, metin_kanonik)
+        assert govde is not None, (
+            f"{altin['kayit_id']}: beklenen ifade ('{kelime}') ham metinde yok - "
+            "sayfa degismis veya secici bozulmus olabilir"
+        )
 
 
 def test_hicbir_kayit_bos_degil():

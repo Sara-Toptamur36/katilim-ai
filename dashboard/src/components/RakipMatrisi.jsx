@@ -16,6 +16,8 @@ const EKSEN_BASLIKLARI = {
   en_uzun_vade: "Vade",
   en_dusuk_masraf: "Masraf",
   en_yuksek_tutar: "Tutar",
+  en_yuksek_nakit_iade: "Nakit İade",
+  en_yuksek_indirim: "İndirim",
 };
 
 const EKSEN_BIRIMLERI = {
@@ -23,6 +25,8 @@ const EKSEN_BIRIMLERI = {
   en_uzun_vade: (d) => `${d} ay`,
   en_dusuk_masraf: (d) => `${d} TL`,
   en_yuksek_tutar: (d) => `${d} TL`,
+  en_yuksek_nakit_iade: (d) => `%${d}`,
+  en_yuksek_indirim: (d) => `%${d}`,
 };
 
 function hucreMetni(kriter, hucre) {

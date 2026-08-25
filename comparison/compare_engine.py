@@ -86,6 +86,32 @@ KRITERLER: dict[str, Kriter] = {
         aciklama="En yuksek finansman tutari (bonus - sartnamenin 5.7 ornek listesinde yok)",
         daha_iyi="yuksek",
     ),
+    # NAKIT IADE / INDIRIM - bonus kriterler (25.08.2026).
+    #
+    # NEDEN EKLENDI: bu iki alan cikarim motorunda uretiliyor ve 60 kayitta
+    # dolu (52 indirim, 8 nakit iade) ama karsilastirilabilir DEGILDI - yani
+    # "Enterprise Arac Kiralamalarinda %35 Indirim" gibi kampanyalar, ASIL
+    # avantajlari uzerinden hic siralanamiyordu. Kar payi/vade eksenlerinde
+    # bos gorunup listenin dibine dusuyorlardi.
+    #
+    # `en_yuksek_tutar` ile AYNI statude: sartname Md. 5.7'nin ornek kriter
+    # listesinde yoklar, bonus olarak sunulurlar.
+    #
+    # `en_avantajli` kompozitine BILEREK KATILMIYORLAR: o kompozit
+    # sartnamenin dort eksenine bagli (bkz. AVANTAJLI_ALT_KRITERLER) ve
+    # olculmus bir karar - yeni eksen eklemek o karari sessizce degistirirdi.
+    "en_yuksek_nakit_iade": Kriter(
+        alan="nakit_iade_orani",
+        yon="DESC",
+        aciklama="En yuksek nakit iade orani (bonus - sartnamenin 5.7 ornek listesinde yok)",
+        daha_iyi="yuksek",
+    ),
+    "en_yuksek_indirim": Kriter(
+        alan="indirim_orani_percent",
+        yon="DESC",
+        aciklama="En yuksek indirim orani (bonus - sartnamenin 5.7 ornek listesinde yok)",
+        daha_iyi="yuksek",
+    ),
 }
 
 # "en_avantajli" kompoziti OLUSTURAN alt kriterler - Sartname Md. 5.7 ornek
@@ -390,7 +416,16 @@ def _en_avantajli_bellekte(
 # eksen degil, eksenlerin sonucudur; matriste her eksen ayri sutundur.
 # Odul ekseninin birim korumasi icin bkz. odul_birimi_tekil_mi (yukarida,
 # en_avantajli ile ortak).
-_MATRIS_EKSENLERI = AVANTAJLI_ALT_KRITERLER + ("en_yuksek_tutar",)
+_MATRIS_EKSENLERI = AVANTAJLI_ALT_KRITERLER + (
+    "en_yuksek_tutar",
+    # Nakit iade / indirim eksenleri (25.08.2026): bu iki alanda degeri olan
+    # 60 kayit, matriste DIGER bes eksende bos oldugu icin her hucresi
+    # "Belirtilmemis" gorunen satirlar olarak duruyordu - yani sayfada yer
+    # kaplayip hicbir sey soylemiyorlardi. Kendi eksenleri gelince ayni
+    # satirlar gercek avantajlarini gosteriyor.
+    "en_yuksek_nakit_iade",
+    "en_yuksek_indirim",
+)
 
 
 def rakip_matrisi(

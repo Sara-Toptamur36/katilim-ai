@@ -27,7 +27,6 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass, field
 
-import evren_istemci
 from chunking.banka_tespit import banka_tespit
 from chunking.embedding import sorguyu_vektore_cevir
 from chunking.qdrant_baglanti import (
@@ -196,15 +195,21 @@ def getir(
 
     `rag_modu` "hibrit" (yogun+seyrek, RRF) ya da "dense" (yalniz yogun)
     degerini alir. None verilirse RAG_MODE ortam degiskeni okunur; o da
-    tanimli degilse SAGLAYICIYA GORE otomatik secilir - bkz.
-    docs/adr/0002-evren-cikarim-entegrasyonu.md: EVREN'in bge-m3-embed'iyle
-    hibrit fuzyon bu projede HENUZ OLCULMEDI (EVREN'in kendi olcumu farkli
-    bir gomme modeliyle yapildi, bu depoya dogrudan tasinamaz), bu yuzden
-    EVREN aktifken varsayilan "dense"tir. Yerel e5-base ile hibrit yolu
-    docs/rag_tasarim_ve_olcum.md'de ZATEN OLCULUP varsayilan yapilmisti -
-    bu davranis DEGISMEDI, yerel saglayicida varsayilan hala "hibrit"tir.
-    Bu bayrak, iki modu ayni gold set uzerinde karsilastirmali olarak
-    olcmeyi (Recall@1/@3, gecikme) mumkun kilmak icin var.
+    tanimli degilse varsayilan HER ZAMAN "hibrit"tir.
+
+    GUNCELLEME (25 Agustos 2026, gercek EVREN anahtariyla olculdu - bkz.
+    docs/rag_tasarim_ve_olcum.md Bulgu 14): eskiden EVREN aktifken
+    varsayilan "dense"e dusuyordu (EVREN'in kendi genel dokumantasyon
+    olcumu hibrit/rerank'i saf yogunun altinda gostermisti). Bu projenin
+    kendi korpusunda gercek anahtarla olculdugunde SONUC TERSINE cikti:
+    EVREN'in bge-m3-embed'iyle bile hibrit mod (Genel Recall@5 %84,50)
+    dense modu (%83,72) hafifce GECTI - ustelik embedding artik varsayilan
+    olarak yerelde kaliyor (bkz. evren_istemci.gomme_aktif_mi()), yerel
+    e5-base ile hibrit zaten ONCEDEN en iyi olcum (%87,60) olarak
+    dogrulanmisti. Iki saglayicida da hibrit kazandigi icin saglayiciya
+    gore dallanmaya artik gerek yok. Bu bayrak, iki modu ayni gold set
+    uzerinde karsilastirmali olarak yeniden olcmeyi (Recall@1/@3, gecikme)
+    mumkun kilmak icin hala mevcut.
 
     NEDEN BAYRAKLI (metodoloji): bu iki katman da retrieval sonucunu
     degistirir. Kapatilabilir olmadiklari surece "katkisi ne kadar?"
@@ -219,9 +224,7 @@ def getir(
     if yeniden_sirala is None:
         yeniden_sirala = os.environ.get("KATILIMAI_RERANK", "true").lower() == "true"
     if rag_modu is None:
-        rag_modu = os.environ.get(
-            "RAG_MODE", "dense" if evren_istemci.aktif_mi() else "hibrit"
-        ).strip().lower()
+        rag_modu = os.environ.get("RAG_MODE", "hibrit").strip().lower()
     if rag_modu not in ("hibrit", "dense"):
         raise ValueError(f"Bilinmeyen RAG_MODE: {rag_modu!r} (beklenen: 'hibrit' | 'dense')")
 
@@ -242,13 +245,22 @@ def getir(
     def _ara(filtre_bankasi: str | None, sorgu_metni: str) -> list[dict]:
         # Ilk asamada RRF ile daha genis bir aday havuzu (örn. 20) aliyoruz.
         #
-        # DENENDI VE GERI ALINDI (23 Agustos 2026, olculdu): 40'a cikarilinca
-        # banka_ve_konu Recall@1 %14,29->%19,05 iyilesti AMA ayni kategoride
-        # Recall@5 %52,38->%38,1'e, dogal_soru Recall@5 %92,86->%71,43'e,
-        # GENEL Recall@5 %88,24->%83,19'a geriledi. Daha genis havuz cross-
+        # DENENDI VE GERI ALINDI (23 Agustos 2026, olculdu, yerel e5-base +
+        # hibrit mod + 185 soruluk eski set): 40'a cikarilinca banka_ve_konu
+        # Recall@1 %14,29->%19,05 iyilesti AMA ayni kategoride Recall@5
+        # %52,38->%38,1'e, dogal_soru Recall@5 %92,86->%71,43'e, GENEL
+        # Recall@5 %88,24->%83,19'a geriledi. Daha genis havuz cross-
         # encoder'a daha fazla dikkat dagitici aday sunuyor ve @1'deki kucuk
         # kazanci @3/@5'te daha buyuk bir kayipla odetiyor - net etki olumsuz.
         # Bkz. docs/rag_tasarim_ve_olcum.md Bulgu 6.
+        #
+        # TEKRAR DENENDI (25 Agustos 2026, EVREN bge-m3-embed + dense mod +
+        # buyumus altin veri setiyle, 20 vs 40 olculdu): bulgu AYNI kaldi -
+        # banka_ve_konu ve dogal_soru'da HICBIR degisiklik olmadi (ikisi de
+        # birebir ayni), tam_ad hafifce geriledi (%97,87->%95,74), GENEL
+        # dustu (%83,72->%82,95). Farkli embedding modeli ve daha buyuk
+        # sette de net etki hala olumsuz - bu bir olcum kosuluna bagli
+        # gurultu degil, yapisal bir sinirlama.
         genis_limit = max(20, limit * 2)
         filtre = coklu_filtre(banka=filtre_bankasi, hedef_tarih=hedef_tarih)
         if rag_modu == "dense":

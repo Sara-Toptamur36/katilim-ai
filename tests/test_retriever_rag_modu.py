@@ -34,9 +34,13 @@ def test_evren_pasifken_varsayilan_hibrittir(monkeypatch):
     assert sonuc.sebep == "Vektor veritabanina (Qdrant) erisilemiyor"
 
 
-def test_evren_aktifken_varsayilan_dense_secilir(monkeypatch):
-    """EVREN aktifken hibrit fuzyon bu depoda HENUZ olculmedigi icin
-    varsayilan 'dense' olmali (bkz. docs/adr/0002)."""
+def test_evren_aktifken_bile_varsayilan_hibrit_secilir(monkeypatch):
+    """EVREN_API_KEY tanimli olsa bile (aktif_mi()=True) varsayilan HALA
+    'hibrit'tir (25 Agustos 2026'dan itibaren - bkz. docs/rag_tasarim_ve_
+    olcum.md Bulgu 14). Gercek anahtarla olculdugunde EVREN'in bge-m3-
+    embed'iyle bile hibrit dense'i hafifce gecti (Genel Recall@5 %84,50 vs
+    %83,72) - saglayiciya gore dallanan eski varsayilan (EVREN aktifken
+    'dense') bu yuzden kaldirildi."""
     monkeypatch.setattr(evren_istemci, "_API_KEY", "sk-evren-team00-sahte")
     monkeypatch.delenv("RAG_MODE", raising=False)
 
@@ -54,11 +58,12 @@ def test_evren_aktifken_varsayilan_dense_secilir(monkeypatch):
     monkeypatch.setattr(retriever, "yogun_ara", _sahte_yogun_ara)
     monkeypatch.setattr(retriever, "hibrit_ara", _sahte_hibrit_ara)
     monkeypatch.setattr(retriever, "sorguyu_vektore_cevir", lambda s: [0.0])
+    monkeypatch.setattr(retriever, "seyrek_vektor_uret", lambda s: {})
 
     retriever.getir("murabaha nedir")
 
-    assert cagrilar.get("yogun_ara_cagrildi") is True
-    assert "hibrit_ara_cagrildi" not in cagrilar
+    assert cagrilar.get("hibrit_ara_cagrildi") is True
+    assert "yogun_ara_cagrildi" not in cagrilar
 
 
 def test_rag_mode_ortam_degiskeni_otomatik_varsayilani_ezer(monkeypatch):

@@ -64,3 +64,15 @@ Gerçek `EVREN_API_KEY` ile bağlantı doğrulamasından önce yapılan bir haz�
 4. **`ASGARI_VEKTOR_SKORU = 0.40` eşiği** yerel `e5-base`'e göre ölçülmüştü, `bge-m3-embed` için hâlâ doğrulanmadı — `ASGARI_VEKTOR_SKORU` ortam değişkeniyle ezilebilir hâle getirildi, koddaki uyarı bu eşiğin EVREN için henüz kalibre edilmediğini açıkça belirtiyor.
 
 **Bilinçli olarak ERTELENEN madde — Sara'nın provider abstraction (interface + `providers/` benzeri bir katman) önerisi:** Şu anki tasarımda `evren_istemci.aktif_mi()` dallanması yalnızca **iki** net, dokümante edilmiş noktada yaşıyor (`extraction/llm_extractor.py::llm_ile_sor`, `chunking/embedding.py::_vektore_cevir`) — kodun her yerine dağılmış değil. Gerçek anahtarla ilk bağlantı doğrulanmadan (bkz. bu ADR'nin ana gövdesi, "önce doğrula sonra mimari kur" gerekçesi) bir `Protocol`/arayüz katmanı inşa etmek, henüz doğrulanmamış varsayımlar üzerine ikinci bir soyutlama katmanı koymak anlamına gelir. Gerçek EVREN davranışı doğrulandıktan ve `RAG_MODE=dense` ile `hibrit` karşılaştırmalı olarak ölçüldükten sonra yeniden değerlendirilecek.
+
+## Güncelleme (25 Ağustos 2026, gerçek anahtarla ilk ölçüm) — `bge-m3-embed` kararı GERİ ALINDI
+
+Takım anahtarı (`team26`) alındıktan sonra korpus gerçekten `bge-m3-embed` ile yeniden indekslendi (`kampanya_parcalari_evren`, 513 belge/1875 parça) ve 129 sorguluk güncel altın veri setiyle (k=5, `exact=True`) hem `dense` hem `hibrit` modda ölçüldü — sonuç bu ADR'nin madde 2'deki kararıyla **çelişiyor**:
+
+| Ölçüt | Yerel `e5-base` (768b, hibrit) | EVREN `bge-m3-embed` (1024b, dense) | EVREN `bge-m3-embed` (1024b, hibrit) |
+|---|---|---|---|
+| Genel Recall@5 | **%87,60** | %83,72 | %84,50 |
+| banka_ve_konu | **%52,17** | %34,78 | %39,13 |
+| dogal_soru | **%87,50** | %75,00 | %81,25 |
+
+Madde 2'deki R@1 = 0,95 rakamı EVREN'in kendi genel test setine (40 pasaj·20 çeldirici) aitti, bu projenin Türkçe katılım bankacılığı korpusuna genellenmedi. **Karar güncellendi:** `chunking/embedding.py` yerel `e5-base`'de KALIYOR — `EVREN_API_KEY` tanımlı olsa bile gömme için EVREN'e otomatik geçiş artık önerilmiyor (kod hâlâ `EVREN_API_KEY` varsa `bge-m3-embed`'e gidiyor; bu davranışı kapatmak isteyen `EMBEDDING` tarafını EVREN'den ayrı yönetmek için ek bir bayrak gerekir — henüz eklenmedi, bkz. `docs/rag_tasarim_ve_olcum.md` Bulgu 14). `llm-fast` kararı (madde 1) bu ölçümden ETKİLENMEDİ, aynı kalıyor. Ayrıntılı kategori kırılımı ve kök neden analizi: `docs/rag_tasarim_ve_olcum.md`, Bulgu 14-15.

@@ -1,18 +1,27 @@
 """Metinleri vektore ceviren embedding katmani (RAG icin ilk adim).
 
 IKI SAGLAYICI (bkz. docs/adr/0002-evren-cikarim-entegrasyonu.md):
-  - EVREN (evren_istemci.py, bge-m3-embed alias) - EVREN_API_KEY set
-    edilmisse ONCELIKLI yol. Dokumantasyonun kendi getirme olcumunde bu
-    modelde EN YUKSEK R@1 (0,95) olculmus; cikti boyutu SABIT 1024.
-  - Yerel intfloat/multilingual-e5-base - EVREN_API_KEY YOKSA varsayilan/
-    fallback yol, 768 boyutlu vektor uretir.
+  - Yerel intfloat/multilingual-e5-base - VARSAYILAN yol, 768 boyutlu
+    vektor uretir. EVREN_API_KEY tanimli olsa BILE (ornegin yalnizca
+    llm-fast icin eklenmis olabilir) embedding burada KALIR.
+  - EVREN (evren_istemci.py, bge-m3-embed alias) - yalnizca
+    evren_istemci.gomme_aktif_mi() True ise (EVREN_API_KEY VE ACIKCA
+    EVREN_EMBED_KULLAN=true) devreye girer; cikti boyutu SABIT 1024.
+    GUNCELLEME (25 Agustos 2026, gercek anahtarla olculdu - bkz. docs/
+    rag_tasarim_ve_olcum.md Bulgu 14): dokumantasyonun genel test
+    setindeki R@1=0,95 bu projenin Turkce korpusuna GENELLENMEDI - gercek
+    olcumde bge-m3-embed yerel e5-base'in ALTINDA kaldi (Genel Recall@5
+    %87,60 -> %83,72). Bu yuzden aktif_mi() (EVREN_API_KEY VAR MI) ile
+    gomme_aktif_mi() (EMBEDDING FIILEN EVREN Mİ) artik BILINCLI OLARAK
+    AYRI sorular - ilki extraction/llm_extractor.py'nin cevapladigi soru,
+    ikincisi bu dosyanin.
 
 KRITIK - VEKTOR BOYUTU SAGLAYICIYA GORE DEGISIR: EVREN (1024) ve yerel
 model (768) AYNI Qdrant koleksiyonuna yazilamaz - boyut degistiginde
 koleksiyonun `sifirla=True` ile yeniden olusturulup TUM korpusun yeniden
 indekslenmesi gerekir (bkz. chunking/qdrant_baglanti.py::koleksiyon_hazirla,
-.env.ornek). VEKTOR_BOYUTU bu yuzden EVREN aktifse otomatik 1024 secilir -
-EMBEDDING_BOYUTU ortam degiskeni yine de ELLE EZEBILIR.
+.env.ornek). VEKTOR_BOYUTU bu yuzden gomme_aktif_mi() true ise otomatik
+1024 secilir - EMBEDDING_BOYUTU ortam degiskeni yine de ELLE EZEBILIR.
 
 MODEL SECIMI - yerel yol icin intfloat/multilingual-e5-base:
   - Cok dilli, Turkce destegi guclu; 768 boyutlu vektor uretir.
@@ -46,7 +55,7 @@ from typing import Optional
 import evren_istemci
 
 MODEL_ADI = os.environ.get("EMBEDDING_MODELI", "intfloat/multilingual-e5-base")
-_VARSAYILAN_BOYUT = evren_istemci.EMBED_BOYUTU if evren_istemci.aktif_mi() else 768
+_VARSAYILAN_BOYUT = evren_istemci.EMBED_BOYUTU if evren_istemci.gomme_aktif_mi() else 768
 VEKTOR_BOYUTU = int(os.environ.get("EMBEDDING_BOYUTU", str(_VARSAYILAN_BOYUT)))
 
 _model = None
@@ -68,7 +77,7 @@ def modeli_yukle():
 
 
 def _vektore_cevir(metinler: list[str], onek: str) -> list[list[float]]:
-    if evren_istemci.aktif_mi():
+    if evren_istemci.gomme_aktif_mi():
         # EVREN aktifken yerel modele SESSIZCE dusulmez: bge-m3-embed 1024,
         # yerel e5-base 768 boyutlu vektor uretir - ayni koleksiyona karisik
         # boyutta vektor yazmak indeksi bozar (bkz. modul basi dokstring).
@@ -104,7 +113,7 @@ def model_hazir_mi() -> Optional[str]:
     doner (test/spike'larin anlamli sekilde atlanabilmesi icin - ornegin
     yerel model hic indirilmemisse ve internet yoksa, ya da EVREN aktifse
     ama erisilemiyorsa)."""
-    if evren_istemci.aktif_mi():
+    if evren_istemci.gomme_aktif_mi():
         if evren_istemci.hazir_mi():
             return None
         return "EVREN_API_KEY tanimli ama evren-llmapi.ssyz.org.tr'a ulasilamadi"

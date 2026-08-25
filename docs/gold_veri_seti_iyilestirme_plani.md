@@ -177,20 +177,27 @@ bakım biter.
 
 ---
 
-## Faz 4 — Rotasyona Giren 10 Kaydı Çöz
+## Faz 4 — TAMAMLANDI ✅ (10 kaydın kaynak durumu belgelendi)
 
-**Sorun:** `KT-002`, `VK-001..007`, `ZK-003`, `DK-005` artık güncel kazınmış
-korpusla eşleşmiyor — kaynak sayfaları rotasyona girmiş, otomatik doğrulama
-dışında kalıyorlar.
+**Yapıldı:** `KT-002`, `VK-001..007`, `ZK-003`, `DK-005` için arşiv kontrolü
+yapıldı — her birinin `kaynak_url` slug'ı `scraper/raw_data/` altında (banka
+klasörünün tamamında, hem güncel hem eski dosyalarda) tek tek arandı.
+**Hiçbirinin arşivi yok** — bu sayfalar scraper tarafından hiç
+kazınmamış ya da kazınıp sonra dosyası silinmiş.
 
-**Yapılacak:**
-1. Arşivlenmiş snapshot var mı kontrol et (kayıt oluşturulduğu tarihteki
-   ekran görüntüsü/ham metin arşivde olabilir).
-2. Yoksa kayda açık bir `olcum_disi: true` / benzeri alan ekleyip gerekçesini
-   `notlar`a yaz — böylece "kanıt yok" diye tekrar tekrar sorgulanmaz, ölçüm
-   raporlarında bilinçli olarak hariç tutulduğu görünür.
+Arşiv bulunamadığı için `notlar`a açık bir "OLÇÜM DIŞI - KAYNAK KORPUSTA
+YOK" gerekçesi eklendi (yeni bir şema alanı yerine, projenin zaten
+kullandığı `notlar` metin kuralına uyuldu). Not şunu netleştiriyor:
+etiket **yanlış değil** — girildiği anda kaynaktan alınmıştı (Kural 4) —
+yalnızca artık otomatik olarak yeniden doğrulanamıyor. Bu, aynı 10 kaydın
+her denetimde "kanıtsız" diye tekrar tekrar sorgulanmasını önler.
 
-**Sorumlu:** Veri ekibi. **Efor:** ~yarım gün.
+**Not:** Faz 2'de aynı kategoriye 3 kayıt daha eklendi (`TEK-011`, `TEK-012`,
+`KT-010`) ama onlarda durum farklı — korpusta ESKİ bir kaynak metin hâlâ
+var, yalnızca CANLI sayfa artık yok (kampanya yenilenmemiş). Onlar zaten
+Faz 2'de kendi notlarıyla işaretlendi, bu fazda tekrar dokunulmadı.
+
+**Sorumlu:** Veri ekibi. **Efor:** tamamlandı.
 
 ---
 

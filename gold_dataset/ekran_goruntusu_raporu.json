@@ -1,50 +1,17 @@
 {
-  "tarih": "2026-08-24",
+  "tarih": "2026-08-25",
   "kapsanma_esigi": 0.9,
   "sonuclar": [
     {
-      "kayit_id": "TEK-018",
+      "kayit_id": "TEK-009",
       "banka": "Türkiye Emlak Katılım",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-hepsiburadada-pesin-fiyatina-9-aya-varan-taksit-firsati",
-      "dosya": "TEK-018.png",
-      "boyut_kb": 229.6,
-      "kapsanma": 0.024,
-      "anlik_uzunluk": 2205,
-      "canli_uzunluk": 237,
-      "durum": "DEGISMIS"
-    },
-    {
-      "kayit_id": "TEK-021",
-      "banka": "Türkiye Emlak Katılım",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/giyim-ve-kozmetik-alisverislerinize-1000-tl-parafpara",
-      "dosya": "TEK-021.png",
-      "boyut_kb": 229.6,
-      "kapsanma": 0.015,
-      "anlik_uzunluk": 3552,
-      "canli_uzunluk": 237,
-      "durum": "DEGISMIS"
-    },
-    {
-      "kayit_id": "TEK-025",
-      "banka": "Türkiye Emlak Katılım",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/market-alisverislerinize-800-tl-parafpara",
-      "dosya": "TEK-025.png",
-      "boyut_kb": 229.6,
-      "kapsanma": 0.018,
-      "anlik_uzunluk": 2969,
-      "canli_uzunluk": 237,
-      "durum": "DEGISMIS"
-    },
-    {
-      "kayit_id": "TEK-040",
-      "banka": "Türkiye Emlak Katılım",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-pttavmcomda-pesin-fiyatina-2-taksit",
-      "dosya": "TEK-040.png",
-      "boyut_kb": 229.6,
-      "kapsanma": 0.039,
-      "anlik_uzunluk": 1351,
-      "canli_uzunluk": 237,
-      "durum": "DEGISMIS"
+      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/beyaz-esya-ve-elektronik-alisverislerinize-5000-tlye-varan-parafpara",
+      "dosya": "TEK-009.png",
+      "boyut_kb": 612.1,
+      "kapsanma": 0.981,
+      "anlik_uzunluk": 2873,
+      "canli_uzunluk": 3142,
+      "durum": "tamam"
     }
   ]
 }

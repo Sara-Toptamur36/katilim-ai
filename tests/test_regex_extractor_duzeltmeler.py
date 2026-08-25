@@ -309,7 +309,7 @@ def test_toplam_dogruluk_esigin_altina_dusmez():
     belirlemek degil, GERILEMEYI yakalamaktir. Zayif alanlar iyilestikce
     bu esik de yukseltilmelidir.
 
-    ESIK YUKSELTILDI %48 -> %66 (25 Agustos 2026): kampanya_turu
+    ESIK YUKSELTILDI %48 -> %73 (25 Agustos 2026, uc adimda): kampanya_turu
     duzeltmesiyle (menu satirlarinin siniflandirmadan ayiklanmasi + Kart
     anahtarlarinin genisletilmesi) toplam dogruluk %49,63'ten %56,64'e
     cikti; origin/main ile birlesmeden sonra (uzaktaki tarih ve taksit
@@ -318,9 +318,9 @@ def test_toplam_dogruluk_esigin_altina_dusmez():
     kaybedilmesine izin verirdi.
     """
     sonuc = extraction_accuracy_hesapla()
-    assert sonuc["accuracy"] >= 66.0, (
+    assert sonuc["accuracy"] >= 73.0, (
         f"Toplam dolu alan dogrulugu %{sonuc['accuracy']}'e dustu "
-        f"(asgari %66 bekleniyordu, olculen taban %69,17)."
+        f"(asgari %73 bekleniyordu, olculen taban %75,70)."
     )
 
 
@@ -341,8 +341,8 @@ def test_kampanya_turu_f1_esigin_altina_dusmez():
     sonuc = extraction_accuracy_hesapla()
     m = sonuc["alan_bazli"]["kampanya_turu"]
     assert m["destek"] > 0, "kampanya_turu icin destek yok - olcum bozulmus"
-    assert m["f1"] >= 75.0, (
-        f"kampanya_turu F1 %{m['f1']}'e dustu (asgari %75, olculen taban %78,55). "
+    assert m["f1"] >= 76.0, (
+        f"kampanya_turu F1 %{m['f1']}'e dustu (asgari %76, olculen taban %79,05). "
         f"P=%{m['precision']} R=%{m['recall']} TP={m['tp']} FP={m['fp']} FN={m['fn']}"
     )
 
@@ -647,3 +647,192 @@ def test_musteri_ol_kaliBI_yanlis_etiket_URETMEZ():
         "Kampanya 31 Agustos 2026 tarihine kadar gecerlidir."
     )
     assert kaydi_cikar(metin)["kampanya_turu"] == "Kart Kampanyasi"
+
+
+# ---------------------------------------------------------------------------
+# 25 Agustos 2026 - kayip analizi: olcum hatasi + Turkce sikisik tarih araligi
+# ---------------------------------------------------------------------------
+
+def test_hedef_kitle_segmenti_IDEMPOTENT():
+    """Etiketin kendisi ikinci kez cozumlenirse KAYBOLMAMALI.
+
+    OLCUM HATASIYDI: extraction_accuracy.py normalizeri IKI tarafa da
+    uyguluyor - gold serbest metindir ve donusmesi gerekir, ama motorun
+    ciktisi zaten etikettir. Dort etiketin ucu ikinci gecisten
+    kendiliginden sag cikiyordu ("Yeni müşteri" metni "yeni müşteri"
+    anahtarini icerir); "Belirli segment" hicbir anahtarini icermedigi
+    icin None'a dusuyordu. Motor DOGRU cevabi uretse bile olcum kacirma
+    sayiyordu - 182 kacirmanin 164'u tam olarak buydu.
+    """
+    from extraction.regex_extractor import HEDEF_KITLE_SIRASI, hedef_kitle_segmenti
+
+    for etiket in HEDEF_KITLE_SIRASI:
+        assert hedef_kitle_segmenti(etiket) == etiket, (
+            f"{etiket!r} ikinci normalizasyonda {hedef_kitle_segmenti(etiket)!r} oldu"
+        )
+
+
+def test_hedef_kitle_cekimli_kart_sahibi_ifadesini_yakalar():
+    """Sayfalar "kart sahibinin" yazar, gold "kart sahipleri" - govde ortak."""
+    metin = (
+        "Kampanyadan yararlanmak icin kart sahibinin borcunun bulunmamasi gerekir.\n"
+        "Kampanya 31 Aralik 2026 tarihine kadar gecerlidir."
+    )
+    assert kaydi_cikar(metin)["hedef_kitle"] == "Belirli segment"
+
+
+def test_sikisik_tarih_araligi_yil_paylasimli():
+    """"1 Temmuz - 31 Agustos 2026": ilk tarihte YIL yok, bitisten odunc alinir."""
+    r = kaydi_cikar("Kampanya 1 Temmuz - 31 Agustos 2026 tarihlerinde gecerlidir.")
+    assert r["kampanya_baslangic"] == "2026-07-01"
+    assert r["kampanya_bitis"] == "2026-08-31"
+
+
+def test_sikisik_tarih_araligi_ay_paylasimli():
+    """"1 - 31 Temmuz 2026": ilk tarihte AY ve YIL yok, ikisi de odunc alinir."""
+    r = kaydi_cikar("Kampanya 1 - 31 Temmuz 2026 tarihlerinde gecerlidir.")
+    assert r["kampanya_baslangic"] == "2026-07-01"
+    assert r["kampanya_bitis"] == "2026-07-31"
+
+
+def test_tam_tarih_araligi_HALA_calisir():
+    """Sikisik desenler eklenirken tam aralik bozulmadi (gerileme kontrolu)."""
+    r = kaydi_cikar("Kampanya 01.07.2026 - 31.08.2026 tarihleri arasinda gecerlidir.")
+    assert r["kampanya_baslangic"] == "2026-07-01"
+    assert r["kampanya_bitis"] == "2026-08-31"
+
+
+def test_tek_tarih_hala_YALNIZCA_bitise_yazilir():
+    """Tek tarih varsa baslangic UYDURULMAZ - bos kalir.
+
+    Sikisik aralik desenleri eklenirken bu davranis korunmali: kaynakta
+    tek tarih varken baslangic uydurmak, rapor Bolum 5.7/15'e aykiridir.
+    """
+    r = kaydi_cikar("Kampanya 31 Agustos 2026 tarihine kadar gecerlidir.")
+    assert r["kampanya_bitis"] == "2026-08-31"
+    assert r["kampanya_baslangic"] is None
+
+
+def test_yeni_musteri_kart_kampanyasindan_ONCE_denenir():
+    """Yeni musteri kazanimi, kart urunuyle sunulsa da KART DEGIL.
+
+    Olculdu: Kart once denendiginde 10 kayit "Kart Kampanyasi"na kayiyordu.
+    """
+    metin = (
+        "Yeni musterilere ozel kredi kartinizla vade farksiz 6 taksit firsati!\n"
+        "Kampanya 31 Aralik 2026 tarihine kadar gecerlidir."
+    )
+    assert kaydi_cikar(metin)["kampanya_turu"] == "Yeni Musteri Kampanyasi"
+
+
+def test_sikisik_aralik_SAYI_ORTASINDAN_baslamaz():
+    r""""10.000 TL - 31 Temmuz 2026" -> gun "00" sanilmamali.
+
+    GERCEK HATA (25 Agustos 2026): sikisik aralik desenleri ilk eklendiginde
+    `\d{1,2}` uzun bir sayinin SONUNDAKI iki hanesini gun sanabiliyordu.
+    "10.000 TL - 31 Temmuz 2026" metninden "00 Temmuz 2026" kuruluyor ve
+    `tarihe_cevir` gun araligini dogrulamadigi icin "2026-07-00" donuyordu.
+    Bu yalnizca yanlis DEGIL, kayit dusurucuydu: Postgres DATE sutunu
+    reddediyor (DatetimeFieldOverflow) ve regex_ile_zenginlestir.py'nin
+    TOPLU yazimi komple dusuyordu - yani tek bozuk deger tum zenginlestirme
+    calistirmasini kaybettiriyordu.
+
+    Iki savunma da burada kilitlenir: desendeki `(?<![\d.,])` lookbehind'i
+    ve yazim oncesi takvim dogrulamasi (_gecerli_tarih_mi).
+    """
+    r = kaydi_cikar(
+        "Kampanyada 10.000 TL - 31 Temmuz 2026 tarihine kadar gecerli harcama."
+    )
+    assert r["kampanya_baslangic"] is None, (
+        f"sayi ortasindan tarih uretildi: {r['kampanya_baslangic']}"
+    )
+    assert r["kampanya_bitis"] == "2026-07-31"
+
+
+def test_gecersiz_takvim_tarihi_URETILMEZ():
+    """Uretilen her tarih takvimde GERCEKTEN var olmali (31 Subat vb.)."""
+    from datetime import date as _date
+
+    for metin in (
+        "Kampanya 1 Temmuz - 31 Agustos 2026 tarihlerinde gecerlidir.",
+        "Kampanya 1 - 31 Temmuz 2026 tarihlerinde gecerlidir.",
+        "Kampanyada 10.000 TL - 31 Temmuz 2026 tarihine kadar gecerli harcama.",
+    ):
+        r = kaydi_cikar(metin)
+        for alan in ("kampanya_baslangic", "kampanya_bitis"):
+            if r[alan] is not None:
+                _date.fromisoformat(r[alan])  # ValueError firlatirsa test duser
+
+
+# ---------------------------------------------------------------------------
+# Ayni sayfada esik/tavan/kademeli DEGERLER arasindan yanlis secim yapilmasi
+# (olculdu 25 Agustos 2026, gold_dataset "BELIRSIZ" notlariyla karsilastirildi)
+# ---------------------------------------------------------------------------
+
+
+def test_kazandiran_hesap_urun_adi_uzak_baglamda_KAZAN_dislamasini_TETIKLEMEZ():
+    """"Kazandıran Hesap" bir URUN ADIdir (gunluk faiz kazandiran mevduat
+    hesabi) - cumlenin ILERISINDE gecen bu ad, dislama listesindeki "kazan"
+    alt-dizesiyle YANLISLIKLA eslesip GERCEK bir finansman tutarini
+    elememeli.
+
+    BULGU (25 Agustos 2026, TOM-002): baglam penceresini 60'tan 120'ye
+    cikarmak KT-023'u duzeltme denemesiydi ama TOM-002'yi bozdu - "Kazandiran
+    Hesap" ifadesi yalnizca GENIS pencerede goruntuye girip dogru tutari
+    (250 Bin TL) elidi. Pencere 60'ta birakildi (bkz.
+    _tutar_baglaminda_gecersiz_mi gerekcesi); bu test o kararin GERI
+    ALINMAMASINI kilitler. ("Milyon" yerine "Bin" kullanilir: "milyon" kendi
+    icinde "mil" alt-dizesini tasir ve AYRI, bilinmeyen bir dislama
+    carpismasi yaratir - bu testin konusu degil.)"""
+    metin = (
+        "Standart paket seçen müşteriler; 250 Bin TL ye kadar yapacakları "
+        "özel okul ödemelerinde kampanya süresi boyunca her gün, günlük "
+        "Kazandıran Hesabında 250 Bin TL birikim bulunmalıdır."
+    )
+    r = kaydi_cikar(metin)
+    assert r["finansman_tutari"] == 250000.0
+
+
+def test_AL013_maksimum_indirim_tutari_ODUL_SAYILMAZ():
+    """"maksimum indirim tutarı 1.000 TL" bir YUZDELIK INDIRIMIN parasal
+    tavanidir (harcamaya gore degisir), sabit bir odul DEGILDIR - AL-013'te
+    gold bu alani bilerek bos birakiyor ("BELIRSIZ odul_miktari: bir TAVAN,
+    kesin odul tutari degil")."""
+    metin = (
+        "10.000 TL ve üzeri konaklama harcamanıza %5 indirim kazanın! "
+        "Kampanya kapsamında müşteri başına uygulanacak maksimum indirim "
+        "tutarı 1.000 TL'dir."
+    )
+    r = kaydi_cikar(metin)
+    assert r["odul_miktari"] is None
+
+
+def test_AL013_dogrudan_indirim_odulu_HALA_YAKALANIR():
+    """AL013 duzeltmesi, RE_ODUL'un KENDI (sayi-once) deseninde "indirim"
+    anahtarini ETKILEMEMELI - ZK-014/VK-010 gibi "X TL Varan Indirim"
+    ifadeleri gercek bir odul iddiasidir ve olculerek KORUNMASINA
+    karar verilmisti (bkz. dosya basi RE_ODUL gerekcesi)."""
+    r = kaydi_cikar("Bu ay yapacağınız alışverişlerde 3.000 TL'ye Varan İndirim kazanabilirsiniz.")
+    assert r["odul_miktari"] == 3000.0
+
+
+def test_odul_coklu_kademede_ILK_eslesme_KORUNUR():
+    """RE_ODUL'un dogrudan (sayi-once) deseninde birden fazla farkli tutar
+    eslestiginde ILK eslesme kullanilmaya devam eder.
+
+    DENENDI VE REDDEDILDI (25 Agustos 2026, olculdu): hem "belirsizse bos
+    birak" (taksit_sayisi'ndaki kural) hem "en buyugu sec" (RE_ODUL_TAVAN
+    fallback'indeki kural) burada denendi - ikisi de NET REGRESYONA yol
+    acti (odul_miktari F1 %83,06 -> sirasiyla %77,78 / %82,42; bkz. kod
+    yorumu). 17 gercek kayitta coklu aday var ve COGUNLUGU ILK eslesmenin
+    zaten dogru cevap oldugu, sonraki adaylarin alakasiz/kucuk alt-kalem
+    oldugu durumlar - TOM-008 gibi (kulup uyesi/uye olmayan kademesi) bir
+    azinlik BILEREK duzeltilmeden birakildi (NER/LLM katmaninin isi)."""
+    metin = (
+        "Kampanya kapsamında, %7,5 iade kazanılabilir, günlük en fazla 75 TL, "
+        "bir takvim ayında ise en fazla 300 TL iade alınabilir. "
+        "Kulüp üyeleri, günlük en fazla 150 TL, bir takvim ayında ise en "
+        "fazla 600 TL kazanabilir."
+    )
+    r = kaydi_cikar(metin)
+    assert r["odul_miktari"] == 300.0

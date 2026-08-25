@@ -1,0 +1,112 @@
+{
+  "banka": "Vakıf Katılım",
+  "kategori": "kampanya",
+  "url": "https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/igdas-finansman-kampanyasi",
+  "sayfa_turu": "HTML",
+  "erisim_zamani": "2026-08-25T21:04:32.787607",
+  "ham_metin": "Finansman talebi için Vakıf Katılım şubelerine bizzat başvuru yapılması gerekmektedir.\nFinansman talebine konut aboneleri başvuru yapabilecek olup; başvuru yapan kişi ile İGDAŞ abonelik sahibi aynı kişi olmalıdır.\nFinansman için Vakıf Katılım değerlendirme süreçleri işletilecek ve finansal durumu uygun olan müşterilerimize kullandırım gerçekleştirilecektir.\nBaşvuru için müşterilerimizin kimlik belgesi ve güncel İGDAŞ faturası yeterli olacaktır.\nTümünü Göster",
+  "normalize_metin": "Finansman talebi için Vakıf Katılım şubelerine bizzat başvuru yapılması gerekmektedir.\nFinansman talebine konut aboneleri başvuru yapabilecek olup; başvuru yapan kişi ile İGDAŞ abonelik sahibi aynı kişi olmalıdır.\nFinansman için Vakıf Katılım değerlendirme süreçleri işletilecek ve finansal durumu uygun olan müşterilerimize kullandırım gerçekleştirilecektir.\nBaşvuru için müşterilerimizin kimlik belgesi ve güncel İGDAŞ faturası yeterli olacaktır.\nTümünü Göster",
+  "icerik_hash": "096a29ad5f7654842845e349c6278a75fc7c8b93ccbcc3a79b415dd528508d6d",
+  "http_durumu": 200,
+  "content_type": "text/html; charset=utf-8",
+  "encoding": "utf-8",
+  "pdf_dosyalari": [],
+  "tablolar": [
+    {
+      "tablo_index": 0,
+      "sutunlar": [
+        "Dönem",
+        "Fatura Tutarı(TL)",
+        "Kalan Finansman Limiti(TL)",
+        "Finansman Taksit Ödeme(TL)"
+      ],
+      "satirlar": [
+        {
+          "Dönem": "Kasım",
+          "Fatura Tutarı(TL)": "750 TL",
+          "Kalan Finansman Limiti(TL)": "11.250 TL",
+          "Finansman Taksit Ödeme(TL)": "1000 TL"
+        },
+        {
+          "Dönem": "Aralık",
+          "Fatura Tutarı(TL)": "1.500 TL",
+          "Kalan Finansman Limiti(TL)": "9.750 TL",
+          "Finansman Taksit Ödeme(TL)": "1000 TL"
+        },
+        {
+          "Dönem": "Ocak",
+          "Fatura Tutarı(TL)": "2.250 TL",
+          "Kalan Finansman Limiti(TL)": "7.500 TL",
+          "Finansman Taksit Ödeme(TL)": "1000 TL"
+        },
+        {
+          "Dönem": "Şubat",
+          "Fatura Tutarı(TL)": "2.500 TL",
+          "Kalan Finansman Limiti(TL)": "5.000 TL",
+          "Finansman Taksit Ödeme(TL)": "1000 TL"
+        },
+        {
+          "Dönem": "Mart",
+          "Fatura Tutarı(TL)": "2.250 TL",
+          "Kalan Finansman Limiti(TL)": "2.750 TL",
+          "Finansman Taksit Ödeme(TL)": "1000 TL"
+        },
+        {
+          "Dönem": "Nisan",
+          "Fatura Tutarı(TL)": "1.750 TL",
+          "Kalan Finansman Limiti(TL)": "1.000 TL",
+          "Finansman Taksit Ödeme(TL)": "1000 TL"
+        },
+        {
+          "Dönem": "Mayıs",
+          "Fatura Tutarı(TL)": "1.000 TL",
+          "Kalan Finansman Limiti(TL)": "-",
+          "Finansman Taksit Ödeme(TL)": "1000 TL"
+        },
+        {
+          "Dönem": "Haziran",
+          "Fatura Tutarı(TL)": "Otomatik ödeme talimatı verdiğiniz İGDAŞ faturaları için hesaptan/kredi kartı ile otomatik ödeme devam edecektir",
+          "Kalan Finansman Limiti(TL)": "-",
+          "Finansman Taksit Ödeme(TL)": "1000 TL"
+        },
+        {
+          "Dönem": "Temmuz",
+          "Fatura Tutarı(TL)": "Otomatik ödeme talimatı verdiğiniz İGDAŞ faturaları için hesaptan/kredi kartı ile otomatik ödeme devam edecektir",
+          "Kalan Finansman Limiti(TL)": "-",
+          "Finansman Taksit Ödeme(TL)": "1000 TL"
+        },
+        {
+          "Dönem": "Ağustos",
+          "Fatura Tutarı(TL)": "Otomatik ödeme talimatı verdiğiniz İGDAŞ faturaları için hesaptan/kredi kartı ile otomatik ödeme devam edecektir",
+          "Kalan Finansman Limiti(TL)": "-",
+          "Finansman Taksit Ödeme(TL)": "1000 TL"
+        },
+        {
+          "Dönem": "Eylül",
+          "Fatura Tutarı(TL)": "Otomatik ödeme talimatı verdiğiniz İGDAŞ faturaları için hesaptan/kredi kartı ile otomatik ödeme devam edecektir",
+          "Kalan Finansman Limiti(TL)": "-",
+          "Finansman Taksit Ödeme(TL)": "1000 TL"
+        },
+        {
+          "Dönem": "Ekim",
+          "Fatura Tutarı(TL)": "Otomatik ödeme talimatı verdiğiniz İGDAŞ faturaları için hesaptan/kredi kartı ile otomatik ödeme devam edecektir",
+          "Kalan Finansman Limiti(TL)": "-",
+          "Finansman Taksit Ödeme(TL)": "1000 TL"
+        },
+        {
+          "Dönem": "Kasım",
+          "Fatura Tutarı(TL)": "Otomatik ödeme talimatı verdiğiniz İGDAŞ faturaları için hesaptan/kredi kartı ile otomatik ödeme devam edecektir",
+          "Kalan Finansman Limiti(TL)": "-",
+          "Finansman Taksit Ödeme(TL)": "1000 TL"
+        },
+        {
+          "Dönem": "Toplam",
+          "Fatura Tutarı(TL)": "12.000 TL",
+          "Kalan Finansman Limiti(TL)": "12.000 TL",
+          "Finansman Taksit Ödeme(TL)": "12.000 TL"
+        }
+      ]
+    }
+  ],
+  "icerik_kalitesi": "kisa"
+}

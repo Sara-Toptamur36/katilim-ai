@@ -1,0 +1,31 @@
+Neden Elektrikli Araç;
+Cazip kâr oranı
+Yakıt tasarrufu
+Doğa dostu
+Ürün Özellikleri
+Bireysel müşterilerle gerçek kişi tacir müşterilerin bireysel amaçlı taşıt kredileri için kredilendirme oranı; sıfır araçlar için aracın nihai fatura değeri ve ikinci el araçlar için ise aracın kasko değeri,
+400.000 TL'ye kadar olanlar için azami %70’i,
+400.001 - 800.000 TL aralığında olanlar için azami %50’si,
+800.001 - 1.200.000 TL aralığında olanlar için azami %30’u,
+1.200.001 - 2.000.000 TL aralığında olanlar için azami %20’sidir.
+Bireysel müşterilerle gerçek kişi tacir müşterilerin bireysel amaçlı taşıt finansmanlarında, 400.000 TL ve altında olan araçlar için azami vade 48 ay, 400.001 TL – 800.000 TL aralığında olan araçlar için azami vade 36 ay, 800.001 TL – 1.200.000 TL aralığında olan araçlar için azami vade 24 ay ve 1.200.001 TL – 2.000.000 TL aralığında olan araçlar için ise azami vade 12 aydır.
+Yerli ve Elektrikli araçlar için aşağıdaki tablo geçerlidir.
+Fatura Değeri
+Ay
+Finansman Kullandırım Oranı
+0-2.500.000 TL
+48
+70%
+2.500.001-5.000.000 TL
+36
+50%
+5.000.001-6.500.000 TL
+24
+30%
+6.500.001-7.500.000 TL
+12
+20%
+7.500.001 TL ve Üstü
+0
+0%
+Tümünü Göster

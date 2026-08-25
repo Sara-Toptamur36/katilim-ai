@@ -71,3 +71,48 @@ def test_kirpma_kampanyanin_kendi_kosullarini_silmez():
     assert "40.000 TL'ye kadar Pratik Finansman Kart" in sonuc
     assert "Vade: 6 aya kadar" in sonuc
     assert "100.000" not in sonuc
+
+
+GERCEK_TOMBANKHADI_SONU = """\
+T.O.M. Bank ve YENİ MAĞAZACILIK A.Ş. kampanyayı durdurma, iptal etme, kampanyada değişiklik yapma hakkını saklı tutar.
+İlginizi Çekebilir
+Toplam 1500 TL hoş geldin hediyesi!  TOM1500 koduyla müşterimiz ol, 1500 TL senin olsun!
+Kampanya Detayı
+Hadi Alışveriş Kredisi ile Klima, Süpürge ve Televizyonlarda Vade Farksız 12 Taksit!
+Kampanya Detayı
+Hadi Black Kredi Kartı ile Restoderm’de %30 İndirim!
+Kampanya Detayı
+"""
+
+
+def test_ilginizi_cekebilir_blogu_kirpilir():
+    """Gercek tombankhadi sayfa sonu (25 Agustos 2026 ile bulundu - 10/10
+    tombankhadi sayfasinda ayni blok tekrar ediyor, dar kapsamli DEGIL)."""
+    sonuc = kampanya_govdesini_ayikla(GERCEK_TOMBANKHADI_SONU)
+    assert "kampanyayı durdurma" in sonuc, "Kampanyanin kendi icerigi korunmali"
+    assert "İlginizi Çekebilir" not in sonuc
+    assert "Kampanya Detayı" not in sonuc
+
+
+def test_ilginizi_cekebilir_baska_kampanyanin_degeri_metinden_CIKAR():
+    """Kirpmanin asil amaci: 1500 TL / 12 taksit / %30 gibi BASKA
+    kampanyalarin degerleri bu kampanyaya atfedilmesin."""
+    sonuc = kampanya_govdesini_ayikla(GERCEK_TOMBANKHADI_SONU)
+    assert "1500 TL" not in sonuc
+    assert "12 Taksit" not in sonuc
+    assert "%30" not in sonuc
+
+
+def test_ilginizi_cekebilir_dogrulayici_yoksa_metne_DOKUNULMAZ():
+    """"İlginizi Çekebilir" baska bir baglamda (ör. genel site menusu)
+    gecebilir. Ardindan "Kampanya Detayı" kalibi GELMIYORSA kesilmemeli -
+    bkz. kuveytturk/albaraka footer menusu (Blog, Kampanyalar, Hesaplama
+    Araçları gibi tekil kelimeler, "Kampanya Detayı" degil)."""
+    metin = (
+        "Kampanya koşulları yukarıdadır.\n"
+        "İlginizi Çekebilir\n"
+        "Blog\n"
+        "Finans Portalı\n"
+        "Kampanyalar\n"
+    )
+    assert kampanya_govdesini_ayikla(metin) == metin

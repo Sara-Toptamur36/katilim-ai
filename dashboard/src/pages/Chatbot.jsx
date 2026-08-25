@@ -14,7 +14,7 @@ import {
   InfoCircleOutlined,
   ClearOutlined,
 } from "@ant-design/icons";
-import { chatGonder, tokenAl } from "../api/client";
+import { chatGonder, tokenAl, API_TABANI } from "../api/client";
 import ChatMesaji from "../components/ChatMesaji";
 import { useAudit } from "../context/AuditContext";
 
@@ -398,7 +398,7 @@ export default function Chatbot() {
     );
 
     try {
-      const yanit = await fetch("/api/chat/stream", {
+      const yanit = await fetch(`${API_TABANI}/chat/stream`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -18,6 +18,7 @@ taksit sayisidir") ayri ayri gercek banka sayfalari uzerinden dogrulandi.
 """
 
 import re
+from datetime import date
 from typing import Optional
 
 from extraction.normalizer import (
@@ -411,6 +412,23 @@ def _cumleye_kirpilmis_baglam(
     return turkce_ascii_kucult(sol + " " + metin[baslangic:bitis] + " " + sag)
 
 
+# PENCERE 60 -> 120 DENENDI VE REDDEDILDI (25 Agustos 2026, olculdu):
+# KT-023'te "... 250.000 TL arasi yapacagi ilk harcamaya vade farksiz 3
+# taksit avantaji KAZANACAKTIR" cumlesi 60 karakterden uzun - dislama
+# kelimesi ("kazan") cumlenin 68. karakterinde, pencere=60 onu goremiyor
+# ve harcama araligi yanlislikla finansman_tutari saniliyordu. Pencereyi
+# 120'ye cikarmak TOM-001'i duzeltti AMA TOM-002'yi BOZDU: "gunluk
+# KAZANdiran hesabinda 250.000 TL birikim..." cumlesinde "Kazandiran
+# Hesap" bir URUN ADI (gunluk faiz kazandiran mevduat hesabi), "kazan"
+# alt-dizesi burada YANLIS POZITIF eslesme - eski dar pencere bu urun
+# adina hic ulasamiyordu, genis pencere ulasip DOGRU bir tutari yanlislikla
+# eledi. NET ETKI: finansman_tutari F1 %63,41 -> %61,54 (bir FP dustu, bir
+# TP kayboldu - kazanc yok) VE KT-023'un kendisi HALA duzelmedi (RE_TUTAR_
+# UST_LIMIT ayri bir eslesmeyle "250.000 TL'ye kadar" tutarini BASKA bir
+# cumleden buluyor). Pencere 60'ta birakildi; KT-023 "vade farksiz N
+# taksit" ifadesiyle baglantili tutarlarin AYRI bir dislama sinyali
+# gerektirdigini gosteriyor - bu, "taksit" kelimesini genel dislama
+# listesine eklemeyi gerektirir ve olculmeden eklenmedi (bkz. Faz notu).
 def _tutar_baglaminda_gecersiz_mi(metin: str, baslangic: int, bitis: int, pencere: int = 60) -> bool:
     """Tutarin AYNI CUMLESINDE onu finansman disi kilan bir kelime var mi?"""
     baglam = _cumleye_kirpilmis_baglam(metin, baslangic, bitis, pencere)
@@ -464,6 +482,58 @@ RE_TARIH_ARALIGI = _katlanmis_derle(
     rf"({_TARIH_TEK})\s*[-–]\s*({_TARIH_TEK})",
     re.IGNORECASE,
 )
+
+# SIKISIK ARALIK - Turkce metin araligin ILK tarihini kisaltir
+# (olculdu 25 Agustos 2026). Yukaridaki RE_TARIH_ARALIGI iki tarafta da
+# TAM tarih bekledigi icin bu iki bicimde HIC eslesmiyordu; sonuc:
+# kampanya_baslangic 52 kayitta bos kaliyordu (recall %66,45, precision
+# %100 - yani hata tamamen KACIRMA'ydi, uydurma degil).
+#
+#   "kampanya 1 Agustos - 31 Agustos 2026"  -> ilk tarihte YIL yok
+#   "kampanya 1 Temmuz - 31 Agustos 2026"   -> ilk tarihte YIL yok
+#   "kampanya 1 - 31 Temmuz 2026"           -> ilk tarihte AY ve YIL yok
+#
+# Eksik parcalar BITIS tarihinden odunc alinir - metnin kendi mantigi da
+# budur ("1 - 31 Temmuz 2026" okuyan insan da ayi ikinci taraftan alir).
+#
+# IKI DESEN AYRISIKTIR: yil-paylasimli bicimde ilk gunden sonra AY ADI
+# gelir, ay-paylasimlida ise dogrudan TIRE gelir. Bu yuzden biri
+# digerinin metnine eslesemez; sira guvenlik icin yine de ozelden genele.
+#
+# SAYI ORTASINDAN BASLAMA KORUMASI - `(?<![\d.,])`. Olculdu ve GERCEK
+# HATAYA yol acti: bu koruma olmadan "10.000 TL - 31 Temmuz 2026"
+# metninde `\d{1,2}` sayinin SONUNDAKI "00"i gun sanip "2026-07-00"
+# uretiyordu. Bu yalnizca yanlis degil, KAYIT DUSURUCU bir degerdi -
+# Postgres DATE sutunu reddediyor (DatetimeFieldOverflow) ve
+# extraction/regex_ile_zenginlestir.py'nin toplu yazimi komple dusuyordu
+# (tests/test_regex_ile_zenginlestir.py yakaladi).
+_ARALIK_YIL_PAYLASIMLI = _katlanmis_derle(
+    rf"(?<![\d.,])(\d{{1,2}})\s+({_TR_AY_ADLARI})\s*[-–]\s*"
+    rf"(\d{{1,2}})\s+({_TR_AY_ADLARI})\s+(\d{{4}})",
+    re.IGNORECASE,
+)
+_ARALIK_AY_PAYLASIMLI = _katlanmis_derle(
+    rf"(?<![\d.,])(\d{{1,2}})\s*[-–]\s*(\d{{1,2}})\s+({_TR_AY_ADLARI})\s+(\d{{4}})",
+    re.IGNORECASE,
+)
+
+
+def _gecerli_tarih_mi(iso: Optional[str]) -> bool:
+    """ISO tarihin TAKVIMDE gercekten var oldugunu dogrular.
+
+    IKINCI SAVUNMA HATTI: yukaridaki lookbehind deseni sayi ortasindan
+    baslamayi engeller, ama `tarihe_cevir` gun/ay araligini HIC kontrol
+    etmez - "00 Temmuz 2026" verilse "2026-07-00" doner. Cikarim
+    katmaninin veritabanini dusurebilecek bir deger uretmemesi gerekir;
+    bu yuzden kurulan tarih yazilmadan once dogrulanir.
+    """
+    if not iso:
+        return False
+    try:
+        date.fromisoformat(iso)
+    except ValueError:
+        return False
+    return True
 
 # SITE FOOTER TARIH DAMGASI (olculdu 23 Agustos 2026, Dunya Katilim - 57
 # kayit etkileniyor, 4'u altin veride yanlis pozitif olarak yakalandi:
@@ -735,12 +805,19 @@ KAMPANYA_TURU_ANAHTAR_KELIMELERI = {
     "Konut Finansmani Kampanyasi": ["konut finansman", "ev sahibi", "konut alım"],
     "Tasit Finansmani Kampanyasi": ["taşıt finansman", "araç finansman", "otomobil"],
     "Ihtiyac Finansmani Kampanyasi": ["ihtiyaç finansman"],
+    # "Yeni Musteri" KART'TAN ONCE (olculdu 25 Agustos 2026): yeni musteri
+    # kazanim kampanyalari genelde bir kart urunuyle sunuluyor, bu yuzden
+    # Kart once denendiginde 10 kayit "Kart Kampanyasi"na kayiyordu.
+    # Sozlugun kendi ilkesi zaten ozelden genele - yeni musteri kazanimi
+    # kart kampanyasindan DAHA OZEL bir niyet.
+    # F1 %78,55 -> %79,27; TP 216->218, FP 46->44, FN 72->70 (uc sayacta
+    # da iyilesme - hata takasi degil).
+    "Yeni Musteri Kampanyasi": ["yeni müşteri", "yeni ev sahibi olmak isteyen"],
     "Kart Kampanyasi": [
         "kredi kart", "kart avantaj", "kart kampanya", "bankkart",
         "kartla", "kart sahip",
     ],
     "Alisveris Puani Kampanyasi": ["alışveriş puan", "puan kazan", "parafpara"],
-    "Yeni Musteri Kampanyasi": ["yeni müşteri", "yeni ev sahibi olmak isteyen"],
     "Yatirim Urunu Kampanyasi": ["katılım fonu", "yatırım ürün", "birikim"],
     "Finansman Kampanyasi": ["finansman"],
 }
@@ -770,8 +847,42 @@ HEDEF_KITLE_ANAHTAR_KELIMELERI = {
     ],
     "Maaş müşterisi": ["maaş müşteri", "maaş getiren", "maaşını", "emekli"],
     "Mevcut müşteri": ["mevcut müşteri", "mevcut müşterilere"],
+    # "kart sahib" EKLENDI (olculdu 25 Agustos 2026): mevcut anahtarlarin
+    # hepsi COGUL/YALIN yazimdi ("kart sahipleri"), sayfalar ise cekimli
+    # yaziyor ("kart sahibinin", "kart sahibi olan"). Govdeye inince 18
+    # yeni dogru geliyor, 3 yanlis pozitif pahasina:
+    #     hedef_kitle F1 %22,78 -> %34,75, precision %69,23 -> %75,00
+    #
+    # BU ALANDA METRIK YANILTICIDIR - OLCUM KONTROLU SART: gold'da
+    # "Belirli segment" baskin sinif (283 kayittan 173'u). Bu yuzden GENIS
+    # ates eden her kural bedava kazanir. Olculdu: hicbir bilgi tasimayan
+    # saf catch-all "kampanya" (sayfalarin %100'unde geciyor) F1 %88,89
+    # veriyor - eklenen gercek anahtarlarin HEPSINDEN yuksek. Dolayisiyla
+    # buradaki bir F1 artisi TEK BASINA kanit degildir; anahtarin ates
+    # orani ve bilgi tasiyip tasimadigi ayrica bakilmalidir.
+    #
+    # REDDEDILEN ADAYLAR (F1'i yukseltiyorlardi, yine de alinmadilar):
+    #   "faydalanabil"  F1 %78,63, ates orani %57 - uygunluk cumlesinin
+    #                   fiili sanildi. KONTROL CURUTTU: pazarlama bicimi
+    #                   "faydalanabilirsiniz" (%45,59) ile uygunluk bicimi
+    #                   "faydalanabilir" (%46,72) neredeyse AYNI skoru
+    #                   veriyor - ayrim bilgi tasimiyor, ikisi de yalnizca
+    #                   "detayli kampanya sayfasi" demek.
+    #   "kampanyadan"   F1 %83,33, ates orani %78 - ayni sebep.
+    #   "kart"          F1 %89,08 - acik catch-all.
+    #
+    # DENENDI VE HICBIR SEY YAPMADI (korpusta gecmiyor): "kartı bulunan",
+    # "kartı olan", "sahibi olan", "kart müşteri", "kart hamil",
+    # "sahipleri faydalan", "kullanıcıları faydalan". Bu yedisi birlikte
+    # eklendiginde sonuc tek basina "kart sahib"ten DAHA KOTU (%34,48).
+    #
+    # SONUC: bu alanin recall'u regex ile ~%23'un uzerine cikarilamaz -
+    # cikarilabildigi tek yol sinif onceligini somurmek ve o bilgi
+    # tasimaz. Gercek cozum uygunluk CUMLESINI cikarip ozetlemektir
+    # (NER/LLM katmani); bkz. docs/kampanya_turu_olcum_raporu.md.
     "Belirli segment": [
         "kart sahipleri", "kart sahiplerine", "kartı sahipleri",
+        "kart sahib",
         "müşterilerine özel", "sahiplerine özel", "kart müşterileri",
         "kullanıcılarına özel", "üyelerine özel",
     ],
@@ -815,23 +926,27 @@ def hedef_kitle_segmenti(metin: Optional[str]) -> Optional[str]:
     hem dogruluk olcumu (altin verideki serbest metin etiketinden) AYNI
     fonksiyonu cagirir. Iki taraf ayri kural kullanirsa olcum, motorun
     basarisini degil iki kural arasindaki farki olcer.
+
+    IDEMPOTENT OLMAK ZORUNDA (olculdu 25 Agustos 2026): girdi ZATEN bir
+    segment etiketiyse oldugu gibi doner. Olcum tarafi bu fonksiyonu IKI
+    tarafa da uyguluyor (scraper/scripts/extraction_accuracy.py,
+    ALAN_NORMALIZE) - gold serbest metindir ve donusmesi gerekir, ama
+    motorun ciktisi zaten etikettir ve ikinci kez donusturulmemelidir.
+    Dort etiketin ucu bu ikinci gecisten kendiliginden sag cikiyordu
+    ("Yeni müşteri" metni "yeni müşteri" anahtarini icerir), ama
+    "Belirli segment" HICBIR anahtarini icermiyor ve None'a dusuyordu:
+    motor DOGRU cevabi uretse bile olcum onu kacirma sayiyordu.
+    Bedeli olculdu: hedef_kitle'nin 182 kacirmasinin 164'u tam olarak bu
+    hucreydi ("Belirli segment" -> None). Guard eklenince, TEK BIR KURAL
+    DEGISMEDEN F1 %14,16 -> %22,78.
     """
     if not metin:
         return None
+    if metin in HEDEF_KITLE_SIRASI:
+        return metin  # zaten etiket - yeniden cozumlemeye calisma
     metin_l = turkce_ascii_kucult(metin)
     for etiket in HEDEF_KITLE_SIRASI:
         if any(k in metin_l for k in _HEDEF_KITLE_KATLANMIS[etiket]):
-            return etiket
-    return None
-    katlanmis = turkce_ascii_katla(metin)
-    for etiket in HEDEF_KITLE_SIRASI:
-        if any(d.search(katlanmis) for d in _HEDEF_KITLE_DERLENMIS[etiket]):
-            return etiket
-    return None
-    metin_l = turkce_ascii_kucult(metin)
-    for etiket in HEDEF_KITLE_SIRASI:
-        kelimeler = [turkce_ascii_kucult(k) for k in HEDEF_KITLE_ANAHTAR_KELIMELERI[etiket]]
-        if any(k in metin_l for k in kelimeler):
             return etiket
     return None
 
@@ -876,19 +991,47 @@ def _ilk_eslesme(desen: re.Pattern, katlanmis: str, ham_metin: str) -> Optional[
     return _ham_span(ham_metin, m) if m else None
 
 
-def _odul_birimini_tespit_et(eslesen_metin: str) -> str:
-    """RE_ODUL'un eslesen metninde HANGI banka-ozel sadakat biriminin
-    gectigini tespit eder. Eskiden bu fonksiyon yoktu, RE_ODUL eslestigi
-    surece odul_birimi kosulsuz "TL" atanirdi - bu yuzden Bankkart Lira/
-    ParafPara/Worldpuan gibi TL-disi birimler bile yanlislikla "TL" olarak
-    kaydediliyordu (Extraction Accuracy raporu, 18/40 hata)."""
-    metin_l = turkce_ascii_kucult(eslesen_metin)
-    if "bankkart lira" in metin_l:
-        return "Bankkart Lira"
-    if "parafpara" in metin_l:
-        return "ParafPara"
-    if "worldpuan" in metin_l:
-        return "Worldpuan"
+# Banka-ozel sadakat birimleri. Degerler altin veri setindeki yazimla
+# BIREBIR ayni olmali - olcum tam dize karsilastirmasi yapar.
+_ODUL_BIRIMI_ANAHTARLARI = (
+    ("bankkart lira", "Bankkart Lira"),
+    ("parafpara", "ParafPara"),
+    ("worldpuan", "Worldpuan"),
+    ("altın puan", "Altin Puan"),
+)
+_ODUL_BIRIMI_KATLANMIS = tuple(
+    (turkce_ascii_kucult(anahtar), birim) for anahtar, birim in _ODUL_BIRIMI_ANAHTARLARI
+)
+
+
+def _odul_birimini_tespit_et(
+    ham_metin: str, baslangic: int, bitis: int, pencere: int = 80
+) -> str:
+    """Odulun HANGI birimde verildigini eslesmenin CUMLESINDEN tespit eder.
+
+    KAPSAM GENISLETILDI (olculdu 25 Agustos 2026). Eskiden yalnizca
+    RE_ODUL'un ESLESEN PARCASINA bakiyordu; birim sozcugu ise cogu
+    kampanyada o parcanin DISINDA, ayni cumlenin baska yerinde geciyor:
+
+        "600 TL'ye varan ALTIN PUAN firsati! ... maksimum kazanim tutari 600 TL"
+                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                                 eslesen parca - birim yok
+
+    Sonuc: tutar DOGRU bulunuyor ama birim "TL" yaziliyordu. Olculdu -
+    odul_birimi'nin 20 hatasinin 7'si tam olarak buydu (KT-024/029/038/039
+    "Altin Puan", KT-022 "Mil", TEK-030 "ParafPara", DK-009).
+
+    CUMLEYE KIRPILMIS pencere kullanilir (duz karakter penceresi degil):
+    komsu cumledeki bir birim sozcugu bu odule ait DEGILDIR - ayni gerekce
+    _tutar_baglaminda_gecersiz_mi ve _odul_baglaminda_mi'da da var.
+
+    "altın puan" ANAHTARI EKLENDI: Kuveyt Turk'un sadakat birimi; sozlukte
+    hic yoktu, bu yuzden dort kampanyada "TL" yaziliyordu.
+    """
+    baglam = _cumleye_kirpilmis_baglam(ham_metin, baslangic, bitis, pencere)
+    for anahtar, birim in _ODUL_BIRIMI_KATLANMIS:
+        if anahtar in baglam:
+            return birim
     return "TL"
 
 
@@ -1283,12 +1426,30 @@ def kaydi_cikar(ham_metin: str) -> dict:
             alanlar["odul_birimi"] = "Gram"
             izler["odul_miktari"] = (_ham_span(ham_metin, m), 0.8)
         else:
+            # DENENDI VE REDDEDILDI (25 Agustos 2026, olculdu iki yonde de):
+            # RE_ODUL BIRDEN FAZLA farkli tutarla eslestiginde (1) "belirsizse
+            # bos birak" (taksit_sayisi'ndaki kural) VE (2) "en buyugu sec"
+            # (RE_ODUL_TAVAN fallback'indeki kural, asagida) ikisi de burada
+            # DENENDI. Ilki odul_miktari F1'ini %83,06 -> %77,78'e, dolu alan
+            # dogrulugunu %75,8 -> %73,5'e dusurdu (17 kayitta coklu aday var
+            # ve BOS birakmak bunlarin cogunda dogru sonucu KACIRDI - ör.
+            # AL-004, KT-007, ZK-016). Ikincisi (en buyugu sec) beklenenin
+            # aksine DAHA DA KOTU cikti (F1 %82,42, TP 76 -> 75) - RE_ODUL'un
+            # dogrudan (sayi-once) deseninde EN BUYUK deger, TAVAN
+            # deseninin ("en fazla/maksimum") aksine, GUVENILIR bir "nihai
+            # toplam" isareti degil: cogu zaman sayfadaki ILK gecen tutar
+            # zaten dogru cevap, sonraki adaylar ya alakasiz ya da daha
+            # kucuk bir alt-kalemdir. Sonuc: TOM-008/TOM-010'daki (kulup
+            # uyesi/uye olmayan kademesi) yanlis pozitif BILEREK
+            # DUZELTILMEDI - .search() (ILK eslesme) davranisi geri
+            # birakildi, cunku olculen NET etki her iki alternatifte de
+            # olumsuzdu. NER/LLM katmaninin isi (bkz. dosya basi Faz notu).
             m = RE_ODUL.search(katlanmis)
             if m:
                 alanlar["odul_miktari"] = tutara_cevir(_ham_span(ham_metin, m))
-                # ONCEDEN: kosulsuz "TL" atanirdi - Bankkart Lira/ParafPara/
-                # Worldpuan gibi TL-disi birimler yanlis kaydediliyordu.
-                alanlar["odul_birimi"] = _odul_birimini_tespit_et(_ham_span(ham_metin, m))
+                alanlar["odul_birimi"] = _odul_birimini_tespit_et(
+                    ham_metin, m.start(), m.end()
+                )
                 izler["odul_miktari"] = (_ham_span(ham_metin, m), 0.8)
             else:
                 # Yukaridaki "varan/kadar/degerinde + anahtar kelime"
@@ -1315,14 +1476,38 @@ def kaydi_cikar(ham_metin: str) -> dict:
                         continue
                     tutar = tutara_cevir(_ham_span(ham_metin, m, 1))
                     if tutar is not None:
-                        adaylar.append((tutar, "TL", _ham_span(ham_metin, m)))
+                        adaylar.append((
+                            tutar,
+                            _odul_birimini_tespit_et(ham_metin, m.start(), m.end()),
+                            _ham_span(ham_metin, m),
+                        ))
                 for tm in RE_ODUL_TAVAN.finditer(katlanmis):
                     if not _odul_baglaminda_mi(ham_metin, tm.start(), tm.end()):
+                        continue
+                    # INDIRIM TAVANI ODUL DEGIL (olculdu 25 Agustos 2026,
+                    # AL-013): "maksimum indirim tutari 1.000 TL" - bu bir
+                    # YUZDELIK INDIRIMIN parasal tavanidir, sabit bir odul
+                    # DEGILDIR (indirim harcama tutarina gore degisir, tavan
+                    # yalnizca ust siniri belirtir). RE_ODUL'un KENDI
+                    # deseninde "indirim" zaten anahtar kelime olarak var
+                    # (bkz. yukaridaki gerekce - ZK-014/VK-010 "X TL Varan
+                    # Indirim" gercekten odul sayilmali) - bu ayrim SADECE bu
+                    # TAVAN dalinda gecerlidir, cunku "maksimum/en fazla
+                    # indirim" kalibi ile "X TL indirim" kalibi FARKLI
+                    # ifadelerdir: biri tavan/esik, digeri dogrudan iddia.
+                    if "indirim" in turkce_ascii_kucult(_ham_span(ham_metin, tm)):
                         continue
                     tutar = tutara_cevir(_ham_span(ham_metin, tm, 1))
                     if tutar is not None:
                         birim_ham = turkce_ascii_kucult(_ham_span(ham_metin, tm, 2))
-                        birim = "Gram" if birim_ham.startswith("gr") else "TL"
+                        # Desen birimi ACIKCA yakaladiysa (gram) o kazanir;
+                        # aksi halde birim cumleden cozulur (bkz.
+                        # _odul_birimini_tespit_et - "altin puan" vb.).
+                        birim = (
+                            "Gram"
+                            if birim_ham.startswith("gr")
+                            else _odul_birimini_tespit_et(ham_metin, tm.start(), tm.end())
+                        )
                         adaylar.append((tutar, birim, _ham_span(ham_metin, tm)))
                 if adaylar:
                     tutar, birim, span = max(adaylar, key=lambda a: a[0])
@@ -1392,13 +1577,50 @@ def kaydi_cikar(ham_metin: str) -> dict:
         alanlar["kampanya_bitis"] = tarihe_cevir(_ham_span(ham_metin, aralik_gecerli, 2))
         izler["kampanya_bitis"] = (_ham_span(ham_metin, aralik_gecerli), 0.9)
     else:
-        for tm in RE_TARIH.finditer(katlanmis):
-            if _tarih_baglaminda_gecersiz_mi(ham_metin, tm.start(), tm.end()):
+        # SIKISIK ARALIK - tam aralik bulunamadiysa denenir (bkz.
+        # _ARALIK_YIL_PAYLASIMLI / _ARALIK_AY_PAYLASIMLI tanimlari).
+        # Eksik parcalar bitis tarihinden odunc alinarak iki tam tarih kurulur.
+        sikisik = None
+        for m in _ARALIK_YIL_PAYLASIMLI.finditer(katlanmis):
+            if _tarih_baglaminda_gecersiz_mi(ham_metin, m.start(), m.end()):
                 continue
-            span = _ham_span(ham_metin, tm)
-            alanlar["kampanya_bitis"] = tarihe_cevir(span)
-            izler["kampanya_bitis"] = (span, 0.85)
+            yil = _ham_span(ham_metin, m, 5)
+            sikisik = (
+                f"{_ham_span(ham_metin, m, 1)} {_ham_span(ham_metin, m, 2)} {yil}",
+                f"{_ham_span(ham_metin, m, 3)} {_ham_span(ham_metin, m, 4)} {yil}",
+                m,
+            )
             break
+        if sikisik is None:
+            for m in _ARALIK_AY_PAYLASIMLI.finditer(katlanmis):
+                if _tarih_baglaminda_gecersiz_mi(ham_metin, m.start(), m.end()):
+                    continue
+                ay, yil = _ham_span(ham_metin, m, 3), _ham_span(ham_metin, m, 4)
+                sikisik = (
+                    f"{_ham_span(ham_metin, m, 1)} {ay} {yil}",
+                    f"{_ham_span(ham_metin, m, 2)} {ay} {yil}",
+                    m,
+                )
+                break
+
+        if sikisik is not None:
+            bas, bit, m = sikisik
+            # Ikisi de cevrilebiliyorsa yazilir - biri cevrilemezse ortada
+            # kalan yarim bir aralik uydurmaktansa tek tarih yoluna dusulur.
+            bas_iso, bit_iso = tarihe_cevir(bas), tarihe_cevir(bit)
+            if _gecerli_tarih_mi(bas_iso) and _gecerli_tarih_mi(bit_iso):
+                alanlar["kampanya_baslangic"] = bas_iso
+                alanlar["kampanya_bitis"] = bit_iso
+                izler["kampanya_bitis"] = (_ham_span(ham_metin, m), 0.85)
+
+        if alanlar["kampanya_bitis"] is None:
+            for tm in RE_TARIH.finditer(katlanmis):
+                if _tarih_baglaminda_gecersiz_mi(ham_metin, tm.start(), tm.end()):
+                    continue
+                span = _ham_span(ham_metin, tm)
+                alanlar["kampanya_bitis"] = tarihe_cevir(span)
+                izler["kampanya_bitis"] = (span, 0.85)
+                break
 
     # --- Kampanya turu / hedef kitle (anahtar kelime siniflandirma) -----
     alanlar["kampanya_turu"] = _kampanya_turunu_tespit_et(ham_metin)

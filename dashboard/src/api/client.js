@@ -140,6 +140,15 @@ export const tazelikGetir = async () => {
   return yanit.data;
 };
 
+// GET / - servisin aktif yapilandirmasi (kimlik dogrulama gerektirmez).
+// Giris ekrani bunu okuyup mock modda mi gercek JWT modunda mi
+// oldugunu anlar: mock modda /token 400 doner ve "Giris yap" dugmesi
+// kullaniciyi bilerek hataya surukler.
+export const sistemBilgisi = async () => {
+  const yanit = await client.get("/");
+  return yanit.data;
+};
+
 // POST /cikar - serbest kampanya metninden yapilandirilmis alanlar (Md. 6).
 // `hibrit` VARSAYILAN FALSE: LLM GPU'suz makinede kayit basina 150-300 sn
 // surer, canli demo bunu bekleyemez.

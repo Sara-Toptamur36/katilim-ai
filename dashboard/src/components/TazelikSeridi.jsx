@@ -130,9 +130,9 @@ export default function TazelikSeridi() {
           }
         />
         {veri.tekil_kampanya != null && (
-          <Tooltip title="Scraper eski taramaları silmez (değişiklik takibi için); anlık görüntü sayısı tekil kampanyadan fazladır">
+          <Tooltip title="Bankaların sayfalarından taranan ham veri (scraper/raw_data) - veritabanına yüklenmiş kayıt sayısından farklıdır, bkz. Alan Bazında Veri Doluluğu kartı. Scraper eski taramaları silmez (değişiklik takibi için); anlık görüntü sayısı tekil kampanyadan fazladır">
             <span>
-              <Typography.Text type="secondary">Kampanya: </Typography.Text>
+              <Typography.Text type="secondary">Taranan kampanya: </Typography.Text>
               <Tag>
                 {veri.tekil_kampanya} tekil · {veri.anlik_goruntu} anlık görüntü
               </Tag>

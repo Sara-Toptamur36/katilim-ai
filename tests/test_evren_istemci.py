@@ -75,6 +75,15 @@ def test_hazir_mi_onbellekli(monkeypatch):
     assert evren_istemci.hazir_mi() is False  # onbellekten donmeli
     assert cagri_sayaci["n"] == 1
 
+    # TEMIZLIK: bu testin sahte "hazir=False" onbellegi 30 sn boyunca
+    # gecerli kalir ve monkeypatch bunu geri almaz (dict icerigi, bir
+    # attribute degil). Temizlenmezse hemen ardindan calisan CANLI
+    # testler (gercek EVREN_API_KEY varken) bu bayat onbellekten False
+    # okuyup gercek API'yi hic cagirmadan None doner - denetlendi (25
+    # Agustos 2026): dogrudan API cagrisi calisiyordu, sorun yalnizca bu
+    # sizintiydi.
+    evren_istemci._DURUM_CACHE.clear()
+
 
 # --- Canli testler (gercek EVREN_API_KEY gerektirir) ---------------------
 

@@ -1386,7 +1386,14 @@ export default function Dashboard() {
                       marginTop: 2,
                     }}
                   >
-                    {alanDolulukToplam} kampanyada hangi alan ne sıklıkta dolu
+                    {/* "kampanya" tek basina belirsizdi: bu sayi
+                        veritabanina YUKLENMIS kayit sayisi (/kampanyalar),
+                        TazelikSeridi'ndeki "tekil kampanya" ise TARANAN
+                        ham sayfa sayisi (scraper/raw_data) - ikisi farkli
+                        seyler olcuyor, ikisi de canli ve dogru, sadece
+                        etiketsiz aynı kelimeyle celisiyor gorunuyorlardi
+                        (denetim bulgusu, 25.08.2026). */}
+                    veritabanındaki {alanDolulukToplam} kampanyada hangi alan ne sıklıkta dolu
                   </div>
                 </div>
 
@@ -1501,11 +1508,17 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                {/* 2x2 Mini Kart Grid */}
+                {/* Mini Kart Grid - DENETIM BULGUSU (25.08.2026): burada 4
+                    kart (2x2) vardi, "SON TARAMA" karti SISTEM_DURUMU'ndaki
+                    SABIT tarihi gosteriyordu ve hemen altindaki
+                    TazelikSeridi'nin CANLI "Son tarama" etiketiyle
+                    celisiyordu (ayni bilgi, iki farkli kaynak, ayni ekranda).
+                    Kart kaldirildi - TazelikSeridi zaten ayni bilgiyi canli
+                    gosteriyor. */}
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
+                    gridTemplateColumns: "1fr 1fr 1fr",
                     gap: 10,
                   }}
                 >
@@ -1549,54 +1562,15 @@ export default function Dashboard() {
                         marginTop: 4,
                       }}
                     >
-                      {ragBelge} belgeden · {SISTEM_DURUMU.indeksTarihi}
+                      {/* Tarih SISTEM_DURUMU'ndan degil - asagidaki
+                          TazelikSeridi'nin canli "RAG indeksi" etiketiyle
+                          celisen ikinci bir sabit tarih olmasin diye
+                          kaldirildi (bkz. yukaridaki denetim notu). */}
+                      {ragBelge} belgeden
                     </div>
                   </div>
 
-                  {/* Mini Kart 2: SON TARAMA */}
-                  <div
-                    style={{
-                      background: "var(--zemin-yumusak)",
-                      border: "1px solid var(--kenarlik)",
-                      borderRadius: 10,
-                      padding: 12,
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: 10,
-                        fontWeight: 700,
-                        letterSpacing: "0.08em",
-                        color: "var(--yazi-soluk)",
-                        textTransform: "uppercase",
-                      }}
-                    >
-                      SON TARAMA
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 17,
-                        fontWeight: 650,
-                        color: "var(--yazi-koyu)",
-                        marginTop: 4,
-                        lineHeight: 1.2,
-                      }}
-                    >
-                      {SISTEM_DURUMU.sonTarama}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 11,
-                        color: "#0c765f",
-                        fontWeight: 600,
-                        marginTop: 4,
-                      }}
-                    >
-                      bayatlık {SISTEM_DURUMU.bayatlikGun} gün
-                    </div>
-                  </div>
-
-                  {/* Mini Kart 3: API DURUMU */}
+                  {/* Mini Kart 2: API DURUMU */}
                   <div
                     style={{
                       background: "var(--zemin-yumusak)",
@@ -1650,7 +1624,7 @@ export default function Dashboard() {
                     </div>
                   </div>
 
-                  {/* Mini Kart 4: GOLD VERİ SETİ */}
+                  {/* Mini Kart 3: GOLD VERİ SETİ */}
                   <div
                     style={{
                       background: "var(--zemin-yumusak)",

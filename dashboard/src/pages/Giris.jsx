@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   Button,
@@ -19,7 +19,7 @@ import {
   UserAddOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { girisYap, kayitOl, rolAl, rolSil, tokenSil } from "../api/client";
+import { girisYap, kayitOl, rolAl, rolSil, tokenSil, sistemBilgisi } from "../api/client";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -38,6 +38,23 @@ export default function Giris() {
   const [calisiyor, setCalisiyor] = useState(false);
   const [mevcutRol, setMevcutRol] = useState(rolAl());
   const [aktifSekme, setAktifSekme] = useState("giris");
+
+  // MOCK MOD TESPITI - neden gerekli:
+  // Varsayilan yapilandirmada (JWT_AKTIF ayarli degil) POST /token
+  // bilerek 400 doner: "mock modda /token gerekmez". Onceki surumde
+  // "Giris yap" dugmesi aktif duruyordu, kullanici basiyor ve teknik
+  // bir hata mesaji goruyordu - calismayan bir dugme sunmak yerine
+  // durumu onceden soyluyoruz. Bilgi GET / uzerinden geliyor
+  // (api/main.py::kok -> jwt_dogrulama).
+  const [jwtModu, setJwtModu] = useState(null); // "mock" | "gercek" | null
+
+  useEffect(() => {
+    sistemBilgisi()
+      .then((b) => setJwtModu(b?.jwt_dogrulama ?? null))
+      .catch(() => setJwtModu(null)); // API kapaliysa varsayim yapmiyoruz
+  }, []);
+
+  const mockMod = jwtModu === "mock";
 
   const hataMetni = (e) =>
     // API'nin KENDI mesajini gosteriyoruz. Ozellikle /token mock modda
@@ -80,7 +97,9 @@ export default function Giris() {
       setMesaj({
         tip: "success",
         baslik: "Kayıt oluşturuldu",
-        metin: `${yanit.kullanici_adi} — rol: ${yanit.rol}. Şimdi giriş yapabilirsiniz.`,
+        metin: mockMod
+          ? `${yanit.kullanici_adi} — rol: ${yanit.rol}. Demo modunda giriş gerekmediği için kayıt hemen geçerli; tüm ekranlar zaten açık.`
+          : `${yanit.kullanici_adi} — rol: ${yanit.rol}. Şimdi giriş yapabilirsiniz.`,
       });
     } catch (e) {
       setMesaj({ tip: "error", baslik: "Kayıt yapılamadı", metin: hataMetni(e) });
@@ -158,6 +177,18 @@ export default function Giris() {
             </div>
           </div>
 
+          {/* Mock modda giris dugmesi PASIF: POST /token bu modda bilerek
+              400 doner. Calisan gibi gorunup hata veren bir dugme yerine
+              nedenini onceden soyluyoruz. */}
+          {mockMod && (
+            <Alert
+              type="info"
+              showIcon
+              title="Demo modunda giriş gerekmiyor"
+              description="Sistem mock kimlik doğrulama ile çalışıyor; tüm ekranlar zaten açık. Gerçek giriş, sunucu JWT_AKTIF=true ile başlatıldığında devreye girer."
+            />
+          )}
+
           <Button
             type="primary"
             block
@@ -165,10 +196,10 @@ export default function Giris() {
             icon={<LoginOutlined />}
             onClick={giris}
             loading={calisiyor}
-            disabled={!kullaniciAdi || !sifre}
+            disabled={!kullaniciAdi || !sifre || mockMod}
             style={{ marginTop: 6 }}
           >
-            Giriş yap
+            {mockMod ? "Giriş yap (demo modunda kapalı)" : "Giriş yap"}
           </Button>
         </Space>
       ),

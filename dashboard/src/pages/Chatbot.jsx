@@ -14,7 +14,7 @@ import {
   InfoCircleOutlined,
   ClearOutlined,
 } from "@ant-design/icons";
-import { chatGonder, tokenAl } from "../api/client";
+import { chatGonder, tokenAl, API_TABANI } from "../api/client";
 import ChatMesaji from "../components/ChatMesaji";
 import { useAudit } from "../context/AuditContext";
 
@@ -258,6 +258,17 @@ export default function Chatbot() {
     );
   }, [aktifId]);
 
+  // TUM gecmisi siler. "Temizle" dugmesinden farki: o yalnizca AKTIF
+  // sohbetin mesajlarini bosaltir, gecmis listesi oldugu gibi kalir.
+  // Demo/sunum oncesi eski sohbetlerin ekranda gorunmesi istenmiyordu -
+  // tek tek silmek yerine tek dugme.
+  const tumGecmisiSil = useCallback(() => {
+    setSohbetler([]);
+    setAktifId(null);
+    setGirdi("");
+    setBekleniyor(false);
+  }, []);
+
   const gonder = useCallback(async (metin) => {
     const soru = (metin || girdi).trim();
     if (!soru) return;
@@ -398,7 +409,7 @@ export default function Chatbot() {
     );
 
     try {
-      const yanit = await fetch("/api/chat/stream", {
+      const yanit = await fetch(`${API_TABANI}/chat/stream`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -509,6 +520,23 @@ export default function Chatbot() {
             <PlusOutlined />
             <span>Yeni Sohbet</span>
           </button>
+
+          {/* Tum gecmisi sil - yalnizca silinecek sohbet varken gorunur */}
+          {sohbetler.length > 0 && (
+            <Popconfirm
+              title="Tüm sohbet geçmişi silinsin mi?"
+              description={`${sohbetler.length} sohbet kalıcı olarak silinecek.`}
+              okText="Hepsini sil"
+              cancelText="Vazgeç"
+              okButtonProps={{ danger: true }}
+              onConfirm={tumGecmisiSil}
+            >
+              <button className="gecmisi-sil-dugme" type="button">
+                <DeleteOutlined />
+                <span>Geçmişi sil ({sohbetler.length})</span>
+              </button>
+            </Popconfirm>
+          )}
 
           {/* Sohbet listesi */}
           {sohbetler.length === 0 ? (

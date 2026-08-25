@@ -7,14 +7,13 @@
 //   OLCUM_TARIHI -> makro F1, RAG Recall, cekimserlik, test sayisi.
 //                   Belirli bir veri seti uzerinde OLCULDU.
 //
-// Ikisini tek tarihle gostermek YANILTICI olurdu: 23 Agustos'ta veri
-// 251'den 447 kampanyaya cikti (Zeynep'in sitemap taramasi), ancak
-// dogruluk olcumleri hala 251'lik set uzerinde yapilmis degerlerdir.
-// "447 kampanyada %98,28 dogruluk" demek yanlis olur - o oran o sette
-// olculmedi. Yeniden olcum yapilana kadar ayrim ekranda korunur.
+// Ikisini tek tarihle gostermek YANILTICI olurdu. 25 Agustos'ta RAG
+// olcumleri guncel indekste (1875 parca) yeniden kosuldu, ama CIKARIM
+// olcumleri (makro F1) hala eski, daha kucuk set uzerinde yapilmis
+// degerlerdir. Yeniden olculene kadar ayrim ekranda korunur.
 export const VERI_TARIHI = "24 Ağustos 2026";
-export const OLCUM_TARIHI = "18 Ağustos 2026";
-export const OLCUM_VERI_SETI = "251 tekil kampanya / 817 parçalık indeks";
+export const OLCUM_TARIHI = "25 Ağustos 2026";
+export const OLCUM_VERI_SETI = "129 sorgu / 1875 parçalık indeks";
 
 export const OLCUMLER = {
   // --- VERI: guncel, PostgreSQL'den (VERI_TARIHI) ---
@@ -33,7 +32,8 @@ export const OLCUMLER = {
     goldGercekBanka: 298,
     goldOrnekSenaryo: 4, // sartnamedeki A/B/C/D Bankasi ornegi
   },
-  // --- OLCUM: 251'lik set uzerinde, 18 Agustos (OLCUM_TARIHI) ---
+  // --- OLCUM: cikarim olcumleri eski sette; RAG olcumleri
+  //     25 Agustos'ta guncel indekste yeniden kosuldu ---
   cikarim: {
     doluAlanDogrulugu: 98.48,
     doluAlanDetay: "65/66 alan",
@@ -50,17 +50,30 @@ export const OLCUMLER = {
     // DIKKAT: bu 817/263, Recall degerlerinin OLCULDUGU indekstir.
     // Calisan sistemdeki guncel indeks SISTEM_DURUMU'nda (1907 parca) -
     // ikisi ayri, cunku Recall yeni indekste yeniden olculmedi.
-    indekslenenParca: 817,
-    belgeSayisi: 263,
-    indeksTarihi: "17 Ağustos 2026",
-    recall5: 93.75,
-    recall3: 93.75,
-    recall5Detay: "30/32 kampanya",
-    recall1Alt: 87.5,
-    recall1Ust: 93.75,
-    recall1Not: "koşular arası oynuyor",
-    abstention: 100,
-    abstentionDetay: "5/5 alan dışı soruda cevap üretilmedi",
+    indekslenenParca: 1875,
+    belgeSayisi: 513,
+    indeksTarihi: "25 Ağustos 2026",
+    recall5: 87.6,
+    recall3: 84.5,
+    recall1: 72.09,
+    recall5Detay: "129 sorgu",
+    recall1Not: "koşular arası oynuyor (HNSW yaklaşık arama)",
+    // Kategori kirilimi: sistemin nerede zorlandigi tek bir genel oranin
+    // arkasinda kaybolmasin. banka_ve_konu en zor kategori - kullanici
+    // kampanya adini vermeden "X bankasi kart" diye soruyor.
+    recallKategori: [
+      { ad: "Tam ad", oran: 97.87, detay: "46/47" },
+      { ad: "Kısmi ad", oran: 95.35, detay: "41/43" },
+      { ad: "Doğal soru", oran: 87.5, detay: "14/16" },
+      { ad: "Banka + konu", oran: 52.17, detay: "12/23" },
+    ],
+    abstention: 86.67,
+    abstentionDetay: "13/15 alan dışı soruda cevap üretilmedi",
+    // Alan ICI ama kapsam disi sorular (ör. "hesap acmak icin hangi
+    // belgeler gerekli") sistemin en zayif oldugu yer: kampanya
+    // korpusunda cevabi yok ama terimler ortustugu icin esigi geciyor.
+    abstentionKapsamDisi: 40,
+    abstentionKapsamDisiDetay: "4/10 kapsam dışı soruda cevap üretilmedi",
   },
   test: {
     gecen: 723,
@@ -141,9 +154,9 @@ export const KAYNAK_TAKIP = [
 ];
 
 export const SISTEM_DURUMU = {
-  qdrantParca: 1907,
-  qdrantBelge: 498,
-  indeksTarihi: "23 Ağustos 2026",
+  qdrantParca: 1875,
+  qdrantBelge: 513,
+  indeksTarihi: "25 Ağustos 2026",
   sonTarama: "22 Ağustos 2026",
   bayatlikGun: 1,
 };

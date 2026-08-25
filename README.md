@@ -332,9 +332,29 @@ API'yi gerçek veriyle çalıştırmak için `GERCEK_VERI_AKTIF=true` verin.
 Ollama kurulu değilse sistem çalışmaya devam eder — LLM katmanı atlanır,
 regex + NER sonuçları kullanılır.
 
-**Veri seti** depoya dâhildir: [`gold_dataset/`](gold_dataset/) (elle
-doğrulanmış referans + ekran görüntüleri), [`scraper/raw_data/`](scraper/raw_data/)
-(ham kampanya metinleri).
+### Veri setine erişim
+
+Şartname Md. 9, depoda **(1)** bağımlılıkların eksiksiz listesi, **(2)** çalıştırma
+adımları ve **(3)** veri setinin indirilebileceği herkese açık bir bağlantı
+bulunmasını istiyor. Üçü de bu depodadır — veri seti harici bir servise
+yüklenmedi, doğrudan depoyla birlikte dağıtılıyor:
+
+| İstenen | Nerede |
+|---|---|
+| Bağımlılık listesi (sürümleri sabitlenmiş) | [`requirements.txt`](https://github.com/Sara-Toptamur36/katilim-ai/blob/main/requirements.txt) |
+| Çalıştırma adımları | Bu dosyadaki [Kurulum ve Çalıştırma](#kurulum-ve-çalıştırma) bölümü |
+| **Altın veri seti** (elle doğrulanmış referans + ekran görüntüleri) | [`gold_dataset/`](https://github.com/Sara-Toptamur36/katilim-ai/tree/main/gold_dataset) |
+| **Ham kampanya metinleri** (9 bankanın sayfa anlık görüntüleri) | [`scraper/raw_data/`](https://github.com/Sara-Toptamur36/katilim-ai/tree/main/scraper/raw_data) |
+| Sentetik müşteri sesi seti (ürün verisi DEĞİL, yalnızca demo) | [`tests/veri/kapsam_disi/`](https://github.com/Sara-Toptamur36/katilim-ai/tree/main/tests/veri/kapsam_disi) |
+
+Depo herkese açıktır; klonlamak veri setini de indirir:
+
+```bash
+git clone https://github.com/Sara-Toptamur36/katilim-ai.git
+```
+
+Altın veri setinin **tek doğru kaynağı** `gold_dataset/altin_veri_seti.xlsx`
+dosyasıdır; `.json` ondan üretilir ve elle düzenlenmez.
 
 ### Donanım profili
 

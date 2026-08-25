@@ -297,6 +297,79 @@ def _ham_veri_tazeligi() -> tuple[str | None, int, int]:
     return en_yeni, len(urller), anlik
 
 
+_SOZLUK_YOLU = Path(__file__).resolve().parent.parent / "terminology" / "sozluk.json"
+
+
+def _kural_versiyonu() -> str | None:
+    """RULE_VERSION tanimli degilse terminology/sozluk.json'un icerik
+    hash'inden turetilir - api/schemas.py'deki TazelikYanit.rule_version
+    aciklamasi ("RULE_VERSION ortam degiskeninden ya da sozluk git
+    hash'inden") bunu vaat ediyordu ama bu fallback hic yazilmamisti,
+    alan hep bos donuyordu (denetim bulgusu, 25.08.2026).
+
+    Git commit hash'i yerine DOSYA ICERIGI hash'i kullanilir: dagitilan
+    ortamda git gecmisi bulunmayabilir (ornegin Docker imaji), ama sozluk
+    dosyasi her zaman oradadir. Ayrica bu, "kural gercekten degisti mi"
+    sorusuna git hash'inden daha dogru cevap verir - sozlugun disindaki
+    bir commit git hash'ini degistirir ama kural versiyonunu degistirmez.
+    """
+    ortam_degeri = os.environ.get("RULE_VERSION")
+    if ortam_degeri:
+        return ortam_degeri
+    try:
+        icerik = _SOZLUK_YOLU.read_bytes()
+    except OSError:
+        return None
+    import hashlib
+
+    return "sozluk-" + hashlib.sha256(icerik).hexdigest()[:12]
+
+
+_ALTIN_VERI_SETI_YOLU = (
+    Path(__file__).resolve().parent.parent / "gold_dataset" / "altin_veri_seti.json"
+)
+
+
+def _veri_seti_versiyonu() -> str | None:
+    """DATASET_VERSION tanimli degilse Altin Veri Seti'nin kendisinden
+    turetilir (imzali kayit sayisi + en son giris tarihi) - env
+    degiskeni elle guncellenmeyi unutulup bayatlayabilir, bu deger dosya
+    her degistiginde kendiliginden dogru kalir (denetim bulgusu,
+    25.08.2026 - ayni sinif hata: dashboard'daki SISTEM_DURUMU.sonTarama
+    sabitiyle celisen canli tarih).
+    """
+    ortam_degeri = os.environ.get("DATASET_VERSION")
+    if ortam_degeri:
+        return ortam_degeri
+    try:
+        with open(_ALTIN_VERI_SETI_YOLU, encoding="utf-8") as f:
+            kayitlar = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return None
+    imzali = [
+        k for k in kayitlar
+        if k.get("giren_kisi") and k["giren_kisi"] != "ORNEK"
+    ]
+    if not imzali:
+        return None
+    en_son_giris = max((k.get("giris_tarihi") or "" for k in imzali), default="")
+    return f"{len(imzali)}imzali-{en_son_giris}" if en_son_giris else f"{len(imzali)}imzali"
+
+
+def _rag_indeks_versiyonu(durum: dict) -> str | None:
+    """RAG_INDEX_VERSION tanimli degilse indeks_durumu.json'daki parca
+    sayisi + kurulma tarihinden turetilir - ayni gerekce (yukaridaki
+    _veri_seti_versiyonu docstring'i)."""
+    ortam_degeri = os.environ.get("RAG_INDEX_VERSION")
+    if ortam_degeri:
+        return ortam_degeri
+    parca = durum.get("parca_sayisi")
+    kuruldu = durum.get("kuruldu")
+    if parca is None or not kuruldu:
+        return None
+    return f"{parca}parca-{kuruldu[:10]}"
+
+
 def _gun_farki(zaman_metni: str | None) -> int | None:
     if not zaman_metni:
         return None
@@ -339,18 +412,14 @@ def tazelik(kullanici: dict = Depends(token_dogrula)):
         tekil_kampanya=tekil,
         anlik_goruntu=anlik,
         # System Health / Versiyon alanlari.
-        # Oncelik sirasi: indeks_durumu dosyasi > ortam degiskeni > None.
-        # Hicbiri yoksa None doner - tahmin edilmez.
-        dataset_version=(
-            durum.get("dataset_version")
-            or os.environ.get("DATASET_VERSION")
-        ),
-        rag_index_version=(
-            durum.get("rag_index_version")
-            or os.environ.get("RAG_INDEX_VERSION")
-        ),
+        # Oncelik sirasi: indeks_durumu dosyasi > ortam degiskeni >
+        # dosyadan turetilen deger > None. Hicbir kaynak yoksa None doner -
+        # tahmin edilmez (bkz. _veri_seti_versiyonu / _rag_indeks_versiyonu
+        # docstring'leri, denetim bulgusu 25.08.2026).
+        dataset_version=durum.get("dataset_version") or _veri_seti_versiyonu(),
+        rag_index_version=durum.get("rag_index_version") or _rag_indeks_versiyonu(durum),
         model_version=MODEL_ADI,
-        rule_version=os.environ.get("RULE_VERSION"),
+        rule_version=_kural_versiyonu(),
         demo_mode=DEMO_MODE,
         git_commit=os.environ.get("GIT_COMMIT"),
         last_ci=os.environ.get("LAST_CI"),

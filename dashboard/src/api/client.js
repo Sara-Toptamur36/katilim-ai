@@ -7,7 +7,7 @@ import axios from "axios";
 // backend orada CALISMAZ (bkz. PeacewAI_Faz_Plani_ve_Is_Bolumu.docx "T5"
 // notu: "Pages yalnizca statik arayuz yayinlar... demo videosunda 'canli
 // URL' gosterirken bunu dogru anlat").
-const API_TABANI = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+export const API_TABANI = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
 const TOKEN_ANAHTARI = "katilimai_token";
 const ROL_ANAHTARI = "katilimai_rol";
@@ -137,6 +137,15 @@ export const chatGonder = async (soru) => {
 // GET /sistem/tazelik - veri ve RAG indeksi ne kadar guncel?
 export const tazelikGetir = async () => {
   const yanit = await client.get("/sistem/tazelik");
+  return yanit.data;
+};
+
+// GET / - servisin aktif yapilandirmasi (kimlik dogrulama gerektirmez).
+// Giris ekrani bunu okuyup mock modda mi gercek JWT modunda mi
+// oldugunu anlar: mock modda /token 400 doner ve "Giris yap" dugmesi
+// kullaniciyi bilerek hataya surukler.
+export const sistemBilgisi = async () => {
+  const yanit = await client.get("/");
   return yanit.data;
 };
 

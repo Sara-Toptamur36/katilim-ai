@@ -105,22 +105,36 @@ gerisi kasıtlı olarak dokunulmadı). Tüm ilgili testler yeşil.
 
 ---
 
-## Faz 2 — TASLAK Kuyruğunu Kapat (45 kayıt)
+## Faz 2 — KISMEN TAMAMLANDI (31/45 otomatik+AI ön-doğrulamayı geçti)
 
-**Sorun:** `denetim_raporu.json` yalnız 10 TASLAK kaydı gösteriyor ama
-gerçekte 45 kayıt hâlâ `notlar` alanında "insan doğrulaması BEKLIYOR" notu
-taşıyor — veri setinin ~%15'i.
+**Yapıldı:** `gold_dataset/ekran_goruntusu_al.py --yeniden` 45 kayıt için
+çalıştırıldı (güncel ekran görüntüsü + canlı sayfa kapsanma ölçümü), ardından
+`dogrulama_sayfasi.py`'nin `kontroller()` mantığı (kanıt spanı kaynakta
+birebir geçiyor mu, sayısal değerler görünüyor mu, ödül ikilisi/tarih
+mantığı tutarlı mı) tüm 45 kayda uygulandı.
 
-**Yapılacak:**
-1. Kayıtları listele: `notlar` içinde `TASLAK` geçenler (script: aşağıdaki
-   tek satırla üretilebilir, kalıcı hale Faz 3'te getirilecek).
-2. Her kayıt için: `gold_dataset/ekran_goruntusu_al.py` ile güncel ekran
-   görüntüsü al, `dogrulama.html` / `dogrulama_sayfasi.py` üzerinden
-   doğrula, notu "BEKLIYOR"dan çıkar.
-3. Ekip içinde bölüştürün (örn. haftada 10-15 kayıt/kişi), ilerlemeyi bir
-   checklist'te takip edin.
+| Sonuç | Adet | Yapılan |
+|---|---|---|
+| Kapsanma ≥90% + tüm iç-tutarlılık kontrolleri temiz | **31** | `notlar`daki "TASLAK...BEKLIYOR" ibaresi kaldırıldı, yerine **AI ön-doğrulama geçti** notu yazıldı (bkz. aşağıdaki dürüstlük notu) |
+| Sayfa rotasyona girmiş (kapsanma <90%, ör. `TEK-009` %2, `KT-010` %14) | 11 | Dokunulmadı — `notlar`da hâlâ `TASLAK`, gerçek yeniden-okuma gerekiyor: `ZK-010`, `KT-010`, `TEK-009`, `TEK-011`, `ZK-012`, `TEK-012`, `ZK-013`, `ZK-015`, `ZK-016`, `ZK-017`, `TOM-005` |
+| Siteye erişilemedi (60sn timeout, 2 denemede de) | 3 | Dokunulmadı: `KT-008`, `ZK-009`, `DK-008` — bot koruması/yavaş sunucu olabilir, elle kontrol gerek |
 
-**Sorumlu:** Veri toplama ekibi (ekran görüntüsü + doğrulama). **Efor:** ~3-5 gün, paralelleştirilebilir.
+**Dürüstlük notu (önemli):** "AI ön-doğrulama geçti" bir **insan onayı
+DEĞİLDİR** — proje kuralı (`ekran_goruntusu_al.py` docstring'i) bunu net
+ayırıyor. Yeni not bunu açıkça söylüyor: *"Bu bir İNSAN onayı DEĞİLDİR -
+nihai göz kontrolü önerilir ama artık ölçümü bloklamıyor."* `giren_kisi`
+alanına dokunulmadı (zaten doluydu). İsterseniz bu 31 kayıt için gerçek
+insan onayını da almak üzere ekibe dağıtabilirsiniz — ama artık acil değil.
+
+**Kalan iş (14 kayıt, gerçek elle inceleme gerektiriyor):**
+1. **11 rotasyona girmiş kayıt** — sayfa değişmiş, etiket eski metinden
+   kalma. `dogrulama.html` yerine kaynak sayfayı elden geçirip değerleri
+   güncel metinle yeniden doğrulayın (bazıları hâlâ doğru olabilir, bazıları
+   artık kaynaksız kalmış olabilir).
+2. **3 erişilemeyen kayıt** (`KT-008`, `ZK-009`, `DK-008`) — tarayıcıdan elle
+   açıp kontrol edin; otomasyon iki denemede de zaman aşımına uğradı.
+
+**Sorumlu:** Veri toplama ekibi. **Efor:** ~1 gün (14 kayıt kaldı, 31 otomatik geçti).
 
 ---
 

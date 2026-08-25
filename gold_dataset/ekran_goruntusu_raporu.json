@@ -1,50 +1,71 @@
 {
-  "tarih": "2026-08-24",
+  "tarih": "2026-08-25",
   "kapsanma_esigi": 0.9,
   "sonuclar": [
     {
-      "kayit_id": "TEK-018",
-      "banka": "Türkiye Emlak Katılım",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-hepsiburadada-pesin-fiyatina-9-aya-varan-taksit-firsati",
-      "dosya": "TEK-018.png",
-      "boyut_kb": 229.6,
-      "kapsanma": 0.024,
-      "anlik_uzunluk": 2205,
-      "canli_uzunluk": 237,
-      "durum": "DEGISMIS"
+      "kayit_id": "HF-006",
+      "banka": "Hayat Finans",
+      "url": "https://www.hayatfinans.com.tr/kampanyalar/bana-bunu-al-is-ortagim-ile-troy-magaza-firsatlari",
+      "dosya": "HF-006.png",
+      "boyut_kb": 872.8,
+      "kapsanma": 1.0,
+      "anlik_uzunluk": 833,
+      "canli_uzunluk": 833,
+      "durum": "tamam"
     },
     {
-      "kayit_id": "TEK-021",
-      "banka": "Türkiye Emlak Katılım",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/giyim-ve-kozmetik-alisverislerinize-1000-tl-parafpara",
-      "dosya": "TEK-021.png",
-      "boyut_kb": 229.6,
-      "kapsanma": 0.015,
-      "anlik_uzunluk": 3552,
-      "canli_uzunluk": 237,
-      "durum": "DEGISMIS"
+      "kayit_id": "KT-008",
+      "banka": "Kuveyt Türk",
+      "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/colinsde-vade-farksiz-4-aya-varan-taksit-firsati",
+      "durum": "HATA",
+      "hata": "TimeoutError: Page.goto: Timeout 60000ms exceeded.\nCall log:\n  - navigating to \"https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/colinsde-vade-farksiz-"
     },
     {
-      "kayit_id": "TEK-025",
-      "banka": "Türkiye Emlak Katılım",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/market-alisverislerinize-800-tl-parafpara",
-      "dosya": "TEK-025.png",
-      "boyut_kb": 229.6,
-      "kapsanma": 0.018,
-      "anlik_uzunluk": 2969,
-      "canli_uzunluk": 237,
-      "durum": "DEGISMIS"
+      "kayit_id": "VK-009",
+      "banka": "Vakıf Katılım",
+      "url": "https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/tamamla-kazan",
+      "dosya": "VK-009.png",
+      "boyut_kb": 780.4,
+      "kapsanma": 1.0,
+      "anlik_uzunluk": 3420,
+      "canli_uzunluk": 3420,
+      "durum": "tamam"
     },
     {
-      "kayit_id": "TEK-040",
-      "banka": "Türkiye Emlak Katılım",
-      "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-pttavmcomda-pesin-fiyatina-2-taksit",
-      "dosya": "TEK-040.png",
-      "boyut_kb": 229.6,
-      "kapsanma": 0.039,
-      "anlik_uzunluk": 1351,
-      "canli_uzunluk": 237,
-      "durum": "DEGISMIS"
+      "kayit_id": "ZK-009",
+      "banka": "Ziraat Katılım",
+      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/a101de-6-taksit",
+      "durum": "HATA",
+      "hata": "TimeoutError: Page.goto: Timeout 60000ms exceeded.\nCall log:\n  - navigating to \"https://www.ziraatkatilim.com.tr/kart-kampanyalari/a101de-6-taksit\", waiting until \"domcontent"
+    },
+    {
+      "kayit_id": "DK-008",
+      "banka": "Dünya Katılım",
+      "url": "https://www.dunyakatilim.com.tr/kampanyalar/fiziki-altin",
+      "durum": "HATA",
+      "hata": "TimeoutError: Page.goto: Timeout 60000ms exceeded.\nCall log:\n  - navigating to \"https://www.dunyakatilim.com.tr/kampanyalar/fiziki-altin\", waiting until \"domcontentloaded\"\n"
+    },
+    {
+      "kayit_id": "HF-007",
+      "banka": "Hayat Finans",
+      "url": "https://hayatfinans.com.tr/kampanyalar/hayat-finans-ile-gastroclub-ayricaliklari",
+      "dosya": "HF-007.png",
+      "boyut_kb": 1384.3,
+      "kapsanma": 1.0,
+      "anlik_uzunluk": 2893,
+      "canli_uzunluk": 2893,
+      "durum": "tamam"
+    },
+    {
+      "kayit_id": "ZK-011",
+      "banka": "Ziraat Katılım",
+      "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari/aile-karta-ozel-2000-tlye-varan-bankkart-lira-1",
+      "dosya": "ZK-011.png",
+      "boyut_kb": 634.5,
+      "kapsanma": 0.923,
+      "anlik_uzunluk": 2692,
+      "canli_uzunluk": 2690,
+      "durum": "tamam"
     }
   ]
 }

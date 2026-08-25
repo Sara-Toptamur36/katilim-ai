@@ -86,6 +86,56 @@ def kampanya_linklerini_topla(ayar: dict) -> list[str]:
     return sorted(linkler)
 
 
+def _icerik_secicisi_listele(icerik_secici_ayari) -> list[str]:
+    """`bankalar.json`'daki icerik_secici alanini her zaman bir LISTEYE
+    normallestirir - tek string (cogu banka) ve liste (birden fazla sayfa
+    sablonu olan bankalar) bicimlerinin ikisini de kabul eder."""
+    if isinstance(icerik_secici_ayari, list):
+        return icerik_secici_ayari
+    return [icerik_secici_ayari] if icerik_secici_ayari else []
+
+
+# DOM sinifi olarak breadcrumb/gezinme widget'lari - metin bicimine
+# bakilmaksizin, YAPISAL olarak kampanyanin KENDI icerigi degildir.
+#
+# NEDEN YAPISAL (metin kurali DEGIL): kuveytturk'un ".breadcrumb"
+# ogesinin icinde bazen yalnizca duz "Ana Sayfa / Kampanyalar / X" gezinme
+# izi, bazen de (Kampus kategorisinde, KT-024/KT-042) ".breadcrumb-combo-
+# list" adinda AYNI kategorideki TUM kardes kampanyalarin basliklarini
+# listeleyen bir alt-widget var - ikincisi BASKA kampanyalarin tutar/
+# taksit degerlerini tasiyor. Metin uzerinde bunu guvenle ayirt etmek
+# DENENDI VE REDDEDILDI (bkz. preprocessing/kapsam.py docstring'i,
+# "DENENDI VE GERI ALINDI" - 621 kayittan 201'ini bozuyordu). DOM sinifi
+# olarak silmek ise SIFIR yanlis-pozitif riski tasir: breadcrumb bir
+# gezinme ogesidir, hangi banka olursa olsun kampanyanin kendi govdesine
+# AIT DEGILDIR; sinif yoksa `select()` bos liste doner, hicbir sey olmaz.
+_YAPISAL_GEZINME_SECICILERI = (".breadcrumb",)
+
+
+def govdeden_gezinme_ogelerini_cikar(secili) -> None:
+    """`secili` icindeki breadcrumb/gezinme widget'larini DOM'dan siler.
+
+    `secili` None ise (icerik_secici hic eslesmedi) dokunulmaz - o durum
+    zaten ayri bir uyariyla isaretleniyor (bkz. sayfa_tara)."""
+    if secili is None:
+        return
+    for secici in _YAPISAL_GEZINME_SECICILERI:
+        for oge in secili.select(secici):
+            oge.decompose()
+
+
+def icerigi_sec(soup: BeautifulSoup, icerik_secici_ayari):
+    """Verilen secici(ler)i SIRAYLA dener, ILK esleseni doner - js_scraper.py
+    `sayfa_metnini_al`'daki fallback zinciriyle AYNI desen (bkz. dosya basi
+    aciklama). Hicbiri eslesmezse None doner (cagiran taraf bunu 'TUM
+    sayfaya dus' isareti olarak yorumlar)."""
+    for secici in _icerik_secicisi_listele(icerik_secici_ayari):
+        secili = soup.select_one(secici)
+        if secili is not None:
+            return secili
+    return None
+
+
 def sayfa_tara(
     banka_kod: str,
     ayar: dict,
@@ -111,20 +161,31 @@ def sayfa_tara(
 
     soup = BeautifulSoup(yanit.text, "html.parser")
 
-    icerik_secici = ayar.get("icerik_secici")
-    secili = soup.select_one(icerik_secici) if icerik_secici else None
-    if icerik_secici and secili is None:
-        # Secici artik sayfayla eslesmiyor (site guncellemesi/A-B testi
-        # olabilir) - (secili or soup) asagida sessizce TUM sayfaya
-        # (nav/footer/ilgili-kampanyalar widget'i dahil) duser. Bu, "eksik
-        # veri gizlenmez, isaretlenir" ilkesine aykiri olurdu (bkz. modul
-        # docstring'i) - bulgu (25 Agustos 2026): albaraka'da 35 sayfadan
-        # 2'si bu sekilde tam sayfa olarak kaydedilmisti.
+    # icerik_secici tek bir string OLABILIR (cogu banka) ya da bir LISTE
+    # (birden fazla sayfa sablonu olan bankalar icin, oncelik sirasiyla
+    # denenir - bkz. icerigi_sec).
+    #
+    # NEDEN GEREKLI (olculdu 25 Agustos 2026, KT-024/KT-042): kuveytturk'un
+    # ".campaign-detail" secicisi NORMAL kampanya sayfalarinda calisiyor
+    # ama "Kampus" kategorisindeki sayfalar farkli bir sablon kullaniyor
+    # (div class="subpage " - "campaign-detail" degistiricisi YOK). Tek
+    # secici bu sayfalarda hic eslesmiyor ve TUM sayfa (ust menu + footer,
+    # 300+ satir) yanlislikla kaydediliyordu - iki sablonun ORTAK atasi
+    # ".subpage" fallback olarak eklendi.
+    icerik_secici_ayari = ayar.get("icerik_secici")
+    secili = icerigi_sec(soup, icerik_secici_ayari)
+    if icerik_secici_ayari and secili is None:
+        # Hicbir secici eslesmedi - (secili or soup) asagida sessizce TUM
+        # sayfaya (nav/footer/ilgili-kampanyalar widget'i dahil) duser. Bu,
+        # "eksik veri gizlenmez, isaretlenir" ilkesine aykiri olurdu (bkz.
+        # modul docstring'i) - bulgu (25 Agustos 2026): albaraka'da 35
+        # sayfadan 2'si bu sekilde tam sayfa olarak kaydedilmisti.
         ortak.log_yaz(
             banka_kod,
-            f"UYARI: icerik_secici '{icerik_secici}' eslesmedi, TUM sayfa "
-            f"kullanildi (kapsam kirlenmesi riski): {url}",
+            f"UYARI: icerik_secici(ler) {_icerik_secicisi_listele(icerik_secici_ayari)} "
+            f"eslesmedi, TUM sayfa kullanildi (kapsam kirlenmesi riski): {url}",
         )
+    govdeden_gezinme_ogelerini_cikar(secili)
     sayfa_metni = (secili or soup).get_text("\n", strip=True)
 
     # KAPSAM: icerik secicisi bazen sayfanin sonundaki "ilgili

@@ -40,17 +40,33 @@ basligiyla devam eden blok. Baska hicbir sey silinmez.
 DEGERLENDIRILDI, EKLENMEDI (25 Agustos 2026): Sayfa BASINDAKI breadcrumb/
 menu satirlari ("Ana Sayfa", "Kampanyalar", kategori adi gibi kisa
 satirlarin gercek basliktan once art arda gelmesi - bkz. KT-018,
-DK-016, TOM-* sayfa baslari) da bir kapsam kirlenmesi bicimi. Ancak bu
-metin BASLIK TESPITINE (kampanya_adi) zarar veriyor gibi gorunuyor,
-sayisal alanlara degil: breadcrumb metninde tutar/oran/taksit sayisi
-GECMIYOR, dolayisiyla extraction_accuracy.py'nin olctugu alanlarda
-olcumu degistirmiyor (kampanya_adi zaten ALAN_ESLEME'de yok). Kisa
-satirlari genel bir "N kisa satir + tekrar" kuraliyla kirpmak, bu
-modulun kendi tasarim ilkesini (dar tetikleyici, tahmine dayali silme
-yok) ihlal eder ve baska bankalarda gercek kisa giris cumlelerini
-(ör. "Kampanya Detayları:") yanlislikla silme riski tasir - bu yuzden
-simdilik EKLENMEDI. Olcumle desteklenen somut bir zarar (ör. kampanya_adi
-alani da olcume girdiginde) bulunursa yeniden degerlendirilmeli.
+DK-016, TOM-* sayfa baslari) da bir kapsam kirlenmesi bicimi. Duz
+breadcrumb'in sayisal alanlara zarar vermedigi olculmustu (kampanya_adi
+zaten ALAN_ESLEME'de yok) - bu HALA DOGRU, duz breadcrumb'a dokunulmuyor.
+
+DENENDI VE GERI ALINDI (25 Agustos 2026, ikinci tur): Kuveyt Turk'un
+"Kampus" kategorisinde AYRI bir widget bulundu (KT-024, KT-042) - sayfa
+govdesi bir "breadcrumb-combo" ile basliyor, AYNI kategorideki TUM kardes
+kampanyalarin basliklari listeleniyor ve sayfanin KENDI basligi bu liste
+icinde EN AZ IKI KEZ tekrar ediyor ("mevcut sayfa" olarak, sonra gercek
+H1 olarak). Motor "13.500 TL Hediye" ve "5 Taksit"i BU sayfanin degeri
+saniyordu. "Ayni satir pencerede >=2 kez, arada >=4 farkli satir" kurali
+BU ORNEKTE dogru calisti - ama TUM korpusta dry-run ile olculdugunde
+(kapsam_migrasyonu.py --kuru) 621 kayittan 201'ini kirpiyordu ve cogu
+GERCEK VERI KAYBIYDI: bankalarin "Kampanya Ozeti" + "Kampanya Kosullari"
+bolumleri AYNI kosulu iki kez, farkli cumlelerle ama AYNI marka/urun
+adiyla anlatiyor (ör. Ziraat Katilim "Abdullah Kigili" ornegi - "...'da
+yapacaginiz alisverislerinizde 2 taksit" VE birkac satir sonra "...'da
+yapacaginiz alisverislerinizi 2 taksitli gerceklestirebilirsiniz" - ayni
+marka adi IKI KEZ, aralarinda 4+ farkli satir, GERCEK kampanya metninin
+kendisi). Yani "satir tekrari" varsayilandigindan cok daha SIK rastlanan,
+guvenilmez bir imzaymis. KT-024/KT-042'nin KENDISI, DOM/secici seviyesinde
+cozuldu (bkz. scraper/config/bankalar.json kuveytturk icerik_secici artik
+[".campaign-detail", ".subpage"] listesi - Kampus sablonunda "campaign-
+detail" degistiricisi yoktu, TUM sayfa yanlislikla kaydediliyordu) ve
+2 kayit (KT-024, KT-042) canli siteden yeniden tarandi. Bu modulde GENEL
+bir metin kurali olarak KALICI OLARAK EKLENMEDI - riski faydasindan
+buyuk cikti.
 """
 
 from __future__ import annotations

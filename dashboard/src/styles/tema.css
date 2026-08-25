@@ -1500,3 +1500,76 @@ img.marka-logo {
   height: 44px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
 }
+
+/* ==========================================================
+   İstatistik Kartları (IstatistikKartlari.jsx)
+   ========================================================== */
+.istatistik-karti {
+  background: var(--kart) !important;
+  border: 1px solid var(--kenarlik) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--golge-kart) !important;
+  transition: transform 150ms ease, box-shadow 150ms ease !important;
+  height: 100%;
+}
+
+.istatistik-karti:hover {
+  transform: translateY(-1px);
+}
+
+.istatistik-karti.aksam-yesil {
+  border-left: 3px solid var(--marka-500) !important;
+}
+
+.istatistik-karti.aksam-altin {
+  border-left: 3px solid var(--altin-500) !important;
+}
+
+.istatistik-karti .ant-card-body {
+  padding: 16px 18px !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.istatistik-ust-satir {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.istatistik-baslik {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--yazi-soluk);
+}
+
+.istatistik-ikon {
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.istatistik-ikon.yesil {
+  color: var(--marka-500);
+}
+
+.istatistik-ikon.altin {
+  color: var(--altin-500);
+}
+
+.istatistik-deger {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--yazi-koyu);
+  line-height: 1.2;
+}
+
+.istatistik-alt-not {
+  font-size: 11px;
+  color: var(--yazi-soluk);
+  margin-top: 6px;
+  line-height: 1.3;
+}

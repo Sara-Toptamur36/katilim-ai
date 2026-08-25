@@ -46,12 +46,28 @@ sys.path.insert(0, str(KOK))
 EXCEL = KOK / "gold_dataset" / "rag_esdeger_kampanyalar.xlsx"
 SORU_SETI = KOK / "gold_dataset" / "rag_soru_seti.json"
 
-# Excel sutun sirasi - rag_esdeger_kampanya_listesi.py ile AYNI olmali.
-SUTUN = {
-    "soru": 1, "kampanya_adi": 2, "makine_turu": 3, "kanit": 4,
-    "gold_da_var_mi": 5, "retrieval_top5": 6, "kaynak_url": 7,
-    "slug": 8, "DOGRU_CEVAP_MI": 9,
-}
+# Zorunlu sutunlar - SIRA DEGIL, BASLIK esas alinir.
+#
+# Onceki surumde sutun numaralari sabit yazilmisti; uretici betige yeni
+# bir sutun eklenince (sayfa_basligi) eslesme SESSIZCE kaydi ve bu betik
+# yanlis hucreyi okumaya basladi. Basliktan okumak, iki betigin sutun
+# duzeni degistiginde birbirinden ayrisamamasini garanti eder.
+ZORUNLU_SUTUNLAR = ("soru", "slug", "DOGRU_CEVAP_MI")
+
+
+def _sutun_haritasi(sh) -> dict[str, int]:
+    harita = {
+        (c.value or "").strip(): i + 1
+        for i, c in enumerate(sh[1])
+        if c.value
+    }
+    eksik = [b for b in ZORUNLU_SUTUNLAR if b not in harita]
+    if eksik:
+        raise SystemExit(
+            f"{EXCEL.name} beklenen sutunlari tasimiyor: {eksik}. "
+            "Listeyi yeniden uret: python -m gold_dataset.rag_esdeger_kampanya_listesi"
+        )
+    return harita
 
 
 def isaretlenenleri_oku() -> tuple[dict[str, set[str]], dict[str, int]]:
@@ -65,13 +81,14 @@ def isaretlenenleri_oku() -> tuple[dict[str, set[str]], dict[str, int]]:
         )
 
     sh = openpyxl.load_workbook(EXCEL).active
+    sutun = _sutun_haritasi(sh)
     evetler: dict[str, set[str]] = collections.defaultdict(set)
     sayac = {"evet": 0, "hayir": 0, "bos": 0}
 
     for r in range(3, sh.max_row + 1):  # 1: baslik, 2: aciklama satiri
-        soru = sh.cell(r, SUTUN["soru"]).value
-        slug = sh.cell(r, SUTUN["slug"]).value
-        karar = (sh.cell(r, SUTUN["DOGRU_CEVAP_MI"]).value or "").strip().upper()
+        soru = sh.cell(r, sutun["soru"]).value
+        slug = sh.cell(r, sutun["slug"]).value
+        karar = (sh.cell(r, sutun["DOGRU_CEVAP_MI"]).value or "").strip().upper()
         if not (soru and slug):
             continue
         if karar == "EVET":

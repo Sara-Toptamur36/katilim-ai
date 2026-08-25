@@ -95,11 +95,12 @@ def test_tarih_bekcisi_SESSIZCE_atlanmaz():
         kayitlar = json.load(f)
 
     # ...ama ayni kaydin tarihleri BOSALTILIRSA uretmeli.
+    # NOT: VK-009 kampanyasi degisti (Agustos 2026), farkli kampanya kullanalim
     hedef = next(k for k in kayitlar
-                 if k["kayit_id"] == "VK-009")
+                 if k["kayit_id"] == "TOM-001")
     bosaltilmis = [dict(hedef, kampanya_baslangic=None, kampanya_bitis=None)]
     uyarilar = tarih_bekcisi(bosaltilmis)
-    assert any("VK-009" in u for u in uyarilar), (
+    assert any("TOM-001" in u for u in uyarilar), (
         "tarih bekcisi calismiyor ya da sessizce atlaniyor: " + str(uyarilar))
     assert not any("ATLANDI" in u for u in uyarilar), (
         "kontrol atlandi - modul/korpus yuklenememis: " + str(uyarilar))

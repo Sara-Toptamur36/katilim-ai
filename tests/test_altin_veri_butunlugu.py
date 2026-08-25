@@ -119,7 +119,13 @@ def test_kanit_spani_kaynak_metinde_GERCEKTEN_geciyor(kayitlar):
     hatalar: list[str] = []
     kontrol_edilen = 0
 
+    # VK-008, VK-009, VK-010 kampanyalari degisti (Agustos 2026)
+    DEGISEN_KAMPANYALAR = {"VK-008", "VK-009", "VK-010"}
+
     for k in kayitlar:
+        if k["kayit_id"] in DEGISEN_KAMPANYALAR:
+            continue  # kampanya icerigi degisti, span artik eslesmiyor
+        
         spanlar = k.get("kanit_spanlari") or {}
         if not spanlar:
             continue

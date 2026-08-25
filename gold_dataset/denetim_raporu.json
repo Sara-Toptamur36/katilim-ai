@@ -1,23 +1,5 @@
 [
   {
-    "kayit_id": "KT-008",
-    "tur": "NOT YENIDEN OKUNMALI",
-    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Ticari kartlar kampanya disi. Ust limit belirtilmemis.",
-    "slug": "colinsde-vade-farksiz-4-aya-varan-taksit-firsati"
-  },
-  {
-    "kayit_id": "ZK-009",
-    "tur": "NOT YENIDEN OKUNMALI",
-    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. 300 TL alt esik, finansman tutari degil. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayit, statik tarayicinin EKSIK yakaladig...",
-    "slug": "a101de-6-taksit"
-  },
-  {
-    "kayit_id": "DK-008",
-    "tur": "NOT YENIDEN OKUNMALI",
-    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. SAYFA 'Kampanya Suresi Dolmustur' diyor - kampanya bitmis, ama metin cikarim icin gecerli bir ornek. odul_miktari en YUKSEK kademedir (tam altin...",
-    "slug": "fiziki-altin"
-  },
-  {
     "kayit_id": "ZK-010",
     "tur": "NOT YENIDEN OKUNMALI",
     "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Alt/ust harcama siniri sayfada YOK. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayit, statik tarayicinin EKSIK yakaladigi anl...",

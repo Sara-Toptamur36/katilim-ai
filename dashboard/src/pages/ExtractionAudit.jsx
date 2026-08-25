@@ -1,25 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Card,
   Descriptions,
   Empty,
-  InputNumber,
   Progress,
+  Select,
   Skeleton,
   Space,
   Table,
   Tag,
   Tooltip,
   Typography,
-  Button,
 } from "antd";
 import {
   AuditOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
   MinusCircleOutlined,
-  SearchOutlined,
+  SafetyOutlined,
 } from "@ant-design/icons";
 import { extractionAuditGetir, kampanyalariGetir } from "../api/client";
 
@@ -53,6 +52,17 @@ function DogrulamaIkon({ dogrulandi }) {
   if (dogrulandi === false)
     return <CloseCircleOutlined style={{ color: "#ff4d4f" }} title="Doğrulanamadı" />;
   return <MinusCircleOutlined style={{ color: "#8c8c8c" }} title="Doğrulama yapılmadı" />;
+}
+
+// Kampanyanın veritabanındaki 5 temel finansal alandan kaç tanesinin dolu olduğunu sayar
+function doluAlanSayisiHesapla(k) {
+  let sayi = 0;
+  if (k.kar_payi_orani_percent != null) sayi++;
+  if (k.vade_ay != null) sayi++;
+  if (k.taksit_sayisi != null) sayi++;
+  if (k.finansman_tutari != null) sayi++;
+  if (k.odul_miktari != null) sayi++;
+  return sayi;
 }
 
 // Alan tablosu sütunları
@@ -155,7 +165,9 @@ const ALANLAR_SUTUNLAR = [
 ];
 
 export default function ExtractionAudit() {
-  const [kampanyaId, setKampanyaId] = useState(null);
+  const [kampanyalar, setKampanyalar] = useState([]);
+  const [listeYukleniyor, setListeYukleniyor] = useState(true);
+  const [secilenId, setSecilenId] = useState(null);
   const [veri, setVeri] = useState(null);
   const [yukleniyor, setYukleniyor] = useState(false);
   const [hata, setHata] = useState(null);
@@ -171,48 +183,105 @@ export default function ExtractionAudit() {
       .finally(() => setYukleniyor(false));
   };
 
+  // Kampanyaları API'den çekip veri zenginliğine göre sıralama ve ilk zengin kampanyayı yükleme
+  useEffect(() => {
+    setListeYukleniyor(true);
+    kampanyalariGetir()
+      .then((liste) => {
+        const sirali = [...liste].sort((a, b) => {
+          const aDolu = doluAlanSayisiHesapla(a);
+          const bDolu = doluAlanSayisiHesapla(b);
+          return bDolu - aDolu;
+        });
+        setKampanyalar(sirali);
+
+        // İlk açılışta en çok alanı dolu olan kampanyayı otomatik seç ve detayını yükle
+        if (sirali.length > 0) {
+          const ilkId = sirali[0].id;
+          setSecilenId(ilkId);
+          getir(ilkId);
+        }
+      })
+      .catch((e) => {
+        setHata("Kampanya listesi yüklenemedi: " + (e?.message || "Bağlantı hatası"));
+      })
+      .finally(() => {
+        setListeYukleniyor(false);
+      });
+  }, []);
+
+  const kampanyaDegisti = (id) => {
+    setSecilenId(id);
+    getir(id);
+  };
+
+  // Antd Select seçeneklerinin hazırlanması
+  const secenekler = useMemo(() => {
+    return kampanyalar.map((k) => {
+      const doluSayisi = doluAlanSayisiHesapla(k);
+      return {
+        value: k.id,
+        searchValue: `${k.banka} ${k.kampanya_adi} ${k.id}`,
+        label: (
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {k.banka} — {k.kampanya_adi}
+            </span>
+            <Tag
+              color={doluSayisi > 0 ? "blue" : "default"}
+              style={{ marginLeft: 8, fontSize: 10, flexShrink: 0 }}
+            >
+              {doluSayisi > 0 ? `${doluSayisi} alan dolu` : "alan yok"}
+            </Tag>
+          </div>
+        ),
+      };
+    });
+  }, [kampanyalar]);
+
+  // Çıkarılmış dolu finansal alan var mı kontrolü
+  const doluAlanMevcutMu = useMemo(() => {
+    if (!veri || !Array.isArray(veri.alanlar)) return false;
+    return veri.alanlar.some((a) => !a.belirtilmemis && a.mevcut_deger != null);
+  }, [veri]);
+
   return (
     <div style={{ padding: "0 4px" }}>
-      {/* Başlık */}
+      {/* Başlık ve Yumuşatılmış Rol Rozeti */}
       <div style={{ marginBottom: 20 }}>
-        <Typography.Title level={4} style={{ marginBottom: 4 }}>
-          <AuditOutlined style={{ marginRight: 8 }} />
-          Çıkarım Denetimi (Extraction Audit)
-        </Typography.Title>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 4 }}>
+          <Typography.Title level={4} style={{ margin: 0 }}>
+            <AuditOutlined style={{ marginRight: 8 }} />
+            Çıkarım Denetimi (Extraction Audit)
+          </Typography.Title>
+          <Tag color="blue" icon={<SafetyOutlined />}>
+            Yetkili Ekran (Banka Çalışanı / Denetleyici / Yönetici)
+          </Tag>
+        </div>
         <Typography.Text type="secondary">
           Bir kampanya için Regex → GLiNER → Qwen → Resolver katman izlerini gösterir.
           Hangi model hangi değeri çıkardı? Doğrulama sonucu ne?
         </Typography.Text>
       </div>
 
-      {/* Rol uyarısı */}
-      <Alert
-        type="info"
-        showIcon
-        message="Bu ekran yalnızca yetkili roller için — banka çalışanı, denetleyici, yönetici."
-        style={{ marginBottom: 16 }}
-      />
-
-      {/* Kampanya ID girişi */}
-      <Space style={{ marginBottom: 20 }}>
-        <InputNumber
-          placeholder="Kampanya ID girin (ör. 1)"
-          min={1}
-          value={kampanyaId}
-          onChange={setKampanyaId}
-          style={{ width: 200 }}
-          onPressEnter={() => getir(kampanyaId)}
-        />
-        <Button
-          type="primary"
-          icon={<SearchOutlined />}
-          onClick={() => getir(kampanyaId)}
-          disabled={!kampanyaId || yukleniyor}
-          loading={yukleniyor}
-        >
-          Getir
-        </Button>
-      </Space>
+      {/* Kampanya Seçici Dropdown */}
+      <div style={{ marginBottom: 20 }}>
+        <Space direction="vertical" style={{ width: "100%", maxWidth: 650 }}>
+          <Typography.Text type="secondary" style={{ fontSize: 12, fontWeight: 500 }}>
+            Kampanya Seçimi (Veri zenginliğine göre sıralanmıştır)
+          </Typography.Text>
+          <Select
+            showSearch
+            style={{ width: "100%" }}
+            placeholder="Kampanya seçin…"
+            value={secilenId}
+            onChange={kampanyaDegisti}
+            loading={listeYukleniyor}
+            optionFilterProp="searchValue"
+            options={secenekler}
+          />
+        </Space>
+      </div>
 
       {/* Hata */}
       {hata && (
@@ -225,10 +294,12 @@ export default function ExtractionAudit() {
         />
       )}
 
-      {/* Yükleniyor */}
-      {yukleniyor && <Skeleton active paragraph={{ rows: 6 }} />}
+      {/* Yükleniyor durumu */}
+      {(yukleniyor || listeYukleniyor) && !veri && (
+        <Skeleton active paragraph={{ rows: 6 }} />
+      )}
 
-      {/* Kampanya özeti */}
+      {/* Kampanya özeti ve alan tablosu */}
       {veri && !yukleniyor && (
         <>
           <Card
@@ -265,32 +336,44 @@ export default function ExtractionAudit() {
             </Descriptions>
           </Card>
 
-          {/* Alan tablosu */}
-          <Alert
-            type="info"
-            showIcon
-            message="Ham metin bu görünümde mevcut değil"
-            description={
-              <>
-                Bu görünüm DB'deki mevcut çıkarım sonuçlarını gösterir. Ham kaynak metinden
-                canlı çıkarım için <strong>POST /cikar</strong> endpoint'ini kullanın (hibrit=false).
-                Evidence sütunu ham metin taranmadığında boş kalır — sistem uydurmaz.
-              </>
-            }
-            style={{ marginBottom: 12 }}
-          />
+          {/* Çıkarılabilir alan yoksa açıklayıcı uyarı; varsa tablo */}
+          {!doluAlanMevcutMu ? (
+            <Alert
+              type="warning"
+              showIcon
+              message="Çıkarılabilir Finansal Alan Bulunamadı"
+              description="Bu kampanyada çıkarılabilir finansal alan bulunamadı — kaynak metin bu bilgileri içermiyor. Sistem olmayan veriyi uydurmaz."
+              style={{ marginBottom: 16 }}
+            />
+          ) : (
+            <>
+              <Alert
+                type="info"
+                showIcon
+                message="Ham metin bu görünümde mevcut değil"
+                description={
+                  <>
+                    Bu görünüm DB'deki mevcut çıkarım sonuçlarını gösterir. Ham kaynak metinden
+                    canlı çıkarım için <strong>POST /cikar</strong> endpoint'ini kullanın (hibrit=false).
+                    Evidence sütunu ham metin taranmadığında boş kalır — sistem uydurmaz.
+                  </>
+                }
+                style={{ marginBottom: 12 }}
+              />
 
-          <Table
-            dataSource={veri.alanlar}
-            columns={ALANLAR_SUTUNLAR}
-            rowKey="alan"
-            size="small"
-            pagination={false}
-            scroll={{ x: "max-content" }}
-          />
+              <Table
+                dataSource={veri.alanlar}
+                columns={ALANLAR_SUTUNLAR}
+                rowKey="alan"
+                size="small"
+                pagination={false}
+                scroll={{ x: "max-content" }}
+              />
+            </>
+          )}
 
-          {/* Açıklama */}
-          <div style={{ marginTop: 16, padding: "8px 12px", background: "#f5f5f5", borderRadius: 6 }}>
+          {/* Açıklama Dipnotu (Koyu tema uyumlu var(--kart-ustu) kullanır) */}
+          <div style={{ marginTop: 16, padding: "8px 12px", background: "var(--kart-ustu)", borderRadius: 6 }}>
             <Typography.Text type="secondary" style={{ fontSize: 12 }}>
               <strong>Simge açıklaması:</strong>{" "}
               <CheckCircleOutlined style={{ color: "#52c41a" }} /> Doğrulandı &nbsp;·&nbsp;
@@ -302,11 +385,11 @@ export default function ExtractionAudit() {
         </>
       )}
 
-      {/* Boş durum */}
-      {!veri && !yukleniyor && !hata && (
+      {/* Tamamen veri yoksa boş durum */}
+      {!veri && !yukleniyor && !listeYukleniyor && !hata && (
         <Empty
           image={Empty.PRESENTED_IMAGE_SIMPLE}
-          description="Yukarıya bir kampanya ID girerek çıkarım izlerini görüntüleyin."
+          description="Lütfen yukarıdaki menüden bir kampanya seçin."
         />
       )}
     </div>

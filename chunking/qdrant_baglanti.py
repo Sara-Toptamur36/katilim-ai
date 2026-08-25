@@ -36,13 +36,20 @@ QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:6333")
 # sonraki yazmalar sessizce yanlis sonuc uretebilir). QDRANT_KOLEKSIYON
 # ORTAM DEGISKENI ACIKCA VERILMISSE bu otomatik ayrim devre disi kalir -
 # kullanicinin ELLE sectigi bir isim her zaman kazanir.
+#
+# evren_istemci.aktif_mi() DEGIL gomme_aktif_mi() kullanilir (25 Agustos
+# 2026): EVREN_API_KEY yalnizca llm-fast icin tanimlanmis olabilir - bu
+# durumda embedding yerel e5-base'de kalir (bkz. chunking/embedding.py),
+# koleksiyon adinin da _evren almamasi gerekir.
 _KOLEKSIYON_ELLE_VERILMIS = "QDRANT_KOLEKSIYON" in os.environ
 _KOLEKSIYON_TABANI = os.environ.get("QDRANT_KOLEKSIYON", "kampanya_parcalari")
 VARSAYILAN_KOLEKSIYON = (
     _KOLEKSIYON_TABANI
     if _KOLEKSIYON_ELLE_VERILMIS
     else (
-        f"{_KOLEKSIYON_TABANI}_evren" if evren_istemci.aktif_mi() else _KOLEKSIYON_TABANI
+        f"{_KOLEKSIYON_TABANI}_evren"
+        if evren_istemci.gomme_aktif_mi()
+        else _KOLEKSIYON_TABANI
     )
 )
 

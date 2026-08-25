@@ -616,6 +616,30 @@ Orijinal varsayım (§6/Bulgu 2, Bulgu 7) "Sağlık Harcamalarına..." (AL-005) 
 
 ---
 
+**Bulgu 14 — Gerçek EVREN anahtarıyla ilk kez ölçüldü: bge-m3-embed, bu projenin Türkçe korpusunda yerel e5-base'in ALTINDA kaldı (ADR 0002'nin varsayımıyla çelişiyor).**
+
+ADR 0002, EVREN'in kendi dokümantasyon ölçümüne dayanarak bge-m3-embed'i (R@1 0,95) en iyi seçenek olarak işaretlemişti — ama bu, EVREN'in genel test setinde ölçülmüştü, bu projenin Türkçe katılım bankacılığı korpusunda değil. 25 Ağustos'ta gerçek `EVREN_API_KEY` ile korpus yeniden indekslendi (`kampanya_parcalari_evren`, 513 belge/1875 parça, 47,88 sn — yerel modelin ~9 katı hızlı) ve aynı 129 sorguluk sette (`exact=True`, k=5) karşılaştırıldı:
+
+| Kategori | Yerel hibrit (e5-base, 768b) | EVREN dense (bge-m3, 1024b) | EVREN hibrit (bge-m3, 1024b) |
+|---|---|---|---|
+| Genel Recall@5 | **%87,60** | %83,72 | %84,50 |
+| tam_ad | %97,87 (46/47) | %97,87 (46/47) | %97,87 (46/47) |
+| kismi_ad | %95,35 (41/43) | %97,67 (42/43) | %95,35 (41/43) |
+| banka_ve_konu | **%52,17** (12/23) | %34,78 (8/23) | %39,13 (9/23) |
+| dogal_soru | **%87,50** (14/16) | %75,00 (12/16) | %81,25 (13/16) |
+
+Yerel hibrit hat her iki EVREN modunu da geçiyor — özellikle `banka_ve_konu` ve `dogal_soru`'da belirgin farkla. **Karar:** embedding tarafında yerel e5-base'de kalınıyor (hem ölçülen kalite hem offline demo garantisi lehine); EVREN yalnızca LLM çıkarım tarafında (`llm-fast`) değerlendirilmeye devam ediyor. ADR 0002 bu bulguyla güncellenmeli.
+
+**Bulgu 15 — `banka_ve_konu` ve `dogal_soru`'nun düşük Recall'unun kök nedeni araştırıldı: çoğunlukla retrieval hatası değil, korpustaki YAKIN-DUPLİKAT kampanyalar.**
+
+`banka_ve_konu`'daki kaçırılan sorguların (`Ziraat Katılım kart` vb.) hedeflediği bankaların aynı türde onlarca eşzamanlı kampanyası var (Ziraat Katılım: 60 "Kart Kampanyası", Türkiye Emlak Katılım: 55) — sistem gerçekten o türde bir kampanya döndürüyor, sadece gold'un işaretlediği TEK kayıt değil. `dogal_soru`'daki 4 kaçırılan sorudan hiçbiri banka adı içermiyor ve hepsi birden fazla bankanın neredeyse aynı kampanyayı yürüttüğü konulara denk geliyor (elektrikli araç şarjı, market iadesi, mobilden müşteri olma/mil kazanma, tarım finansmanı) — retrieval konuyla alakalı bir kampanya buluyor, ama hangi banka/hangi varyant olduğunu ayırt edecek bilgi sorguda yok.
+
+**Denenip geri alınan çözüm — aday havuzunu genişletmek:** 23 Ağustos'ta (yerel e5-base, 185 sorulu eski set) havuz 20'den 40'a çıkarılınca `dogal_soru` Recall@5 %92,86→%71,43'e çökmüştü (bkz. `chunking/retriever.py::_ara` içindeki köşeli not). 25 Ağustos'ta EVREN + büyümüş sette (129 soru) AYNI deney tekrarlandı — sonuç yine olumsuz, sadece daha hafif: `banka_ve_konu` ve `dogal_soru` **hiç değişmedi** (birebir aynı), `tam_ad` hafifçe geriledi (%97,87→%95,74), GENEL düştü (%83,72→%82,95). Farklı embedding modeli ve daha büyük veri setiyle de doğrulandı: bu geniş havuzun cross-encoder'a sunduğu dikkat dağıtıcı fazlalıktan kaynaklanan **yapısal bir sınırlama**, tek bir ölçüm koşusunun gürültüsü değil.
+
+**Açık kalan, henüz uygulanmamış fikir:** `kampanya_turu` (kart/yeni müşteri/ihtiyaç finansmanı vb.) alanını RAG indeks metadata'sına eklemek ve `banka_tespit.py`'daki desenle sorgudan tür ifadesini tanıyıp filtreye/skor artırımına çevirmek — `banka_ve_konu`'yu doğrudan hedefler. Risk: `extraction/regex_extractor.py::_kampanya_turunu_tespit_et` sınıflandırıcısının F1'i mükemmel değil; SERT filtre olarak kullanılırsa yanlış sınıflandırılmış doğru cevapları eleyebilir — soft-boost olarak denenip ölçülmeden varsayılan yapılmamalı.
+
+---
+
 ## 7. Bilinçli sınırlar
 
 - **LLM ile özetleme yok.** RAG, bulduğu kaynak parçalarını **birebir**

@@ -60,6 +60,8 @@ LLM_MODELI = os.environ.get("EVREN_LLM_MODELI", "llm-fast")
 EMBED_MODELI = os.environ.get("EVREN_EMBED_MODELI", "bge-m3-embed")
 EMBED_BOYUTU = 1024  # bge-m3-embed sabit cikti boyutu (dokumantasyon Model Kartlari)
 
+_EMBED_ACIKCA_ISTENDI = os.environ.get("EVREN_EMBED_KULLAN", "false").strip().lower() == "true"
+
 _istemci = None
 _DURUM_CACHE: dict[str, Any] = {}
 _DURUM_CACHE_SURESI_SN = 30.0
@@ -69,11 +71,35 @@ def aktif_mi() -> bool:
     """EVREN_API_KEY set edilmis mi?
 
     Servise gercekten ulasilabildigini SOYLEMEZ (onun icin hazir_mi()).
-    Cagiran taraf (llm_extractor.py / embedding.py) bu fonksiyonu, takimin
-    EVREN'i ACIKCA istedigini anlamak icin kullanir - anahtar yoksa yerel
-    yola sessizce dusulur, EVREN opsiyoneldir ve bu bir hata durumu degildir.
+    Cagiran taraf (llm_extractor.py) bu fonksiyonu, takimin EVREN'i ACIKCA
+    istedigini anlamak icin kullanir - anahtar yoksa yerel yola sessizce
+    dusulur, EVREN opsiyoneldir ve bu bir hata durumu degildir.
+
+    EMBEDDING/RETRIEVAL KARARLARI ICIN BUNU DEGIL gomme_aktif_mi()'yi
+    KULLANIN - ikisi artik AYNI SEY DEGIL (bkz. asagisi).
     """
     return bool(_API_KEY)
+
+
+def gomme_aktif_mi() -> bool:
+    """EVREN embedding (bge-m3-embed) FIILEN kullanilsin mi?
+
+    aktif_mi()'DEN BILINCLI OLARAK FARKLI (25 Agustos 2026 olcumu, bkz.
+    docs/rag_tasarim_ve_olcum.md Bulgu 14 ve docs/adr/0002-evren-cikarim-
+    entegrasyonu.md'nin guncellemesi): gercek EVREN_API_KEY ile bu
+    projenin Turkce korpusunda bge-m3-embed yerel e5-base'in ALTINDA
+    olcduldu (Genel Recall@5 %87,60 -> %83,72, banka_ve_konu %52,17 ->
+    %34,78, dogal_soru %87,50 -> %75,00). Bu yuzden EVREN_API_KEY tanimli
+    olsa bile (ornegin yalnizca llm-fast icin eklenmis olabilir) embedding
+    VARSAYILAN OLARAK YEREL KALIR - EVREN_EMBED_KULLAN=true ile ACIKCA
+    istenmeden bge-m3-embed'e gecilmez.
+
+    Bu fonksiyon chunking/embedding.py, chunking/qdrant_baglanti.py
+    (koleksiyon adi ayrimi) ve chunking/retriever.py (RAG_MODE otomatik
+    secimi) tarafindan kullanilir - ucu de "hangi embedding saglayicisi
+    fiilen kullaniliyor" sorusuna cevap verir, aktif_mi() DEGIL.
+    """
+    return aktif_mi() and _EMBED_ACIKCA_ISTENDI
 
 
 def _istemciyi_al():

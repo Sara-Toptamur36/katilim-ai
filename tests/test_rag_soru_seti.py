@@ -58,15 +58,68 @@ def test_tum_kategoriler_temsil_ediliyor(sorular):
     assert bulunanlar == CEKIMSERLIK_KATEGORILERI | CEVAPLI_KATEGORILER
 
 
-def test_cevapli_sorularin_yer_gercegi_altin_veriden_geliyor(sorular, altin_sluglar):
-    """Beklenen her slug elle dogrulanmis altin kayda ait olmali -
-    aksi halde yer gercegi UYDURULMUS olurdu."""
+@pytest.fixture(scope="module")
+def elle_dogrulanmis_sluglar():
+    """`rag_esdeger_kampanyalar.xlsx`'te insanin EVET dedigi sluglar.
+
+    NEDEN IKINCI BIR KAYNAK VAR (docs/rag_tasarim_ve_olcum.md, Bulgu 14):
+    `banka_ve_konu` sorulari "banka + tur" formatindadir ve o bankanin o
+    turdeki HER kampanyasi meshru cevaptir. Altin veri seti bunlarin
+    yalnizca %16'sini kapsiyordu - yani kategorinin recall'u retrieval
+    kalitesini degil GOLD KAPSAMASINI olcuyordu.
+
+    Bu dosya o acigi kapatir ama KURALI BOZMAZ: icindeki her satir bir
+    insanin EVET demesiyle girer (bkz. gold_dataset/
+    rag_esdeger_kampanya_listesi.py). Makinenin tur onerisi TEK BASINA
+    yeterli DEGILDIR - oyle olsaydi yer gercegi cikarim motorunun kendi
+    ciktisina baglanir, altin setin 5. kuralindaki dairesellik yasagi
+    cignenirdi.
+
+    Dosya yoksa bos kume doner: test o zaman eskisi gibi yalnizca altin
+    seti kabul eder.
+    """
+    yol = Path(__file__).parent.parent / "gold_dataset" / "rag_esdeger_kampanyalar.xlsx"
+    if not yol.exists():
+        return set()
+    try:
+        import openpyxl
+    except ImportError:
+        return set()
+
+    sh = openpyxl.load_workbook(yol, read_only=True).active
+    onaylanan = set()
+    for satir in sh.iter_rows(min_row=3, values_only=True):
+        if len(satir) < 9:
+            continue
+        slug, karar = satir[7], (satir[8] or "")
+        if slug and str(karar).strip().upper() == "EVET":
+            onaylanan.add(slug)
+    return onaylanan
+
+
+def test_cevapli_sorularin_yer_gercegi_INSAN_dogrulamasindan_geliyor(
+    sorular, altin_sluglar, elle_dogrulanmis_sluglar
+):
+    """Beklenen her slug bir INSANIN dogruladigi kayda ait olmali.
+
+    Iki mesru kaynak var, ikisi de insan onayli:
+      1. Altin veri seti (elle girilmis ve imzalanmis kayitlar)
+      2. rag_esdeger_kampanyalar.xlsx (banka_ve_konu esdegerleri, EVET
+         isaretlenmis satirlar)
+
+    Makine ciktisindan gelen bir slug HICBIR ZAMAN kabul edilmez - yer
+    gercegi uydurulmus olurdu.
+    """
+    gecerli = altin_sluglar | elle_dogrulanmis_sluglar
     for s in sorular:
         if s["kategori"] in CEKIMSERLIK_KATEGORILERI:
             continue
         assert s["beklenen_sluglar"], f"cevapli soru bos yer gercegi: {s['soru']}"
         for slug in s["beklenen_sluglar"]:
-            assert slug in altin_sluglar, f"altin veride yok: {slug} ({s['soru']})"
+            assert slug in gecerli, (
+                f"insan dogrulamasi yok: {slug} ({s['soru']}) - altin sette de "
+                "rag_esdeger_kampanyalar.xlsx'te de EVET isaretli degil"
+            )
 
 
 def test_cekimserlik_sorularinin_beklenen_cevabi_YOKTUR(sorular):

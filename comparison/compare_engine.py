@@ -20,7 +20,7 @@ Boylece Sprint 2'de gecis yapilirken cagiran taraf (API, ajan) degismez.
 from dataclasses import dataclass
 from typing import Any, Sequence
 
-from api.schemas import CampaignRecord
+from api.schemas import CampaignRecord, KampanyaTuru
 
 
 class BilinmeyenKriter(ValueError):
@@ -143,6 +143,41 @@ def odul_birimi_tekil_mi(kayitlar: Sequence[CampaignRecord]) -> tuple[bool, set[
         if getattr(k, "odul_miktari", None) is not None
     }
     return (len(birimler) <= 1, birimler)
+
+
+# kar_payi_orani, YALNIZCA finansman urunlerinde (konut/tasit/ihtiyac/genel
+# finansman) karsilastirilabilir bir MALIYET oranidir - "daha dusuk = daha
+# iyi" anlami bu urunlerde gecerlidir. Kart/Alisveris Puani/Yeni Musteri
+# gibi turlerde ayni alanda goruleb en 0, cogunlukla bir kart TAKSIT
+# ozelligidir ("vade farksiz"), finansman maliyeti degildir - bkz.
+# gold_dataset/vade_farksiz_duzelt.py (23 Agustos 2026 karari, motordan
+# RE_VADE_FARKSIZ kaldirildi) ve extraction/vade_farksiz_db_duzelt.py
+# (ayni sorunun DB tarafinda urettigi gercek demo hatasi: en_dusuk_kar_payi
+# ASC oldugu icin uydurma/baglamsiz bir 0, gercek konut finansmaninin
+# %1,87'sini HER ZAMAN yeniyordu).
+#
+# odul_birimi_tekil_mi() ile AYNI DESEN: karsilastirilan kumede tur karisik
+# ise eksen "lider yok" durumuna dusurulur - hangi 0'in gercek, hangisinin
+# baglam disi oldugunu tahmin ETMEYIZ.
+FINANSMAN_TURLERI = frozenset({
+    KampanyaTuru.KONUT, KampanyaTuru.IHTIYAC, KampanyaTuru.TASIT, KampanyaTuru.FINANSMAN,
+})
+TUR_BAGIMLI_EKSENLER = {"en_dusuk_kar_payi"}
+
+
+def kar_payi_karsilastirilabilir_mi(kayitlar: Sequence[CampaignRecord]) -> tuple[bool, set[str]]:
+    """kar_payi_orani DEGERI tasiyan kayitlarin hepsi finansman turunde mi?
+
+    Doner: (karsilastirilabilir_mi, gorulen_turler). odul_birimi_tekil_mi()
+    ile birebir ayni mantik: tur karisiksa (ör. bir Kart Kampanyasi ile bir
+    Konut Finansmani ayni eksende kariliyorsa) kazanan SECILMEZ.
+    """
+    turler = {
+        k.kampanya_turu
+        for k in kayitlar
+        if getattr(k, "kar_payi_orani_percent", None) is not None
+    }
+    return (turler <= FINANSMAN_TURLERI, {t.value for t in turler})
 
 
 # SELECT'te donen sabit sutun listesi (kullanici girdisinden gelmez)
@@ -330,6 +365,8 @@ def _en_avantajli_bellekte(
     # Odul ekseni farkli BIRIMLER tasiyabilir (TL, Mil, Gram, Worldpuan...).
     # Ayni koruma rakip_matrisi'nde de var - ikisi ayni yardimciyi kullanir.
     odul_tekil, odul_birimleri = odul_birimi_tekil_mi(kayitlar)
+    # kar payi ekseni de ayni sebeple korunur - bkz. kar_payi_karsilastirilabilir_mi.
+    kar_tekil, kar_turleri = kar_payi_karsilastirilabilir_mi(kayitlar)
 
     for alt_kriter in AVANTAJLI_ALT_KRITERLER:
         alt_tanim = KRITERLER[alt_kriter]
@@ -357,6 +394,23 @@ def _en_avantajli_bellekte(
                     "deger": None,
                     "durum": "birim_karisik",
                     "birimler": sorted(odul_birimleri),
+                }
+            )
+            continue
+
+        if alt_kriter in TUR_BAGIMLI_EKSENLER and not kar_tekil:
+            # Bir Kart Kampanyasi'nin taksit ozelligiyle bir Konut
+            # Finansmani'nin maliyet orani ayni eksende KIYASLANAMAZ - bkz.
+            # kar_payi_karsilastirilabilir_mi. Uydurma bir kazanan uretmek
+            # yerine eksen "tur_karisik" olarak isaretlenir.
+            eksen_kirilimi.append(
+                {
+                    "kriter": alt_kriter,
+                    "aciklama": alt_tanim.aciklama,
+                    "kazanan_indeksler": [],
+                    "deger": None,
+                    "durum": "tur_karisik",
+                    "turler": sorted(kar_turleri),
                 }
             )
             continue
@@ -456,6 +510,7 @@ def rakip_matrisi(
         suzulmus = [k for k in suzulmus if k.kampanya_turu.value == kampanya_turu]
 
     odul_tekil, odul_birimleri = odul_birimi_tekil_mi(suzulmus)
+    kar_tekil, kar_turleri = kar_payi_karsilastirilabilir_mi(suzulmus)
 
     eksenler: list[dict[str, Any]] = []
     liderler: dict[str, list[int]] = {}
@@ -488,6 +543,16 @@ def rakip_matrisi(
             # arasinda "en yuksek" diye bir sey yoktur.
             eksen["durum"] = "birim_karisik"
             eksen["birimler"] = sorted(odul_birimleri)
+            liderler[eksen_adi] = []
+            eksenler.append(eksen)
+            continue
+
+        if eksen_adi in TUR_BAGIMLI_EKSENLER and not kar_tekil:
+            # Bir kart kampanyasinin taksit ozelligi ile bir finansman
+            # urununun maliyet orani ayni eksende KIYASLANAMAZ - bkz.
+            # kar_payi_karsilastirilabilir_mi.
+            eksen["durum"] = "tur_karisik"
+            eksen["turler"] = sorted(kar_turleri)
             liderler[eksen_adi] = []
             eksenler.append(eksen)
             continue
@@ -550,6 +615,7 @@ def _en_avantajli_aciklama_uret(sonuc: dict[str, Any]) -> str:
     satirlar: list[str] = []
     veri_yok_eksenler: list[str] = []
     birim_karisik_eksenler: list[dict[str, Any]] = []
+    tur_karisik_eksenler: list[dict[str, Any]] = []
 
     for eksen in sonuc.get("eksen_kirilimi", []):
         kazananlar = eksen["kazananlar"]
@@ -558,6 +624,8 @@ def _en_avantajli_aciklama_uret(sonuc: dict[str, Any]) -> str:
             # tek cumleye yikmak kullaniciya yanlis sebep gosterir.
             if eksen.get("durum") == "birim_karisik":
                 birim_karisik_eksenler.append(eksen)
+            elif eksen.get("durum") == "tur_karisik":
+                tur_karisik_eksenler.append(eksen)
             else:
                 veri_yok_eksenler.append(eksen["aciklama"])
             continue
@@ -576,6 +644,15 @@ def _en_avantajli_aciklama_uret(sonuc: dict[str, Any]) -> str:
             f"Not: {eksen['aciklama']} karsilastirilamadi - odul farkli birimlerde "
             f"veriliyor ({birimler}). Farkli birimler arasinda 'daha yuksek' "
             "karsilastirmasi yapilamaz, bu eksen degerlendirmeye alinmadi."
+        )
+
+    for eksen in tur_karisik_eksenler:
+        turler = " ve ".join(eksen.get("turler", []))
+        satirlar.append(
+            f"Not: {eksen['aciklama']} karsilastirilamadi - secilen kampanyalar "
+            f"finansman disi turler de iceriyor ({turler}). Bu turlerde kar payi "
+            "orani bir finansman maliyeti degil, farkli bir urun ozelligi "
+            "olabilir; bu eksen degerlendirmeye alinmadi."
         )
 
     kazanan = sonuc.get("kazanan")

@@ -533,3 +533,168 @@ uzaktakini kapsıyordu, bu yüzden yerel taraf korundu:
 Doğrulama: `test_scraper_regresyon` 428 testte yalnızca bilinen 2 rotasyon
 kaydını (TF-011, ZK-027) kırmızı veriyor; RAG yolunda 28 test geçiyor.
 `extraction/regex_extractor.py` çakışmadan otomatik birleşti.
+
+---
+
+# Üçüncü tur — kayıp analizi ve hedefli düzeltmeler
+
+## 17. Kayıp nerede? (analiz)
+
+Birleşme sonrası doğruluk %69,17'ydi. Kaçırılan 374 alanın dağılımı:
+
+| Alan | FN | Doğrulukta | Makroda |
+|---|---:|---:|---:|
+| **hedef_kitle** | **182** | **+15,00** | **+7,80** |
+| kampanya_turu | 72 | +5,94 | +1,94 |
+| kampanya_baslangic | 52 | +4,29 | +1,83 |
+| odul_birimi / odul_miktari | 38 | +3,13 | +3,28 |
+| diğer 6 alan | 30 | +2,47 | — |
+
+Kaybın yarısı tek alanda toplanmıştı ve oraya bakınca kural açığı değil **ölçüm hatası** çıktı.
+
+---
+
+## 18. `hedef_kitle` — ölçüm kodunda hata
+
+`extraction_accuracy.py` normalizeri **iki tarafa da** uyguluyordu:
+
+```python
+beklenen = normalize(beklenen)   # gold serbest metin -> segment   DOĞRU
+bulunan  = normalize(bulunan)    # motorun ETİKETİ    -> ???        HATA
+```
+
+Motorun çıktısı zaten bir segment etiketi. Dört etiketin üçü ikinci geçişten
+kendiliğinden sağ çıkıyor, biri çıkmıyor:
+
+```
+seg('Yeni müşteri')    -> 'Yeni müşteri'      idempotent
+seg('Maaş müşterisi')  -> 'Maaş müşterisi'    idempotent
+seg('Mevcut müşteri')  -> 'Mevcut müşteri'    idempotent
+seg('Belirli segment') -> None                KAYBOLUYOR
+```
+
+Motor doğru cevabı üretse bile ölçüm kaçırma sayıyordu. 182 kaçırmanın **164'ü**
+tam olarak bu hücreydi. `hedef_kitle_segmenti`'ye idempotency guard'ı eklendi
+(ayrıca `return None` sonrasındaki **iki ulaşılamaz blok** temizlendi):
+
+**Tek satır kural değişmeden F1 %14,16 → %22,78, doğruluk %69,17 → %70,07.**
+
+### Kural tarafı — ve metriğin yanıltıcılığı
+
+`"kart sahib"` eklendi (mevcut anahtarların hepsi çoğul/yalın yazımdı, sayfalar
+çekimli yazıyor): F1 %22,78 → **%34,75**, precision %69,23 → %75,00.
+
+**Bu alanda F1 artışı tek başına kanıt değil.** Gold'da "Belirli segment" baskın
+sınıf (283 kayıttan 173'ü), dolayısıyla geniş ateş eden her kural bedava kazanır.
+Ölçüldü — hiçbir bilgi taşımayan saf catch-all en yüksek skoru veriyor:
+
+| Anahtar | Ateş oranı | F1% | Karar |
+|---|---:|---:|---|
+| `kampanya` *(catch-all kontrol)* | %100 | **88,89** | kontrol amaçlı |
+| `kart` | — | 89,08 | **RED** — açık catch-all |
+| `kampanyadan` | %78 | 83,33 | **RED** |
+| `faydalanabil` | %57 | 78,63 | **RED** — aşağıya bakınız |
+| **`kart sahib`** | **%10** | **34,75** | **ALINDI** |
+
+`faydalanabil` uygunluk cümlesinin fiili sanılmıştı. **Kontrol çürüttü:**
+pazarlama biçimi `faydalanabilirsiniz` (%45,59) ile uygunluk biçimi
+`faydalanabilir` (%46,72) neredeyse aynı skoru veriyor — ayrım bilgi taşımıyor.
+
+Denenip **hiçbir şey yapmayan** (korpusta geçmeyen) dar kalıplar: `kartı bulunan`,
+`kartı olan`, `sahibi olan`, `kart müşteri`, `kart hamil`, `sahipleri faydalan`,
+`kullanıcıları faydalan`. Yedisi birlikte, tek başına `kart sahib`'ten **daha kötü**.
+
+> **Sonuç:** bu alanın recall'u regex ile ~%23'ün üzerine ancak sınıf önceliğini
+> sömürerek çıkarılabilir ve o bilgi taşımaz. Gerçek çözüm uygunluk **cümlesini**
+> çıkarıp özetlemektir (NER/LLM). Not: NER katmanı ölçülmüş, F1'e katkısı **+0,00**
+> (`docs/extraction_accuracy_raporu.md`); LLM katmanı hiç ölçülmemiş.
+
+---
+
+## 19. `kampanya_baslangic` — Türkçe sıkışık aralık
+
+52 kaçırma, **0 uydurma** — saf recall. Örneklendi: kaçırılan tarihlerin 8'de 7'si
+sayfada duruyordu. Kök neden: `kampanya_baslangic` **yalnızca** tam tarih aralığı
+(`RE_TARIH_ARALIGI`) eşleşince doldruluyordu, ama Türkçe metin aralığın ilk
+tarihini sıkıştırıyor:
+
+```
+"kampanya 1 Ağustos - 31 Ağustos 2026"   ilk tarihte YIL yok
+"kampanya 1 Temmuz – 31 Ağustos 2026"    ilk tarihte YIL yok
+"kampanya 1 – 31 Temmuz 2026"            ilk tarihte AY ve YIL yok
+```
+
+İki yeni desen eklendi (`_ARALIK_YIL_PAYLASIMLI`, `_ARALIK_AY_PAYLASIMLI`); eksik
+parçalar bitiş tarihinden ödünç alınıyor — metnin kendi mantığı da bu.
+
+| | Önce | Sonra |
+|---|---:|---:|
+| kampanya_baslangic F1 | 79,84 | **98,05** |
+| TP / FN | 103 / 52 | **151 / 4** |
+| kampanya_bitis F1 *(yan etki)* | 96,79 | **97,64** |
+
+### İlk sürüm veritabanını düşürüyordu — test yakaladı
+
+Desenler ilk eklendiğinde `\d{1,2}` uzun bir sayının **sonundaki** iki haneyi gün
+sanabiliyordu: `"10.000 TL - 31 Temmuz 2026"` metninden `"00 Temmuz 2026"` kurulup
+`2026-07-00` üretiliyordu. `tarihe_cevir` gün aralığını doğrulamadığı için değer
+sessizce geçiyor, Postgres `DATE` sütunu reddediyordu:
+
+```
+DataError: (psycopg.errors.DatetimeFieldOverflow)
+date/time field value out of range: "2026-07-00"
+```
+
+Bu yalnızca yanlış değil **kayıt düşürücüydü**: `regex_ile_zenginlestir.py` toplu
+yazım yaptığı için tek bozuk değer tüm zenginleştirme çalıştırmasını kaybettiriyordu
+(`tests/test_regex_ile_zenginlestir.py`'de 4 test kırmızıya döndü).
+
+İki savunma eklendi: desende `(?<![\d.,])` lookbehind'i (tarih bir sayının ortasından
+başlayamaz) ve yazım öncesi takvim doğrulaması (`_gecerli_tarih_mi`). Düzeltmeden
+sonra `kampanya_baslangic` precision **%100'e geri döndü**, F1 %98,05 → **%98,69**.
+Toplam doğruluk 75,70 → 75,54 — uydurma tarih üretmemenin karşılığı.
+
+---
+
+## 20. `kampanya_turu` — sıralama
+
+`Yeni Musteri Kampanyasi`, `Kart Kampanyasi`'ndan **öne** alındı: yeni müşteri
+kazanımı genelde bir kart ürünüyle sunulduğu için 10 kayıt Kart'a kayıyordu.
+F1 %78,55 → **%79,05**; TP 216→217, FP 46→44, FN 72→71 — üç sayaçta da iyileşme,
+hata takası değil.
+
+`Ticari` anahtarı `ihracat`'ı daraltma denendi (`ihracatçı` / `e-ihracat` /
+tamamen kaldırma): hepsi nötr ya da −0,73. **Alınmadı.**
+
+---
+
+## 21. Üçüncü tur sonucu
+
+```
+                          BAŞLANGIÇ (3. tur)        SON
+Dolu alan doğruluğu     : %69,17            →   %75,70
+Makro F1 (11 alan)      : %73,19            →   %76,82
+Boş alan doğruluğu      : %96,95            →   %96,95   (değişmedi)
+```
+
+| Alan | Önce | Sonra | Δ |
+|---|---:|---:|---:|
+| **kampanya_baslangic** | 79,84 | **98,05** | **+18,21** |
+| **hedef_kitle** | 14,16 | **34,75** | **+20,59** |
+| kampanya_bitis | 96,79 | 97,64 | +0,85 |
+| kampanya_turu | 78,69 | 79,05 | +0,36 |
+| diğer 7 alan | — | — | 0 |
+
+**Hiçbir alan gerilemedi.**
+
+### Oturumun tamamı
+
+| Alan | Oturum başı | Oturum sonu |
+|---|---:|---:|
+| kampanya_turu | 44,32 | **79,05** |
+| kampanya_baslangic | 30,43 | **98,05** |
+| kampanya_bitis | 67,80 | **97,64** |
+| hedef_kitle | 14,16 | **34,75** |
+| finansman_tutari | 48,00 | **63,41** |
+| **Dolu alan doğruluğu** | **49,63** | **75,70** |
+| **Makro F1** | **60,38** | **76,82** |

@@ -310,9 +310,39 @@ RE_TUTAR_UST_LIMIT = _katlanmis_derle(
 # yanlis tutari secti ("100.000 TL'ye kadar taksitli ALISVERIS", dogrusu
 # "40.000 TL'ye kadar Pratik Finansman Kart") ve TOM-001 geri geldi.
 # Makro F1: listeli %89,53 / listesiz %87,20.
+# LISTE YENIDEN OLCULDU 25 Agustos 2026 (altin veri seti buyudu):
+# "harcama" CIKARILDI, "işlem" ve "para çek" EKLENDI.
+# finansman_tutari F1 %48,00 -> %61,54 (P %40,00 -> %63,16).
+#
+# "harcama" NEDEN CIKTI: yukaridaki eski not "cikarilinca AL-001 yanlis
+# tutari secti" diyordu - o olcum ARTIK GECERLI DEGIL. Bugun olculdu:
+# AL-001 dogru kaliyor (40.000), AL-005 (100.000), AL-006 (500.000) ve
+# TOM-002 (250.000) ise "harcama" YUZUNDEN kaybediliyordu. Sebep:
+# gercek finansman kampanyalari da harcamaya uygulanir ("sağlık
+# harcamalarınıza vade farksız 6 taksit"), yani kelime finansmani
+# finansman-olmayandan AYIRMIYOR. Ayirt edici olan "alışveriş" (listede
+# KALDI) - magaza taksit basamaklarinda geciyor, finansman metinlerinde
+# gecmiyor. Bilanco: -1 yanlis pozitif (TOM-001), +2 dogru.
+#
+# "işlem" / "para çek" NEDEN GIRDI: FP'lerin buyuk bolumu ATM/POS
+# limitleriydi - "10.000 TL'ye kadar para çekebilir" (TF-007), "günlük
+# 5.000 TL'ye kadar para çekme" (TF-011), "tek seferde 200.000 TL'ye
+# kadar olan işlemlerde" (DK-010/TEK-020), "350.000 TL'ye Kadar ... POS
+# İşlemleri için" (KT-047). Hicbiri finansman tutari degil.
+# "atm"/"pos"/"para yat" AYRICA DENENDI: "işlem" onlari zaten kapsadigi
+# icin F1'i hic degistirmediler (61,54), eklenmediler.
+#
+# REDDEDILEN ADAY - "harcamalarından" (yonelme/ayrilma hali ayrimi):
+# F1'i 61,54 -> 63,16 cikariyordu ve dilbilgisel gerekcesi makul
+# gorunuyordu ("harcamalarınıza" finansman, "harcamalarından" odul).
+# ASIRI UYDURMA KONTROLU bunu curuttu: acikca uydurma olan "restoran"
+# anahtari BIREBIR AYNI sayiyi veriyor (63,16) - yani kazanc kuraldan
+# degil, tek bir kayittan (TOM-001) geliyor. Tek kayitlik bir kural
+# genellemez; alinmadi.
 _TUTAR_BAGLAM_DISLAMA_KELIMELERI = _katla_hepsi([
-    "iade", "harcama", "alışveriş", "alisveris", "kazan", "ödül", "odul",
+    "iade", "alışveriş", "alisveris", "kazan", "ödül", "odul",
     "hediye", "puan", "mil", "gram", "limit",
+    "işlem", "para çek",
     "worldpuan", "parafpara", "bankkart",
 ])
 
@@ -508,11 +538,73 @@ RE_ODUL_GRAM = _katlanmis_derle(
 
 # Kampanya turu anahtar kelimeleri - degerler api/schemas.py KampanyaTuru
 # enum'iyla BIREBIR ayni olmali (Havin/Sara'nin sozlesmesi bozulmasin diye).
+#
+# KART ANAHTARLARI GENISLETILDI (olculdu 25 Agustos 2026, altin veri seti /
+# 288 canli+imzali kayit). Eklenen: "kartla", "kart sahip".
+#
+# NEDEN: eski dort anahtar ("kredi kart", "kart avantaj", "kart kampanya",
+# "bankkart") gercek kampanya metinlerinde neredeyse hic gecmiyordu -
+# siniflandirilamayan 42 Kart kampanyasinin HICBIRINDE "kredi karti"
+# yazmiyor, buna karsilik 22'sinde "...kartla yapilan harcamalarda",
+# 6'sinda "kart sahipleri" geciyordu. Bankalar kart urununu tam adiyla
+# degil ekli/cogul biciminde yaziyor ("Paraf kartlarla", "Saglam Kart
+# sahiplerine"). Alt-dize eslesmesi kullanildigi icin "kartla" ayni
+# zamanda "kartlar"/"kartlari"/"kartlarla" bicimlerini de kapsar -
+# bu KASITLIDIR, tek anahtarla tum ek varyantlari yakalar.
+#
+# "paraf" ANAHTARI BILINCLI OLARAK EKLENMEDI: tek basina denendiginde
+# F1'i 53,31 -> 71,64 cikariyor ama nihai sete eklendiginde 73,72 ->
+# 73,36'ya DUSURUYOR (yeni bir dogru getirmiyor, yalnizca DK-007'yi
+# calıyor). "kartla" zaten ayni kayitlari zaten yakaliyor ve markaya
+# bagimli degil - bkz. docs/kampanya_turu_olcum_raporu.md.
+#
+# "parafpara" ANAHTARI "Alisveris Puani"NDA KALDI: kaldirilmasi olculdu,
+# F1'i DEGISTIRMEDI (73,72). Sozlukte "Kart Kampanyasi" zaten "Alisveris
+# Puani"ndan ONCE geldigi ve ilk eslesme kazandigi icin ParafPara'li kart
+# kampanyalari dogru sinifa gidiyor; "parafpara" gercek bir puan
+# kampanyasinda hala tek sinyal olabilir, bilgi tasiyan anahtari bedava
+# atmanin anlami yok.
+#
+# SIRA DEGISIKLIGI DENENDI VE ALINMADI: "Kart Kampanyasi"ni en one almak
+# nav bastirma OLMADAN +7,20 kazandiriyordu (kok nedeni ortmek pahasina),
+# nav bastirma acikken ise F1'i 72,69 -> 71,97'ye DUSURUYOR. Sira
+# oldugu gibi birakildi.
+#
+# "Finansman Kampanyasi"NIN EN SONDA OLMASI KASITLIDIR (dogrulandi):
+# tek anahtari "finansman" ve cok genel - one alindiginda F1 73,72 ->
+# 60,95'e duser. Sinifi tamamen kaldirmak 73,84 verir (+0,12, 6 destekli
+# bir sinifta gurultu duzeyinde); enum uyesi oldugu icin KALDIRILMADI.
 KAMPANYA_TURU_ANAHTAR_KELIMELERI = {
+    # --- EN OZEL TURLER EN BASTA (25 Agustos 2026, olculdu) -------------
+    # Bu uc tur asagidaki genel turlerden ONCE denenmelidir: hepsi ayni
+    # zamanda birer KART kampanyasidir ("Saglam Business Kart", "Taksitli
+    # POS"), yani "Kart Kampanyasi" once gelseydi ucunu de yutardi.
+    # Olculdu: uc sinif EN BASTA -> kampanya_turu F1 %74,09 -> %78,55;
+    # ayni uc sinif EN SONDA -> yalnizca %74,55.
+    #
+    # "ticari" ve "kobi" DENENDI VE ALINMADI: F1'i %47,93'e dusuruyor -
+    # iki kelime de bankalarin urun menusunde/altbilgisinde her sayfada
+    # geciyor. Ayirt edici olan URUN ADIDIR ("business kart"), sifat degil.
+    # "tohum kart" da alinmadi: +0,36 getiriyor ama acikca uydurma olan
+    # "fugevet" anahtari +0,22 veriyor - yani kazanc kuraldan degil tek
+    # kayittan geliyor (bkz. docs/kampanya_turu_olcum_raporu.md Bolum 12).
+    "Ticari Kampanya": ["business kart", "bayi kart", "ihracat"],
+    "Sigorta/BES Kampanyasi": ["bireysel emeklilik", "bes planı"],
+    "POS Kampanyasi": ["pos kampanya"],
+    #
+    # "Musteri Ol Kampanyasi" ve "Katilma Hesabi Kampanyasi" BILEREK
+    # BURADA YOK - enum'da varlar (api/schemas.py) ama regex kurallari
+    # olculdu ve F1'i DUSURDULER: "müşterisi ol"/"müşterimiz ol" -4,46
+    # (bu ifade sayfalarin cogunda pazarlama kalibi olarak geciyor),
+    # "katılım hesab" -0,28. Kural eklemek yerine bos birakmak, yanlis
+    # etiket uretmekten iyidir; bu iki tur NER/LLM katmaninin isi.
     "Konut Finansmani Kampanyasi": ["konut finansman", "ev sahibi", "konut alım"],
     "Tasit Finansmani Kampanyasi": ["taşıt finansman", "araç finansman", "otomobil"],
     "Ihtiyac Finansmani Kampanyasi": ["ihtiyaç finansman"],
-    "Kart Kampanyasi": ["kredi kart", "kart avantaj", "kart kampanya", "bankkart"],
+    "Kart Kampanyasi": [
+        "kredi kart", "kart avantaj", "kart kampanya", "bankkart",
+        "kartla", "kart sahip",
+    ],
     "Alisveris Puani Kampanyasi": ["alışveriş puan", "puan kazan", "parafpara"],
     "Yeni Musteri Kampanyasi": ["yeni müşteri", "yeni ev sahibi olmak isteyen"],
     "Yatirim Urunu Kampanyasi": ["katılım fonu", "yatırım ürün", "birikim"],
@@ -666,8 +758,74 @@ def _odul_birimini_tespit_et(eslesen_metin: str) -> str:
     return "TL"
 
 
+# Menu/altbilgi satiri esigi: bu uzunlugun altinda VE hic cumle izi
+# (noktalama/rakam) tasimayan satirlar baglanti etiketi sayilir.
+# Duyarlilik olculdu (25 Agustos 2026): 30/40/50/60 esiklerinde F1
+# sirasiyla 73,36 / 73,72 / 73,72 / 73,36 - yani sonuc esigin tam
+# degerine bagli DEGIL, genis bir platoda ayni. Tek bir sayiya
+# ayarlanmis kirilgan bir kural degil.
+_MENU_SATIRI_ESIGI = 40
+_CUMLE_IZI = re.compile(r"[.,:;!?%0-9]")
+
+# KISA METIN KORUMASI: filtre yalnizca SAYFA gorunumlu girdilerde calisir.
+# POST /cikar ucu ve MetinAnalizi ekrani kullaniciyi tek cumlelik metin
+# yapistirmaya davet ediyor - "Kredi karti kampanyasi" gibi bir girdi
+# kisadir ve noktalama tasimaz, yani menu satiri kriterine UYAR ve
+# koruma olmadan tamamen silinip alan SESSIZCE bos donerdi (tam olarak
+# tests/test_regex_extractor.py'deki diyakritik bulgusunun ayni turu).
+# Olculdu: gercek scrape edilmis sayfalarda en az 8 dolu satir var
+# (medyan 32,5), esik bu tabanin altina konmadi. Korumanin altin veri
+# seti sonucuna etkisi YOK - 0/3/5/8/10/15 esiklerinin hepsinde F1 73,72.
+_ASGARI_SAYFA_SATIRI = 8
+
+
+def menu_satirlarini_ayikla(metin_l: str) -> str:
+    """Sayfa menusu/altbilgi baglantilarini tur siniflandirmasindan cikarir.
+
+    NEDEN VAR (olculdu 25 Agustos 2026, 288 canli+imzali altin kayit):
+    kampanya_turu hatalarinin en buyuk tek kaynagi anahtar kelime EKSIGI
+    degil, KAMPANYA DISI METINDEN eslesmeydi. "konut finansman" anahtari
+    36 kayitta kampanya metninden degil sayfanin alt menusunden
+    eslesiyordu:
+
+        ...| finansmanlar | sigortalar | konut finansmani | arac finansmani |...
+
+    Bu 36 kaydin GOLD ETIKETI "Kart Kampanyasi"ydi; motor menuye bakip
+    "Konut Finansmani Kampanyasi" diyordu. Yani hata siniflandiricinin
+    kelime dagarciginda degil, GIRDI METNININ KAPSAMINDAYDI - hangi
+    anahtar eklenirse eklensin menu her sayfada aynen duruyor ve ilk
+    eslesmeyi kazanmaya devam ediyordu.
+
+    AYIRT EDICI OZELLIK: menu satirlari kisa, bagimsiz baglanti
+    etiketleridir - noktalama ve rakam tasimazlar. Kampanya govde
+    cumleleri ("...toplamda 12.500 TL harcama sarti aranir.") her ikisini
+    de tasir. Bu yuzden filtre uzunluk + cumle izi ikilisine dayanir;
+    kelime listesi tutmaz (banka basina menu metni farklidir, liste
+    tutmak her yeni banka eklendiginde sessizce bozulurdu).
+
+    OLCUM (yalniz bu degisiklik, sozluk sabit): kampanya_turu
+    F1 %44,32 -> %53,31, precision %48,75 -> %60,62.
+
+    KAPSAMI BILINCLI OLARAK DAR: yalnizca `_kampanya_turunu_tespit_et`
+    cagirir. Tutar/tarih/oran desenleri HAM metin uzerinde calismaya
+    devam eder - onlar zaten sayi/noktalama iceren satirlarla eslesiyor,
+    yani bu filtreden fayda gormezler ama bir regresyon riski tasirlar.
+    """
+    satirlar = [s for s in (x.strip() for x in metin_l.split("\n")) if s]
+    if len(satirlar) < _ASGARI_SAYFA_SATIRI:
+        return metin_l  # sayfa degil, yapistirilmis kisa metin - dokunma
+    tutulan = [
+        s
+        for s in satirlar
+        if not (len(s) <= _MENU_SATIRI_ESIGI and not _CUMLE_IZI.search(s))
+    ]
+    # Her satir elendiyse filtre bu girdi icin anlamli degil demektir;
+    # bos metin dondurmek alani sessizce None yapardi.
+    return "\n".join(tutulan) if tutulan else metin_l
+
+
 def _kampanya_turunu_tespit_et(metin: str) -> Optional[str]:
-    metin_l = turkce_ascii_kucult(metin)
+    metin_l = menu_satirlarini_ayikla(turkce_ascii_kucult(metin))
     for etiket, kelimeler in _KAMPANYA_TURU_KATLANMIS.items():
         if any(k in metin_l for k in kelimeler):
             return etiket
@@ -879,18 +1037,37 @@ def kaydi_cikar(ham_metin: str) -> dict:
                     break
 
     # --- Finansman tutari ----------------------------------------------
-    # ARALIK DESENINE BAGLAM GUARD'I UYGULANMAZ (olculdu): "X TL - Y TL
-    # arasi" kalibi gercek veride yalnizca finansman/taksitlendirme
-    # araliklarinda geciyor, odul tavanlarinda hic gecmiyor - 9 yanlis
-    # pozitifin hicbiri bu desenden gelmedi. Guard uygulanirsa AL-005
-    # ("1.000 TL-100.000 TL arasi saglik HARCAMALARINIZA vade farksiz 6
-    # taksit") ve AL-006 gibi GERCEK finansman araliklari, yalnizca
-    # cumlede "harcama" gectigi icin elenir.
-    m = RE_TUTAR_ARALIK.search(katlanmis)
-    if m:
+    # ARALIK DESENINE DE BAGLAM GUARD'I UYGULANIR (kural degisti,
+    # 25 Agustos 2026 - eski kural ve neden dustugu asagida).
+    #
+    # ESKI KURAL: guard yalnizca ust-limit desenine uygulaniyordu.
+    # Gerekcesi olculmus bir gozlemdi: "X TL - Y TL arasi" kalibi o
+    # gunku altin veri setinde yalnizca finansman araliklarinda geciyor,
+    # 9 yanlis pozitifin hicbiri bu desenden gelmiyordu.
+    #
+    # NEDEN ARTIK GECERLI DEGIL: altin veri seti buyuyunce gozlem
+    # TERSINE dondu. Bugun 18 yanlis pozitifin 9'u TAM DA bu desenden
+    # geliyor ve hepsi harcama BASAMAGI, finansman tutari degil:
+    #   "5.000 TL - 9.999 TL arasindaki alisverisiniz ile 500 TL" (ZK-020)
+    #   "250.000 TL - 1.000.000 TL arasi 2-7 taksitli islemlerde" (ZK-028)
+    #   "300 TL - 500.000 TL arasindaki akaryakit harcamalari"    (KT-032)
+    #
+    # Eski kuralin korkusu ("guard, AL-005/AL-006 gibi GERCEK finansman
+    # araliklarini 'harcama' kelimesi yuzunden eler") HAKLIYDI - ama
+    # cozum guard'i kapatmak degil, listeden "harcama"yi cikarmakti
+    # (bkz. _TUTAR_BAGLAM_DISLAMA_KELIMELERI). Olculdu: AL-005, AL-006
+    # ve TOM-002 guard ACIKKEN de dogru bulunuyor.
+    #
+    # Ust-limit yolundaki gibi ILK GECERLI eslesme alinir, ilk eslesme
+    # degil - ayni sayfada once bir harcama basamagi, sonra gercek
+    # finansman araligi gecebiliyor.
+    for m in RE_TUTAR_ARALIK.finditer(katlanmis):
+        if _tutar_baglaminda_gecersiz_mi(ham_metin, m.start(), m.end()):
+            continue
         alanlar["finansman_tutari"] = tutara_cevir(_ham_span(ham_metin, m, 2))
         izler["finansman_tutari"] = (_ham_span(ham_metin, m), 0.85)
-    else:
+        break
+    if alanlar["finansman_tutari"] is None:
         # ILK eslesme degil, ILK GECERLI eslesme (bkz. baglam guard'i):
         # ayni sayfada hem "100.000 TL'ye kadar taksitli ALISVERIS" hem
         # "40.000 TL'ye kadar Pratik FINANSMAN Kart" gecebiliyor.

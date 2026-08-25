@@ -25,7 +25,39 @@ from pydantic import BaseModel, Field
 
 
 class KampanyaTuru(str, Enum):
-    """Sartname Md. 5.4'teki ornek kampanya turleri."""
+    """Sartname Md. 5.4'teki ornek kampanya turleri.
+
+    SARTNAME "ORNEK" DIYOR, "TAM LISTE" DEMIYOR - bu enum korpusta
+    GERCEKTEN gorulen turlerle genisletilir.
+
+    ASAGIDAKI BES DEGER 25 AGUSTOS 2026'DA EKLENDI (olculdu). Gerekce:
+    altin veri setinde 302 imzali kayittan 33'u, bu enum'da KARSILIGI
+    OLMAYAN bir etiket tasiyordu (Ticari 18, Musteri Ol 9, Sigorta/BES 2,
+    Katilma Hesabi 2, POS 2). Bu bir etiketleme hatasi DEGILDI - sema
+    veriden kucuktu.
+
+    IKI SOMUT ZARARI VARDI:
+      1. OLCUM TAVANI: motor yalnizca enum degerlerini uretebildigi icin
+         bu 33 kayit, motor ne yaparsa yapsin hata sayiliyordu.
+      2. CALISMA ZAMANI RISKI: bu sinifin altindaki `CampaignRecord.
+         kampanya_turu` alani KampanyaTuru ile TIPLI (asagida). Enum
+         disi bir deger (ör. zenginlestirme boru hattindan gelen "Ticari
+         Kampanya") API yanitinda Pydantic dogrulamasini dusururdu.
+
+    GERIYE DONUK UYUMLU: yalnizca EKLEME yapildi, hicbir deger
+    degistirilmedi/silinmedi. DB sutunu String(100) (api/models.py),
+    Postgres enum'i DEGIL - migration gerekmez.
+
+    MOTOR HEPSINI URETEMEZ - BILEREK: "Ticari Kampanya",
+    "Sigorta/BES Kampanyasi" ve "POS Kampanyasi" icin regex kurallari
+    olculdu ve alindi (kampanya_turu F1 %74,09 -> %78,55).
+    "Musteri Ol Kampanyasi" ve "Katilma Hesabi Kampanyasi" icin
+    denenen kurallar F1'i DUSURDU (sirasiyla -4,46 ve -0,28) ve
+    ALINMADI - bu iki tur regex'in ayirt edemedigi vakalardir,
+    NER/LLM katmaninin isi. Enum'da yer almalari, altin veride
+    etiketlenebilmeleri ve olcumun "imkansiz etiket" uretmemesi icindir.
+    Ayrinti: docs/kampanya_turu_olcum_raporu.md Bolum 12.
+    """
 
     KONUT = "Konut Finansmani Kampanyasi"
     IHTIYAC = "Ihtiyac Finansmani Kampanyasi"
@@ -35,6 +67,12 @@ class KampanyaTuru(str, Enum):
     ALISVERIS_PUANI = "Alisveris Puani Kampanyasi"
     YENI_MUSTERI = "Yeni Musteri Kampanyasi"
     YATIRIM = "Yatirim Urunu Kampanyasi"
+    # --- 25 Agustos 2026 eklemeleri (yukaridaki gerekce) ---
+    TICARI = "Ticari Kampanya"
+    MUSTERI_OL = "Musteri Ol Kampanyasi"
+    SIGORTA_BES = "Sigorta/BES Kampanyasi"
+    KATILMA_HESABI = "Katilma Hesabi Kampanyasi"
+    POS = "POS Kampanyasi"
     BELIRSIZ = "Belirlenemedi"
 
 

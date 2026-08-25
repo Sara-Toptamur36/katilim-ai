@@ -270,21 +270,29 @@ def test_sayisal_cekirdek_alanlarda_dogruluk_esigin_altina_dusmez():
     #     finansman_tutari F1  %48,00 -> %61,54
     #     sayisal cekirdek     %72,50 -> %74,44
     #
-    # %75'E NEDEN ULASILMADI: ulastiran bir aday VARDI - sayfadaki "Diger
-    # Kampanyalar" bolumunu kirpmak cekirdegi %75,63'e cikariyordu. ALINMADI:
-    # kazanc yalnizca elle ayarlanmis bir konum orani (0,25) etrafinda
-    # olusan TEK NOKTALI bir tepeydi; 0,10'da %72,98'e dusuyor, bolum
-    # basligi temelli (oransiz) surumu ise %66,79 veriyordu. Kirilgan bir
-    # kurali yalnizca esigi gecmek icin almak, bu testin varlik sebebini
-    # yok ederdi.
+    # TEK BASINA %75'E ULASILAMAMISTI: ulastiran bir aday vardi - sayfadaki
+    # "Diger Kampanyalar" bolumunu kirpmak cekirdegi %75,63'e cikariyordu.
+    # ALINMADI: kazanc yalnizca elle ayarlanmis bir konum orani (0,25)
+    # etrafinda olusan TEK NOKTALI bir tepeydi; 0,10'da %72,98'e dusuyor,
+    # bolum basligi temelli (oransiz) surumu ise %66,79 veriyordu. Kirilgan
+    # bir kurali yalnizca esigi gecmek icin almak, bu testin varlik
+    # sebebini yok ederdi.
     #
-    # %73 SECILDI: olculen %74,44'un altinda (gerileme payi birakir) ama
-    # duzeltme oncesi %72,50'nin USTUNDE - yani bu duzeltmenin geri
-    # alinmasi testi KIRAR. Zayif alanlar (kar_payi_orani %63,16,
-    # finansman_tutari %61,54, vade_ay %70,59) iyilestikce YUKSELTILMELIDIR.
-    assert makro_f1 >= 73.0, (
-        f"Sayisal cekirdek makro F1 %{makro_f1:.2f}'ye dustu (asgari %73, "
-        f"olculen taban %74,44). "
+    # ESIK %75,0'A GERI CIKARILDI (ayni gun, origin/main ile birlesme
+    # sonrasi): uzaktaki tarih ve taksit duzeltmeleri bu cekirdegi
+    # bagimsiz olarak yukseltti - kampanya_bitis %67,80 -> %96,79,
+    # kampanya_baslangic %30,43 -> %79,84, taksit_sayisi %76,45 -> %85,59.
+    # Iki tarafin katkisi birlesince olculen deger %76,51. Yani %73'luk
+    # gecici taban artik gereksiz genis; orijinal esik yeniden anlamli.
+    #
+    # SIRALAMA ONEMLI - bu esik ASLA "kirmizi testi yesillestirmek" icin
+    # dusurulmedi: once kok neden bulunup duzeltildi (%72,50 -> %74,44),
+    # sonra birlesme geri kalanini kapatti (%76,51). Zayif alanlar
+    # (kar_payi_orani %63,16, finansman_tutari %63,41, vade_ay %70,59)
+    # iyilestikce esik YUKSELTILMELIDIR.
+    assert makro_f1 >= 75.0, (
+        f"Sayisal cekirdek makro F1 %{makro_f1:.2f}'ye dustu (asgari %75, "
+        f"olculen taban %76,51). "
         f"Alan bazli: "
         + ", ".join(
             f"{a}={alan_bazli[a]['f1']}"
@@ -301,17 +309,18 @@ def test_toplam_dogruluk_esigin_altina_dusmez():
     belirlemek degil, GERILEMEYI yakalamaktir. Zayif alanlar iyilestikce
     bu esik de yukseltilmelidir.
 
-    ESIK YUKSELTILDI %48 -> %55 (25 Agustos 2026): kampanya_turu
+    ESIK YUKSELTILDI %48 -> %66 (25 Agustos 2026): kampanya_turu
     duzeltmesiyle (menu satirlarinin siniflandirmadan ayiklanmasi + Kart
     anahtarlarinin genisletilmesi) toplam dogruluk %49,63'ten %56,64'e
-    cikti, gunun sonunda %57,79'a ulasti - bkz.
-    docs/kampanya_turu_olcum_raporu.md. Esigi eski yerinde birakmak,
-    kazanilan puanlarin sessizce geri kaybedilmesine izin verirdi.
+    cikti; origin/main ile birlesmeden sonra (uzaktaki tarih ve taksit
+    duzeltmeleri) %69,17'ye ulasti - bkz. docs/kampanya_turu_olcum_raporu.md.
+    Esigi eski yerinde birakmak, kazanilan puanlarin sessizce geri
+    kaybedilmesine izin verirdi.
     """
     sonuc = extraction_accuracy_hesapla()
-    assert sonuc["accuracy"] >= 55.0, (
+    assert sonuc["accuracy"] >= 66.0, (
         f"Toplam dolu alan dogrulugu %{sonuc['accuracy']}'e dustu "
-        f"(asgari %55 bekleniyordu, olculen taban %57,79)."
+        f"(asgari %66 bekleniyordu, olculen taban %69,17)."
     )
 
 

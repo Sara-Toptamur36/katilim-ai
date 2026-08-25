@@ -494,3 +494,42 @@ setinde etiketlenmesi. Ondan sonra sınıf eklenip kuralı ölçülebilir.
 | vade_ay | 70,59 | 70,59 | 0 |
 
 **Hiçbir alan gerilemedi.**
+
+---
+
+## 16. Birleşme sonrası (origin/main ile)
+
+§15'teki sayılar bu dalın kendi ölçümüdür. `origin/main` ile birleştikten sonra
+iki tarafın katkısı toplandı — uzaktaki tarih/taksit düzeltmeleri bu daldaki
+tür ve tutar düzeltmelerinden bağımsızdı:
+
+| Alan | Bu dal | Birleşme sonrası | Katkı |
+|---|---:|---:|---|
+| kampanya_turu | 78,55 | **78,69** | bu dal |
+| finansman_tutari | 61,54 | **63,41** | bu dal |
+| kampanya_bitis | 67,80 | **96,79** | origin |
+| kampanya_baslangic | 30,43 | **79,84** | origin |
+| taksit_sayisi | 76,45 | **85,59** | origin |
+| **Dolu alan doğruluğu** | 57,79 | **69,17** | ikisi |
+| **Makro F1 (11 alan)** | 64,73 | **73,19** | ikisi |
+| **Sayısal çekirdek** | 74,44 | **76,51** | ikisi |
+
+Bu yüzden `test_sayisal_cekirdek_alanlarda_dogruluk_esigin_altina_dusmez`
+eşiği **%75,0'a geri çıkarıldı** (§11'de %73'e indirilmişti). Sıralama önemli:
+eşik önce kök neden düzeltilerek yükseltildi (%72,50 → %74,44), kalanını
+birleşme kapattı (%76,51) — hiçbir noktada test "yeşile boyanmadı".
+
+### Çakışma çözümü
+
+İki dosyada çakışma çıktı; ikisi de bu daldaki işten değil, **aynı hatanın iki
+tarafta paralel düzeltilmesinden** kaynaklandı. Her ikisinde de yerel sürüm
+uzaktakini kapsıyordu, bu yüzden yerel taraf korundu:
+
+| Dosya | Uzaktaki | Yereldeki (korunan) |
+|---|---|---|
+| `chunking/qdrant_baglanti.py` | kaldırılmış `.search()` → `query_points` | aynı düzeltme **+** skorlar RRF sonuçlarının kendisi için sorulur (yoğun-only ilk N ile ID eşleşmemesi meşru soruları çekimser bırakıyordu) |
+| `scraper/scripts/gold_eslesme.py` | tipografik kesme → düz kesme | aynı düzeltme **+** kesme *silinir* (302 gold kaydın 69'unda ad URL slug'ından türetilmiş) **+** Türkçe katlama ortak normalizer'a bağlı |
+
+Doğrulama: `test_scraper_regresyon` 428 testte yalnızca bilinen 2 rotasyon
+kaydını (TF-011, ZK-027) kırmızı veriyor; RAG yolunda 28 test geçiyor.
+`extraction/regex_extractor.py` çakışmadan otomatik birleşti.

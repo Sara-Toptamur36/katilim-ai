@@ -15,11 +15,11 @@ haklı, bir kısmında **motor**.
 
 Tek başına en büyük metrik kaldıracı. Korpusta `vade farksız` geçen
 kayıtların **1'inde** gold `kar_payi_orani = 0` diyor,
-**58'ünde** ise `belirtilmemiş` diyor.
+**49'ünde** ise `belirtilmemiş` diyor.
 
 **`0` etiketlenmiş (1):** `AL-001`
 
-**`belirtilmemiş` etiketlenmiş (58):** `KT-004`, `KT-006`, `AL-002`, `AL-005`, `AL-006`, `DK-001`, `DK-006`, `TOM-002`, `KT-008`, `VK-009`, `AL-010`, `KT-009`, `VK-010`, `KT-010`, `AL-012`, `KT-015`, `TOM-004`, `TOM-005`, `TOM-006`, `KT-018`, `TOM-007`, `DK-011`, `KT-019`, `TOM-008`, `TOM-009`, `TOM-010`, `TOM-011`, `KT-023`, `TOM-012`, `TEK-022`, `DK-016`, `TOM-013`, `TEK-023`, `KT-025`, `KT-027`, `DK-023`, `DK-025`, `KT-034`, `DK-029`, `KT-043`, `DK-036`, `KT-044`, `KT-045`, `TEK-044`, `TEK-045`, `TEK-048`, `KT-050`, `KT-053`, `TEK-052`, `KT-054`, `TEK-054`, `KT-057`, `TEK-056`, `KT-058`, `KT-059`, `TEK-058`, `TEK-061`, `TEK-062`
+**`belirtilmemiş` etiketlenmiş (49):** `KT-004`, `KT-006`, `AL-002`, `AL-005`, `AL-006`, `DK-001`, `DK-006`, `TOM-002`, `KT-008`, `AL-010`, `KT-009`, `KT-010`, `AL-012`, `KT-015`, `TOM-005`, `TOM-006`, `KT-018`, `TOM-007`, `DK-011`, `KT-019`, `KT-023`, `TEK-022`, `DK-016`, `TEK-023`, `KT-025`, `KT-027`, `DK-023`, `DK-025`, `KT-034`, `DK-029`, `KT-043`, `DK-036`, `KT-044`, `KT-045`, `TEK-044`, `TEK-045`, `TEK-048`, `KT-050`, `KT-053`, `TEK-052`, `KT-054`, `TEK-054`, `KT-057`, `TEK-056`, `KT-058`, `KT-059`, `TEK-058`, `TEK-061`, `TEK-062`
 
 **Karar verilmesi gereken:** Katılım bankacılığında *vade farkı*,
 geleneksel faizin karşılığıdır; *vade farksız* olması o işlem için oranın
@@ -28,8 +28,8 @@ sıfır olduğu anlamına gelir. Motor bu yorumu benimsiyor ve
 tutarlı davranıyor. İki seçenek de savunulabilir — ama **biri seçilip**
 **tüm kayıtlara birden** uygulanmalı:
 
-- **(A) `vade farksız` ⇒ `0`.** İkinci grup (58 kayıt) `0` yapılır.
-  Beklenen etki: yanlış pozitif 106 → ~48, kâr payı oranı F1
+- **(A) `vade farksız` ⇒ `0`.** İkinci grup (49 kayıt) `0` yapılır.
+  Beklenen etki: yanlış pozitif 91 → ~42, kâr payı oranı F1
   belirgin şekilde yükselir.
 - **(B) `vade farksız` ⇒ `belirtilmemiş`.** Birinci grup (1 kayıt)
   boşaltılır ve `regex_extractor.py` içindeki `RE_VADE_FARKSIZ` kolu kaldırılır.
@@ -49,8 +49,6 @@ geçmiyorsa motor uyduruyor.
 
 | Kayıt | Alan | Motorun bulduğu | Kanıt spanı | Güven |
 |---|---|---|---|---|
-| `AL-013` | `odul_birimi` | TL | `?` | 0 |
-| `AL-013` | `odul_miktari` | 1000.0 | `maksimum indirim tutarı 1.000 TL` | 0.7 |
 | `DK-008` | `taksit_sayisi` | 6 | `6 Aya Varan Taksit` | 0.85 |
 | `DK-009` | `taksit_sayisi` | 6 | `6 Aya Varan Taksit` | 0.85 |
 | `DK-016` | `taksit_sayisi` | 6 | `6 Aya Varan Taksit` | 0.85 |
@@ -72,13 +70,9 @@ geçmiyorsa motor uyduruyor.
 | `KT-019` | `odul_miktari` | 10000.0 | `10.000 Mil'e varan hediye` | 0.8 |
 | `KT-019` | `taksit_sayisi` | 5 | `5 taksit` | 0.85 |
 | `KT-023` | `finansman_tutari` | 250000.0 | `10.000 TL - 250.000 TL aras` | 0.85 |
-| `KT-024` | `taksit_sayisi` | 5 | `5 Taksit` | 0.85 |
 | `KT-032` | `finansman_tutari` | 500000.0 | `300 TL - 500.000 TL aras` | 0.85 |
 | `KT-036` | `kar_payi_orani` | 10.0 | `%10` | 0.6 |
 | `KT-036` | `vade_ay` | 9 | `9 aya varan vade` | 0.85 |
-| `KT-042` | `odul_birimi` | TL | `?` | 0 |
-| `KT-042` | `odul_miktari` | 13500.0 | `13.500 TL Hediye` | 0.8 |
-| `KT-042` | `taksit_sayisi` | 5 | `5 Taksit` | 0.85 |
 | `KT-043` | `taksit_sayisi` | 3 | `3 aya varan taksit` | 0.85 |
 | `KT-044` | `taksit_sayisi` | 5 | `5 Taksit` | 0.85 |
 | `TEK-044` | `taksit_sayisi` | 5 | `5 aya varan taksit` | 0.85 |

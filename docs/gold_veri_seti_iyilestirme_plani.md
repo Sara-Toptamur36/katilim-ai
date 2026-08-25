@@ -17,32 +17,48 @@ doğru yapılan düzeltmeler zaten metriği belirgin yükseltecek.
 
 ---
 
-## Faz 0 — Etiketleme Kuralı: KARAR VERİLDİ ✅ (A)
+## Faz 0 — Etiketleme Kuralı: TAMAMLANDI ✅ (KARAR TERSİNE ÇEVRİLDİ - B)
 
-**Karar:** `vade farksız` ⇒ `kar_payi_orani = 0`. Bu yeni bir yorum değil —
-`terminology/sozluk.json` → `sifir_oran_ifadesi` girdisinde zaten belgeli:
-kaynağı Ön Değerlendirme Raporu Bölüm 3, dayanağı şartname **Md. 5.2**.
-Sözlük notu birebir: *"Bulundugunda kar_payi_orani_percent = 0.0 olarak
-yorumlanir... NULL/bulunamadi ile karistirilmaz."* Motor (`regex_extractor.py`)
-zaten bu kurala göre yazılmış ve tutarlı davranıyor — sorun kodda değil,
-58 gold kaydın bu kurala uymamasında.
+**GÜNCELLEME (26 Ağustos 2026 - bu bölümü Faz 1'i çözerken kontrol ettim):**
+Aşağıdaki "Karar: (A)" bu dosyada YAZILI KALDI ama fiilen UYGULANMADI -
+onun yerine tarihçe içinde DAHA SONRA, ÖLÇÜLMÜŞ bir karşı-karar alınıp
+UYGULANDI. Bu bölümü işleme almadan önce `gold_dataset/vade_farksiz_
+duzelt.py`'yi bulmasaydım, zaten tamamlanmış ve doğru olan bir işi TERS
+YÖNDE tekrar yapıp gerçek bir regresyona (`kar_payi_orani` recall'unu
+%90,91'den %15,38'e düşürme, ölçülmüş ve script'in kendi docstring'inde
+belgelenmiş) sebep olabilirdim.
 
-**Yapılacak:**
-1. 58 kaydı (`docs/gold_etiket_inceleme.md` §1 listesi) `belirtilmemiş`'ten
-   `kar_payi_orani=0`'a çevir. `alan_belirtilmemis.kar_payi_orani`'yi `false`
-   yap, `kanit_spanlari.kar_payi_orani`'ye "vade farksız" geçen cümleyi yaz.
-2. **Yan etkiyi kapat:** `comparison/compare_engine.py`'deki `en_dusuk_kar_payi`
-   sıralaması artan sırada çalışıyor — bu 0'lar kart kampanyalarını konut/taşıt
-   finansmanı gibi gerçek ürünlerin önüne geçirecek. Ödül birimi ekseninde
-   zaten var olan `odul_birimi_tekil_mi()` korumasının bir benzerini kâr payı
-   ekseninde de ekle (örn. kampanya türü finansman değilse en-düşük-oran
-   karşılaştırmasına dahil etme).
-3. `python -m gold_dataset.etiket_celiskisi_raporu` yeniden çalıştır, §1'in
-   boşaldığını doğrula.
-4. `terminology/sozluk.json`'daki `ornek_kaynak` notunu güncel sayıya
-   ("13'ünde" ifadesi artık 58) göre tazele.
+**Gerçek karar (23 Ağustos 2026, `gold_dataset/vade_farksiz_duzelt.py`):**
+"vade farksız" TEK BAŞINA `kar_payi_orani` kanıtı SAYILMAZ - bu bir KART
+TAKSİT özelliğidir, finansman kâr payı oranıyla AYNI ŞEY DEĞİLDİR (motorun
+`RE_VADE_FARKSIZ` kuralı da aynı gerekçeyle 23 Ağustos'ta kaldırılmıştı -
+bkz. `extraction/regex_extractor.py` desen tanımları bölümü). Yani asıl
+karar aşağıdaki **(B)** seçeneğiydi, **(A)** değil. `terminology/sozluk.
+json` → `vade_farki` girdisi bunu zaten belgeliyor: *"DUZELTME (25 Agustos
+2026): 'vade farksiz' ifadesi ARTIK sifir_oran_ifadesi kavramina DAHIL
+DEGIL (23 Agustos 2026 karari)."*
 
-**Sorumlu:** Veri ekibi (toplu düzeltme) + NLP (compare_engine koruması). **Efor:** ~1 gün.
+**Doğrulandı (26 Ağustos 2026):** `python -m gold_dataset.vade_farksiz_
+duzelt` → "Boşaltılacak: 0 kayıt" (zaten uygulanmış). `python -m
+gold_dataset.etiket_celiskisi_raporu` → §1 artık "1 adet '0' / 49 adet
+'belirtilmemiş'" gösteriyor (kayıt sayısındaki 58→49 farkı zaman içindeki
+kampanya rotasyonundan - `tests/test_scraper_regresyon.py` docstring'i).
+`comparison/compare_engine.py`'deki yan-etki koruması (`kar_payi_
+karsilastirilabilir_mi`) da zaten kodda var - Faz 0'ın 2. maddesi de
+ayrıca tamamlanmış.
+
+**Aşağıdaki orijinal (A) plan METİN OLARAK arşiv amacıyla bırakıldı -
+UYGULANMADI ve UYGULANMAMALI:**
+
+~~**Karar:** `vade farksız` ⇒ `kar_payi_orani = 0`.~~
+
+~~**Yapılacak:**~~
+~~1. 58 kaydı `belirtilmemiş`'ten `kar_payi_orani=0`'a çevir.~~
+~~2. `comparison/compare_engine.py`'ye koruma ekle.~~
+~~3. `etiket_celiskisi_raporu.py`'yi yeniden çalıştır.~~
+~~4. `terminology/sozluk.json`'ı güncelle.~~
+
+**Sorumlu:** Veri ekibi + NLP. **Efor:** tamamlandı (23-25 Ağustos 2026 arası, bu dosyanın dışında).
 
 ---
 
@@ -201,11 +217,15 @@ Faz 2'de kendi notlarıyla işaretlendi, bu fazda tekrar dokunulmadı.
 
 ---
 
-## Faz 5 — `AL-027` Tarih Çelişkisini Kapat
+## Faz 5 — `AL-027` Tarih Çelişkisini Kapat: TAMAMLANDI ✅
 
-Kaynak cümle: *"Kampanya 1-30 Haziran 2026 tarihlerinde geçerlidir."*
-Etiketteki `2026-06-01` muhtemelen doğru; span eşleştirme kaçırmış olabilir.
-Sayfayı aç, teyit et, gerekirse düzelt. **Efor:** 15 dk.
+**Doğrulandı (26 Ağustos 2026):** kaynak sayfa hâlâ *"Kampanya 1-30
+Haziran 2026 tarihlerinde geçerlidir."* diyor; `kanit_spanlari.
+kampanya_baslangic`/`kampanya_bitis` bu cümleyi birebir taşıyor ve
+etiketler (`2026-06-01` / `2026-06-30`) kaynakla tam örtüşüyor. Bu
+maddenin işaret ettiği çelişki artık yok - muhtemelen plan yazıldıktan
+sonraki bir düzeltmeyle (veya baştan yanlış bir şüpheyle) kapanmış.
+Kod tarafında yapılacak bir şey yok.
 
 ---
 

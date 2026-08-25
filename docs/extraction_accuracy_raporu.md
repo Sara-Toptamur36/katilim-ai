@@ -836,3 +836,78 @@ havuzu artık altın setle yapısal olarak neredeyse tamamen örtüşüyor.
 Pratik anlamı: **200 hedefine ulaşmak için etiketlenebilecek yeni sayfa
 havuzu neredeyse tükenmiş**, yeni sayfa taraması (scraper) veya hedefin
 gözden geçirilmesi gerekebilir.
+
+---
+
+## Tur — Kuveyt Türk "Kampüs" sayfa kirliliği ve gold plan denetimi (26 Ağustos 2026)
+
+**Kapsam:** `docs/gold_veri_seti_iyilestirme_plani.md`'deki açık maddeler
+tek tek gözden geçirildi, doğrulandı ve kapatıldı/düzeltildi.
+
+**1. KT-024/KT-042 kök nedeni bulundu ve DOM seviyesinde düzeltildi.**
+Kuveyt Türk'ün "Kampüs" kategorisi (`/kendim-icin/kampus/...`) farklı bir
+sayfa şablonu kullanıyor - `icerik_secici: ".campaign-detail"` bu
+şablonda hiç eşleşmiyor (`div class="subpage "`, "campaign-detail"
+değiştiricisi yok), sayfa TÜM haliyle (üst mega-menü + breadcrumb-combo
+kardeş kampanya listesi + footer) kaydediliyordu. İki katmanlı düzeltme:
+- `scraper/config/bankalar.json`: `icerik_secici` artık liste
+  (`[".campaign-detail", ".subpage"]`), `statik_scraper.py` sırayla dener.
+- `statik_scraper.py::govdeden_gezinme_ogelerini_cikar`: `.breadcrumb`
+  DOM elemanı (ve içindeki kardeş-kampanya `.breadcrumb-combo-list`
+  widget'ı) her bankada yapısal olarak siliniyor - metin tahminine değil
+  CSS sınıfına dayandığı için sıfır yanlış-pozitif riski taşıyor.
+
+Metin tabanlı bir alternatif (`preprocessing/kapsam.py`'ye "sayfa başında
+aynı satır 2+ kez tekrar ederse kırp" kuralı) DENENDİ VE GERİ ALINDI:
+`kapsam_migrasyonu.py --kuru` ile tüm korpusta ölçüldüğünde 621 kayıttan
+201'ini bozuyordu (bankaların "Kampanya Özeti" + "Kampanya Koşulları"
+bölümlerinin aynı marka adını iki kez, farklı cümlelerle anlatması gibi
+GERÇEK içeriği yanlışlıkla siliyordu - somut örnek: Ziraat Katılım
+"Abdullah Kığılı" kaydı). Bu risk-fayda dengesizliği yüzünden kalıcı
+olarak eklenmedi; gerekçe `preprocessing/kapsam.py` docstring'inde.
+
+KT-024 ve KT-042 canlı siteden düzeltilmiş seçiciyle yeniden tarandı.
+Ölçülen kayıt bazlı sonuç:
+
+| Kayıt | Alan | Önce | Sonra | Gold |
+|---|---|---|---|---|
+| KT-024 | `taksit_sayisi` | 5 (YP) | `None` | `None` ✅ |
+| KT-024 | `odul_miktari` | 13500.0 (YP) | `None` (kaçırma) | 250 |
+| KT-042 | `taksit_sayisi` | 5 (YP) | `None` | `None` ✅ |
+| KT-042 | `odul_miktari` | 22000.0 (YP) | `None` (kaçırma) | `None` ✅ |
+
+Toplam yanlış pozitif: 50 → 46. `KT-024.odul_miktari` artık YP değil ama
+gold'un beklediği 250'yi de bulamıyor (kaçırma) - gerçek metindeki
+"maksimum kazanım tutarı 250 TL'dir" ifadesini `RE_ODUL_TAVAN`'ın neden
+yakalamadığı ayrı, henüz izlenmemiş bir soru.
+
+**2. `extraction/regex_extractor.py` - AL-013 "maksimum indirim tavanı"
+düzeltmesi.** "Maksimum indirim tutarı 1.000 TL" gibi bir YÜZDELİK
+İNDİRİMİN parasal tavanı, sabit bir ödül değildir - `RE_ODUL_TAVAN`
+dalına, eşleşen aralıkta "indirim" geçiyorsa hariç tutma eklendi. İki
+alternatif de (pencere genişletme, çoklu-aday-varsa-boş-bırak) ölçüldü ve
+NET REGRESYON verdiği için geri alındı (gerekçe kod içinde, "DENENDI VE
+GERI ALINDI" yorumları).
+
+**3. `docs/gold_veri_seti_iyilestirme_plani.md` denetimi.** Faz 0 bu
+dosyada "(A) vade farksız ⇒ kar_payi_orani=0" olarak yazılıydı ama
+GERÇEKTE tersi (B) uygulanmıştı (`gold_dataset/vade_farksiz_duzelt.py`,
+23 Ağustos - ölçülmüş bir karşı-karar: "vade farksız" tek başına kâr payı
+kanıtı sayılmaz). Doğrulanmadan (A) uygulansaydı zaten tamamlanmış ve
+doğru olan bir kararı geri alıp gerçek bir regresyona yol açardı - dosya
+bunu yansıtacak şekilde düzeltildi, gold verisine DOKUNULMADI. Faz 5
+(AL-027 tarih çelişkisi) kontrol edildi, kaynakla zaten örtüşüyor -
+kapatıldı. Faz 7'nin ilk iki maddesi (TASLAK oranı eşik testi,
+`denetim_raporu.json` senkron kontrolü) `tests/
+test_altin_veri_butunlugu.py`'ye eklendi (`test_taslak_orani_esigi_asilmaz`,
+`test_denetim_raporu_json_guncel`).
+
+**Açık kalan (bu turda dokunulmadı):** Faz 6 (40 kayıtta `kanit_spanlari`
+eksik - elle/yarı-otomatik doldurma gerektiriyor, kapsamı büyük);
+KT-024'ün `odul_miktari` kaçırması (yukarıda).
+
+**Bu tur sonrası anlık görüntü** (`python -m scraper.scripts.
+extraction_accuracy`, 291 canlı kayıt - korpus bu tur SIRASINDA da
+büyüdü, bu yüzden ham sayılar önceki turlarla birebir kıyaslanamaz):
+dolu alan doğruluğu %74,57 (918/1231), boş alan doğruluğu %97,38 (46
+yanlış pozitif), Makro F1 %77,89.

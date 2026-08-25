@@ -281,3 +281,68 @@ def test_sprint_ilerlemesi_raporlanir(kayitlar, capsys):
             f"\n  Kuyrukta bekleyen taslak: {len(taslak)} (olcum disi)"
         )
     assert kayitlar, "altin veri seti bos olamaz"
+
+
+# ---------------------------------------------------------------------------
+# TASLAK/BEKLIYOR regresyon esigi (gold_veri_seti_iyilestirme_plani.md
+# Faz 7 - 26 Agustos 2026)
+# ---------------------------------------------------------------------------
+# NEDEN GEREKLI: Faz 2/3 IMZALI-ama-dogrulama-BEKLEYEN kuyrugunu 45 -> 0'a
+# indirdi (bkz. denetim_raporu_uret.py). Bu kazanimin KALICI olmasi icin bir
+# kilit gerekir - aksi halde kuyruk sessizce yeniden buyuyebilir (ör. yeni
+# taslak satirlar imzalanip "TASLAK...BEKLIYOR" notuyla birakilirsa) ve
+# kimse fark etmeden gold setinin dogrulanmamis oranini tekrar yukseltir.
+#
+# ESIK NEDEN ORANSAL (mutlak sayi degil): veri seti buyudukce (yeni kayit
+# eklendikce) sabit bir "N kayittan fazla olamaz" esigi anlamsizlasir - 300
+# kayitta 10 taslak %3,3 iken 600 kayitta ayni 10 taslak %1,6'dir. Oran,
+# setin buyuklugunden BAGIMSIZ bir kalite olcusu verir.
+_TASLAK_ORANI_ESIGI = 0.05  # plandaki "%5" onerisiyle ayni
+
+
+def test_taslak_orani_esigi_asilmaz():
+    """Imzali-ama-TASLAK-notlu kayit orani %5'i asarsa test kirilir.
+
+    TEK KAYNAK: denetim_raporu_uret.taslak_kayitlari_topla() - bu ayni
+    fonksiyon `python -m gold_dataset.denetim_raporu_uret` tarafindan da
+    cagirilir, iki taraf ayrisamaz (bkz. modul docstring'i)."""
+    import sys as _sys
+    from pathlib import Path as _Path
+
+    _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent / "gold_dataset"))
+    from denetim_raporu_uret import taslak_kayitlari_topla
+
+    gold = json.loads(GOLD.read_text(encoding="utf-8"))
+    imzali_sayisi = sum(1 for k in gold if (k.get("giren_kisi") or "").strip())
+    taslak_sayisi = len(taslak_kayitlari_topla())
+
+    assert imzali_sayisi > 0, "imzali kayit yok - oran hesaplanamaz"
+    oran = taslak_sayisi / imzali_sayisi
+    assert oran <= _TASLAK_ORANI_ESIGI, (
+        f"IMZALI-ama-TASLAK-notlu kayit orani %{oran * 100:.1f} "
+        f"({taslak_sayisi}/{imzali_sayisi}) - esik %{_TASLAK_ORANI_ESIGI * 100:.0f}. "
+        "python -m gold_dataset.denetim_raporu_uret ile guncel listeyi gorup "
+        "kayitlari dogrulayin/temizleyin."
+    )
+
+
+def test_denetim_raporu_json_guncel():
+    """Depodaki denetim_raporu.json, `taslak_kayitlari_topla()`'nin SU AN
+    uretecegi listeyle AYNI olmali - aksi halde dosya bayatlamis demektir
+    (bkz. denetim_raporu_uret.py docstring'i, eski elle-yazilmis dosyanin
+    45 kayittan yalnizca 10'unu gosterdigi bulgusu)."""
+    import sys as _sys
+    from pathlib import Path as _Path
+
+    _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent / "gold_dataset"))
+    from denetim_raporu_uret import CIKTI, taslak_kayitlari_topla
+
+    guncel = taslak_kayitlari_topla()
+    depodaki = json.loads(CIKTI.read_text(encoding="utf-8"))
+
+    guncel_idler = {k["kayit_id"] for k in guncel}
+    depodaki_idler = {k["kayit_id"] for k in depodaki}
+    assert guncel_idler == depodaki_idler, (
+        f"denetim_raporu.json bayatlamis - fark: {guncel_idler ^ depodaki_idler}. "
+        "python -m gold_dataset.denetim_raporu_uret calistirip yeniden commit edin."
+    )

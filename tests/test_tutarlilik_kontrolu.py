@@ -156,6 +156,13 @@ ALARM_VERMESI_BEKLENEN_SAYFALAR = {
     # Kuveyt Turk'un kendi odeme secenegi markalamasi, katilim terminolojisi
     # ihlali degil dogrudan kaynak metindeki resmi urun ismi.
     "kuveytturk_kampanyalar_kendim-icin_musteri-ol-kampanyalari_evlenecek-olan-veya-yeni-evli-ciftlere-kuveyt-turkten-mujde-evlilik-paketi",
+    # Vakif Katilim (25 Agustos 2026) - "kredilendirme"/"kredileri" kelimeleri
+    # tasit finansman kampanyalarinda geciyor. Banka kendi metninde gelenek
+    # terim kullaniyor - katilim terminolojisi ihlali. Bu durum denetim
+    # raporunda acikca belirtilmeli (banka terminolojisi tutarsizligi).
+    "vakifkatilim_tr_kendim-icin_kampanyalar_detay_3-ay-ertelemeli-motosiklet-kampanyasi",
+    "vakifkatilim_tr_kendim-icin_kampanyalar_detay_3-ay-ertelemeli-tasit-finansmani",
+    "vakifkatilim_tr_kendim-icin_kampanyalar_detay_doga-dostu-arac-finansmani",
 }
 
 

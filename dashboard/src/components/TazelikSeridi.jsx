@@ -132,7 +132,13 @@ export default function TazelikSeridi() {
         {veri.tekil_kampanya != null && (
           <Tooltip title="Bankaların sayfalarından taranan ham veri (scraper/raw_data) - veritabanına yüklenmiş kayıt sayısından farklıdır, bkz. Alan Bazında Veri Doluluğu kartı. Scraper eski taramaları silmez (değişiklik takibi için); anlık görüntü sayısı tekil kampanyadan fazladır">
             <span>
-              <Typography.Text type="secondary">Taranan kampanya: </Typography.Text>
+              {/* Etiket BILEREK "ham korpus" diyor: hemen asagidaki Alan
+                  Bazinda Veri Dolulugu karti VERITABANI sayisini (496 kayit)
+                  gosteriyor, burasi ise scraper/raw_data altindaki dosyalari
+                  sayiyor. Onceki surumde ikisi de yalnizca "kampanya" diyordu
+                  ve ayni ekranda iki farkli sayi celiski gibi gorunuyordu -
+                  fark yalnizca tooltip'te yaziyordu, hover etmeyen goremiyordu. */}
+              <Typography.Text type="secondary">Ham korpus: </Typography.Text>
               <Tag>
                 {veri.tekil_kampanya} tekil · {veri.anlik_goruntu} anlık görüntü
               </Tag>

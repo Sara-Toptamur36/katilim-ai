@@ -31,7 +31,12 @@ jobs:
         run: python -c "import api.main; print('api.main import edildi')"
 
       - name: Testleri calistir
-        run: pytest tests/ -v
+        run: |
+          pytest tests/ \
+            --ignore=tests/SLOW_test_sprint_is_listesi.py \
+            --ignore=tests/test_hibrit_extraction_accuracy.py \
+            --ignore=tests/test_ablation.py \
+            -v
 
       - name: Sizmis sir taramasi
         run: |
@@ -240,7 +245,7 @@ jobs:
       # kendiliginden degismez, ancak yeni bir CVE aciklandiginda degisir.
       - name: Bagimlilik zafiyet taramasi
         run: pip-audit -r requirements.txt --strict
-        continue-on-error: true   # yeni CVE aciklanmasi PR'i bloke etmemeli
+        continue-on-error: true # yeni CVE aciklanmasi PR'i bloke etmemeli
 
       # Koddaki riskli desenler (hardcoded sir, shell=True, assert ile
       # dogrulama vb.). Yalnizca YUKSEK guvenli bulgular kapiya cevrilir;

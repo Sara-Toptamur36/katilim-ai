@@ -1,26 +1,8 @@
 [
   {
-    "kayit_id": "KT-010",
-    "tur": "NOT YENIDEN OKUNMALI",
-    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Musteri basina en fazla 2 islem; kampanya 75.000 kisi ile sinirli. Katilim ONAY VERGI SMS'i ile.",
-    "slug": "gelir-vergisi-odemelerinizde-3-taksit-firsati"
-  },
-  {
     "kayit_id": "TEK-009",
     "tur": "NOT YENIDEN OKUNMALI",
     "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Dort kademeli odul; musteri yalnizca BIRINI kazanir, odul_miktari en yuksek kademedir. Pazar yeri e-ticaret haric.",
     "slug": "beyaz-esya-ve-elektronik-alisverislerinize-3000-tlye-varan-parafpara"
-  },
-  {
-    "kayit_id": "TEK-011",
-    "tur": "NOT YENIDEN OKUNMALI",
-    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. odul_miktari BILEREK BOS: 'ilgili ayin uyelik ucreti kadar iade' deniyor, TUTAR YAZMIYOR. Trendyol Plus kaydiyla (75 TL acikca yazili) karsilast...",
-    "slug": "emlak-katilim-paraftan-tabii-premium-uyeligi-hediye"
-  },
-  {
-    "kayit_id": "TEK-012",
-    "tur": "NOT YENIDEN OKUNMALI",
-    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. tabii Premium kaydiyla ayni yapi ama burada tutar (75 TL) ACIKCA yazili; orada yazmiyor ve o alan bos birakildi.",
-    "slug": "emlak-katilim-paraftan-trendyol-plus-uyelik-ucretiniz-iade"
   }
 ]

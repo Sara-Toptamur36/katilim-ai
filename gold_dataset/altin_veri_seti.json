@@ -2884,7 +2884,7 @@
     "ekran_goruntusu": null,
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-08-21",
-    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Musteri basina en fazla 2 islem; kampanya 75.000 kisi ile sinirli. Katilim ONAY VERGI SMS'i ile.",
+    "notlar": "KAYNAK ROTASYONA GIRDI (25 Agustos 2026): Temmuz 2026 kampanyasi artik canli sitede yok - yenilenmemis/kaldirilmis (guncel kampanya listesi taranarak dogrulandi, bkz. gold_veri_seti_iyilestirme_plani.md Faz 4). Etiket muhtemelen kendi doneminde DOGRUYDU ama artik kaynakla dogrulanamiyor - insan doğrulaması BEKLEMİYOR, ölçüm dışı sayılmalı. Musteri basina en fazla 2 islem; kampanya 75.000 kisi ile sinirli. Katilim ONAY VERGI SMS'i ile.",
     "taksit_sayisi": 3,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
@@ -3307,7 +3307,7 @@
     "ekran_goruntusu": null,
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-08-21",
-    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. odul_miktari BILEREK BOS: 'ilgili ayin uyelik ucreti kadar iade' deniyor, TUTAR YAZMIYOR. Trendyol Plus kaydiyla (75 TL acikca yazili) karsilastirmali cift olusturur.",
+    "notlar": "KAYNAK ROTASYONA GIRDI (25 Agustos 2026): Temmuz 2026 kampanyasi artik canli sitede yok - yenilenmemis/kaldirilmis (guncel kampanya listesi taranarak dogrulandi, bkz. gold_veri_seti_iyilestirme_plani.md Faz 4). Etiket muhtemelen kendi doneminde DOGRUYDU ama artik kaynakla dogrulanamiyor - insan doğrulaması BEKLEMİYOR, ölçüm dışı sayılmalı. odul_miktari BILEREK BOS: 'ilgili ayin uyelik ucreti kadar iade' deniyor, TUTAR YAZMIYOR. Trendyol Plus kaydiyla (75 TL acikca yazili) karsilastirmali cift olusturur.",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
@@ -3423,7 +3423,7 @@
     "ekran_goruntusu": null,
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-08-21",
-    "notlar": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. tabii Premium kaydiyla ayni yapi ama burada tutar (75 TL) ACIKCA yazili; orada yazmiyor ve o alan bos birakildi.",
+    "notlar": "KAYNAK ROTASYONA GIRDI (25 Agustos 2026): Temmuz 2026 kampanyasi artik canli sitede yok - yenilenmemis/kaldirilmis (guncel kampanya listesi taranarak dogrulandi, bkz. gold_veri_seti_iyilestirme_plani.md Faz 4). Etiket muhtemelen kendi doneminde DOGRUYDU ama artik kaynakla dogrulanamiyor - insan doğrulaması BEKLEMİYOR, ölçüm dışı sayılmalı. tabii Premium kaydiyla ayni yapi ama burada tutar (75 TL) ACIKCA yazili; orada yazmiyor ve o alan bos birakildi.",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {

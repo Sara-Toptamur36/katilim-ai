@@ -126,15 +126,30 @@ nihai göz kontrolü önerilir ama artık ölçümü bloklamıyor."* `giren_kisi
 alanına dokunulmadı (zaten doluydu). İsterseniz bu 31 kayıt için gerçek
 insan onayını da almak üzere ekibe dağıtabilirsiniz — ama artık acil değil.
 
-**Kalan iş (14 kayıt, gerçek elle inceleme gerektiriyor):**
-1. **11 rotasyona girmiş kayıt** — sayfa değişmiş, etiket eski metinden
-   kalma. `dogrulama.html` yerine kaynak sayfayı elden geçirip değerleri
-   güncel metinle yeniden doğrulayın (bazıları hâlâ doğru olabilir, bazıları
-   artık kaynaksız kalmış olabilir).
-2. **3 erişilemeyen kayıt** (`KT-008`, `ZK-009`, `DK-008`) — tarayıcıdan elle
-   açıp kontrol edin; otomasyon iki denemede de zaman aşımına uğradı.
+**Güncelleme (kullanıcı ekran görüntüsü paylaştı):** 9 kayıt daha kapatıldı.
+- `KT-008`, `ZK-009`, `DK-008`: kullanıcı erişilemeyen 3 sayfayı kendi
+  tarayıcısında açtı, ekran görüntüsü paylaştı — tarih/tutar/ödül kademeleri
+  kaynakla birebir örtüştü, doğrulandı.
+- `ZK-010`, `ZK-012`, `ZK-013`, `ZK-015`, `ZK-016`, `ZK-017`, `TOM-005`:
+  kullanıcı rotasyona girmiş 7 Ziraat/T.O.M. sayfasını kendi tarayıcısında
+  açtı — tarihler ve değerler etiketle birebir eşleşti, doğrulandı.
 
-**Sorumlu:** Veri toplama ekibi. **Efor:** ~1 gün (14 kayıt kaldı, 31 otomatik geçti).
+**Faz 4'e devredildi (3 kayıt — kaynak rotasyona girmiş, canlı sitede yok):**
+`TEK-011`, `TEK-012`, `KT-010` için canlı kampanya listeleri tarandı
+(emlakkatilim.com.tr 63 kampanya, kuveytturk.com.tr kart kampanyaları) —
+Temmuz 2026 tarihli bu 3 kampanya **yenilenmemiş/kaldırılmış**, gidilecek
+bir sayfa yok. `notlar`daki "TASLAK...BEKLIYOR" ibaresi "KAYNAK ROTASYONA
+GİRDİ" notuyla değiştirildi — insan doğrulaması artık BEKLEMİYOR, ölçüm
+dışı sayılmalı (bkz. Faz 4).
+
+**Kalan iş (1 kayıt):**
+- **`TEK-009`**: kampanya **yenilenmiş** (3.000 TL → 5.000 TL ParafPara),
+  aynı konu farklı tutarla hâlâ canlı:
+  `emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/beyaz-esya-ve-elektronik-alisverislerinize-5000-tlye-varan-parafpara`.
+  Ekran görüntüsü paylaşılırsa eski değer "doğrulanmaz", **yeni tutara göre
+  düzeltilir** (DÜZELTME notuyla) — çünkü farklı bir kampanya dönemi.
+
+**Sorumlu:** Veri toplama ekibi. **Efor:** ~tamamlandı, 1 kayıt kaldı.
 
 ---
 

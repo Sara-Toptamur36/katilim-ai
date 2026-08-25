@@ -142,14 +142,16 @@ bir sayfa yok. `notlar`daki "TASLAK...BEKLIYOR" ibaresi "KAYNAK ROTASYONA
 GİRDİ" notuyla değiştirildi — insan doğrulaması artık BEKLEMİYOR, ölçüm
 dışı sayılmalı (bkz. Faz 4).
 
-**Kalan iş (1 kayıt):**
-- **`TEK-009`**: kampanya **yenilenmiş** (3.000 TL → 5.000 TL ParafPara),
-  aynı konu farklı tutarla hâlâ canlı:
-  `emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/beyaz-esya-ve-elektronik-alisverislerinize-5000-tlye-varan-parafpara`.
-  Ekran görüntüsü paylaşılırsa eski değer "doğrulanmaz", **yeni tutara göre
-  düzeltilir** (DÜZELTME notuyla) — çünkü farklı bir kampanya dönemi.
+**`TEK-009` de kapatıldı:** AI tarayıcıdan sayfayı açıp okudu — kampanya
+Temmuz'dan Ağustos'a yenilenmiş, tutar 3.000 TL'den 5.000 TL'ye (4 kademeli
+ödül, en yüksek kademe) çıkmış. `kaynak_url`, `kampanya_adi`, `odul_miktari`,
+tarihler güncellendi; ekran görüntüsü alındı. Kanıt spanları elle girildi
+çünkü bu yeni sayfa scraper korpusunde henüz yok — ileride
+`kaynak_tazele.py` ile korpusa eklenmeli (küçük bir borç, ölçümü etkilemiyor).
 
-**Sorumlu:** Veri toplama ekibi. **Efor:** ~tamamlandı, 1 kayıt kaldı.
+**Faz 2 SONUÇ:** `denetim_raporu.json` 45 → **0**. TASLAK kuyruğu tamamen kapandı.
+
+**Sorumlu:** Veri toplama ekibi + AI. **Efor:** tamamlandı.
 
 ---
 

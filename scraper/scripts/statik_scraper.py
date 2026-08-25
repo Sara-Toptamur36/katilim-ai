@@ -113,6 +113,18 @@ def sayfa_tara(
 
     icerik_secici = ayar.get("icerik_secici")
     secili = soup.select_one(icerik_secici) if icerik_secici else None
+    if icerik_secici and secili is None:
+        # Secici artik sayfayla eslesmiyor (site guncellemesi/A-B testi
+        # olabilir) - (secili or soup) asagida sessizce TUM sayfaya
+        # (nav/footer/ilgili-kampanyalar widget'i dahil) duser. Bu, "eksik
+        # veri gizlenmez, isaretlenir" ilkesine aykiri olurdu (bkz. modul
+        # docstring'i) - bulgu (25 Agustos 2026): albaraka'da 35 sayfadan
+        # 2'si bu sekilde tam sayfa olarak kaydedilmisti.
+        ortak.log_yaz(
+            banka_kod,
+            f"UYARI: icerik_secici '{icerik_secici}' eslesmedi, TUM sayfa "
+            f"kullanildi (kapsam kirlenmesi riski): {url}",
+        )
     sayfa_metni = (secili or soup).get_text("\n", strip=True)
 
     # KAPSAM: icerik secicisi bazen sayfanin sonundaki "ilgili

@@ -16,25 +16,25 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 
 ## Durum
 
-| Sprint | İçerik | Durum |
-|---|---|---|
-| **Sprint 1** | API sözleşmesi, uç noktalar, veri toplama, terminoloji sözlüğü, dashboard iskeleti | ✅ Tamamlandı |
-| **Sprint 2** | Karşılaştırma motoru, hesap makinesi, hibrit çıkarım (regex+NER+LLM), PostgreSQL | ✅ Tamamlandı |
-| **Sprint 3** | Ajan orkestratör, chatbot arayüzü | ✅ Tamamlandı |
-| | Semantik chunking + embedding + Qdrant indeksleme | ✅ Tamamlandı |
-| **Sprint 4** | Intent tespiti, Jüri Audit Paneli, gerçek JWT kimlik doğrulama | ✅ Tamamlandı |
-| | RAG: hibrit arama + kaynaklı yanıt + abstention | ✅ Tamamlandı |
-| **Sprint 5** | Terminoloji sözlüğü genişletildi + kapsam ölçümü (karşı-örnek seti) | ✅ Tamamlandı |
-| | Rakip analizi matrisi, kampanya etki skoru | ✅ Tamamlandı |
-| | Kampanya değişim tarihçesi, Verifier sonucunun kalıcılaştırılması | ✅ Tamamlandı |
-| **Tamamlamalar** | Verifier → ajan yanıt yoluna bağlandı (karşılaştırma + toplam maliyet) | ✅ Tamamlandı |
-| | Zaman aşımı tabanlı kademeli fallback (`KATILIMAI_ARAC_ZAMAN_ASIMI`) | ✅ Tamamlandı |
-| | RAG exact arama modu (`KATILIMAI_RAG_EXACT_MOD=true`) — Recall@1 kararlı | ✅ Tamamlandı |
+| Sprint           | İçerik                                                                             | Durum         |
+| ---------------- | ---------------------------------------------------------------------------------- | ------------- |
+| **Sprint 1**     | API sözleşmesi, uç noktalar, veri toplama, terminoloji sözlüğü, dashboard iskeleti | ✅ Tamamlandı |
+| **Sprint 2**     | Karşılaştırma motoru, hesap makinesi, hibrit çıkarım (regex+NER+LLM), PostgreSQL   | ✅ Tamamlandı |
+| **Sprint 3**     | Ajan orkestratör, chatbot arayüzü                                                  | ✅ Tamamlandı |
+|                  | Semantik chunking + embedding + Qdrant indeksleme                                  | ✅ Tamamlandı |
+| **Sprint 4**     | Intent tespiti, Jüri Audit Paneli, gerçek JWT kimlik doğrulama                     | ✅ Tamamlandı |
+|                  | RAG: hibrit arama + kaynaklı yanıt + abstention                                    | ✅ Tamamlandı |
+| **Sprint 5**     | Terminoloji sözlüğü genişletildi + kapsam ölçümü (karşı-örnek seti)                | ✅ Tamamlandı |
+|                  | Rakip analizi matrisi, kampanya etki skoru                                         | ✅ Tamamlandı |
+|                  | Kampanya değişim tarihçesi, Verifier sonucunun kalıcılaştırılması                  | ✅ Tamamlandı |
+| **Tamamlamalar** | Verifier → ajan yanıt yoluna bağlandı (karşılaştırma + toplam maliyet)             | ✅ Tamamlandı |
+|                  | Zaman aşımı tabanlı kademeli fallback (`KATILIMAI_ARAC_ZAMAN_ASIMI`)               | ✅ Tamamlandı |
+|                  | RAG exact arama modu (`KATILIMAI_RAG_EXACT_MOD=true`) — Recall@1 kararlı           | ✅ Tamamlandı |
 
 ### Ölçülebilir durum
 
-*Son ölçüm: 23 Ağustos 2026. Tüm sayılar depodaki komutlarla yeniden
-üretilebilir — üretim komutları [Test](#test) bölümünde.*
+_Son ölçüm: 23 Ağustos 2026. Tüm sayılar depodaki komutlarla yeniden
+üretilebilir — üretim komutları [Test](#test) bölümünde._
 
 > **Çıkarım doğruluğu yeniden ölçülmeyi bekliyor.** Altın Veri Seti 24
 > Ağustos'ta 107'den **298 imzalı kayda** çıktı (kuyruktaki 195 taslak
@@ -48,23 +48,27 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 > python scraper/scripts/extraction_accuracy.py
 > ```
 
-| Gösterge | Değer |
-|---|---|
-| Kapsanan katılım bankası | **9 / 10** (BDDK listesi; Adil Katılım gerekçeli hariç — ürün/kampanya yayımlamıyor) |
-| Toplanan gerçek kampanya | **251** tekil kampanya (300 tarihli anlık görüntü) |
-| Değişimi yakalanan kampanya | **40 / 251** içerik güncellemesi; **25**'inde izlenen alan değişti |
-| Altın Veri Seti | **298** kayıt, tamamı imzalı (ölçüme giren); taslak kalmadı |
-| Çıkarım — dolu alan doğruluğu | **%52,07** (239/459 alan, 11 alan · 93 imzalı canlı kayıt) — *ölçüm 23 Ağustos* |
-| Çıkarım — boş alan doğruluğu (yanlış pozitif) | **%95,15** (490/515 alan) — 25 yanlış pozitif — *ölçüm 23 Ağustos* |
-| Çıkarım — makro F1 (11 alan) | **%67,09** (makro P %75,33 / R %66,08) — *ölçüm 23 Ağustos* |
-| Çıkarım — makro F1 (sayısal çekirdek, 7 alan) | **%81,66** — oran/tutar/süre alanları — *ölçüm 23 Ağustos* |
-| Terminoloji sözlüğü | **31** kavram (geleneksel karşılığı + tanım kaynağıyla) |
-| Kapsam ölçümü (Scope Guard) | hassasiyet **24/24**, özgüllük **10/10** |
-| RAG — indekslenen parça | **878** (300 belgeden, 21 Ağustos'ta yeniden kuruldu) |
-| RAG — değerlendirme seti | **185** soru, 6 kategori (32'lik dar setten büyütüldü — aşağıya bakınız) |
-| RAG — Recall@5 (genel / kategori bazlı) | **%88,24** genel — doğal_soru %92,86, **banka_ve_konu %52,38** (Recall@1 %14,29) |
-| RAG — abstention doğruluğu | alan dışı **%86,67** · alan içi kapsam dışı **%50,0** (ayrı raporlanır) |
-| Otomatik test | **1269** test (toplanan), CI her push'ta çalışır |
+| Gösterge                                      | Değer                                                                                |
+| --------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Kapsanan katılım bankası                      | **9 / 10** (BDDK listesi; Adil Katılım gerekçeli hariç — ürün/kampanya yayımlamıyor) |
+| Toplanan gerçek kampanya                      | **251** tekil kampanya (300 tarihli anlık görüntü)                                   |
+| Değişimi yakalanan kampanya                   | **40 / 251** içerik güncellemesi; **25**'inde izlenen alan değişti                   |
+| Altın Veri Seti                               | **298** kayıt, tamamı imzalı (ölçüme giren); taslak kalmadı                          |
+| Çıkarım — dolu alan doğruluğu                 | **%52,07** (239/459 alan, 11 alan · 93 imzalı canlı kayıt) — _ölçüm 23 Ağustos_      |
+| Çıkarım — boş alan doğruluğu (yanlış pozitif) | **%95,15** (490/515 alan) — 25 yanlış pozitif — _ölçüm 23 Ağustos_                   |
+| Çıkarım — makro F1 (11 alan)                  | **%67,09** (makro P %75,33 / R %66,08) — _ölçüm 23 Ağustos_                          |
+| Çıkarım — makro F1 (sayısal çekirdek, 7 alan) | **%81,66** — oran/tutar/süre alanları — _ölçüm 23 Ağustos_                           |
+| Terminoloji sözlüğü                           | **31** kavram (geleneksel karşılığı + tanım kaynağıyla)                              |
+| Kapsam ölçümü (Scope Guard)                   | hassasiyet **24/24**, özgüllük **10/10**                                             |
+| RAG — indekslenen parça                       | **878** (300 belgeden, 21 Ağustos'ta yeniden kuruldu)                                |
+| RAG — değerlendirme seti                      | **185** soru, 6 kategori (32'lik dar setten büyütüldü — aşağıya bakınız)             |
+| RAG — Recall@5 (genel / kategori bazlı)       | **%88,24** genel — doğal_soru %92,86, **banka_ve_konu %52,38** (Recall@1 %14,29)     |
+| RAG — abstention doğruluğu                    | alan dışı **%86,67** · alan içi kapsam dışı **%50,0** (ayrı raporlanır)              |
+| Otomatik test                                 | **1235** test (aktif), CI her push'ta çalışır (34 yavaş test manuel çalıştırma)      |
+
+> **Yavaş testler:** `tests/SLOW_test_sprint_is_listesi.py` (34 test) rutin
+> CI'da çalıştırılmıyor — sprint iş listesi üretimi 3+ dakika sürüyor. Manuel
+> çalıştırma: `PYTEST_SLOW_TESTS=1 pytest tests/SLOW_test_sprint_is_listesi.py`
 
 > ### Çıkarım metrikleri 23 Ağustos'ta AŞAĞI yönlü düzeltildi — nedeni önemli
 >
@@ -90,11 +94,11 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 >
 > **Aynı gün kapatılan üç hata ve ölçülmüş etkileri:**
 >
-> | Düzeltme | Etki |
-> |---|---|
+> | Düzeltme                                  | Etki                                                      |
+> | ----------------------------------------- | --------------------------------------------------------- |
 > | `vade farksız` kararı tek yöne sabitlendi | kâr payı oranı F1 **%26,09 → %80,00** (R %15,38 → %80,00) |
-> | `hedef_kitle` segment düzeyinde ölçülüyor | F1 **%0,00 → %30,00** (önce ölçülemezdi) |
-> | Ölçüme imza filtresi eklendi | 293 kayıt → **93 imzalı** kayıt |
+> | `hedef_kitle` segment düzeyinde ölçülüyor | F1 **%0,00 → %30,00** (önce ölçülemezdi)                  |
+> | Ölçüme imza filtresi eklendi              | 293 kayıt → **93 imzalı** kayıt                           |
 >
 > `vade farksız` hatası nasıl oluştu, kayda değer: iki ayrı commit **zıt
 > yönde** karar verdi — biri altın veriye `kar_payi_orani = 0` yazdı, diğeri
@@ -126,7 +130,7 @@ değiştiğini çıkarır — **ek veri toplamadan**.
 Burada da iki sayı ayrı tutulur: 251 kampanyanın **40**'ında içerik değişmiş,
 ama bunların **25**'inde izlenen bir alan (oran, vade, tutar, ödül, tarih)
 gerçekten farklılaşmış. Kalan 15'i yalnızca metin düzeltmesi — hash değişmiş
-ama finansal bilgi aynı. Kullanıcıya "değişti" denecekse, *neyin* değiştiği
+ama finansal bilgi aynı. Kullanıcıya "değişti" denecekse, _neyin_ değiştiği
 gösterilebilmelidir; kozmetik değişiklik bildirimi gürültüdür.
 
 Ölçülen örnek: Dünya Katılım'ın "avantajlı kurlar" kampanyasının bitiş tarihi
@@ -148,8 +152,8 @@ tekrarlandı. İki bulgu çıktı, ikisi de raporlanıyor:
    İndeks %11 büyüyünce bu ikisi ayrışamaz oldu. Kod gerilemesi değil, korpus
    büyümesinin sonucu — ama gerçek bir kalite kaybı.
 
-Yöntem, tekrar üretim çıktıları ve önerilen düzeltme (*ölçümü `exact=True` ile
-koşturmak*): [`docs/rag_tasarim_ve_olcum.md`](docs/rag_tasarim_ve_olcum.md)
+Yöntem, tekrar üretim çıktıları ve önerilen düzeltme (_ölçümü `exact=True` ile
+koşturmak_): [`docs/rag_tasarim_ve_olcum.md`](docs/rag_tasarim_ve_olcum.md)
 
 **21 Ağustos'ta indeks yeniden kuruldu** (18 Ağustos'taki 9-banka taramasıyla
 senkron: 263 → 300 belge, 817 → 878 parça) **ve ölçüm yöntemi büyütüldü**: 32
@@ -165,8 +169,8 @@ değil** (%86,67, 13/15) — kök nedeni henüz araştırılmadı. Ayrıntı:
 
 `TF-001` **23 Ağustos'ta çözüldü.** Aylarca "sayfanın ortasındaki farklı bir
 ürünün ifadesinden gelen, dar kapsamlı yanlış pozitif" diye kayıtlıydı; kök
-neden aslında daha genel çıktı. Türkiye Finans'ın *"Aylık/Yıllık Toplam
-Maliyet"* tablosu bir satırda yan yana beş-altı yüzde taşıyor
+neden aslında daha genel çıktı. Türkiye Finans'ın _"Aylık/Yıllık Toplam
+Maliyet"_ tablosu bir satırda yan yana beş-altı yüzde taşıyor
 (`3 | 4,20% | 0,50% | 5,77% | 96,05%`) ve 45 karakterlik bağlam penceresi satır
 başındaki `Maliyet` başlığına yetişemediği için tablonun ortasındaki bir hücre
 kâr payı oranı sanılıyordu. Aynı kök neden `TF-008`'i de düzeltti. Tablolardaki
@@ -190,7 +194,7 @@ hangisinin "doğru" olduğu yorum gerektiriyor). Ayrıntı:
 [`docs/extraction_accuracy_raporu.md`](docs/extraction_accuracy_raporu.md)
 
 > Çıkarım kalitesi **tek bir yüzdeyle** değil iki metrikle raporlanır: bir
-> alanı *kaçırmak* ile kaynakta olmayan bir değeri *uydurmak* farklı
+> alanı _kaçırmak_ ile kaynakta olmayan bir değeri _uydurmak_ farklı
 > ağırlıkta hatalardır ve ikincisi finansal kararlarda daha tehlikelidir.
 > Yöntem ve tespit edilen yanlış pozitifler:
 > [`docs/extraction_accuracy_raporu.md`](docs/extraction_accuracy_raporu.md)
@@ -339,13 +343,13 @@ adımları ve **(3)** veri setinin indirilebileceği herkese açık bir bağlant
 bulunmasını istiyor. Üçü de bu depodadır — veri seti harici bir servise
 yüklenmedi, doğrudan depoyla birlikte dağıtılıyor:
 
-| İstenen | Nerede |
-|---|---|
-| Bağımlılık listesi (sürümleri sabitlenmiş) | [`requirements.txt`](https://github.com/Sara-Toptamur36/katilim-ai/blob/main/requirements.txt) |
-| Çalıştırma adımları | Bu dosyadaki [Kurulum ve Çalıştırma](#kurulum-ve-çalıştırma) bölümü |
-| **Altın veri seti** (elle doğrulanmış referans + ekran görüntüleri) | [`gold_dataset/`](https://github.com/Sara-Toptamur36/katilim-ai/tree/main/gold_dataset) |
-| **Ham kampanya metinleri** (9 bankanın sayfa anlık görüntüleri) | [`scraper/raw_data/`](https://github.com/Sara-Toptamur36/katilim-ai/tree/main/scraper/raw_data) |
-| Sentetik müşteri sesi seti (ürün verisi DEĞİL, yalnızca demo) | [`tests/veri/kapsam_disi/`](https://github.com/Sara-Toptamur36/katilim-ai/tree/main/tests/veri/kapsam_disi) |
+| İstenen                                                             | Nerede                                                                                                      |
+| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Bağımlılık listesi (sürümleri sabitlenmiş)                          | [`requirements.txt`](https://github.com/Sara-Toptamur36/katilim-ai/blob/main/requirements.txt)              |
+| Çalıştırma adımları                                                 | Bu dosyadaki [Kurulum ve Çalıştırma](#kurulum-ve-çalıştırma) bölümü                                         |
+| **Altın veri seti** (elle doğrulanmış referans + ekran görüntüleri) | [`gold_dataset/`](https://github.com/Sara-Toptamur36/katilim-ai/tree/main/gold_dataset)                     |
+| **Ham kampanya metinleri** (9 bankanın sayfa anlık görüntüleri)     | [`scraper/raw_data/`](https://github.com/Sara-Toptamur36/katilim-ai/tree/main/scraper/raw_data)             |
+| Sentetik müşteri sesi seti (ürün verisi DEĞİL, yalnızca demo)       | [`tests/veri/kapsam_disi/`](https://github.com/Sara-Toptamur36/katilim-ai/tree/main/tests/veri/kapsam_disi) |
 
 Depo herkese açıktır; klonlamak veri setini de indirir:
 
@@ -372,10 +376,10 @@ durumunu, ölçülmüş embedding ve LLM sürelerini ve tam indeksleme tahminini
 içerir — olduğu gibi paylaşılabilir. Ayarları kalıcı değiştirmek için
 [`.env.ornek`](.env.ornek) dosyasını `.env` olarak kopyalayın.
 
-| Profil | Ne zaman | Bağlam | Zaman aşımı | Kırpılan belge |
-|---|---|---|---|---|
-| **gpu** | VRAM ≥ 8 GB | 16384 | 300 sn | **0 / 234** |
-| **cpu** | GPU yok **veya** VRAM < 8 GB | 4096 | 900 sn | 12 / 234 |
+| Profil  | Ne zaman                     | Bağlam | Zaman aşımı | Kırpılan belge |
+| ------- | ---------------------------- | ------ | ----------- | -------------- |
+| **gpu** | VRAM ≥ 8 GB                  | 16384  | 300 sn      | **0 / 234**    |
+| **cpu** | GPU yok **veya** VRAM < 8 GB | 4096   | 900 sn      | 12 / 234       |
 
 Otomatik seçim ezilebilir:
 
@@ -397,24 +401,24 @@ Tümü `Authorization: Bearer <token>` başlığı ister. Gerçek JWT doğrulama
 `JWT_AKTIF=true` ile açılır; **başlık formatı iki modda da aynıdır**, bu yüzden
 arayüz kodu geçişte değişmez.
 
-| Metot | Yol | Açıklama |
-|---|---|---|
-| GET | `/` · `/saglik` | Servis bilgisi / health check (kimlik gerektirmez) |
-| GET | `/sistem/tazelik` | Veri/RAG indeksinin ne kadar güncel olduğu (son tarama, gün farkı) |
-| POST | `/token` | Kullanıcı adı-parola ile JWT (yalnızca `JWT_AKTIF=true`) |
-| POST | `/kayit` | Kendi kendine kayıt — rol her zaman `musteri` (istemciden kabul edilmez) |
-| GET | `/kampanyalar` | Kampanya listesi (`?banka=` `?kampanya_turu=`) |
-| GET | `/kampanyalar/{id}` | Tek kampanya detayı |
-| GET | `/kampanyalar/{id}/etki` | Etki skoru — piyasaya göre eksen eksen yüzdelik sıra |
-| GET | `/kampanyalar/{id}/tarihce` | Değişim tarihçesi — aynı URL'nin geçmiş taramaları (ek veri toplamaz) |
-| GET | `/rakip-analizi` | Rakip matrisi — tüm kriterler tek tabloda (`?kampanya_turu=`) |
-| GET | `/terminoloji` | Katılım bankacılığı sözlüğü (31 kavram, Md. 5.5) |
-| POST | `/cikar` | Serbest metinden yapılandırılmış çıktı — MetinAnalizi ekranı (staff-only: `musteri` hariç) |
-| POST | `/karsilastir` | Kampanya karşılaştırma (sabit kriter listesi) |
-| POST | `/hesapla` | Taksit/kâr payı hesabı (saf Python, LLM yok) |
-| POST | `/chat` | Doğal dilde soru-cevap (kaynak + audit bilgisiyle) |
-| POST | `/musteri-sesi/siniflandir` | Serbest metni Complaint Insight taksonomisine (10 tema) göre sınıflandırır |
-| GET | `/musteri-sesi/ornekler` | Sentetik Complaint Insight demo seti — **gerçek şikâyet değildir** |
+| Metot | Yol                         | Açıklama                                                                                   |
+| ----- | --------------------------- | ------------------------------------------------------------------------------------------ |
+| GET   | `/` · `/saglik`             | Servis bilgisi / health check (kimlik gerektirmez)                                         |
+| GET   | `/sistem/tazelik`           | Veri/RAG indeksinin ne kadar güncel olduğu (son tarama, gün farkı)                         |
+| POST  | `/token`                    | Kullanıcı adı-parola ile JWT (yalnızca `JWT_AKTIF=true`)                                   |
+| POST  | `/kayit`                    | Kendi kendine kayıt — rol her zaman `musteri` (istemciden kabul edilmez)                   |
+| GET   | `/kampanyalar`              | Kampanya listesi (`?banka=` `?kampanya_turu=`)                                             |
+| GET   | `/kampanyalar/{id}`         | Tek kampanya detayı                                                                        |
+| GET   | `/kampanyalar/{id}/etki`    | Etki skoru — piyasaya göre eksen eksen yüzdelik sıra                                       |
+| GET   | `/kampanyalar/{id}/tarihce` | Değişim tarihçesi — aynı URL'nin geçmiş taramaları (ek veri toplamaz)                      |
+| GET   | `/rakip-analizi`            | Rakip matrisi — tüm kriterler tek tabloda (`?kampanya_turu=`)                              |
+| GET   | `/terminoloji`              | Katılım bankacılığı sözlüğü (31 kavram, Md. 5.5)                                           |
+| POST  | `/cikar`                    | Serbest metinden yapılandırılmış çıktı — MetinAnalizi ekranı (staff-only: `musteri` hariç) |
+| POST  | `/karsilastir`              | Kampanya karşılaştırma (sabit kriter listesi)                                              |
+| POST  | `/hesapla`                  | Taksit/kâr payı hesabı (saf Python, LLM yok)                                               |
+| POST  | `/chat`                     | Doğal dilde soru-cevap (kaynak + audit bilgisiyle)                                         |
+| POST  | `/musteri-sesi/siniflandir` | Serbest metni Complaint Insight taksonomisine (10 tema) göre sınıflandırır                 |
+| GET   | `/musteri-sesi/ornekler`    | Sentetik Complaint Insight demo seti — **gerçek şikâyet değildir**                         |
 
 ```bash
 curl -H "Authorization: Bearer test-token" \
@@ -433,13 +437,13 @@ Karşılaştırma sabit, parametreli SQL şablonlarıyla yapılır (serbest meti
 
 Şartname Md. 5.7'nin örnek kriter listesindeki 5 kriter (`comparison/compare_engine.py`):
 
-| Kriter | Alan |
-|---|---|
-| En Düşük Kâr Payı Oranı (`en_dusuk_kar_payi`) | `kar_payi_orani_percent` |
-| En Yüksek Ödül Miktarı (`en_yuksek_odul`) | `odul_miktari` |
-| En Uzun Vade Seçeneği (`en_uzun_vade`) | `vade_ay` |
-| En Düşük Masraf (`en_dusuk_masraf`) | `tahsis_ucreti` |
-| En Avantajlı Kampanya (`en_avantajli`) | kompozit — diğer 4 kriterin eksen eksen karşılaştırması, Örnek Temsili Senaryo-2'deki yöntemle birebir |
+| Kriter                                        | Alan                                                                                                   |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| En Düşük Kâr Payı Oranı (`en_dusuk_kar_payi`) | `kar_payi_orani_percent`                                                                               |
+| En Yüksek Ödül Miktarı (`en_yuksek_odul`)     | `odul_miktari`                                                                                         |
+| En Uzun Vade Seçeneği (`en_uzun_vade`)        | `vade_ay`                                                                                              |
+| En Düşük Masraf (`en_dusuk_masraf`)           | `tahsis_ucreti`                                                                                        |
+| En Avantajlı Kampanya (`en_avantajli`)        | kompozit — diğer 4 kriterin eksen eksen karşılaştırması, Örnek Temsili Senaryo-2'deki yöntemle birebir |
 
 `en_avantajli` tek bir ağırlıklı formül uydurmaz: her alt kriterde hangi kampanyanın öne çıktığı ayrı ayrı belirlenir (`- Kâr payı oranı açısından C Bankası daha avantajlı ...` biçiminde), en çok eksende öne çıkan genel kazanan sayılır; eşitlikte tek bir kazanan uydurulmaz. Ayrıca şartnamenin listesinde olmayan bonus bir kriter de var: `en_yuksek_tutar` (`finansman_tutari`).
 
@@ -469,10 +473,10 @@ yanıt vermezse LLM katmanı sessizce atlanır ve deterministik katmanların
 sonucu döner.
 
 Ajan tarafında da aynı kademelilik var: seçilen araç yetersiz kalırsa
-sistem vazgeçmez, soruyu RAG'e sorar. Gerekçesi ölçüldü — *"Ziraat Katılım
-kart kampanyalarında **taksit** var mı?"* sorusu yalnızca "taksit" kelimesi
-yüzünden hesap makinesine gidiyor ve kullanıcıya *"Hesaplama için şu
-bilgiler eksik: anapara…"* deniyordu; oysa bu bir bilgi sorusu ve cevabı
+sistem vazgeçmez, soruyu RAG'e sorar. Gerekçesi ölçüldü — _"Ziraat Katılım
+kart kampanyalarında **taksit** var mı?"_ sorusu yalnızca "taksit" kelimesi
+yüzünden hesap makinesine gidiyor ve kullanıcıya _"Hesaplama için şu
+bilgiler eksik: anapara…"_ deniyordu; oysa bu bir bilgi sorusu ve cevabı
 kaynaklarda var. Hangi aracın neden yetmediği audit kaydında korunur.
 RAG de kaynak bulamazsa sistem yine **açıkça çekimser kalır.**
 
@@ -495,7 +499,7 @@ Eşik tahminle değil ölçümle seçildi; yöntem, kalibrasyon ve sonuçlar:
 
 **7. Kapsam dışı veri gizlenmez, ayrıldığı kanıtlanır.**
 Sistemin katılım bankacılığı ile geleneksel bankacılığı ayırt edebildiğini
-*ölçebilmek* için geleneksel bankacılık ifadelerinden bir karşı-örnek seti
+_ölçebilmek_ için geleneksel bankacılık ifadelerinden bir karşı-örnek seti
 tutulur. Bu ifadeler **yalnızca kapsam sınıflandırması ve Scope Guard ölçümü**
 amacıyla kullanılır; üretim kampanya veritabanına ve RAG indeksine **dâhil
 edilmez**. İfadeler elle yazılmıştır — hiçbiri gerçek bir bankadan
@@ -584,7 +588,7 @@ makinesinde çalışır. Depoda bir `VITE_API_BASE_URL` repo değişkeni
 tanımlanmadığı sürece yayınlanan site `localhost:8000`'e istek atmaya
 çalışır ve dış ziyaretçilerde dürüstçe "Veri alınamadı" gösterir — bu bir
 hata değil, uydurma veri göstermemenin sonucudur. Repo ayarında bir kerelik
-gereken adım: *Settings → Pages → Source = "GitHub Actions"*.
+gereken adım: _Settings → Pages → Source = "GitHub Actions"_.
 
 ### Yanıtın dayandığı sayılar doğrulandı mı?
 
@@ -592,11 +596,11 @@ gereken adım: *Settings → Pages → Source = "GitHub Actions"*.
 maliyet araçları) artık **hangi alanın kaynakta doğrulandığını** da döndürür —
 `audit.dogrulama`. Üç durum bilerek ayrı sayılır:
 
-| Durum | Anlamı |
-|---|---|
-| `dogrulandi` | Kullanılan tüm alanlar, tüm kayıtlarda kaynakta doğrulandı |
-| `kismi` | Verifier çalıştı ama bir kısmını onaylayamadı (değer **silinmez**) |
-| `calistirilmamis` | Bu alanlar için Verifier hiç çalışmadı |
+| Durum             | Anlamı                                                             |
+| ----------------- | ------------------------------------------------------------------ |
+| `dogrulandi`      | Kullanılan tüm alanlar, tüm kayıtlarda kaynakta doğrulandı         |
+| `kismi`           | Verifier çalıştı ama bir kısmını onaylayamadı (değer **silinmez**) |
+| `calistirilmamis` | Bu alanlar için Verifier hiç çalışmadı                             |
 
 Bunları tek bir orana indirgemek en büyük hata olurdu: "çalıştırılmamış"ı
 başarısızlık saymak sistemi haksız yere kötü, başarı saymak yalancı gösterirdi.
@@ -606,7 +610,7 @@ sorusunda ödül miktarının doğrulanmış olması o cevap hakkında bilgi ver
 
 **RAG yolunda özet bilerek üretilmez** (`None`) ve bu doğrudur: RAG hiçbir cümle
 üretmez, kaynak parçasını **birebir** döndürür. Orada "bu sayı kaynakta geçiyor
-mu?" kontrolü tanım gereği her zaman *evet* derdi — hiçbir şey elemeyen,
+mu?" kontrolü tanım gereği her zaman _evet_ derdi — hiçbir şey elemeyen,
 yalnızca doğrulama yapılmış **izlenimi** veren bir kontrol olurdu. LLM ile
 özetleme eklenirse Verifier o yola **birlikte** bağlanmalıdır.
 
@@ -622,18 +626,18 @@ Ayrıntı: [`validation/yanit_dogrulama.py`](validation/yanit_dogrulama.py)
 
 Veri Rehberi'ndeki dört kırmızı çizgi **niyet beyanı değil, çalışan kontrol**:
 
-| Kırmızı çizgi | Kodda karşılığı |
-|---|---|
+| Kırmızı çizgi                                 | Kodda karşılığı                                                                     |
+| --------------------------------------------- | ----------------------------------------------------------------------------------- |
 | Ham metin izin kapısı geçmeden diske yazılmaz | İzin kaydı yoksa `IzinYok` fırlar; diske yazan `kaydet()` izni **ikinci kez** sorar |
-| PII temizliği kayıttan **önce** | `hazirla()` ham metni ne döner ne loglar — tek çıkış temizlenmiş metindir |
-| Şikâyet verisi kampanya tablosuna karışmaz | Ayrı tablo, kampanyalara **foreign key yok** |
-| "Şikâyet oranı" denmez | `yogunluk_ozeti()` yüzde üretmez; adet döner, alan adı `gozlenen_yogunluk` |
+| PII temizliği kayıttan **önce**               | `hazirla()` ham metni ne döner ne loglar — tek çıkış temizlenmiş metindir           |
+| Şikâyet verisi kampanya tablosuna karışmaz    | Ayrı tablo, kampanyalara **foreign key yok**                                        |
+| "Şikâyet oranı" denmez                        | `yogunluk_ozeti()` yüzde üretmez; adet döner, alan adı `gozlenen_yogunluk`          |
 
 Varsayılan **her zaman izin yokluğudur**: dosya yoksa, bozuksa ya da alanları
 eksikse "izin var" sayılmaz.
 
 **Eşleşme bir hipotezdir.** Güven 0,50 eşiğinin altındaysa bağ kurulmaz ve
-*neden* kurulmadığı yazılır. Banka adının geçmesi tek başına yetmez — bir
+_neden_ kurulmadığı yazılır. Banka adının geçmesi tek başına yetmez — bir
 bankanın onlarca kampanyası vardır. İki kampanya aynı güveni alırsa yine
 bağ kurulmaz: rastgele birini seçmek, olmayan bir kesinlik üretmek olurdu.
 Şikâyet tarihi kampanyanın penceresi dışındaysa aday **elenir**; pencere
@@ -646,7 +650,7 @@ Ayrıntı: [`complaint/kampanya_eslestirme.py`](complaint/kampanya_eslestirme.py
 Aşağıdakiler hedef mimaride yer alır ancak **bu depoda henüz tamamlanmamıştır**;
 tasarım ilkesi olarak sunulmakla birlikte uçtan uca çalışan bir özellik değildir:
 
-- **LLM ile yanıt özetleme:** RAG şu an bulduğu kaynak parçalarını *birebir*
+- **LLM ile yanıt özetleme:** RAG şu an bulduğu kaynak parçalarını _birebir_
   döndürür, üzerine serbest metin üretmez — bu, halüsinasyonu yapısal olarak
   imkânsız kılar. Özetleme ancak Verifier ile birlikte güvenli olur.
 - **Müşteri geri bildirim bileşeni:** Etki skorunun ikinci yarısı. Veri kaynağı
@@ -692,12 +696,12 @@ katilim-ai/
 
 ## Ekip ve Sorumluluklar
 
-| Kişi | Sorumluluk |
-|---|---|
+| Kişi                              | Sorumluluk                                                                 |
+| --------------------------------- | -------------------------------------------------------------------------- |
 | **Sara Toptamur** (Takım Kaptanı) | API, ajan orkestrasyon, karşılaştırma motoru, hesap makinesi, koordinasyon |
-| **Yağmur Ekici** | NLP, bilgi çıkarımı, terminoloji, embedding, RAG |
-| **Zeynep Sönmez** | Veri toplama, PDF/OCR, ön işleme, PostgreSQL, sistem testleri |
-| **Havin Karagöz** | React arayüz, UI/UX, karşılaştırma ekranları, Jüri Audit Paneli |
+| **Yağmur Ekici**                  | NLP, bilgi çıkarımı, terminoloji, embedding, RAG                           |
+| **Zeynep Sönmez**                 | Veri toplama, PDF/OCR, ön işleme, PostgreSQL, sistem testleri              |
+| **Havin Karagöz**                 | React arayüz, UI/UX, karşılaştırma ekranları, Jüri Audit Paneli            |
 
 ---
 
@@ -705,17 +709,17 @@ katilim-ai/
 
 Tüm bileşenler açık kaynaklıdır (şartname Md. 5.10 / 8):
 
-| Katman | Teknoloji | Lisans |
-|---|---|---|
-| Veri toplama | Requests, BeautifulSoup4, Playwright | Apache-2.0 / MIT / BSD |
-| PDF | pypdf | BSD |
-| Bilgi çıkarımı | regex, GLiNER (`urchade/gliner_multi-v2.1`) | MIT / Apache-2.0 |
-| Yerel LLM | Qwen2.5-Instruct (GGUF Q4_K_M), Ollama | Apache-2.0 / MIT |
-| Yapılandırılmış çıktı | Pydantic | MIT |
-| Vektör veritabanı | Qdrant | Apache-2.0 |
-| İlişkisel veritabanı | PostgreSQL | PostgreSQL License |
-| API | FastAPI, SQLAlchemy, Alembic | MIT |
-| Arayüz | React, Ant Design | MIT |
+| Katman                | Teknoloji                                   | Lisans                 |
+| --------------------- | ------------------------------------------- | ---------------------- |
+| Veri toplama          | Requests, BeautifulSoup4, Playwright        | Apache-2.0 / MIT / BSD |
+| PDF                   | pypdf                                       | BSD                    |
+| Bilgi çıkarımı        | regex, GLiNER (`urchade/gliner_multi-v2.1`) | MIT / Apache-2.0       |
+| Yerel LLM             | Qwen2.5-Instruct (GGUF Q4_K_M), Ollama      | Apache-2.0 / MIT       |
+| Yapılandırılmış çıktı | Pydantic                                    | MIT                    |
+| Vektör veritabanı     | Qdrant                                      | Apache-2.0             |
+| İlişkisel veritabanı  | PostgreSQL                                  | PostgreSQL License     |
+| API                   | FastAPI, SQLAlchemy, Alembic                | MIT                    |
+| Arayüz                | React, Ant Design                           | MIT                    |
 
 **Kullanılmayanlar:** özel/custom lisanslı LLM'ler, AGPL kütüphaneler, kapalı kaynak bulut API'leri, ücretli servisler.
 
@@ -746,11 +750,11 @@ CI, `main` dalına her push'ta testleri ve sızmış sır taramasını otomatik 
 
 Bazı testler dış servis gerektirir ve servis yoksa **hata vermez, atlanır**:
 
-| Test grubu | Gereksinim | Servis yoksa |
-|---|---|---|
-| Veritabanı testleri | PostgreSQL (`docker compose up -d postgres`) | atlanır |
-| LLM / hibrit testleri | Ollama + Qwen2.5 modeli | atlanır |
-| Vektör arama testleri | Qdrant (`docker compose up -d qdrant`) + embedding modeli | atlanır |
+| Test grubu            | Gereksinim                                                | Servis yoksa |
+| --------------------- | --------------------------------------------------------- | ------------ |
+| Veritabanı testleri   | PostgreSQL (`docker compose up -d postgres`)              | atlanır      |
+| LLM / hibrit testleri | Ollama + Qwen2.5 modeli                                   | atlanır      |
+| Vektör arama testleri | Qdrant (`docker compose up -d qdrant`) + embedding modeli | atlanır      |
 
 Bu yüzden CI'da (dış servis yok) test sayısı yerelden düşük görünür — bu bir
 regresyon değil, beklenen durumdur.

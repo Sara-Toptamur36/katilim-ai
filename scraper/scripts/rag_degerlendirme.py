@@ -242,6 +242,78 @@ def abstention_olc(
     return sonuclar
 
 
+def abstention_uctan_uca_olc() -> dict:
+    """`abstention_olc`'un AYNISI ama `chunking.retriever.getir`'i degil
+    `agent.orchestrator.soru_isle`'i cagirir.
+
+    NEDEN GEREKLI (bkz. docs/rag_tasarim_ve_olcum.md, Bulgu 8'in sonundaki
+    "Olcum metodolojisi notu", 23 Agustos 2026'dan beri acik bir bosluk):
+    `alan_ici_kapsam_disi` sorularinin bir kismi ("hesap nasil acilir" gibi)
+    `agent/intent.py::Niyet.KAPSAM_DISI` ile RAG'e HIC SORULMADAN, sabit
+    durust bir cevapla kapaniyor - ama bu duzeltmenin gercek etkisi hic
+    olculmedi, cunku `abstention_olc()` doguran `chunking.retriever.getir`
+    niyet katmanini tamamen atlar. Bu fonksiyon, kullanicinin GORECEGI
+    gercek yolu (niyet tespiti -> arac secimi -> gerekirse RAG) olcer.
+
+    DOGRU CEKIMSER SAYILAN IKI DURUM: (1) `arac == "kapsam_disi"` -
+    KAPSAM_DISI niyeti dogru tespit edildi, RAG'e hic gidilmedi; (2)
+    `arac in ("rag", "fallback") and not basarili` - RAG'e gidildi ama
+    kaynak bulunamadigi icin durustce cekimser kalindi. YANLIS sayilan
+    tek durum: sistem bir CEVAP URETTI (`basarili=True` ve `arac` RAG/
+    hesaplama/vb. - yani "bilmiyorum" DEGIL bir sey iddia etti).
+
+    `kayit_getirici` bos liste doner: bu olcum yalnizca CEKIMSERLIK
+    dogrulugunu kontrol ediyor, kaynaklara kampanya_id eklenip
+    eklenmedigini degil - gercek bir DB/mock baglantisi gerekmez.
+
+    NOT - `exact` PARAMETRESI YOK: `agent/router.py::rag_aracini_cagir`
+    `chunking.retriever.getir`'i sabit varsayilanlarla (yaklasik/ANN
+    arama) cagirir, uctan uca yolda bu ezilemez. Bulgu 1'deki oynaklik
+    yalnizca SIRALAMAYI (Recall@1) etkiliyordu; burada olculen sey bir
+    ESIK KARARI (cekimser mi degil mi), rank-hassasiyeti çok daha
+    dusuktur - yine de kucuk bir gurultu payi olabilecegi kabul edilir.
+    """
+    from agent.orchestrator import soru_isle
+
+    def _bos_kayit_getirici(banka: str) -> list:
+        return []
+
+    sorular = soru_setini_yukle()
+    sonuclar: dict[str, dict] = {}
+
+    for kategori in CEKIMSERLIK_KATEGORILERI:
+        kume = [s_ for s_ in sorular if s_["kategori"] == kategori]
+        dogru = 0
+        yanlis: list[dict] = []
+
+        for kayit in kume:
+            sonuc = soru_isle(kayit["soru"], _bos_kayit_getirici)
+            # soru_isle "basarili" DEGIL "fallback" doner (basarili'nin
+            # tersi) - bkz. agent/orchestrator.py::soru_isle donus semasi.
+            basarisiz = sonuc.get("fallback", True)
+            arac = (sonuc.get("audit_ekstra") or {}).get("cagrilan_arac")
+            cekimser = (arac == "kapsam_disi") or basarisiz
+            if cekimser:
+                dogru += 1
+            else:
+                yanlis.append({
+                    "soru": kayit["soru"],
+                    "arac": arac,
+                    "cevap": (sonuc.get("cevap") or "")[:120],
+                })
+
+        sonuclar[kategori] = {
+            "toplam": len(kume),
+            "dogru_cekimser": dogru,
+            "abstention_dogrulugu": (
+                round(dogru / len(kume) * 100, 2) if kume else 0.0
+            ),
+            "yanlis_cevaplananlar": yanlis,
+        }
+
+    return sonuclar
+
+
 if __name__ == "__main__":
     print("=== RAG Retrieval Degerlendirmesi ===" + chr(10))
 

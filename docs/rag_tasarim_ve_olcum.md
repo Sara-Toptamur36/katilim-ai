@@ -587,6 +587,35 @@ CI'da servis olmadığı için ilgili testler (`test_rag_kalip_kirliligi.py`, `t
 
 ---
 
+### Yeniden doğrulama — 25 Ağustos 2026 (uçtan uca abstention ilk kez ölçüldü — Bulgu 8'in açık kalan metodoloji notu kapatıldı)
+
+**Bulgu 12 — `agent/intent.py::Niyet.KAPSAM_DISI` düzeltmesinin (23 Ağustos'ta eklendi) gerçek etkisi hiç ölçülmemişti; ölçüldü ve büyük bir kazanç doğrulandı.**
+
+`scraper/scripts/rag_degerlendirme.py::abstention_uctan_uca_olc` eklendi — `chunking.retriever.getir`'i izole çağırmak yerine `agent.orchestrator.soru_isle`'i (kullanıcının gerçekte gördüğü tam yol: niyet tespiti → araç seçimi → gerekirse RAG) çağırır.
+
+| Kategori | İzole (`chunking.retriever.getir`) | Uçtan uca (`agent.orchestrator.soru_isle`) |
+|---|---|---|
+| `alan_disi` | %93,33 (14/15) | %93,33 (14/15) — değişmedi |
+| **`alan_ici_kapsam_disi`** | %40,0 (4/10) | **%90,0 (9/10)** |
+
+`alan_disi` değişmedi çünkü bu kategorideki sorular ("çamaşır makinesi nasıl temizlenir" gibi) zaten bankacılıkla hiç ilgili değil — `KAPSAM_DISI` niyet kelimeleri (hesap açma, şifre, TMSF vb.) bunları hiç hedeflemiyor, aynı terim-örtüşmesi kapısına düşüyorlar. `alan_ici_kapsam_disi` ise tam KAPSAM_DISI'nin hedeflediği kategori — 7 soru artık RAG'e hiç gitmeden dürüst bir cevapla kapanıyor, yalnızca 1 soru ("Kâr payı dağıtımı hangi sıklıkta yapılır?") hâlâ yanlış cevaplanıyor. Bu, Bulgu 8'de **bilinçli olarak** KAPSAM_DISI'ye alınmayan 3 gerçek katılım bankacılığı sorusundan (danışma kurulu, kâr payı dağıtım sıklığı, müdarebe/müşareke) biri — beklenen bir kalıntı, yeni bir regresyon değil.
+
+**Sonuç:** Bulgu 8'in kapanışında yazılan "ölçüm metodolojisi notu" (uçtan uca ölçüm `agent.orchestrator.soru_isle` üzerinden yapılmalı) artık uygulandı ve KAPSAM_DISI yatırımının gerçek değeri (izole ölçümdeki %40'ın **iki katından fazlası**) ilk kez rakamla doğrulandı.
+
+---
+
+**Bulgu 13 — AL-005/AL-006 "yakın-duplikat kampanya" sorunu araştırıldı; kök neden beklenenden farklı çıktı, bulunan düzeltme kısmi bir iyileşme sağladı.**
+
+Orijinal varsayım (§6/Bulgu 2, Bulgu 7) "Sağlık Harcamalarına..." (AL-005) ve "Eğitim Harcamalarınıza..." (AL-006) kampanyalarının neredeyse aynı isimli olması yüzünden karıştığıydı. Gerçek kaynak izlendiğinde farklı bir kök neden bulundu: AL-006'nın kaynak URL'si (`egitim-kampanyasi-1`) `chunking/parcalayici.py::basligi_bul()`'un slug-uzunluk eşiğinin (`>= 20` karakter) **1 karakter altında** kalıyordu ("Eğitim Kampanyası 1" = 19 karakter) ve metin sezgisi yedeğine düşüp yarım kalmış bir cümle parçasını ("Albaraka Mobil'de Kampanyalar sayfasından katılım sağlayarak...") başlık olarak seçiyordu — indekslenen içerik "eğitim"/"taksit" konusuyla anlamsal olarak alakasızdı. Sonuç: "Eğitim Harcamalarınıza Vade Farksız 6 Taksit Kampanyası" sorgusunda doğru kampanya top-20'de **20. sırada** çıkıyordu.
+
+**Düzeltme (dar kapsamlı, bilinçli tercih):** Genel `>= 20` eşiği DEĞİŞTİRİLMEDİ — eşiğin altında kalan 69 URL var, çoğu kısa ama bilgilendirici ("N11de 6 Taksit"), birkaçı gerçekten jenerik ("Kampanyalar", kırık URL fragmanlarından); toptan değişiklik yeniden indeksleme + tam Recall/precision doğrulaması gerektirirdi. Bunun yerine yalnızca bu tek kayıt için `_BASLIK_ISTISNALARI` sözlüğüyle dar bir istisna eklendi ("Eğitim Kampanyası").
+
+**Ölçülen etki (yeniden indeksleme sonrası, 513 belge/1875 parça):** Sıra 20→**18** — küçük bir iyileşme, ama top-5'e girmeye yetmedi. Kök sebep: sorgunun büyük kısmı ("Vade Farksız 6 Taksit Kampanyası") AL-005'in GERÇEK başlığıyla birebir örtüşüyor, AL-006'nın kaynak sayfası ise aynı kavramı farklı kelimelerle anlatıyor ("okul ödemelerinize" vs gold etiketinin yazdığı "eğitim harcamalarınıza"). Bu, düzeltilen başlık sorunundan bağımsız, gold etiketleme kelime seçimi ile kaynak sayfa kelime seçimi arasındaki bir **kelime dağarcığı uyuşmazlığı** — `banka_ve_konu`/`dogal_soru` kategorilerinde zaten bilinen sınıfın aynısı.
+
+**Doğrulama:** Yeniden indeksleme sonrası Genel Recall@5 %87,60 (önceki ölçüm %87,39, exact=True ile) — regresyon yok, örneklem indeks güncel korpusla senkronlandığı için büyüdü (119→129 sorgu). `test_rag_uctan_uca.py`, `test_kaynak_guncelligi.py`, `test_rag_kalip_kirliligi.py` 28/28 geçti.
+
+---
+
 ## 7. Bilinçli sınırlar
 
 - **LLM ile özetleme yok.** RAG, bulduğu kaynak parçalarını **birebir**

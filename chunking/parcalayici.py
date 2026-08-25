@@ -206,6 +206,26 @@ def _gurultu_mu(satir: str) -> bool:
     return any(k.search(sade) for k in _GURULTU_KALIPLARI)
 
 
+# DAR KAPSAMLI BASLIK ISTISNALARI (25 Agustos 2026, olculdu): asagidaki
+# URL'ler icin slug (<20 karakter oldugu icin) reddedilip metin sezgisine
+# dusuyor, o da alakasiz bir cumle parcasini basligi olarak seciyor - bkz.
+# docs/rag_tasarim_ve_olcum.md Bulgu 12'nin arastirma notu ("Egitim
+# Harcamalarinza..." sorgusunda dogru kampanya top-20'de 20. sirada
+# cikiyordu, cunku indekslenen basligi "Albaraka Mobil'de Kampanyalar
+# sayfasindan katilim saglayarak..." gibi anlamsiz bir parcaydi).
+#
+# BILINCLI OLARAK GENEL ESIK (asagidaki `>= 20`) DEGISTIRILMEDI: esigin
+# altinda kalan 69 URL var, cogu kisa ama BILGILENDIRICI ("N11de 6
+# Taksit"), birkaci ise gercekten jenerik ("Kampanyalar", kirik URL
+# fragmanlarindan) - esigi toptan dusurmek yeniden indeksleme + tam
+# Recall/precision dogrulamasi gerektirir (henuz yapilmadi). Bu yuzden
+# yalnizca somut olarak olculen, tek bir kayit icin dar bir istisna
+# eklendi - risk yalnizca bu URL'yle sinirli.
+_BASLIK_ISTISNALARI: dict[str, str] = {
+    "https://www.albaraka.com.tr/tr/kampanyalar/detay/egitim-kampanyasi-1": "Eğitim Kampanyası",
+}
+
+
 def basligi_bul(metin: str, kaynak_url: str = "") -> str:
     """Belgenin kampanya basligini belirler.
 
@@ -220,6 +240,9 @@ def basligi_bul(metin: str, kaynak_url: str = "") -> str:
     YEDEK olarak kullanilir.
     """
     from scraper.scripts.postgrese_yukle import _url_slug_to_baslik
+
+    if kaynak_url in _BASLIK_ISTISNALARI:
+        return _BASLIK_ISTISNALARI[kaynak_url]
 
     if kaynak_url:
         slug_basligi = _url_slug_to_baslik(kaynak_url)

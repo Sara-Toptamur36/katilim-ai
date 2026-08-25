@@ -1925,21 +1925,26 @@ export default function Dashboard() {
                   <div style={bentoBaslikStil}>RAG PERFORMANSI</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
 
-                    {/* Recall@1 — ARALIK ÇUBUĞU */}
+                    {/* Recall@1 — TEK OLCUM.
+                        Onceki surumde bir ARALIK cubugu vardi (%87,5-%93,75):
+                        o, ayni sorunun birden fazla kosusunda cikan en dusuk
+                        ve en yuksek degerdi. 25 Agustos olcumunde tek kosu
+                        yapildi, elimizde bir deger var - iki uclu bir aralik
+                        cizmek olcmedigimiz bir seyi iddia etmek olurdu.
+                        Degiskenlik notu duruyor, cunku HNSW yaklasik aramasi
+                        kosular arasi oynamaya devam ediyor. */}
                     <div>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
                         <span style={{ fontSize: 13, color: "var(--yazi-normal)" }}>Recall@1</span>
                         <span style={{ fontSize: 13, fontWeight: 600, color: "#0c765f" }}>
-                          %{OLCUMLER.rag.recall1Alt.toString().replace(".", ",")} – %{OLCUMLER.rag.recall1Ust.toString().replace(".", ",")}
+                          %{OLCUMLER.rag.recall1.toString().replace(".", ",")}
                           <span style={{ fontSize: 11, color: "var(--yazi-soluk)", fontWeight: 400, marginLeft: 6 }}>
                             {OLCUMLER.rag.recall1Not}
                           </span>
                         </span>
                       </div>
-                      {/* Aralık çubuğu: 0→alt açık zümrüt (#7bcbb6), alt→üst koyu zümrüt (#169276), üst→100 boş */}
                       <div style={{ height: 5, borderRadius: 3, background: "var(--kenarlik)", position: "relative", overflow: "hidden" }}>
-                        <div style={{ position: "absolute", left: 0, top: 0, width: `${OLCUMLER.rag.recall1Alt}%`, height: "100%", background: "#7bcbb6", borderRadius: "3px 0 0 3px" }} />
-                        <div style={{ position: "absolute", left: `${OLCUMLER.rag.recall1Alt}%`, top: 0, width: `${OLCUMLER.rag.recall1Ust - OLCUMLER.rag.recall1Alt}%`, height: "100%", background: "#169276" }} />
+                        <div style={{ position: "absolute", left: 0, top: 0, width: `${OLCUMLER.rag.recall1}%`, height: "100%", background: "#169276", borderRadius: 3 }} />
                       </div>
                     </div>
 

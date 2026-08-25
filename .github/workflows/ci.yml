@@ -54,13 +54,14 @@ jobs:
           # anahtarlar SADECE os.environ.get() ile okunmali, hicbir yerde
           # literal yazilmamali). Bu ikinci kontrol dosya ICERIGINI tarar.
           #
-          # teamNN/XXXXXXXX HARIC TUTULUR: bunlar dokumantasyon ve
-          # .env.ornek'teki BILINCLI YER TUTUCULARDIR (gercek takim kodu
-          # sayisal olur, ör. team07 - harfle yazilan "NN" gercek bir
-          # anahtarda olmaz), aksi halde bu kontrol kendi ornek metnimize
-          # yanlis pozitif verirdi.
+          # teamNN/XXXXXXXX/team00/sahte HARIC TUTULUR: bunlar dokumantasyon,
+          # .env.ornek ve TEST MOCK'larindaki BILINCLI YER TUTUCULARDIR
+          # (gercek takim kodu sayisal olur, ör. team07 - harfle yazilan
+          # "NN" veya "00" gercek bir anahtarda olmaz; "sahte" kelimesi de
+          # test mock'larindan gelir), aksi halde bu kontrol kendi ornek
+          # metnimize ve test koduna yanlis pozitif verirdi.
           echo "Kod/dokuman icinde hardcode edilmis gercek gorunumlu bir EVREN/Qdrant anahtari var mi kontrol ediliyor..."
-          BULUNAN=$(git grep -nIE '(sk-evren-|qdr-team)[A-Za-z0-9_-]+' -- '*.py' '*.md' '*.json' '*.yml' '*.yaml' ':!.github/workflows/*' 2>/dev/null | grep -viE 'teamNN|XXXXXXXX' || true)
+          BULUNAN=$(git grep -nIE '(sk-evren-|qdr-team)[A-Za-z0-9_-]+' -- '*.py' '*.md' '*.json' '*.yml' '*.yaml' ':!.github/workflows/*' 2>/dev/null | grep -viE 'teamNN|XXXXXXXX|team00|sahte' || true)
           if [ -n "$BULUNAN" ]; then
             echo "HATA: Hardcode edilmis gercek gorunumlu bir anahtar bulundu:"
             echo "$BULUNAN"

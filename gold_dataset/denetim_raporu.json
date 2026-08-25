@@ -1,11 +1,5 @@
 [
   {
-    "kayit_id": "ZK-010",
-    "tur": "NOT YENIDEN OKUNMALI",
-    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Alt/ust harcama siniri sayfada YOK. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayit, statik tarayicinin EKSIK yakaladigi anl...",
-    "slug": "abdullah-kigilida-2-taksit"
-  },
-  {
     "kayit_id": "KT-010",
     "tur": "NOT YENIDEN OKUNMALI",
     "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Musteri basina en fazla 2 islem; kampanya 75.000 kisi ile sinirli. Katilim ONAY VERGI SMS'i ile.",
@@ -24,45 +18,9 @@
     "slug": "emlak-katilim-paraftan-tabii-premium-uyeligi-hediye"
   },
   {
-    "kayit_id": "ZK-012",
-    "tur": "NOT YENIDEN OKUNMALI",
-    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Harcama siniri sayfada YOK. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayit, statik tarayicinin EKSIK yakaladigi anlik gorun...",
-    "slug": "alarko-carrierda-6-taksit"
-  },
-  {
     "kayit_id": "TEK-012",
     "tur": "NOT YENIDEN OKUNMALI",
     "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. tabii Premium kaydiyla ayni yapi ama burada tutar (75 TL) ACIKCA yazili; orada yazmiyor ve o alan bos birakildi.",
     "slug": "emlak-katilim-paraftan-trendyol-plus-uyelik-ucretiniz-iade"
-  },
-  {
-    "kayit_id": "ZK-013",
-    "tur": "NOT YENIDEN OKUNMALI",
-    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Harcama siniri sayfada YOK. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayit, statik tarayicinin EKSIK yakaladigi anlik gorun...",
-    "slug": "alfemoda-5-taksit"
-  },
-  {
-    "kayit_id": "ZK-015",
-    "tur": "NOT YENIDEN OKUNMALI",
-    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. 4.000 TL bir ALT ESIKTIR, finansman tutari degil. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayit, statik tarayicinin EKSIK...",
-    "slug": "atasun-optikte-6-taksit"
-  },
-  {
-    "kayit_id": "ZK-016",
-    "tur": "NOT YENIDEN OKUNMALI",
-    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. kar_payi_orani BILEREK BOS: %10 nakit iade oranidir. Bir sonraki donemi (8 Agustos - 7 Eylul) ayri sayfada duruyor ama metin neredeyse ayni - et...",
-    "slug": "bagimsiz-karta-ozel-5000-tlye-varan-bankkart-lira-1"
-  },
-  {
-    "kayit_id": "ZK-017",
-    "tur": "NOT YENIDEN OKUNMALI",
-    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Harcama siniri sayfada YOK. DUZELTME (23 Agustos 2026): kampanya tarihleri sayfada VARDI; kayit, statik tarayicinin EKSIK yakaladigi anlik gorun...",
-    "slug": "bauhausta-3-taksit"
-  },
-  {
-    "kayit_id": "TOM-005",
-    "tur": "NOT YENIDEN OKUNMALI",
-    "not": "TASLAK - insan dogrulamasi ve ekran goruntusu BEKLIYOR. Taksit kademeleri 3-6-9-12; en yuksek kademe yazildi. 5.000 TL ALT ESIKTIR, finansman tutari degil. Yalnizca A101 Ekstra ve yalnizca klima/supur...",
-    "slug": "hadi-alisveris-kredisi-ile-klima-supurge-ve-televizyonlarda-vade-farksiz-12-taksit"
   }
 ]

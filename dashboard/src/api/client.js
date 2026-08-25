@@ -7,7 +7,7 @@ import axios from "axios";
 // backend orada CALISMAZ (bkz. PeacewAI_Faz_Plani_ve_Is_Bolumu.docx "T5"
 // notu: "Pages yalnizca statik arayuz yayinlar... demo videosunda 'canli
 // URL' gosterirken bunu dogru anlat").
-const API_TABANI = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+export const API_TABANI = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
 const TOKEN_ANAHTARI = "katilimai_token";
 const ROL_ANAHTARI = "katilimai_rol";

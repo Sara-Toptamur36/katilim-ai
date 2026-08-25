@@ -314,6 +314,126 @@ def abstention_uctan_uca_olc() -> dict:
     return sonuclar
 
 
+# ---------------------------------------------------------------------------
+# banka_ve_konu BELIRSIZLIK AYRISIMI (Bulgu 14)
+# ---------------------------------------------------------------------------
+# Bu kategorinin recall'u TEK BIR SAYI OLARAK YANILTICIDIR: sorular
+# "banka + tur" formatinda oldugu icin korpustaki ONLARCA esdeger kampanya
+# meshru cevaptir, ama `beklenen_sluglar` yalnizca ALTIN SETTE etiketlenmis
+# olanlari icerir. Olculdu (25.08.2026): 28 sorunun gold'da 55 dogru cevabi
+# var, korpusta esdegeri 344 - kapsama %16.
+#
+# YER GERCEGI GENISLETILMEZ (dairesellik): korpustaki kampanya_turu makine
+# tarafindan uretilir; onu dogru cevap listesine koymak, RAG olcumunu
+# cikarim motorunun kendi ciktisina bagimli kilardi. Bkz. docs/
+# rag_tasarim_ve_olcum.md Bulgu 14.
+#
+# Bunun yerine: sorular korpustaki esdeger sayisina gore GRUPLANIR ve iki
+# grubun recall'u ayri yazdirilir. Gruplama makine turunu kullanir ama
+# YALNIZCA raporlama icin - dogru cevap listesi degismez.
+_BELIRSIZLIK_ESIGI = 5
+
+# Soru metnindeki tur ifadesi -> api/schemas.py KampanyaTuru degeri
+_TUR_ESLEME = {
+    "kart": "Kart Kampanyasi",
+    "ihtiyac finansmani": "Ihtiyac Finansmani Kampanyasi",
+    "yeni musteri": "Yeni Musteri Kampanyasi",
+    "alisveris puani": "Alisveris Puani Kampanyasi",
+    "yatirim urunu": "Yatirim Urunu Kampanyasi",
+    "finansman": "Finansman Kampanyasi",
+    "konut finansmani": "Konut Finansmani Kampanyasi",
+    "tasit finansmani": "Tasit Finansmani Kampanyasi",
+}
+
+
+def _korpus_banka_tur_sayimi() -> dict[tuple[str, str], int]:
+    """(banka, tur) -> korpustaki kampanya sayisi. DB yoksa bos doner."""
+    try:
+        from collections import Counter
+
+        from api.db import OturumYerel
+        from api.models import Kampanya
+    except Exception:  # noqa: BLE001 - DB yoksa ayrisim atlanir
+        return {}
+    try:
+        oturum = OturumYerel()
+    except Exception:  # noqa: BLE001
+        return {}
+    try:
+        return dict(
+            Counter(
+                (k.banka, k.kampanya_turu)
+                for k in oturum.query(Kampanya).all()
+                if k.kampanya_turu
+            )
+        )
+    except Exception:  # noqa: BLE001
+        return {}
+    finally:
+        oturum.close()
+
+
+def banka_ve_konu_belirsizlik_ayrisimi(k: int = 5, exact: bool = True) -> dict | None:
+    """banka_ve_konu recall'unu korpus belirsizligine gore ikiye ayirir.
+
+    Hipotez (Bulgu 14): dusuk recall retrieval zayifligi degil, gold
+    kapsamasi. Dogruysa AZ esdegerli sorularda recall yuksek, COK
+    esdegerli sorularda dusuk olmalidir.
+
+    DB erisilemezse None doner - ayrisim raporlanmaz, ana olcum etkilenmez.
+    """
+    sayim = _korpus_banka_tur_sayimi()
+    if not sayim:
+        return None
+
+    # Gomme modeli yalnizca gercekten olcum yapilacaksa yuklensin -
+    # bu dosyadaki diger olcum fonksiyonlariyla ayni desen.
+    from chunking.retriever import getir
+
+    bankalar = {b for b, _ in sayim}
+    mevcut = _indekste_olan_sluglar()
+    gruplar = {
+        "az esdegerli": {"isabet": 0, "toplam": 0},
+        "cok esdegerli": {"isabet": 0, "toplam": 0},
+    }
+    en_belirsizler: list[tuple[str, int, bool]] = []
+
+    for kayit in soru_setini_yukle():
+        if kayit.get("kategori") != "banka_ve_konu":
+            continue
+        beklenen = [s_ for s_ in kayit["beklenen_sluglar"] if s_ in mevcut]
+        if not beklenen:
+            continue  # indekste yok - ana olcumle AYNI kural
+
+        soru = kayit["soru"]
+        banka = next((b for b in bankalar if soru.startswith(b)), None)
+        tur = next(
+            (v for anahtar, v in sorted(_TUR_ESLEME.items(), key=lambda x: -len(x[0]))
+             if soru.lower().endswith(anahtar)),
+            None,
+        )
+        esdeger = sayim.get((banka, tur), 0) if banka and tur else 0
+
+        sonuc = getir(soru, limit=k, exact=exact)
+        bulunan = {
+            (p.get("ustveri") or {}).get("kaynak_url", "").rstrip("/").split("/")[-1]
+            for p in sonuc.parcalar
+        }
+        isabet = bool(bulunan & set(beklenen))
+
+        grup = "cok esdegerli" if esdeger > _BELIRSIZLIK_ESIGI else "az esdegerli"
+        gruplar[grup]["toplam"] += 1
+        gruplar[grup]["isabet"] += int(isabet)
+        en_belirsizler.append((soru, esdeger, isabet))
+
+    for ozet in gruplar.values():
+        ozet["recall"] = (
+            round(ozet["isabet"] / ozet["toplam"] * 100, 2) if ozet["toplam"] else 0.0
+        )
+    en_belirsizler.sort(key=lambda x: -x[1])
+    return {"gruplar": gruplar, "en_belirsiz": en_belirsizler[:3]}
+
+
 if __name__ == "__main__":
     print("=== RAG Retrieval Degerlendirmesi ===" + chr(10))
 
@@ -335,6 +455,21 @@ if __name__ == "__main__":
         print(f"  Not: {son['kapsam_disi_eskimis']} soru olcum disi - beklenen belgesi")
         print("  indekste yok (kampanya rotasyonu). Bunlari 'bulunamadi' saymak")
         print("  retrieval'i degil veri eskimesini olcerdi." + chr(10))
+
+    ayrisim = banka_ve_konu_belirsizlik_ayrisimi()
+    if ayrisim:
+        print("--- banka_ve_konu: belirsizlige gore ayrisim (Bulgu 14) ---")
+        print("  Bu kategorinin recall'u TEK SAYI olarak yaniltici - korpusta")
+        print(f"  {_BELIRSIZLIK_ESIGI}'ten fazla esdeger kampanya varsa sorgu")
+        print("  ayirt edici bilgi tasimiyor demektir.")
+        for ad, ozet in ayrisim["gruplar"].items():
+            print(f"  {ad:16} %{ozet['recall']:>6}  "
+                  f"({ozet['isabet']}/{ozet['toplam']})")
+        print("  En belirsiz uc soru:")
+        for soru, esdeger, isabet in ayrisim["en_belirsiz"]:
+            print(f"    {soru[:34]:<36}{esdeger:>4} esdeger  "
+                  f"{'isabet' if isabet else 'KACIRMA'}")
+        print()
 
     print("--- Cekimserlik (dogru cevap: cevap VERMEMEK) ---")
     for kategori, a in abstention_olc().items():

@@ -616,6 +616,40 @@ Orijinal varsayım (§6/Bulgu 2, Bulgu 7) "Sağlık Harcamalarına..." (AL-005) 
 
 ---
 
+**Bulgu 14 — `banka_ve_konu` kategorisindeki düşük recall bir retrieval zayıflığı değil, yer gerçeği kapsaması sorunu: soru setinin kendisi ölçülemez hâle gelmiş.**
+
+Bu kategorideki sorular "banka adı + kampanya türü" formatında (`"Ziraat Katılım kart"`, `"Kuveyt Türk yeni müşteri"`) — kampanya adı hiç geçmez, yani sorguda **tekil bir hedefe götürecek çapa yoktur**. Sorun, bankaların aynı türde onlarca eşzamanlı kampanyasının olması.
+
+**Ölçülen kapsama açığı (25 Ağustos 2026):** `beklenen_sluglar` listesi `scraper/scripts/rag_soru_seti_uret.py`'de **altın veri setinden** kuruluyor, oysa retrieval **tüm korpusu** arıyor. Korpusta meşru olarak eşleşen ama altın sette etiketlenmemiş her kampanya "kaçırma" sayılıyor:
+
+| Soru | Gold'da doğru sayılan | Korpusta eşdeğer | Kapsama |
+|---|---|---|---|
+| Ziraat Katılım kart | 5 | 108 | %5 |
+| Türkiye Emlak Katılım kart | 5 | 79 | %6 |
+| Kuveyt Türk kart | 2 | 70 | %3 |
+| Albaraka Türk kart | 3 | 9 | %33 |
+| **28 sorunun toplamı** | **55** | **344** | **%16** |
+
+Yani "Ziraat Katılım kart" sorgusunda sistem `teknosada-3-taksit`, `pazaramada-6-taksit`, `mavide-4-taksit` döndürüyor — bunlar **gerçekten kart/taksit kampanyaları**, yanlış değil; yalnızca gold'un işaretlediği 5 tanesinden biri değil. 108 birbirine çok benzeyen "X mağazasında Y taksit" kampanyası arasından "kart" kelimesiyle hangisinin "doğru" olduğunu ayırt etmek retrieval'in çözebileceği bir problem değildir.
+
+**Belirsizlik–isabet ilişkisi ölçüldü (Recall@5, exact=True, 23 ölçülebilir soru):**
+
+| Grup | Recall@5 |
+|---|---|
+| Korpusta ≤5 eşdeğer | %62,5 (10/16) |
+| Korpusta >5 eşdeğer | %42,9 (3/7) |
+| En belirsiz üçü (70/79/108 eşdeğer) | **%0 (0/3)** |
+
+Karşılaştırma için `tam_ad`/`kismi_ad` kategorilerinde recall %95-98 — çünkü sorguda kampanyanın kendi adı geçiyor, tekil bir hedef var.
+
+**Neden yer gerçeği GENİŞLETİLEMEZ (denendi ve reddedildi):** İlk akla gelen düzeltme, `beklenen_sluglar`'a o (banka, tür) kombinasyonundaki tüm korpus kampanyalarını eklemek. Bu **dairesellik yaratır**: korpustaki `kampanya_turu` değeri makine tarafından üretilir (`extraction/regex_extractor.py`, ölçülen F1 ~%78), dolayısıyla RAG ölçümünün doğru cevap listesi çıkarım motorunun kendi çıktısına bağımlı hâle gelirdi. Altın veri setinin 5. kuralı (yer gerçeği otomatik çıkarımla doldurulmaz) tam olarak bunu yasaklar. `tests/test_rag_soru_seti.py::test_cevapli_sorularin_yer_gercegi_altin_veriden_geliyor` de bu kuralı zaten koruyor.
+
+**Sonuç:** Bu kategorinin recall'ü, retrieval kalitesinin değil **altın set kapsamasının** ölçüsüdür ve tek bir sayı olarak raporlanmamalıdır. Ölçüm çıktısına belirsizlik ayrışımı eklendi (`rag_degerlendirme.py::banka_ve_konu_belirsizlik_ayrisimi`) — sayı bir daha çıplak okunmasın diye.
+
+**Açık kalan:** Kategoriyi gerçekten ölçülebilir kılmanın tek dairesel-olmayan yolu, yüksek belirsizlikli (banka, tür) kombinasyonları için eşdeğer kampanyaların **elle** işaretlenmesidir. Bu bir etiketleme işidir, kod düzeltmesi değil.
+
+---
+
 ## 7. Bilinçli sınırlar
 
 - **LLM ile özetleme yok.** RAG, bulduğu kaynak parçalarını **birebir**

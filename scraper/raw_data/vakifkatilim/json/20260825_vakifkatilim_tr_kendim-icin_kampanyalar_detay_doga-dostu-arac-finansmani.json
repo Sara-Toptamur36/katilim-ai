@@ -1,0 +1,52 @@
+{
+  "banka": "Vakıf Katılım",
+  "kategori": "kampanya",
+  "url": "https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/doga-dostu-arac-finansmani",
+  "sayfa_turu": "HTML",
+  "erisim_zamani": "2026-08-25T21:07:59.434727",
+  "ham_metin": "Neden Elektrikli Araç;\nCazip kâr oranı\nYakıt tasarrufu\nDoğa dostu\nÜrün Özellikleri\nBireysel müşterilerle gerçek kişi tacir müşterilerin bireysel amaçlı taşıt kredileri için kredilendirme oranı; sıfır araçlar için aracın nihai fatura değeri ve ikinci el araçlar için ise aracın kasko değeri,\n400.000 TL'ye kadar olanlar için azami %70’i,\n400.001 - 800.000 TL aralığında olanlar için azami %50’si,\n800.001 - 1.200.000 TL aralığında olanlar için azami %30’u,\n1.200.001 - 2.000.000 TL aralığında olanlar için azami %20’sidir.\nBireysel müşterilerle gerçek kişi tacir müşterilerin bireysel amaçlı taşıt finansmanlarında, 400.000 TL ve altında olan araçlar için azami vade 48 ay, 400.001 TL – 800.000 TL aralığında olan araçlar için azami vade 36 ay, 800.001 TL – 1.200.000 TL aralığında olan araçlar için azami vade 24 ay ve 1.200.001 TL – 2.000.000 TL aralığında olan araçlar için ise azami vade 12 aydır.\nYerli ve Elektrikli araçlar için aşağıdaki tablo geçerlidir.\nFatura Değeri\nAy\nFinansman Kullandırım Oranı\n0-2.500.000 TL\n48\n70%\n2.500.001-5.000.000 TL\n36\n50%\n5.000.001-6.500.000 TL\n24\n30%\n6.500.001-7.500.000 TL\n12\n20%\n7.500.001 TL ve Üstü\n0\n0%\nTümünü Göster",
+  "normalize_metin": "Neden Elektrikli Araç;\nCazip kâr oranı\nYakıt tasarrufu\nDoğa dostu\nÜrün Özellikleri\nBireysel müşterilerle gerçek kişi tacir müşterilerin bireysel amaçlı taşıt kredileri için kredilendirme oranı; sıfır araçlar için aracın nihai fatura değeri ve ikinci el araçlar için ise aracın kasko değeri,\n400.000 TL'ye kadar olanlar için azami %70’i,\n400.001 - 800.000 TL aralığında olanlar için azami %50’si,\n800.001 - 1.200.000 TL aralığında olanlar için azami %30’u,\n1.200.001 - 2.000.000 TL aralığında olanlar için azami %20’sidir.\nBireysel müşterilerle gerçek kişi tacir müşterilerin bireysel amaçlı taşıt finansmanlarında, 400.000 TL ve altında olan araçlar için azami vade 48 ay, 400.001 TL – 800.000 TL aralığında olan araçlar için azami vade 36 ay, 800.001 TL – 1.200.000 TL aralığında olan araçlar için azami vade 24 ay ve 1.200.001 TL – 2.000.000 TL aralığında olan araçlar için ise azami vade 12 aydır.\nYerli ve Elektrikli araçlar için aşağıdaki tablo geçerlidir.\nFatura Değeri\nAy\nFinansman Kullandırım Oranı\n0-2.500.000 TL\n48\n70%\n2.500.001-5.000.000 TL\n36\n50%\n5.000.001-6.500.000 TL\n24\n30%\n6.500.001-7.500.000 TL\n12\n20%\n7.500.001 TL ve Üstü\n0\n0%\nTümünü Göster",
+  "icerik_hash": "fc975933855c8deba40ba2d9db13bab718f78b3df0807036fe9a48678cf2a627",
+  "http_durumu": 200,
+  "content_type": "text/html; charset=utf-8",
+  "encoding": "utf-8",
+  "pdf_dosyalari": [],
+  "tablolar": [
+    {
+      "tablo_index": 0,
+      "sutunlar": [
+        "Fatura Değeri",
+        "Ay",
+        "Finansman Kullandırım Oranı"
+      ],
+      "satirlar": [
+        {
+          "Fatura Değeri": "0-2.500.000 TL",
+          "Ay": 48,
+          "Finansman Kullandırım Oranı": "70%"
+        },
+        {
+          "Fatura Değeri": "2.500.001-5.000.000 TL",
+          "Ay": 36,
+          "Finansman Kullandırım Oranı": "50%"
+        },
+        {
+          "Fatura Değeri": "5.000.001-6.500.000 TL",
+          "Ay": 24,
+          "Finansman Kullandırım Oranı": "30%"
+        },
+        {
+          "Fatura Değeri": "6.500.001-7.500.000 TL",
+          "Ay": 12,
+          "Finansman Kullandırım Oranı": "20%"
+        },
+        {
+          "Fatura Değeri": "7.500.001 TL ve Üstü",
+          "Ay": 0,
+          "Finansman Kullandırım Oranı": "0%"
+        }
+      ]
+    }
+  ],
+  "icerik_kalitesi": "tam"
+}

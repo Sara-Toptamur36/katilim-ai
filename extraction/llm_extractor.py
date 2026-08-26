@@ -42,7 +42,8 @@ import tiktoken
 
 import evren_istemci
 from donanim import ayarlar as _donanim_ayarlari
-from extraction.normalizer import tarihe_cevir, turkce_kucult
+from extraction.normalizer import tarihe_cevir, turkce_ascii_kucult, turkce_kucult
+from extraction.regex_extractor import hedef_kitle_segmenti
 
 # Donanima gore secilen ayarlar (GPU/VRAM tespitine dayanir, ortam
 # degiskenleriyle ezilebilir - bkz. donanim.py)
@@ -84,17 +85,52 @@ _MAKS_GIRDI_TOKEN = max(1000, _BAGLAM_PENCERESI - 1100)
 _ALAN_ACIKLAMALARI = {
     "kar_payi_orani_percent": "kâr payı oranı, yüzde olarak sayı (ör. 1.89). '98/2' gibi KESİRLİ paylaşım formatlarını BURAYA YAZMA, null bırak.",
     "vade_ay": "vade süresi, ay cinsinden tam sayı (taksit sayısı DEĞİL)",
-    "taksit_sayisi": "taksit sayısı, tam sayı (vade ile karıştırma - bunlar farklı kavramlar)",
+    "taksit_sayisi": (
+        "taksit sayısı, tam sayı (vade ile karıştırma - bunlar farklı "
+        "kavramlar). Metinde tutar/kategori aralığına göre DEĞİŞEN birden "
+        "fazla farklı taksit sayısı geçiyorsa (ör. '250 bin TL'ye kadar 4 "
+        "taksit, üzeri 5 taksit', ya da bir tablo) TEK bir sabit sayı YOKTUR "
+        "- null bırak, aralıklardan birini seçme."
+    ),
     "erteleme_suresi_ay": "ödemesiz dönem/erteleme süresi, ay cinsinden tam sayı",
     "finansman_tutari": "finansman/kredi tutarı veya azami/üst tutar, TL cinsinden sayı (ör. 100000) (ödül tutarı DEĞİL)",
     "odul_miktari": "ödül/hediye miktarı, sayı (finansman tutarı DEĞİL)",
-    "odul_birimi": "ödül birimi: TL, Mil, Gram, Bankkart Lira, ParafPara, Worldpuan gibi",
+    "odul_birimi": (
+        "ödül birimi - YALNIZCA şu değerlerden biri: 'TL', 'Mil', 'Gram', "
+        "'Bankkart Lira', 'ParafPara', 'Worldpuan', 'Altin Puan'. Ödül bu "
+        "birimlerden biriyle ifade edilmiyorsa (ör. 'kahve', 'hizmet', "
+        "'üyelik' gibi somut bir mal/hizmet) odul_birimi'ni null bırak - "
+        "listenin dışında bir şey YAZMA."
+    ),
     "masraf_durumu": "masraf/ücret durumu hakkında kısa metin",
-    "hedef_kitle": "kampanyanın hedef müşteri kitlesi, kısa metin",
+    "hedef_kitle": (
+        "kampanyadan kimlerin yararlanabileceğini anlatan uygunluk/koşul "
+        "ifadesi, METİNDE GEÇTİĞİ GİBİ BİREBİR (ör. 'Bankkart kredi kartı "
+        "sahipleri', 'yeni müşterilere özel', 'maaş müşterilerine özel') - "
+        "kendi cümleni kurup özetleme, kaynaktaki uygunluk cümlesini/"
+        "ifadesini olduğu gibi aktar. Metinde boyle bir ifade YOKSA null "
+        "birak, tahmin uydurma."
+    ),
     "kampanya_bitis": "kampanya bitiş tarihi, metinde geçtiği gibi (ör. '31 Aralık 2026')",
 }
 
 _KAR_PAYI_ALANLARI = {"kar_payi_orani_percent", "kar_payi_orani_decimal"}
+
+# DENETIM BULGUSU (26 Agustos 2026, EVREN ile ilk gercek hibrit olcum):
+# odul_birimi'nin aciklamasi "TL, Mil, Gram, ... gibi" diyordu - "gibi"
+# (ornegin) kelimesi listenin ACIK UCLU oldugunu ima ediyordu, model de
+# gercek somut mal/hizmet aciklamalarini ("kahve", "hizmet", "Premium
+# Uyelik") birim diye uydurdu - hepsi gold'da odul_miktari=None olan
+# kayitlardi (yani odul_ifadesi_gercekten_var_mi guard'i "bir odul
+# kelimesi geciyor" diye dogru tetiklendi ama LLM sonra GECERSIZ bir
+# birim yazdi). Asagidaki tuple regex_extractor._ODUL_BIRIMI_ANAHTARLARI
+# ile (+ "TL") AYNI olmali - motorun kendi ciktisiyla tutarli kalsin.
+_ODUL_BIRIMI_TUM_DEGERLER = (
+    "TL", "Mil", "Gram", "Bankkart Lira", "ParafPara", "Worldpuan", "Altin Puan",
+)
+_ODUL_BIRIMI_KATLANMIS_ESLEME = {
+    turkce_ascii_kucult(v): v for v in _ODUL_BIRIMI_TUM_DEGERLER
+}
 
 
 def token_say(metin: str) -> int:
@@ -191,6 +227,15 @@ def llm_ile_sor(
     baglanti-reddi beklemesi odenmesin diye (bkz. _ollama_hazir_mi
     docstring'i)."""
     if evren_istemci.aktif_mi():
+        # DENETIM BULGUSU (26 Agustos 2026, EVREN ile ilk gercek hibrit
+        # olcum): llm-fast varsayilan olarak bir dusunme zinciri
+        # uretiyordu ve max_tokens=1024 bunu tek basina tuketip her
+        # cagriyi SESSIZCE bos donduruyordu (finish_reason="length",
+        # content=None) - LLM katmani olcumde fark edilmeden hicbir sey
+        # katmiyordu. Asil duzeltme evren_istemci.sohbet_ile_sor'un
+        # varsayilaninda (dusunmeyi_kapat=True, bkz. o fonksiyonun
+        # docstring'i) - dusunme kapatilinca ayni cevap ~30-40 kat daha
+        # az token ve saniyeler icinde geliyor, 1024 fazlasiyla yeterli.
         return evren_istemci.sohbet_ile_sor(prompt, max_tokens=1024, response_format=sema)
     if not _ollama_hazir_mi():
         return None
@@ -246,14 +291,75 @@ _ODUL_ANAHTAR_KELIMELERI = [
 ]
 
 
+# DENETIM BULGUSU (26 Agustos 2026, EVREN/llm-fast ile hibrit olcumde
+# bulundu - DK-010/014/020/028): saf taksit kampanyalarinda odul_miktari=0
+# uyduruluyordu. Kok neden: bu sayfalarin HEPSINDE "ParafPara kullanilarak
+# yapilan islemler ile iptal ve iade islemleri DAHIL DEGILDIR" gibi bir
+# ISTISNA/HARIC TUTMA cumlesi var - bu, odul VERILDIGINI degil, VERILMEDIGINI
+# soyluyor. Eski guard yalnizca anahtar kelimenin GECIP GECMEDIGINE bakiyordu,
+# hangi yonde kullanildigina degil. Duzeltme: anahtar kelimenin gectigi
+# CUMLE ICINDE (bir sonraki nokta/satir sonuna kadar) bir olumsuzlama
+# ifadesi geliyorsa o gecis SAYILMAZ - en az bir OLUMSUZLANMAMIS gecis
+# bulunmali.
+#
+# DENETIM BULGUSU 2 (ayni tarih, ayni olcum): sabit 60 karakterlik pencere
+# yetersizdi - "ParafPara" (idx) ile "dahil degildir" (idx+68) arasi zaten
+# 60'i asiyordu, pencere tam olumsuzlama kelimesinin ortasinda kesiliyordu.
+# Ayrica DK-010'da GERCEK ikinci bir istisna cumlesi var: "hediye kart,
+# hediye ceki ve benzeri sekillerde herhangi somut bir mal veya hizmeti
+# icermeyen urunlerin alimlarinda taksit UYGULANAMAZ" - bu ifade
+# ("uygulanamaz") 30 farkli dunyakatilim sayfasinda ayni bicimde tekrarlanan
+# BOYLERPLATE bir taksit-disi-tutma cumlesi (grep ile dogrulandi), odul
+# vaadi degil. Pencereyi sabit karakter sayisi yerine CUMLE SINIRINA (ilk
+# '.' veya satir sonu) kadar genisletmek ve "uygulanamaz"i olumsuzlama
+# listesine eklemek, her iki durumu da coz uyor.
+# NOT: desen ASCII-katlanmis metne karsi calisir (turkce_ascii_kucult) -
+# Turkce diyakritikleri (g/s/i/c) dogrudan regex'e YAZILMAZ, cunku bu tur
+# karakterler duzenleme araclarinda sessizce bozulabiliyor (bu dosyada bir
+# kez gercekten yasandi, denetlenip duzeltildi).
+_ODUL_OLUMSUZLAMA_DESENI = re.compile(
+    r"dahil\s*degil|kapsam\s*disi|gecerli\s*degil|"
+    r"satin\s*alinama|dahil\s*edilme|uygulanama",
+    re.IGNORECASE,
+)
+
+
 def _odul_ifadesi_gercekten_var_mi(ham_metin: str) -> bool:
     """DENETIM BULGUSU 2: bare 'çeki' kelimesi 'nakit çekim' (para cekme)
     icindeki 'çeki' alt-dizesiyle YANLIŞLIKLA eşleşiyordu - gercek Albaraka
     verisinde dogrulandi ('...ATM'leri uzerinden nakit cekim yapamazsiniz').
     'çeki' yerine tam ifadeler ('hediye çeki', 'alışveriş çeki') kullanilir,
-    tek basina 'çeki' asla aranmaz."""
-    metin_l = turkce_kucult(ham_metin)
-    return any(k in metin_l for k in _ODUL_ANAHTAR_KELIMELERI)
+    tek basina 'çeki' asla aranmaz.
+
+    DENETIM BULGUSU 2026-08-26: yukaridaki not yeterli degildi - anahtar
+    kelime dogru tokenlandiginda bile bir ISTISNA/HARIC TUTMA cumlesinin
+    icinde gecebiliyor ("ParafPara ... dahil degildir"). Her esleseni ayri
+    ayri kontrol edip AYNI CUMLE icinde olumsuzlama gelenleri eler; yalnizca
+    olumsuzlanmamis en az bir gecis varsa True doner.
+
+    DENETIM BULGUSU 3 (ayni tarih, ayni olcum, DK-010/014/020/028): kisa
+    anahtar kelime "gram" alt-dize olarak "ugramasi" (zarara UGRAMASI -
+    KVKK/veri koruma boylerplate cumlesi, "ugrama" = zarar gormek fiili,
+    odul agirligiyla ILGISIZ) icinde de eslesiyordu - tipki dosyadaki onceki
+    notta gecen 'çeki' vs 'nakit çekim' sorununun bir varyanti. Duzeltme:
+    arama artik \\b kelime siniri ile yapiliyor, boylece "gram" yalnizca
+    bagimsiz kelime olarak (orn. "5 gram altin") eslesir, baska bir
+    kelimenin icinde degil."""
+    metin_l = turkce_ascii_kucult(ham_metin)
+    for k in _ODUL_ANAHTAR_KELIMELERI:
+        k_katlanmis = turkce_ascii_kucult(k)
+        desen = re.compile(r"\b" + re.escape(k_katlanmis) + r"\b")
+        for m in desen.finditer(metin_l):
+            idx = m.start()
+            cumle_sonu = metin_l.find(".", idx)
+            satir_sonu = metin_l.find("\n", idx)
+            sinirlar = [s for s in (cumle_sonu, satir_sonu) if s != -1]
+            bitis = min(sinirlar) if sinirlar else len(metin_l)
+            pencere = metin_l[idx:bitis]
+            if not _ODUL_OLUMSUZLAMA_DESENI.search(pencere):
+                return True
+            baslangic = idx + len(k_katlanmis)
+    return False
 
 
 # DENETIM BULGUSU (ablation olcumu, docs/extraction_accuracy_raporu.md):
@@ -269,7 +375,11 @@ def _odul_ifadesi_gercekten_var_mi(ham_metin: str) -> bool:
 # Cozum: LLM'in verdigi vade_ay degeri, metinde AYNI sayinin hemen
 # yaninda "taksit" kelimesi geciyorsa reddedilir - regex_extractor.py'nin
 # kendi kanitlanmis RE_TAKSIT_SAYISI deseninin (ayni 3 alternatif) SAYIYA
-# ANKORLANMIS hali, iki motor arasinda tutarlilik icin.
+# ANKORLANMIS hali, iki motor arasinda tutarlilik icin. "taksit(?:li|le|e)"
+# eki "-e" ile GENISLETILDI (26 Agustos 2026, KT-001 - EVREN/hibrit
+# olcum): "6 taksite kadar" (yonelme hali) desende yoktu, ayni bulgu daha
+# once regex_extractor.RE_TAKSIT_SAYISI'nda da yapilmisti (19 dosyada
+# dogrulanmisti) - iki motor arasinda TUTARLILIK icin burada da eklendi.
 def _vade_aslinda_taksit_mi(ham_metin: str, deger) -> bool:
     """LLM'in vade_ay diye verdigi sayi, metinde aslinda 'taksit' baglaminda
     mi geciyor? (bkz. yukaridaki DENETIM BULGUSU)."""
@@ -280,10 +390,61 @@ def _vade_aslinda_taksit_mi(ham_metin: str, deger) -> bool:
     desen = re.compile(
         rf"\b{sayi}\s*aya?\s*varan\s*taksit\w*"
         rf"|\b{sayi}\s*ay\s*taksit\w*"
-        rf"|\b{sayi}\s*taksit(?:li|le)?\b",
+        rf"|\b{sayi}\s*taksit(?:li|le|e)?\b",
         re.IGNORECASE,
     )
     return bool(desen.search(turkce_kucult(ham_metin)))
+
+
+# DENETIM BULGUSU (26 Agustos 2026, EVREN/llm-fast ile ikinci hibrit
+# olcum, KT-028/040/042): _vade_aslinda_taksit_mi ile AYNI karisiklik
+# sinifi ama "taksit" yerine "erteleme/oteleme/odemesiz donem" ile -
+# "3 aya kadar oteleme secenegi", "3 Ay Erteleme ve %3,49 Oranla 9 Taksit
+# Imkani", "12 aya kadar odemesiz donemli" gibi ifadelerdeki sayiyi LLM
+# vade_ay saniyordu; bu sayi ERTELEME_SURESI_AY kavramina ait, vadeye
+# degil - regex_extractor.RE_ERTELEME ile AYNI anahtar kume.
+def _vade_aslinda_erteleme_mi(ham_metin: str, deger) -> bool:
+    """LLM'in vade_ay diye verdigi sayi, metinde aslinda 'erteleme/
+    oteleme/odemesiz donem' baglaminda mi geciyor?"""
+    try:
+        sayi = int(round(float(deger)))
+    except (TypeError, ValueError):
+        return False
+    desen = re.compile(
+        rf"\b{sayi}\s*ay\w*\s*(?:kadar|varan)?\s*(?:ertelemeli|erteleme\b|öteleme\w*|ödemesiz\s*dönem)",
+        re.IGNORECASE,
+    )
+    return bool(desen.search(turkce_kucult(ham_metin)))
+
+
+# DENETIM BULGUSU (26 Agustos 2026, EVREN/llm-fast ile hibrit olcumde
+# bulundu): KT-001 ve KT-018'de LLM vade_ay'i "12 ay vadeli 10.000 TL'lik
+# basvuru icin ORNEK odeme plani: Aylik kar orani..." gibi bir cumleden
+# uyduruyordu - bu, bankanin genel/sablonik bir odeme plani ILLUSTRASYONU,
+# o kampanyanin GERCEK vadesi degil. Ayni "ornek odeme plani" ifadesi iki
+# ayri bankanin (Kuveyt Turk) sayfasinda goruldu - tek seferlik degil,
+# tekrarlayan bir sablon metni. "vade_ay=N" degeri yalnizca N'nin GECTIGI
+# yerin 60 karakter oncesinde "ornek" gecmiyorsa kabul edilir.
+_ORNEK_ODEME_PLANI_DESENI = re.compile(
+    r"\bay\w*\s*vadel[iı]\s*[\d.,]+\s*tl['’]?l[iı]k\s*ba[sş]vuru\s*i[cç]in\s*[oö]rnek\s*[oö]deme\s*plan",
+    re.IGNORECASE,
+)
+
+
+def _vade_ornek_odeme_planindan_mi(ham_metin: str, deger) -> bool:
+    """LLM'in vade_ay diye verdigi sayi, sablonik bir 'ornek odeme plani'
+    cumlesinden mi geliyor? (bkz. yukaridaki DENETIM BULGUSU)."""
+    try:
+        sayi = int(round(float(deger)))
+    except (TypeError, ValueError):
+        return False
+    kucuk = turkce_kucult(ham_metin)
+    desen = re.compile(rf"\b{sayi}\s*ay\w*\s*vadel[iı]\b", re.IGNORECASE)
+    for m in desen.finditer(kucuk):
+        pencere = kucuk[m.start() : m.end() + 90]
+        if _ORNEK_ODEME_PLANI_DESENI.search(pencere):
+            return True
+    return False
 
 
 _SAYISAL_ALANLAR = {"vade_ay", "taksit_sayisi", "erteleme_suresi_ay", "finansman_tutari", "odul_miktari"}
@@ -462,10 +623,52 @@ def llm_ile_cikar(
             # Halusinasyon guard'i - bkz. _odul_ifadesi_gercekten_var_mi
             # docstring'i (gercek Albaraka verisiyle dogrulanan bulgu).
             continue
+        if alan == "odul_birimi":
+            # DENETIM BULGUSU (26 Agustos 2026): yukaridaki guard yalnizca
+            # BIR odul kelimesinin gectigini dogrular, LLM'in yazdigi
+            # BIRIMIN gecerli mi oldugunu degil. Regex'in kendi ciktisiyla
+            # AYNI kapali kumeye (_ODUL_BIRIMI_TUM_DEGERLER) normalize
+            # edilir; eslesme yoksa (ör. "kahve", "hizmet") None kalir -
+            # bkz. o listenin docstring'i.
+            deger = _ODUL_BIRIMI_KATLANMIS_ESLEME.get(turkce_ascii_kucult(str(deger)))
+            if deger is None:
+                continue
         if alan == "vade_ay" and _vade_aslinda_taksit_mi(ham_metin, deger):
             # Vade/taksit karisikligi guard'i - bkz. _vade_aslinda_taksit_mi
             # docstring'i (ablation olcumuyle dogrulanan bulgu).
             continue
+        if alan == "vade_ay" and _vade_ornek_odeme_planindan_mi(ham_metin, deger):
+            # Sablonik "ornek odeme plani" guard'i - bkz. yukaridaki
+            # denetim bulgusu (EVREN/hibrit olcumle dogrulandi).
+            continue
+        if alan == "vade_ay" and _vade_aslinda_erteleme_mi(ham_metin, deger):
+            # Vade/erteleme karisikligi guard'i - bkz. _vade_aslinda_
+            # erteleme_mi docstring'i (KT-028/040/042'de dogrulanan bulgu).
+            continue
+        if alan == "hedef_kitle":
+            # DENETIM BULGUSU (26 Agustos 2026): olcum tarafi (extraction_
+            # accuracy.py/hibrit_extraction_accuracy.py, ALAN_NORMALIZE) bu
+            # alani HER ZAMAN hedef_kitle_segmenti() ile Sartname Md. 5.3'un
+            # 4 kategorisine indirger - hem gold'un serbest metnini hem
+            # motorun ciktisini (regex_extractor.py'nin kendi hedef_kitle
+            # ciktisi de zaten bu fonksiyondan geciyor - bkz.
+            # _hedef_kitleyi_tespit_et). Prompt LLM'e VERBATIM uygunluk
+            # ifadesini istiyor (kategori DEGIL - denendi ve REDDEDILDI:
+            # LLM'e direkt 4 kategoriden birini secmesini sormak, metinde
+            # "yeni musteri" kelimesi GECMEYEN ama gold'un yine de "Yeni
+            # musteri" etiketledigi sayfalarda (KT-007/AL-001, insan
+            # cikarimina dayanan gold etiketi) modelin YANLIS kategori
+            # UYDURMASINA yol acti - AL-001 dogru "Yeni musteri" yerine
+            # yanlis "Mevcut musteri" dondu. Verbatim metin + burada
+            # hedef_kitle_segmenti ile siniflandirma, modelin kendi
+            # kategori tahminine gore daha guvenli: siniflandiramadigi
+            # durumda None doner (yanlis tahmin degil, sessiz kacirma).
+            # hedef_kitle_segmenti IDEMPOTENT oldugundan (zaten etiketse
+            # aynen doner, degilse anahtar kelimeyle siniflandirmayi
+            # DENER) gecersiz/hayali bir etiketi de eler.
+            deger = hedef_kitle_segmenti(deger)
+            if deger is None:
+                continue
         sonuc[alan] = deger
         izler[alan] = (str(veri.get(alan)), 0.6)
 

@@ -27,9 +27,21 @@ dokumantasyon.pdf'in kendi ozetledigi sonuclardan):
     multilingual-e5-base'in 768 boyutundan FARKLI, bu yuzden saglayici
     degistiginde Qdrant koleksiyonunun yeniden olusturulmasi gerekir
     (bkz. chunking/embedding.py, .env.ornek).
-  - THINKING PARAMETRESI HIC GONDERILMEZ: varsayilan zaten kapali
-    (dokumantasyon SS3.2 - acilmasi maliyet/kalite acisindan onerilmiyor,
-    ayrica dusuk max_tokens ile SESSIZCE bos yanit donme riski tasiyor).
+  - THINKING VARSAYIMI YANLIS CIKTI - DUZELTILDI (26 Agustos 2026, ilk
+    gercek hibrit olcum): bu not "thinking varsayilan olarak zaten kapali"
+    diyordu (dokumantasyon SS3.2'ye dayanarak). Canli dogrulandi: llm-fast
+    YANIT ICINDE dolu bir "reasoning_content" alaniyla DUSUNME ZINCIRI
+    URETIYOR - varsayilan KAPALI DEGIL. Sonuc, notun kendi tahmin ettigi
+    tam risk: max_tokens=1024 ile dusunme zinciri TEK BASINA butceyi
+    tuketip finish_reason="length", content=null ile SESSIZCE bos donuyordu
+    - hibrit_extraction_accuracy.py'nin ilk EVREN calistirmasi bu yuzden
+    regex-only ile neredeyse birebir ayniydi (LLM katmani hicbir sey
+    katmiyordu, fark edilmesi zordu). Duzeltme: sohbet_ile_sor artik
+    `chat_template_kwargs={"enable_thinking": False}` GONDERIR (extra_body
+    ile) - bu, dokumantasyonun kendi olctugu hizli yolu (medyan 0,91 sn)
+    geri getirir: ayni istek dusunmeyle ~2000-3000 tamamlama tokeni ve
+    onlarca saniye surerken, dusunme kapatilinca ~44 token ve ~2 saniyede
+    AYNI dogru cevabi veriyor - hem hiz hem dogruluk kazanimi, odun yok.
   - Hibrit getirme ve rerank BU ISTEMCIDEN CAGRILMAZ: dokumanin kendi
     olcumunde ikisi de saf yogun getirmenin altinda kaliyor (hibrit 0,85,
     rerank 0,55 vs 0,95 saf yogun) - bkz. ADR.
@@ -145,6 +157,7 @@ def sohbet_ile_sor(
     model: str = LLM_MODELI,
     max_tokens: int = 1024,
     response_format: Optional[dict] = None,
+    dusunmeyi_kapat: bool = True,
 ) -> Optional[str]:
     """Tek-turlu sohbet cagrisi, temperature=0 / top_p=1 (tekrarlanabilirlik
     icin - dokumantasyon SS13: kisa ve sema-kisitli ciktida bu ayarla
@@ -158,7 +171,17 @@ def sohbet_ile_sor(
     `response_format` verilirse (ornegin {"type": "json_schema", ...,
     "strict": True}) cikti belirtilen semaya zorlanir - dokumantasyonun
     kendi ölçümünde bu, ayristirma hatasi riskini ortadan kaldiriyor
-    (SS9/SS23). enable_thinking parametresi KESINLIKLE gonderilmez.
+    (SS9/SS23).
+
+    `dusunmeyi_kapat=True` (varsayilan - DENETIM BULGUSU 26 Agustos 2026,
+    bkz. modul docstring'i): llm-fast VARSAYILAN OLARAK bir dusunme
+    zinciri uretiyor, bu da hem gecikmeyi ~30-40 kat artiriyor hem de
+    dusuk max_tokens ile cevabin tamamen bogulmasina (finish_reason=
+    "length", content=None) yol acabiliyor. `chat_template_kwargs=
+    {"enable_thinking": False}` (extra_body ile) bunu kapatir - ayni
+    dogru cevabi ~2 sn / ~44 token ile verir. Yalnizca acikca istenirse
+    (ornegin dogrulama/karsilastirma amacli) False gecilip dusunme
+    ACIK BIRAKILABILIR.
     """
     if not hazir_mi():
         return None
@@ -172,6 +195,8 @@ def sohbet_ile_sor(
         )
         if response_format is not None:
             kwargs["response_format"] = response_format
+        if dusunmeyi_kapat:
+            kwargs["extra_body"] = {"chat_template_kwargs": {"enable_thinking": False}}
         yanit = _istemciyi_al().chat.completions.create(**kwargs)
         return yanit.choices[0].message.content
     except Exception:  # noqa: BLE001 - kademeli fallback: hata firlatilmaz

@@ -42,7 +42,21 @@ guven esikleri (GLiNER: 0.4, LLM'in kar_payi/odul guard'lari) yine de
 supheli sonuclari elemeye devam eder.
 
 KAPSAM DISI ALANLAR (yalnizca regex doldurur, NER/LLM'e sorulmaz):
-  - "kampanya_turu"      : anahtar-kelime siniflandirmasi, span-cikarim degil
+  - "kampanya_turu"      : DENETIM BULGUSU (26 Agustos 2026, denendi ve
+                           GERI ALINDI): LLM'e 14 degerli enum'dan sec
+                           diye sorulunca, 22 canli kayittan olusan bir
+                           orneklemde yalnizca 6 dogru siniflandirma
+                           yapti, 15 YANLIS (0 bos birakti) - ozellikle
+                           "Musteri Ol Kampanyasi"ya asiri egilim
+                           gosterdi (VK-007 gibi acikca "Yatirim Urunu"
+                           olan bir kaydi bile yanlislikla bu kategoriye
+                           attı). Regex'in bu alanda zaten saglikli olan
+                           precision'ini (%86,59) ciddi olcude
+                           dusurecegi olculdu; hedef_kitle'nin 4 degerli
+                           siniflandirmasinda ISE YARAYAN "LLM'e dogrudan
+                           kategori sordur" yaklasimi burada 14 degerle
+                           GENELLEMEDI. Ayrinti: gold_dataset klasorunde
+                           birakilan denetim gorevine bkz.
   - "kampanya_baslangic" : NER/LLM etiket/alan setine henuz eklenmedi
   - "tahsis_ucreti"      : gercek veride TL tutari olarak neredeyse hic
                            gecmiyor; regex bunu yalnizca "masraf alinmaz"
@@ -81,7 +95,11 @@ import re
 
 from extraction.llm_extractor import llm_ile_cikar
 from extraction.ner_extractor import ner_ile_cikar
-from extraction.regex_extractor import kampanya_avantajini_olustur, kaydi_cikar
+from extraction.regex_extractor import (
+    _sayfa_gurultusunu_kirp,
+    kampanya_avantajini_olustur,
+    kaydi_cikar,
+)
 
 # NER ve LLM'in ortak olarak destekledigi alanlar (bkz. ner_extractor.
 # _ETIKET_ESLEME ve llm_extractor._ALAN_ACIKLAMALARI - ikisi de ayni
@@ -336,6 +354,15 @@ def kaydi_hibrit_cikar(
     hicbir katman zorunlu degildir, en kotu durumda regex'in tek basina
     urettigi sonuc donulur (kademeli fallback, rapor Bolum 8).
     """
+    # regex_extractor._sayfa_gurultusunu_kirp: bilinen banka sablonlarinda
+    # (bkz. o fonksiyonun docstring'i) gercek icerikten SONRAKI "diger
+    # kampanyalar" / footer gurultusunu keser. kaydi_cikar bunu zaten
+    # KENDI ICINDE uyguluyor ama NER/LLM asagida AYRI AYRI cagrildigi icin
+    # burada BIR KEZ uygulanip TUM katmanlara AYNI temiz metin verilir -
+    # yoksa NER/LLM hala kirli ham_metin'i gorup ayni kirlenmeye maruz
+    # kalirdi. Idempotent: zaten kirpilmis metinde tekrar cagrilmasi
+    # zararsizdir (isaret bulunamaz, metin degismeden doner).
+    ham_metin = _sayfa_gurultusunu_kirp(ham_metin)
     alanlar = kaydi_cikar(ham_metin)
     izler = alanlar.pop("_izler")
     kaynaklar = {alan: "regex" for alan in izler}

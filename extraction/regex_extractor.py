@@ -202,7 +202,27 @@ def _oran_tablosu_baglaminda_mi(metin: str, baslangic: int, bitis: int) -> bool:
 def _ucret_baglaminda_mi(metin: str, baslangic: int, bitis: int, pencere: int = 45) -> bool:
     sol = turkce_ascii_kucult(metin[max(0, baslangic - pencere):baslangic])
     sag = turkce_ascii_kucult(metin[bitis:bitis + pencere])
-    return any(k in sol or k in sag for k in _UCRET_BAGLAM_DISLAMA_KELIMELERI)
+    baglam = sol + " " + sag
+    eslesenler = [k for k in _UCRET_BAGLAM_DISLAMA_KELIMELERI if k in baglam]
+    if not eslesenler:
+        return False
+    if eslesenler == ["harcama"] and "vadelendir" in baglam:
+        # DENETIM BULGUSU (26 Agustos 2026, KT-032): "harcama" dislama
+        # kelimesi normalde "restoran harcamasında %10 iade" gibi bir
+        # KAZANIM/cashback oranini elemek icindir (bkz. yukaridaki asil
+        # gerekce). Ama "akaryakit harcamalarinizda %2,99 oran ile
+        # VADELENDIRILECEKTIR" gibi bir cumlede ayni "harcama" kelimesi
+        # gecse de bu bir FINANSMAN/taksit donusum oranidir (kar payi
+        # oraninin ta kendisi) - iade degil. "vadelendir" fiili SADECE bu
+        # ikinci anlamda kullanilir ("vade farksiz" ile KARISMAZ, farkli
+        # kok - dogrulandi: 623 ham dosyanin 2'sinde "vadelendir" geciyor,
+        # ikisi de bu tur bir taksit-donusum cumlesi, "harcama" excludeu
+        # daha once dogru elemis 5 kayitta (ZK-011/016, HF-008/010,
+        # TOM-002) "vadelendir" HIC gecmiyor). Yalnizca "harcama" TEK
+        # BASINA eslesen sebep oldugunda uygulanir - baska bir dislama
+        # kelimesi (ör. "iade") de varsa bu istisna calismaz.
+        return False
+    return True
 
 
 # OLCULDU (19-20 Agustos, kar_payi_tablosu zenginlestirme calistirmasi):
@@ -247,17 +267,73 @@ RE_VADE = _katlanmis_derle(
     re.IGNORECASE,
 )
 
-# "ertelemeli", "oteleme" ve "odemesiz donem" es anlamli - vade DEGIL,
-# ayri bir kavram. Baglac kelimesi banka bazinda degisiyor.
-RE_ERTELEME = _katlanmis_derle(
-    r"\d{1,2}\s*ay\w*\s*(?:kadar|varan)?\s*(?:ertelemeli|öteleme\w*|ödemesiz\s*dönem)",
+# DENETIM BULGUSU (26 Agustos 2026, KT-001 - EVREN/hibrit olcum
+# hazirligi): Kuveyt Turk'un finansman sayfalarinda "3 ay vadeli 10.000
+# TL'lik basvuru icin ornek odeme plani: Aylik kar orani %2,99, ..."
+# gibi tekrarlayan bir SABLON metni var - bu bir ORNEK SENARYO, kampanyanin
+# GERCEK vadesi degil (KT-001'in kendi vadesi zaten "belirtilmemis").
+# RE_VADE bunu "3 ay vadeli" olarak yakalayip vade_ay=3 uyduruyordu. Ayni
+# bulgu llm_extractor.py'de LLM'in urettigi vade_ay icin de gecerliydi
+# (bkz. o dosyadaki _vade_ornek_odeme_planindan_mi) - TEK KAYNAK burada
+# tutulur, iki motor da ayni deseni kullanir.
+_ORNEK_ODEME_PLANI_DESENI = _katlanmis_derle(
+    r"ay\w*\s*vadel[iı]\s*[\d.,]+\s*tl['’]?l[iı]k\s*ba[sş]vuru\s*i[cç]in\s*[oö]rnek\s*[oö]deme\s*plan",
     re.IGNORECASE,
 )
 
+
+def _vade_ornek_odeme_planindan_mi(katlanmis: str, baslangic: int, bitis: int, pencere: int = 90) -> bool:
+    """Bulunan vade esleşmesi, sablonik bir 'ornek odeme plani' cumlesinden mi geliyor?"""
+    return bool(_ORNEK_ODEME_PLANI_DESENI.search(katlanmis[baslangic : bitis + pencere]))
+
+
+# DENETIM BULGUSU (26 Agustos 2026, DK-001): "Finansman islemlerinde
+# minimum 2 ay, maksimum 6 ay vade yapilacaktir" gibi bir cumlede RE_VADE
+# yalnizca UST siniri ("6 ay vade") yakalar - alt sinir ("2 ay") ayni
+# desene uymaz (hemen ardindan "vade"/"kadar" gelmiyor). Sonuc: sabit tek
+# bir vade degil, bir ARALIK ifade eden bu cumleden vade_ay=6 uyduruluyordu
+# (gold DK-001 icin "belirtilmemis" diyor). taksit_sayisi'nda zaten
+# kurulu olan "COKLU FARKLI DEGER VARSA BOS BIRAK" ilkesiyle AYNI ruh -
+# burada tek regex eslesmesi oldugu icin coklu-aday toplama islemez,
+# bunun yerine ayni cumlede hem "minimum" hem "maksimum" GECIYOR MU diye
+# bakilir (ikisi birlikte, tek bir sabit deger degil bir ARALIK beyan
+# eder).
+def _vade_araligin_ust_siniri_mi(katlanmis: str, baslangic: int, bitis: int, pencere: int = 60) -> bool:
+    baglam = _cumleye_kirpilmis_baglam(katlanmis, baslangic, bitis, pencere)
+    return "minimum" in baglam and "maksimum" in baglam
+
+
+# "ertelemeli", "oteleme" ve "odemesiz donem" es anlamli - vade DEGIL,
+# ayri bir kavram. Baglac kelimesi banka bazinda degisiyor.
+# "erteleme" (ek olmadan, isim hali) EKLENDI (DENETIM BULGUSU, 26 Agustos
+# 2026, KT-040): "3 Ay Erteleme ve %3,49 Oranla 9 Taksit İmkanı!" - sifat
+# hali "ertelemeli" degil dogrudan isim hali "erteleme" kullaniyor, mevcut
+# desen bunu kapsamiyordu.
+RE_ERTELEME = _katlanmis_derle(
+    r"\d{1,2}\s*ay\w*\s*(?:kadar|varan)?\s*(?:ertelemeli|erteleme\b|öteleme\w*|ödemesiz\s*dönem)",
+    re.IGNORECASE,
+)
+
+# "9'a Varan Taksit" (DENETIM BULGUSU, 26 Agustos 2026, ZK-014): bazi
+# Ziraat Katilim sayfalari "ay" kelimesini hic yazmadan sadece "X'a Varan
+# Taksit" diyor (Amazon'da 9'a Varan Taksit) - "aya?" kalibi "ay" harflerini
+# ZORUNLU kildigi icin bunu kacırıyordu (5 dosyada dogrulandi). "ay" YOK
+# iken bu ayrimin vade_ay ile karismasi imkansiz - RE_VADE de ayni sekilde
+# "ay" harflerini zorunlu kilar.
+# "taksite" (-e hali) EKLENDI (DENETIM BULGUSU, 26 Agustos 2026, ZK-030):
+# "4 taksite bolunecektir" / "5 taksite bolunur" gibi YONELME HALI cekimi
+# (Turkce -e/-a eki) hic kapsanmiyordu, yalnizca "taksitli"/"taksitle"
+# ekleri vardi (19 dosyada dogrulandi). Bu ayni zamanda coklu-tier
+# sayfalarda (ZK-030: 4/5/6 taksit farkli tutar araliklarina gore) dogru
+# "birden fazla farkli deger -> bos birak" davranisinin TETIKLENEBILMESI
+# icin de onemli - eskiden bu sayfalarin cogu tek bir aday buluyor
+# GORUNUYORDU (aslinda digerleri kacırılıyordu) ve yanlislikla sabit bir
+# sayi atiyordu.
 RE_TAKSIT_SAYISI = _katlanmis_derle(
     r"\d{1,3}\s*aya?\s*varan\s*taksit\w*"
+    r"|\d{1,3}['’]?a\s*varan\s*taksit\w*"
     r"|\d{1,3}\s*ay\s*taksit\w*"
-    r"|\d{1,3}\s*taksit(?:li|le)?\b",
+    r"|\d{1,3}\s*taksit(?:li|le|e)?\b",
     re.IGNORECASE,
 )
 
@@ -270,13 +346,35 @@ RE_TAKSIT_SAYISI = _katlanmis_derle(
 # bir ARALIK, sabit bir taahhut gibi okunur. Gold bu durumlarda dogru
 # olarak "belirtilmemis" diyor - tek bir taksit sayisi yok, bir aralik
 # var.
-RE_TAKSIT_ARALIK_ONEKI = re.compile(r"\d{1,3}\s*(?:-|–|ila)\s*$", re.IGNORECASE)
+# "ile" EKLENDI (DENETIM BULGUSU, 26 Agustos 2026, KT-044): "vade farksiz
+# 2 ile 5 taksit arasinda taksitlendirebilirsiniz" - "ile" de "ila" gibi
+# aralik baglaci olarak kullanilabiliyor (6 dosyada dogrulandi, hepsi ayni
+# "N ile M taksit arasinda" kalibi). "ile" TEK BASINA cok genel bir kelime
+# oldugu icin riskli gorunebilir, ama desen ONCESINDE bir RAKAM sartini
+# ZATEN tasiyor (\d{1,3}\s*ile) - yani yalnizca "Business Kart ile 5
+# taksit" gibi (rakamsiz "ile") ifadeler DEGIL, "2 ile 5 taksit" gibi
+# GERCEKTEN iki sayi arasindaki "ile" eslesir.
+RE_TAKSIT_ARALIK_ONEKI = re.compile(r"\d{1,3}\s*(?:-|–|ila|ile)\s*$", re.IGNORECASE)
 
 
 def _taksit_araliginin_ikinci_sayisi_mi(katlanmis: str, baslangic: int, pencere: int = 12) -> bool:
-    """Eslesmenin HEMEN ONCESINDE 'N-' veya 'N ila' var mi (aralik ifadesi)?"""
+    """Eslesmenin HEMEN ONCESINDE 'N-' veya 'N ila/ile' var mi (aralik ifadesi)?"""
     sol = katlanmis[max(0, baslangic - pencere):baslangic]
     return bool(RE_TAKSIT_ARALIK_ONEKI.search(sol))
+
+
+# DENENDI VE GERI ALINDI (26 Agustos 2026, ZK-033/ZK-004, olculdu):
+# yukaridaki guard'in eledigi araligin ILK sayisini (ör. "3-4 taksitli"teki
+# "3") de bir aday olarak eklemek denendi - amac "3-4 taksitli... +5
+# taksit" gibi cok kademeli sayfalarda (ZK-030/033) "5"in TEK aday gibi
+# gorunup yanlislikla atanmasini onlemekti. ZK-030/033'u DUZELTTI ama
+# AYNI "N-M taksitli ... +K taksit" kalibini tasiyan ZK-004'u BOZDU -
+# ZK-004'un gold notu acikca "+8, kampanyanin KENDI KATTIGI taksit
+# sayisidir (baslik da oyle diyor)" diyor; yani AYNI yuzeysel kalip iki
+# kayitta ZIT anlam tasiyor (ZK-030/033'te "+N" KOSULLU bir ek, ZK-004'te
+# "+N" kampanyanin TEK ve kesin iddiasi) - bu ayrimi metinden regex ile
+# cikarmak mumkun degil (net etki: F1 88,48 -> 88,37, kucuk ama negatif),
+# alinmadi.
 
 # Finansman tutari - gercek veride iki ana kalip: tekli ust limit
 # ("100.000 TL'ye kadar") ve aralik ("1.000 TL - 100.000 TL arasi").
@@ -373,11 +471,27 @@ RE_TUTAR_UST_LIMIT_BEYANI = _katlanmis_derle(
 # anahtari BIREBIR AYNI sayiyi veriyor (63,16) - yani kazanc kuraldan
 # degil, tek bir kayittan (TOM-001) geliyor. Tek kayitlik bir kural
 # genellemez; alinmadi.
+# "yedek hesa" (DENETIM BULGUSU, 26 Agustos 2026, TF-005): Turkiye
+# Finans sayfalarinda ANA kampanyadan (400.000 TL Ihtiyac Finansmani)
+# TAMAMEN AYRI, "Yedek Hesap" adli kucuk-tutarli bir ek urun anlatan
+# cumle var - "Yedek Hesabınızı kullanabilir, üstelik 2.500 TL'ye kadar
+# kullanımlarınız için kâr payı ödemezsiniz." Bu ayrim RE_KAR_PAYSIZ icin
+# zaten _ikincil_urun_baglaminda_mi ile cozulmustu (bkz. yukarida) ama o
+# fonksiyon YALNIZCA ILERI yonde bakiyor ve o cagrida "Yedek Hesap"
+# esleseden SONRA geliyordu; burada ise tutarin ONCESINDE geciyor. Ayri
+# bir kelime EKLEMEK yerine (kod tekrari), ayni bidirectional
+# cumle-baglamli guard'a (_TUTAR_BAGLAM_DISLAMA_KELIMELERI, zaten iki
+# yonlu bakan _cumleye_kirpilmis_baglam kullanir) katildi. Kok "hesa"da
+# (tam "hesap" degil) KESILDI: Turkce unsuz yumusamasi ("hesap" -> "hesabı"
+# iyelik/hal ekiyle) yuzunden coktinlenmis "hesap" ASLA "hesabınızı"
+# icinde alt-dize olarak gecmez ama "hesa" hem "hesap" hem "hesabı"
+# formunda ortaktir.
 _TUTAR_BAGLAM_DISLAMA_KELIMELERI = _katla_hepsi([
     "iade", "alışveriş", "alisveris", "kazan", "ödül", "odul",
     "hediye", "puan", "mil", "gram", "limit",
     "işlem", "para çek",
     "worldpuan", "parafpara", "bankkart",
+    "yedek hesa",
 ])
 
 
@@ -710,10 +824,21 @@ RE_MASRAF_TUTARI = _katlanmis_derle(
 # maksimum 10.000 TL"), .search() ILK eslesmeyi aldigi icin erken/yanlis
 # (kisi basi) tutari yakalardi. Bu durumlar asagidaki RE_ODUL_TAVAN
 # ("en fazla"/"maksimum" tetikleyicili) desenine birakildi.
+# "hoş geldin" (DENETIM BULGUSU, 26 Agustos 2026, AL-018): "1.699 TL Hoş
+# Geldin Hediyesi" gibi bir ifadede "TL" ile "hediye" arasina "hoş geldin"
+# sifati giriyor, mevcut opsiyonel-kelime grubu ("değerinde"/"varan"/
+# "kadar") bunu kapsamiyordu ve tutar hic bulunamiyordu. Yalnizca bu
+# BILINEN ifade eklendi (genis bir "herhangi bir kelime" jokeri DENENMEDI -
+# bilerek: dosya basindaki "ASIRI UYDURMA KONTROLU" ilkesiyle tutarli,
+# genis joker baska baglamlarda alakasiz kelimeleri atlayip yanlis
+# pozitif uretebilirdi).
+# "bonus" (DENETIM BULGUSU, 26 Agustos 2026, TF-009): "650 TL Bonus
+# Kazanın!" - "bonus" kelimesi "TL" ile "kazan" ANKORU arasina giriyor,
+# ayni "hoş geldin" bulgusuyla ayni sinif (5 dosyada dogrulandi).
 RE_ODUL = _katlanmis_derle(
     rf"{_SAYI}\s*(?:TL|₺)"
     r"(?:['’](?:ye|ya|e|a))?\s*"
-    r"(?:değerinde\s*|varan\s*|kadar\s*)?"
+    r"(?:değerinde\s*|varan\s*|kadar\s*|hoş\s*geldin\s*|bonus\s*)?"
     r"(?:alışveriş çeki|alışveriş kartı|hediye çeki|alışveriş puanı|hediye|kazan\w*"
     r"|indirim|bankkart lira|parafpara|worldpuan|nakit iade\w*|iade\b)",
     re.IGNORECASE,
@@ -721,13 +846,23 @@ RE_ODUL = _katlanmis_derle(
 # Banka-ozel sadakat birimleri (Mil, Gram) TL disinda oldugu icin ayri
 # desenler gerekir. NOT: gercek metinlerde egik/tipografik apostrof (’,
 # U+2019) kullanilir, duz apostrof (') degil - ikisi de kapsanmali.
-RE_ODUL_MIL = _katlanmis_derle(rf"{_SAYI}\s*Mil['’]?[ea]?\s*varan\s*hediye", re.IGNORECASE)
+#
+# "hediye|firsat" (DENETIM BULGUSU, 26 Agustos 2026, KT-020/030/031/041):
+# Kuveyt Turk'un Miles&Smiles Business Kart kampanyalari "X Mil'e Varan
+# HEDIYE" degil "X Mil'e Varan FIRSAT!" basligini kullaniyor (7 dosyada
+# dogrulandi, hepsi gercekten kendi odul miktarini basliginda tasiyan
+# kampanyalar - baska hicbir baglamda yanlislikla eslesme riski
+# gozlenmedi).
+RE_ODUL_MIL = _katlanmis_derle(rf"{_SAYI}\s*Mil['’]?[ea]?\s*varan\s*(?:hediye|fırsat)", re.IGNORECASE)
 # Tavan/limit ifadeleri: "en fazla 5 gram", "maksimum 10.000 TL", "kişi
 # başı maksimum 2.000 TL, toplamda ... maksimum 10.000 TL nakit ödül" gibi
 # cok sayida aday oldugunda SONUNCUSU (genelde "toplamda" olan) tercih
 # edilir - finditer + son eslesme.
+# "maximum" (Ingilizce yazim, DK-015'te dogrulandi - "kazanilabilecek
+# MAXIMUM iade 1.000 TL'dir") gercek banka metinlerinde "maksimum"un
+# yaninda kullanilan yaygin bir alternatif yazim.
 RE_ODUL_TAVAN = _katlanmis_derle(
-    r"(?:en fazla|maksimum)\s+(?:\S+\s+){0,4}?"
+    r"(?:en fazla|maksimum|maximum)\s+(?:\S+\s+){0,4}?"
     rf"({_SAYI})\s*(TL|₺|gram\w*|gr\b)",
     re.IGNORECASE,
 )
@@ -821,6 +956,33 @@ KAMPANYA_TURU_ANAHTAR_KELIMELERI = {
     "Yatirim Urunu Kampanyasi": ["katılım fonu", "yatırım ürün", "birikim"],
     "Finansman Kampanyasi": ["finansman"],
 }
+
+# TEK KAYNAK - api/schemas.py::KampanyaTuru enum'iyla BIREBIR AYNI olmali
+# (bkz. o enum'un docstring'i). llm_extractor.py bu tuple'i, LLM'in
+# kampanya_turu icin GECERSIZ/hayali bir etiket uydurmasini onlemek
+# icin dogrulama/normallestirme amaciyla import eder - regex'in kendi
+# KAMPANYA_TURU_ANAHTAR_KELIMELERI sozlugu yalnizca regex'in DENEYIP
+# BASARILI oldugu alt kumeyi icerir (ör. "Musteri Ol Kampanyasi" ve
+# "Katilma Hesabi Kampanyasi" regex kurali olarak denendi ve F1'i
+# dusurdugu icin BILEREK regex sozlugunde YOK - bkz. o dosyadaki
+# docstring - ama LLM'in bu iki turu SINIFLANDIRABILMESI icin tam
+# enum burada tutulur).
+KAMPANYA_TURU_TUM_DEGERLER = (
+    "Konut Finansmani Kampanyasi",
+    "Ihtiyac Finansmani Kampanyasi",
+    "Tasit Finansmani Kampanyasi",
+    "Finansman Kampanyasi",
+    "Kart Kampanyasi",
+    "Alisveris Puani Kampanyasi",
+    "Yeni Musteri Kampanyasi",
+    "Yatirim Urunu Kampanyasi",
+    "Ticari Kampanya",
+    "Musteri Ol Kampanyasi",
+    "Sigorta/BES Kampanyasi",
+    "Katilma Hesabi Kampanyasi",
+    "POS Kampanyasi",
+    "Belirlenemedi",
+)
 
 # HEDEF KITLE - Sartname Md. 5.3 "Hedef Kitle Bilgileri" sutunundaki DORT
 # segment. Sartname bu alani serbest metin olarak degil KATEGORI olarak
@@ -1104,9 +1266,33 @@ def menu_satirlarini_ayikla(metin_l: str) -> str:
 def _kampanya_turunu_tespit_et(metin: str) -> Optional[str]:
     metin_l = menu_satirlarini_ayikla(turkce_ascii_kucult(metin))
     for etiket, kelimeler in _KAMPANYA_TURU_KATLANMIS.items():
-        if any(k in metin_l for k in kelimeler):
+        for k in kelimeler:
+            idx = metin_l.find(k)
+            if idx == -1:
+                continue
+            if etiket == "Ticari Kampanya" and _ticari_olumsuzlanmis_mi(metin_l, idx, len(k)):
+                # DENETIM BULGUSU (26 Agustos 2026, AL-006/010/011/013/014/
+                # 016): Albaraka'nin genel kart kampanyalarinda "Business
+                # kartlar[in tamami] ... dahil degildir" gibi bir ISTISNA
+                # cumlesi var - "business kart" burada kampanyanin KENDISI
+                # DEGIL, kampanyadan HARIC TUTULAN bir kart tipi. Eski kural
+                # yalnizca kelimenin gecip gecmedigine bakiyordu; bu 6 kayit
+                # gercekte "Kart Kampanyasi" iken yanlislikla "Ticari
+                # Kampanya" sayiliyordu. Digitle kelimelerdeki (0.7 sabit
+                # guven) bu tur bir olumsuzlama baska hicbir kategoride
+                # gozlenmedi (yalnizca bu 3 anahtarda - business kart/bayi
+                # kart/ihracat - denetlendi), guard bu kategoriye ozgu
+                # birakildi.
+                continue
             return etiket
     return None
+
+
+_TICARI_OLUMSUZLAMA_DESENI = re.compile(r"dahil\s*degil", re.IGNORECASE)
+
+
+def _ticari_olumsuzlanmis_mi(metin_l: str, idx: int, uzunluk: int, pencere: int = 60) -> bool:
+    return bool(_TICARI_OLUMSUZLAMA_DESENI.search(metin_l[idx : idx + uzunluk + pencere]))
 
 
 def _hedef_kitleyi_tespit_et(metin: str) -> Optional[str]:
@@ -1206,6 +1392,46 @@ def kampanya_avantajini_olustur(alanlar: dict) -> Optional[str]:
     return ", ".join(parcalar) if parcalar else None
 
 
+# DENETIM BULGUSU (26 Agustos 2026, zayif alanlarin toplu incelemesi):
+# Dunya Katilim (dunyakatilim.com.tr) sayfalarinin ham_metni, sayfanin
+# KENDI kampanya icerigi bittikten SONRA "Diğer Kampanyalar" basligiyla
+# TAMAMEN ILGISIZ baska kampanyalarin basligini/aciklamasini/bitis
+# tarihini, ardindan TUM sitenin footer navigasyon menusunu (ÜRÜN VE
+# HİZMETLER, HAKKIMIZDA, ...) iceriyor. Olculdu (DK-008/009/016/023/
+# 029/034): bu blokta gecen BASKA bir kampanyanin "6 Aya Varan Taksit"
+# gibi ifadeleri, mevcut kaydin KENDI taksit_sayisi'ymis gibi yanlislikla
+# eslesiyordu - ayni kirlenme prensipte kampanya_bitis/odul/tutar
+# alanlarini da etkileyebilir, sadece bu 6 kayitta rastlantiyla
+# taksit_sayisi'ne carpti.
+#
+# KONUM (sabit karakter indeksi) GUVENLI DEGIL: ayni "Diğer Kampanyalar"
+# basligi Turkiye Finans sayfalarinda TEPEDE bir kategori menusu olarak
+# geciyor (idx~194-993, gercek icerikten ONCE) - dunyakatilim'in kendi
+# araligiyla (idx 687-5052) CAKISIYOR, yani "yeterince ileride mi" gibi
+# bir esik ikisini ayirt edemez (olculdu, karsilastirildi).
+#
+# Bunun yerine sayfanin KENDI marka kimligi kullanilir: yalnizca Dunya
+# Katilim'a OZGU, HER sayfanin footer'inda gecen ("© 2026 Dünya Katılım
+# Bankası A.Ş...") bir ifade metinde varsa bu kirpma uygulanir - 57/57
+# dunyakatilim kaydinda var, diger 6 bankanin 441 kaydinin HICBIRINDE yok
+# (dogrulandi). Boylece kaydi_cikar'in imzasi degismez, banka/URL
+# parametresi tasimaya gerek kalmaz, 22 cagiran dosya etkilenmez.
+_DUNYAKATILIM_KIMLIK_ISARETI = "Dünya Katılım Bankası"
+_DUNYAKATILIM_GURULTU_SINIRI = "Diğer Kampanyalar"
+
+
+def _sayfa_gurultusunu_kirp(ham_metin: str) -> str:
+    """Bilinen banka sablonlarinda, gercek kampanya icerigi bittikten
+    SONRA gelen ilgisiz "diger kampanyalar" listesini / site geneli
+    footer menusunu kirpar. Yalnizca imzasi dogrulanmis sablonlarda
+    calisir - eslesme yoksa metin degismeden doner."""
+    if _DUNYAKATILIM_KIMLIK_ISARETI in ham_metin:
+        idx = ham_metin.find(_DUNYAKATILIM_GURULTU_SINIRI)
+        if idx != -1:
+            return ham_metin[:idx]
+    return ham_metin
+
+
 def kaydi_cikar(ham_metin: str) -> dict:
     """Tek bir kampanya metnini analiz edip api/schemas.py CampaignRecord
     ile UYUMLU alan adlariyla bir sozluk doner.
@@ -1214,6 +1440,7 @@ def kaydi_cikar(ham_metin: str) -> dict:
     5.7/15). `_izler` alani, hangi alanin hangi metin parcasindan ve hangi
     guvenle cikarildigini tasir (Juri Audit Paneli / hata ayiklama icin).
     """
+    ham_metin = _sayfa_gurultusunu_kirp(ham_metin)
     alanlar: dict = {
         "kar_payi_orani_percent": None,
         "kar_payi_orani_decimal": None,
@@ -1377,10 +1604,15 @@ def kaydi_cikar(ham_metin: str) -> dict:
                     izler["finansman_tutari"] = (_ham_span(ham_metin, tm), 0.75)
 
     # --- Vade / taksit sayisi / erteleme suresi (UC AYRI kavram) -------
-    span = _ilk_eslesme(RE_VADE, katlanmis, ham_metin)
-    if span:
+    for vm in RE_VADE.finditer(katlanmis):
+        if _vade_ornek_odeme_planindan_mi(katlanmis, vm.start(), vm.end()):
+            continue
+        if _vade_araligin_ust_siniri_mi(katlanmis, vm.start(), vm.end()):
+            continue
+        span = _ham_span(ham_metin, vm)
         alanlar["vade_ay"] = aya_cevir(span)
         izler["vade_ay"] = (span, 0.85)
+        break
 
     span = _ilk_eslesme(RE_ERTELEME, katlanmis, ham_metin)
     if span:

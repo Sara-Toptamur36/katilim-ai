@@ -1,82 +1,26 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Alert, Modal } from "antd";
+import { Alert } from "antd";
 import {
   RobotOutlined,
   SwapOutlined,
   AuditOutlined,
 } from "@ant-design/icons";
-import client, { tazelikGetir, kampanyalariGetir } from "../api/client";
+import client from "../api/client";
 import {
   OLCUMLER,
   OLCUM_TARIHI,
   VERI_TARIHI,
-  OLCUM_VERI_SETI,
   BANKA_DAGILIMI,
-  URUN_AILESI,
-  ZAMAN_EKSENI,
-  ALAN_DOLULUGU,
   SISTEM_DURUMU,
   KAYNAK_TAKIP,
 } from "../data/olcumler";
 import TazelikSeridi from "../components/TazelikSeridi";
-
-// Baskin bankalar VERIDEN hesaplanir, isim olarak GOMULMEZ. Zeynep yeni
-// kampanya topladikca siralama degisiyor (23 Agustos'ta Kuveyt Turk
-// 13'ten 121'e cikip birinci oldu) - gomulu isim sessizce bayatlardi.
-const BASKIN_BANKALAR = [...BANKA_DAGILIMI]
-  .sort((a, b) => b.tekil - a.tekil)
-  .slice(0, 2)
-  .map((b) => b.banka);
-
-const BASKIN_YUZDE = Math.round(
-  (100 * [...BANKA_DAGILIMI].sort((a, b) => b.tekil - a.tekil).slice(0, 2)
-    .reduce((t, b) => t + b.tekil, 0)) /
-    BANKA_DAGILIMI.reduce((t, b) => t + b.tekil, 0),
-);
-
-// En az kampanya toplanabilen uc banka - dagilimin zayif ucu.
-const ZAYIF_BANKALAR = [...BANKA_DAGILIMI]
-  .sort((a, b) => a.tekil - b.tekil)
-  .slice(0, 3)
-  .map((b) => `${b.banka} ${b.tekil}`)
-  .join(", ");
+import { useCanliVeriOzet, BASKIN_BANKALAR, BASKIN_YUZDE, ZAYIF_BANKALAR } from "../hooks/useCanliVeriOzet";
 
 export default function Dashboard() {
   const [apiBagli, setApiBagli] = useState(false);
   const [kontrolEdildi, setKontrolEdildi] = useState(false);
-  const [metrikPaneliAcik, setMetrikPaneliAcik] = useState(false);
-  const [veriPaneliAcik, setVeriPaneliAcik] = useState(false);
-  // GET /sistem/tazelik - hacim sayilari CANLI gelir, koda gomulmez.
-  // Gerekce: bu sayilar Zeynep tarama yaptikca degisiyor; gomulu olduklari
-  // surece sessizce bayatliyorlardi (24 Agustos'ta ekran 447 diyordu,
-  // veritabani 425 idi). Uc nokta erisilemezse olcumler.js'teki deger
-  // yedek olarak kullanilir - ekranda bos sayi gosterilmez.
-  const [tazelik, setTazelik] = useState(null);
-  // Tur dagilimi ve alan doluluk grafikleri de CANLI veriden hesaplanir.
-  //
-  // DENETIM BULGUSU (25.08.2026): hacim sayilari yukarida canliya
-  // baglanmisti ama bu iki grafik hala olcumler.js'teki anlik goruntuden
-  // besleniyordu ve ciddi sekilde sapmisti - IKI YONDE birden:
-  //   Belirtilmemis tur : ekran 234, gercek  56  (sistem oldugundan KOTU gorunuyordu)
-  //   Taksit sayisi     : ekran 130, gercek 236  (ayni sekilde eksik)
-  //   Kar payi orani    : ekran  34, gercek  11  (sistem oldugundan IYI gorunuyordu)
-  // Sonuncusu en tehlikelisiydi: 34 rakami, sonradan temizlenen uydurma
-  // kar payi degerlerini (nakit iade / vade farksiz sifirlari) iceren
-  // donemden kalmaydi. Ekranin gercekte olandan IYI gostermesi, seffaflik
-  // ilkesinin (rapor Bolum 5.7/15) dogrudan ihlalidir.
-  const [kampanyalar, setKampanyalar] = useState(null);
-
-  // Paneller arası geçiş kontrolü (biri açılırken diğeri kapanır)
-  const modelPaneliniAc = () => {
-    setVeriPaneliAcik(false);
-    setMetrikPaneliAcik(true);
-  };
-
-  const veriPaneliniAc = () => {
-    setMetrikPaneliAcik(false);
-    setVeriPaneliAcik(true);
-  };
 
   // API sağlık kontrolü
   useEffect(() => {
@@ -85,84 +29,22 @@ export default function Dashboard() {
       .then(() => setApiBagli(true))
       .catch(() => setApiBagli(false))
       .finally(() => setKontrolEdildi(true));
-
-    tazelikGetir()
-      .then(setTazelik)
-      .catch(() => setTazelik(null));
-
-    kampanyalariGetir()
-      .then(setKampanyalar)
-      .catch(() => setKampanyalar(null));
   }, []);
 
-  // Canli deger varsa onu, yoksa olcumler.js'teki yedegi kullan.
-  const tekilKampanya = tazelik?.tekil_kampanya ?? OLCUMLER.veri.tekilKampanya;
-  const anlikGoruntu = tazelik?.anlik_goruntu ?? OLCUMLER.veri.anlikGoruntu;
-  const ragParca = tazelik?.rag_parca_sayisi ?? SISTEM_DURUMU.qdrantParca;
-  const ragBelge = tazelik?.rag_belge_sayisi ?? SISTEM_DURUMU.qdrantBelge;
-  // Sayi canli mi yoksa yedek mi - jurinin ayirt edebilmesi icin.
-  const hacimCanli = tazelik != null;
-
-  // Halka grafigin toplami VERIDEN hesaplanir. Onceden 251 sabiti
-  // yaziliydi ama URUN_AILESI 447'lik sete gore guncellenmisti; yuzdeler
-  // 251'e bolundugu icin toplamlari %100'u asiyordu (%93,2 + %61,0 = %154).
-  // --- CANLI TUR DAGILIMI ---
-  // Izlenen bes alan, olcumler.js'teki "doluluk" tanimiyla AYNI olmali:
-  // o urun ailesindeki kampanyalarda bu alanlarin yuzde kaci dolu.
-  const IZLENEN_ALANLAR = [
-    "kar_payi_orani_percent",
-    "vade_ay",
-    "taksit_sayisi",
-    "odul_miktari",
-    "masraf_durumu",
-  ];
-  const urunAilesi = kampanyalar
-    ? Object.entries(
-        kampanyalar.reduce((grup, k) => {
-          const ad = k.kampanya_turu || "Belirtilmemiş";
-          (grup[ad] ??= []).push(k);
-          return grup;
-        }, {})
-      )
-        .map(([ad, uyeler]) => {
-          const dolu = uyeler.reduce(
-            (t, k) => t + IZLENEN_ALANLAR.filter((a) => k[a] != null).length,
-            0
-          );
-          return {
-            ad,
-            sayi: uyeler.length,
-            doluluk:
-              Math.round((1000 * dolu) / (uyeler.length * IZLENEN_ALANLAR.length)) / 10,
-          };
-        })
-        .sort((a, b) => b.sayi - a.sayi)
-    : URUN_AILESI;
-
-  // --- CANLI ALAN DOLULUGU ---
-  const alanDolulugu = kampanyalar
-    ? [
-        { alan: "Taksit sayısı", anahtar: "taksit_sayisi" },
-        { alan: "Ödül miktarı", anahtar: "odul_miktari" },
-        { alan: "Kâr payı oranı", anahtar: "kar_payi_orani_percent" },
-        { alan: "Vade", anahtar: "vade_ay" },
-        { alan: "Masraf durumu", anahtar: "masraf_durumu" },
-      ]
-        .map(({ alan, anahtar }) => ({
-          alan,
-          dolu: kampanyalar.filter((k) => k[anahtar] != null).length,
-          toplam: kampanyalar.length,
-        }))
-        .sort((a, b) => b.dolu - a.dolu)
-    : ALAN_DOLULUGU;
-
-  // Grafiklerin sayilari canli mi yoksa olcumler.js yedegi mi - juri
-  // ayirt edebilmeli (hacimCanli ile ayni gerekce).
-  const dagilimCanli = kampanyalar != null;
-
-  const urunAilesiToplam = urunAilesi.reduce((t, u) => t + u.sayi, 0);
-  // Alan doluluk tablosunun paydasi da ayni sekilde veriden gelir.
-  const alanDolulukToplam = alanDolulugu[0]?.toplam ?? urunAilesiToplam;
+  // Canlı hacim/dağılım verisi - Jüri Audit Paneli'yle PAYLAŞILAN hook.
+  // Bkz. hooks/useCanliVeriOzet.js: iki sayfa da aynı /sistem/tazelik ve
+  // /kampanyalar çağrısından türetilen sayıları gösterir, kopya hesaplama
+  // yok.
+  const {
+    tekilKampanya,
+    anlikGoruntu,
+    ragParca,
+    ragBelge,
+    urunAilesi,
+    alanDolulugu,
+    urunAilesiToplam,
+    alanDolulukToplam,
+  } = useCanliVeriOzet();
 
   return (
     <div
@@ -359,50 +241,6 @@ export default function Dashboard() {
           text-align: right;
         }
 
-        /* Model Metrikleri Modal — perde ve konum */
-        .metrik-modal .ant-modal-mask {
-          background: rgba(12, 30, 26, 0.55) !important;
-          backdrop-filter: blur(6px);
-        }
-        .metrik-modal .ant-modal {
-          padding-bottom: 0 !important;
-        }
-        .metrik-modal .ant-modal-content {
-          border-radius: 18px !important;
-          padding: 24px !important;
-        }
-        .metrik-modal .ant-modal-header {
-          margin-bottom: 0 !important;
-          padding-bottom: 16px !important;
-          border-bottom: 1px solid var(--kenarlik) !important;
-        }
-        .metrik-modal .ant-modal-body {
-          max-height: 85vh;
-          overflow-y: auto;
-          padding-top: 20px !important;
-        }
-
-        /* Bento ızgara */
-        .bento-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 12px;
-        }
-        @media (max-width: 900px) {
-          .bento-grid { grid-template-columns: repeat(2, 1fr) !important; }
-        }
-        @media (max-width: 640px) {
-          .bento-grid { grid-template-columns: 1fr !important; }
-        }
-
-        /* Modal 1100px altında daralt */
-        @media (max-width: 1100px) {
-          .metrik-modal .ant-modal {
-            width: 94% !important;
-            max-width: 94vw !important;
-          }
-        }
-
         /* Taranan Kaynaklar kartı stilleri */
         .kaynak-grid {
           display: grid;
@@ -427,20 +265,6 @@ export default function Dashboard() {
         .kaynak-url-link:hover {
           text-decoration: underline;
           color: var(--marka-500) !important;
-        }
-
-        /* Drawer responsive kuralları (Veri Kaynakları Drawer'ı için) */
-        @media (max-width: 1024px) {
-          .metrik-drawer .ant-drawer-content-wrapper {
-            width: 90% !important;
-            max-width: 90vw !important;
-          }
-        }
-        @media (max-width: 768px) {
-          .metrik-drawer .ant-drawer-content-wrapper {
-            width: 100% !important;
-            max-width: 100vw !important;
-          }
         }
       `}</style>
 
@@ -499,9 +323,10 @@ export default function Dashboard() {
               margin: "10px 0 18px 0",
             }}
           >
-            Veri toplama hattını, çıkarım kalitesini, RAG performansını ve ajan
-            kararlarını tek ekrandan izleyin. Eksik veri görünür kalır; her yanıt
-            kaynağı ve audit iziyle birlikte takip edilir.
+            Katılım bankacılığı verisini ve toplanan kampanya kapsamını tek
+            ekrandan izleyin. Eksik veri görünür kalır; model kalite ölçümleri,
+            veri kaynağı detayları ve her yanıtın audit izi Jüri Audit
+            Paneli'nde takip edilir.
           </p>
 
           {/* 3 Dolu Yeşil Buton */}
@@ -621,6 +446,7 @@ export default function Dashboard() {
               display: "flex",
               flexDirection: "column",
             }}
+            title={`Bu, Recall@5'in ölçüldüğü indekstir (${OLCUMLER.rag.indeksTarihi} tarihli, ${OLCUMLER.rag.indekslenenParca} parça) — Sistem Sağlığı kartındaki "Canlı RAG İndeksi" ile bilerek farklıdır, çünkü Recall o indekste henüz yeniden ölçülmedi.`}
           >
             <span
               style={{
@@ -631,13 +457,16 @@ export default function Dashboard() {
                 marginBottom: 3,
               }}
             >
-              {/* ETIKET AYRIMI: burasi Recall@5'in OLCULDUGU indekstir
-                  (817 parca). Asagidaki Sistem Sagligi karti CALISAN
-                  indeksi gosterir (1907). Ikisi bilerek ayri - Recall
-                  yeni indekste yeniden olculmedi. Ayni etiketi
-                  tasidiklarinda juriye ayni sey icin iki farkli sayi
-                  veriliyormus gibi gorunuyordu. */}
-              ÖLÇÜM İNDEKSİ
+              {/* ETIKET AYRIMI: burasi Recall@5'in OLCULDUGU indekstir.
+                  Asagidaki Sistem Sagligi karti CALISAN (canli) indeksi
+                  gosterir - ikisi bilerek ayri, Recall yeni indekste
+                  yeniden olculmedi. DENETIM BULGUSU (26.08.2026): eskiden
+                  bu ayrim yalnizca kod yorumunda vardi, ekranda gorunmuyordu
+                  - juri "ÖLÇÜM İNDEKSİ" ile "Canlı RAG İndeksi" farkli sayi
+                  gosterince hangisinin yanlis oldugunu soruyordu. Simdi
+                  "(Recall)" etiketi + title tooltip + alt metin bunu acikca
+                  soyluyor. */}
+              ÖLÇÜM İNDEKSİ (Recall)
             </span>
             <span
               className="hero-sag-deger"
@@ -652,7 +481,7 @@ export default function Dashboard() {
                 marginTop: 1,
               }}
             >
-              {OLCUMLER.rag.indeksTarihi}
+              {OLCUMLER.rag.indeksTarihi} ölçümü · canlı indeks {ragParca} parça
             </span>
           </div>
 
@@ -772,72 +601,6 @@ export default function Dashboard() {
             />
             API sözleşmesi uyumlu
           </div>
-
-          {/* 3. Model Metrikleri (Tıklanabilir - Drawer Açar) */}
-          <div
-            onClick={modelPaneliniAc}
-            style={{
-              height: 28,
-              borderRadius: 14,
-              padding: "0 12px",
-              fontSize: 12,
-              fontWeight: 600,
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              background: "var(--kart)",
-              border: "1px solid var(--kenarlik)",
-              color: "var(--yazi-koyu)",
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#d8c48c")}
-            onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--kenarlik)")}
-            title="Model metrikleri detay panelini aç"
-          >
-            <span
-              style={{
-                width: 7,
-                height: 7,
-                borderRadius: "50%",
-                background: "#d8c48c",
-              }}
-            />
-            Model Metrikleri
-          </div>
-
-          {/* 4. Veri Kaynakları (Tıklanabilir - Drawer Açar) */}
-          <div
-            onClick={veriPaneliniAc}
-            style={{
-              height: 28,
-              borderRadius: 14,
-              padding: "0 12px",
-              fontSize: 12,
-              fontWeight: 600,
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              background: "var(--kart)",
-              border: "1px solid var(--kenarlik)",
-              color: "var(--yazi-koyu)",
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#d8c48c")}
-            onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--kenarlik)")}
-            title="Veri kaynakları kapsam panelini aç"
-          >
-            <span
-              style={{
-                width: 7,
-                height: 7,
-                borderRadius: "50%",
-                background: "#d8c48c",
-              }}
-            />
-            Veri Kaynakları
-          </div>
         </div>
 
         {/* Sağ tarafta ölçüm tarihi — Sağa Yaslı */}
@@ -926,16 +689,26 @@ export default function Dashboard() {
               fontWeight: 500,
             }}
           >
-            Toplanan kampanya
+            Taranan kampanya sayfası
           </span>
+          {/* DENETIM BULGUSU (26.08.2026): bu sayi (tekilKampanya, /sistem/
+              tazelik'ten - scraper/raw_data'daki TUM benzersiz URL, scraper
+              hicbir eski dosyayi SILMIYOR) ile asagidaki "Kampanya Turu
+              Dagilimi" grafiginin toplami (urunAilesiToplam, /kampanyalar'dan -
+              yalnizca yapilandirilmis kayda donusturulup Postgres'e YAZILMIS
+              olanlar) farkli sorulara cevap veriyor. Aradaki fark, henuz
+              islenmemis veya ayiklama sirasinda elenmis ham sayfalardir -
+              hata degil. Etiketsiz oldugunda ayni ekranda iki celisen sayi
+              gibi gorunuyordu - simdi ikisi de acikca adlandiriliyor. */}
           <span
             style={{
               fontSize: 11,
               color: "var(--yazi-soluk)",
               marginTop: 4,
             }}
+            title="Taranan kampanya sayfası: scraper/raw_data'daki tüm benzersiz URL (eski taramalar silinmez). Aşağıdaki grafikteki sayı ise yalnızca yapılandırılmış kayda dönüştürülüp veritabanına yazılmış olanlardır."
           >
-            {anlikGoruntu} tarihli anlık görüntü
+            {urunAilesiToplam} kaydı veritabanında işlenmiş · {anlikGoruntu} anlık görüntü
           </span>
         </div>
 
@@ -1806,526 +1579,6 @@ export default function Dashboard() {
           </div>
         );
       })()}
-
-      {/* ========================================================
-          7) MODEL METRİKLERİ DETAY PANELİ (MODAL — BENTO DÜZEN)
-          ======================================================== */}
-      <Modal
-        open={metrikPaneliAcik}
-        onCancel={() => setMetrikPaneliAcik(false)}
-        footer={null}
-        width={1000}
-        centered
-        className="metrik-modal"
-        title={
-          <div>
-            <div style={{ fontSize: 20, fontWeight: 650, color: "var(--yazi-koyu)" }}>
-              Model Metrikleri
-            </div>
-            <div style={{ fontSize: 12, color: "var(--yazi-soluk)", fontWeight: 400, marginTop: 2 }}>
-              Son ölçüm: {OLCUM_TARIHI} · {OLCUM_VERI_SETI} üzerinde
-            </div>
-          </div>
-        }
-      >
-        {/* --- BENTO GRID --- */}
-        <div className="bento-grid">
-
-          {/* ===== SATIR 1 — ÜÇ BÜYÜK SKOR KARTI ===== */}
-
-          {/* Kart A: Dolu Alan */}
-          {(() => {
-            const bentoKartStil = {
-              background: "var(--kart)",
-              border: "1px solid var(--kenarlik)",
-              borderRadius: 14,
-              padding: 16,
-              boxShadow: "0 1px 3px rgba(60,50,30,0.05)",
-            };
-            const bentoBaslikStil = {
-              fontSize: 11,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              color: "var(--yazi-soluk)",
-              marginBottom: 12,
-              fontWeight: 700,
-            };
-            /* Doluluk çubuğu yardımcısı */
-            const DolulukCubugu = ({ yuzde, renk }) => (
-              <div style={{ height: 5, borderRadius: 3, background: "var(--kenarlik)", marginTop: 8, overflow: "hidden" }}>
-                <div style={{ width: `${yuzde}%`, height: "100%", borderRadius: 3, background: renk }} />
-              </div>
-            );
-
-            return (
-              <>
-                {/* Kart A: Dolu Alan */}
-                <div style={bentoKartStil}>
-                  <div style={bentoBaslikStil}>DOLU ALAN</div>
-                  <div style={{ fontSize: 34, fontWeight: 700, color: "#b8873a", lineHeight: 1 }}>
-                    %{OLCUMLER.cikarim.doluAlanDogrulugu.toString().replace(".", ",")}
-                  </div>
-                  <div style={{ fontSize: 12, color: "var(--yazi-normal)", marginTop: 4 }}>Doğruluk</div>
-                  <DolulukCubugu yuzde={OLCUMLER.cikarim.doluAlanDogrulugu} renk="#d4a34b" />
-                  <div style={{ fontSize: 11, color: "var(--yazi-soluk)", marginTop: 6 }}>{OLCUMLER.cikarim.doluAlanDetay}</div>
-                </div>
-
-                {/* Kart B: Boş Alan — yeşil tonlar */}
-                <div style={bentoKartStil}>
-                  <div style={bentoBaslikStil}>BOŞ ALAN</div>
-                  <div style={{ fontSize: 34, fontWeight: 700, color: "#0c765f", lineHeight: 1 }}>
-                    %{OLCUMLER.cikarim.bosAlanDogrulugu.toString().replace(".", ",")}
-                  </div>
-                  <div style={{ fontSize: 12, color: "var(--yazi-normal)", marginTop: 4 }}>Yanlış pozitif kontrolü</div>
-                  <DolulukCubugu yuzde={OLCUMLER.cikarim.bosAlanDogrulugu} renk="#169276" />
-                  <div style={{ fontSize: 11, color: "var(--yazi-soluk)", marginTop: 6 }}>{OLCUMLER.cikarim.bosAlanDetay}</div>
-                </div>
-
-                {/* Kart C: Makro F1 — altın vurgu (ana metrik) */}
-                <div style={bentoKartStil}>
-                  <div style={bentoBaslikStil}>MAKRO F1</div>
-                  <div style={{ fontSize: 34, fontWeight: 700, color: "#b8873a", lineHeight: 1 }}>
-                    %{OLCUMLER.cikarim.makroF1.toString().replace(".", ",")}
-                  </div>
-                  <div style={{ fontSize: 12, color: "var(--yazi-normal)", marginTop: 4 }}>Alan bazlı</div>
-                  <DolulukCubugu yuzde={OLCUMLER.cikarim.makroF1} renk="#d4a34b" />
-                  <div style={{ fontSize: 11, color: "var(--yazi-soluk)", marginTop: 6 }}>{OLCUMLER.cikarim.makroF1Detay}</div>
-                </div>
-
-                {/* ===== SATIR 2 — RAG (2 sütun) + KAPSAM (1 sütun) ===== */}
-
-                {/* RAG Performansı — 2 sütun genişliğinde */}
-                <div style={{ ...bentoKartStil, gridColumn: "span 2" }}>
-                  <div style={bentoBaslikStil}>RAG PERFORMANSI</div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-
-                    {/* Recall@1 — TEK OLCUM.
-                        Onceki surumde bir ARALIK cubugu vardi (%87,5-%93,75):
-                        o, ayni sorunun birden fazla kosusunda cikan en dusuk
-                        ve en yuksek degerdi. 25 Agustos olcumunde tek kosu
-                        yapildi, elimizde bir deger var - iki uclu bir aralik
-                        cizmek olcmedigimiz bir seyi iddia etmek olurdu.
-                        Degiskenlik notu duruyor, cunku HNSW yaklasik aramasi
-                        kosular arasi oynamaya devam ediyor. */}
-                    <div>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
-                        <span style={{ fontSize: 13, color: "var(--yazi-normal)" }}>Recall@1</span>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: "#0c765f" }}>
-                          %{OLCUMLER.rag.recall1.toString().replace(".", ",")}
-                          <span style={{ fontSize: 11, color: "var(--yazi-soluk)", fontWeight: 400, marginLeft: 6 }}>
-                            {OLCUMLER.rag.recall1Not}
-                          </span>
-                        </span>
-                      </div>
-                      <div style={{ height: 5, borderRadius: 3, background: "var(--kenarlik)", position: "relative", overflow: "hidden" }}>
-                        <div style={{ position: "absolute", left: 0, top: 0, width: `${OLCUMLER.rag.recall1}%`, height: "100%", background: "#169276", borderRadius: 3 }} />
-                      </div>
-                    </div>
-
-                    {/* Recall@3 — düz çubuk */}
-                    <div>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
-                        <span style={{ fontSize: 13, color: "var(--yazi-normal)" }}>Recall@3</span>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: "#0c765f" }}>
-                          %{OLCUMLER.rag.recall3.toString().replace(".", ",")}
-                          <span style={{ fontSize: 11, color: "var(--yazi-soluk)", fontWeight: 400, marginLeft: 6 }}>{OLCUMLER.rag.recall5Detay}</span>
-                        </span>
-                      </div>
-                      <DolulukCubugu yuzde={OLCUMLER.rag.recall3} renk="#169276" />
-                    </div>
-
-                    {/* Recall@5 — düz çubuk */}
-                    <div>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
-                        <span style={{ fontSize: 13, color: "var(--yazi-normal)" }}>Recall@5</span>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: "#0c765f" }}>
-                          %{OLCUMLER.rag.recall5.toString().replace(".", ",")}
-                          <span style={{ fontSize: 11, color: "var(--yazi-soluk)", fontWeight: 400, marginLeft: 6 }}>{OLCUMLER.rag.recall5Detay}</span>
-                        </span>
-                      </div>
-                      <DolulukCubugu yuzde={OLCUMLER.rag.recall5} renk="#169276" />
-                    </div>
-
-                    {/* Çekimserlik — düz çubuk, koyu yeşil */}
-                    <div>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
-                        <span style={{ fontSize: 13, color: "var(--yazi-normal)" }}>Çekimserlik</span>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: "#0c765f" }}>
-                          %{OLCUMLER.rag.abstention}
-                          <span style={{ fontSize: 11, color: "var(--yazi-soluk)", fontWeight: 400, marginLeft: 6 }}>{OLCUMLER.rag.abstentionDetay}</span>
-                        </span>
-                      </div>
-                      <DolulukCubugu yuzde={OLCUMLER.rag.abstention} renk="#0c765f" />
-                    </div>
-                  </div>
-
-                  {/* İndeks bilgisi */}
-                  <div style={{ fontSize: 11, color: "var(--yazi-soluk)", marginTop: 14, paddingTop: 10, borderTop: "1px solid var(--kenarlik)" }}>
-                    İndeks: {OLCUMLER.rag.indekslenenParca} parça / {OLCUMLER.rag.belgeSayisi} belge · {OLCUMLER.rag.indeksTarihi}
-                  </div>
-                </div>
-
-                {/* Kapsam Ölçümü — 1 sütun */}
-                <div style={bentoKartStil}>
-                  <div style={bentoBaslikStil}>KAPSAM ÖLÇÜMÜ</div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                    {/* Hassasiyet */}
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: 13, color: "var(--yazi-normal)" }}>Hassasiyet</span>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ fontSize: 14, fontWeight: 650, color: "var(--yazi-koyu)" }}>{OLCUMLER.kapsam.hassasiyet}</span>
-                        <span style={{ fontSize: 10, fontWeight: 700, background: "rgba(12,118,95,0.12)", color: "#0c765f", padding: "2px 6px", borderRadius: 6 }}>%100</span>
-                      </div>
-                    </div>
-                    {/* Özgüllük */}
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: 13, color: "var(--yazi-normal)" }}>Özgüllük</span>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ fontSize: 14, fontWeight: 650, color: "var(--yazi-koyu)" }}>{OLCUMLER.kapsam.ozgulluk}</span>
-                        <span style={{ fontSize: 10, fontWeight: 700, background: "rgba(12,118,95,0.12)", color: "#0c765f", padding: "2px 6px", borderRadius: 6 }}>%100</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div style={{ fontSize: 11, color: "var(--yazi-soluk)", marginTop: 14 }}>Scope Guard</div>
-                </div>
-
-                {/* ===== SATIR 3 — TEST (1 sütun) + BİLİNEN HATALAR (2 sütun) ===== */}
-
-                {/* Otomatik Test — 1 sütun */}
-                <div style={bentoKartStil}>
-                  <div style={bentoBaslikStil}>OTOMATİK TEST</div>
-                  <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-                    <span style={{ fontSize: 28, fontWeight: 700, color: "#0c765f", lineHeight: 1 }}>{OLCUMLER.test.gecen}</span>
-                    <span style={{ fontSize: 12, color: "var(--yazi-normal)" }}>geçen test</span>
-                    <span style={{ fontSize: 10, fontWeight: 600, background: "var(--kenarlik)", color: "var(--yazi-soluk)", padding: "2px 7px", borderRadius: 6, marginLeft: "auto" }}>+{OLCUMLER.test.yavas} yavaş</span>
-                  </div>
-                  <div style={{ fontSize: 11, color: "var(--yazi-soluk)", marginTop: 14 }}>CI her push'ta çalışır.</div>
-                </div>
-
-                {/* Bilinen Hatalar — 2 sütun genişliğinde */}
-                <div style={{ ...bentoKartStil, gridColumn: "span 2" }}>
-                  <div style={bentoBaslikStil}>BİLİNEN HATALAR</div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-                    {OLCUMLER.bilinenHatalar.map((hata, idx) => (
-                      <div key={hata.kod}>
-                        {idx > 0 && <div style={{ borderTop: "1px solid var(--kenarlik)", margin: "10px 0" }} />}
-                        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <span style={{ fontSize: 11, fontWeight: 700, background: "var(--hata-zemin)", color: "var(--hata-yazi)", padding: "2px 7px", borderRadius: 6, flexShrink: 0 }}>{hata.kod}</span>
-                            <span style={{ fontWeight: 650, fontSize: 13, color: "var(--yazi-koyu)" }}>{hata.alan}</span>
-                          </div>
-                          <div style={{ fontSize: 12, color: "var(--yazi-normal)", lineHeight: 1.45, paddingLeft: 2 }}>{hata.aciklama}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ fontSize: 11, color: "var(--yazi-soluk)", marginTop: 12, paddingTop: 8, borderTop: "1px solid var(--kenarlik)" }}>
-                    Hatalar gizlenmez, kayıt altındadır.
-                  </div>
-                </div>
-
-                {/* Renk anlamı açıklama notu */}
-                <div style={{ gridColumn: "1 / -1", fontSize: 11, color: "var(--yazi-soluk)", marginBottom: -4 }}>
-                  Altın renkli değerler çıkarım doğruluğunu, yeşil renkli değerler güvenilirlik ölçümlerini (yanlış pozitif kontrolü, kaynak bulma, çekimserlik) gösterir.
-                </div>
-
-                {/* ===== SATIR 4 — TAM GENİŞLİK AMBER UYARI ===== */}
-                <div
-                  style={{
-                    gridColumn: "1 / -1",
-                    background: "var(--uyari-zemin)",
-                    border: "1px solid var(--kenarlik)",
-                    borderRadius: 12,
-                    padding: 14,
-                    display: "flex",
-                    alignItems: "flex-start",
-                    gap: 10,
-                    fontSize: 12.5,
-                    color: "var(--uyari-yazi)",
-                    lineHeight: 1.5,
-                  }}
-                >
-                  {/* Uyarı ikonu */}
-                  <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>⚠</span>
-                  <span>Bu değerler canlı telemetri değildir. {OLCUM_TARIHI} tarihinde <strong>{OLCUM_VERI_SETI}</strong> üzerinde ölçülmüştür. Veri o tarihten sonra büyüdü ({tekilKampanya} tekil kampanya, {ragParca} parçalık indeks) — bu oranlar <strong>yeni set üzerinde yeniden ölçülmedi</strong>.</span>
-                </div>
-              </>
-            );
-          })()}
-        </div>
-      </Modal>
-
-      {/* ========================================================
-          8) VERİ KAYNAKLARI DETAY PANELİ (MODAL — BENTO DÜZEN)
-          ======================================================== */}
-      <Modal
-        open={veriPaneliAcik}
-        onCancel={() => setVeriPaneliAcik(false)}
-        footer={null}
-        width={1000}
-        centered
-        className="metrik-modal"
-        title={
-          <div>
-            <div style={{ fontSize: 20, fontWeight: 650, color: "var(--yazi-koyu)" }}>
-              Veri Kaynakları
-            </div>
-            <div style={{ fontSize: 12, color: "var(--yazi-soluk)", fontWeight: 400, marginTop: 2 }}>
-              Kapsam raporu: {VERI_TARIHI} · PostgreSQL'den okundu
-            </div>
-          </div>
-        }
-      >
-        {/* --- BENTO GRID --- */}
-        <div className="bento-grid">
-          {(() => {
-            const bentoKartStil = {
-              background: "var(--kart)",
-              border: "1px solid var(--kenarlik)",
-              borderRadius: 14,
-              padding: 16,
-              boxShadow: "0 1px 3px rgba(60,50,30,0.05)",
-            };
-            const bentoBaslikStil = {
-              fontSize: 11,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              color: "var(--yazi-soluk)",
-              marginBottom: 12,
-              fontWeight: 700,
-            };
-            const DolulukCubugu = ({ yuzde, renk }) => (
-              <div style={{ height: 5, borderRadius: 3, background: "var(--kenarlik)", marginTop: 8, overflow: "hidden" }}>
-                <div style={{ width: `${yuzde}%`, height: "100%", borderRadius: 3, background: renk }} />
-              </div>
-            );
-
-            return (
-              <>
-                {/* ===== SATIR 1 — ÜÇ SKOR KARTI ===== */}
-
-                {/* Kart A: TEKİL KAMPANYA */}
-                <div style={bentoKartStil}>
-                  <div style={bentoBaslikStil}>TEKİL KAMPANYA</div>
-                  <div style={{ fontSize: 34, fontWeight: 700, color: "#0c5144", lineHeight: 1 }}>
-                    {tekilKampanya}
-                  </div>
-                  <div style={{ fontSize: 12, color: "var(--yazi-normal)", marginTop: 4 }}>Toplanan</div>
-                  <div style={{ fontSize: 11, color: "var(--yazi-soluk)", marginTop: 14 }}>
-                    {anlikGoruntu} tarihli anlık görüntü
-                  </div>
-                </div>
-
-                {/* Kart B: BANKA KAPSAMI */}
-                <div style={bentoKartStil}>
-                  <div style={bentoBaslikStil}>BANKA KAPSAMI</div>
-                  <div style={{ fontSize: 34, fontWeight: 700, color: "#169276", lineHeight: 1 }}>
-                    {OLCUMLER.veri.kapsananBanka} / {OLCUMLER.veri.toplamBanka}
-                  </div>
-                  <div style={{ fontSize: 12, color: "var(--yazi-normal)", marginTop: 4 }}>Kapsanan katılım bankası</div>
-                  <DolulukCubugu yuzde={(OLCUMLER.veri.kapsananBanka / OLCUMLER.veri.toplamBanka) * 100} renk="#169276" />
-                  <div style={{ fontSize: 11, color: "var(--yazi-soluk)", marginTop: 6 }}>
-                    {OLCUMLER.veri.haricBanka} hariç
-                  </div>
-                </div>
-
-                {/* Kart C: GOLD VERİ SETİ */}
-                <div style={bentoKartStil}>
-                  <div style={bentoBaslikStil}>GOLD VERİ SETİ</div>
-                  <div style={{ fontSize: 34, fontWeight: 700, color: "#b8873a", lineHeight: 1 }}>
-                    {OLCUMLER.veri.goldKayit}
-                  </div>
-                  <div style={{ fontSize: 12, color: "var(--yazi-normal)", marginTop: 4 }}>Elle doğrulanmış kayıt</div>
-                  <div style={{ fontSize: 11, color: "var(--yazi-soluk)", marginTop: 14 }}>
-                    referans veri seti
-                  </div>
-                </div>
-
-                {/* ===== SATIR 2 — BANKA DAĞILIMI (2 sutun) + ZAMAN EKSENİ (1 sutun) ===== */}
-
-                {/* Banka Dağılımı Kartı (2 sütun) */}
-                <div style={{ ...bentoKartStil, gridColumn: "span 2" }}>
-                  <div style={bentoBaslikStil}>BANKA BAZINDA DAĞILIM</div>
-                  
-                  {/* Banka listesi */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                    {BANKA_DAGILIMI.map((b) => {
-                      const maxTekil = 109;
-                      const yuzde = (b.tekil / maxTekil) * 100;
-                      const baskinMi = BASKIN_BANKALAR.includes(b.banka);
-                      const cubukRengi = baskinMi ? "#d4a34b" : "#169276";
-
-                      return (
-                        <div key={b.banka} style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                              <span style={{ fontSize: 13, fontWeight: 500, color: "var(--yazi-koyu)" }}>
-                                {b.banka}
-                              </span>
-                              {baskinMi && (
-                                <span style={{ fontSize: 10, fontWeight: 600, background: "var(--uyari-zemin)", color: "var(--uyari-yazi)", padding: "1px 5px", borderRadius: 5 }}>
-                                  baskın
-                                </span>
-                              )}
-                            </div>
-                            <div style={{ fontSize: 11, color: "var(--yazi-soluk)", display: "flex", alignItems: "center", gap: 4 }}>
-                              <span style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>{b.tekil}</span>
-                              <span>|</span>
-                              <span>{b.snapshot}</span>
-                              <span>|</span>
-                              <span>{b.gold}</span>
-                            </div>
-                          </div>
-                          <div style={{ width: "100%", height: 5, background: "var(--kenarlik)", borderRadius: 3, overflow: "hidden" }}>
-                            <div style={{ width: `${yuzde}%`, height: "100%", background: cubukRengi, borderRadius: 3 }} />
-                          </div>
-                        </div>
-                      );
-                    })}
-
-                    {/* Toplam Satırı */}
-                    <div style={{ borderTop: "2px solid var(--kenarlik)", paddingTop: 8, marginTop: 4, display: "flex", justifyContent: "space-between", alignItems: "center", fontWeight: 700 }}>
-                      <span style={{ fontSize: 13, color: "var(--yazi-koyu)" }}>Toplam</span>
-                      <div style={{ fontSize: 11, color: "var(--yazi-koyu)", display: "flex", alignItems: "center", gap: 4 }}>
-                        <span>{BANKA_DAGILIMI.reduce((s, b) => s + b.tekil, 0)}</span>
-                        <span>|</span>
-                        <span>{BANKA_DAGILIMI.reduce((s, b) => s + b.snapshot, 0)}</span>
-                        <span>|</span>
-                        <span>{BANKA_DAGILIMI.reduce((s, b) => s + b.gold, 0)}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Amber Kutusu */}
-                  <div
-                    style={{
-                      background: "var(--uyari-zemin)",
-                      border: "1px solid var(--kenarlik)",
-                      borderRadius: 8,
-                      padding: "10px 12px",
-                      fontSize: 11.5,
-                      color: "var(--uyari-yazi)",
-                      lineHeight: 1.45,
-                      marginTop: 12,
-                    }}
-                  >
-                    Altın renkli iki banka ({BASKIN_BANKALAR.join(" ve ")}) toplam kampanyaların %{BASKIN_YUZDE}'sini oluşturuyor. Diğer uçta {ZAYIF_BANKALAR} kampanya toplanabildi. Bu bir veri kapsamı boşluğudur, gizlenmemektedir.
-                  </div>
-                </div>
-
-                {/* Zaman Ekseni Kartı (1 sütun) */}
-                <div style={bentoKartStil}>
-                  <div style={bentoBaslikStil}>ZAMAN EKSENİ</div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10, fontSize: 13 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ color: "var(--yazi-normal)" }}>İlk görülme</span>
-                      <span style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>{ZAMAN_EKSENI.ilkGorulme}</span>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ color: "var(--yazi-normal)" }}>Son görülme</span>
-                      <span style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>{ZAMAN_EKSENI.sonGorulme}</span>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ color: "var(--yazi-normal)" }}>Bayatlık</span>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <span style={{ fontWeight: 600, color: "#0c765f" }}>{ZAMAN_EKSENI.bayatlikGun} gün</span>
-                        <span style={{ fontSize: 10, fontWeight: 600, background: "rgba(12,118,95,0.12)", color: "#0c765f", padding: "1px 5px", borderRadius: 5 }}>güncel</span>
-                      </div>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ color: "var(--yazi-normal)" }}>Değişen kampanya</span>
-                      <span style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>{ZAMAN_EKSENI.degisenKampanya} / {tekilKampanya}</span>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ color: "var(--yazi-normal)" }}>Ortalama versiyon</span>
-                      <span style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>{ZAMAN_EKSENI.ortalamaVersiyon.toString().replace(".", ",")}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* ===== SATIR 3 — ÜRÜN AİLESİ (2 sutun) + KAPSAM DIŞI (1 sutun) ===== */}
-
-                {/* Ürün Ailesi Kartı (2 sütun) */}
-                <div style={{ ...bentoKartStil, gridColumn: "span 2" }}>
-                  <div style={bentoBaslikStil}>ÜRÜN AİLESİ DAĞILIMI</div>
-                  
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                    {urunAilesi.map((u) => {
-                      const dusukMu = u.doluluk < 25;
-                      const yaziRengi = dusukMu ? "#b8873a" : "#0c765f";
-                      const cubukRengi = dusukMu ? "#d4a34b" : "#169276";
-                      const kaynaktaYokMu = u.ad === "Belirtilmemiş";
-
-                      return (
-                        <div key={u.ad} style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                              <span style={{ fontSize: 13, fontWeight: 500, color: "var(--yazi-koyu)" }}>{u.ad}</span>
-                              {kaynaktaYokMu && (
-                                <span style={{ fontSize: 10, fontWeight: 600, background: "var(--kart-ustu)", color: "var(--yazi-soluk)", padding: "1px 5px", borderRadius: 5 }}>
-                                  kaynakta yok
-                                </span>
-                              )}
-                            </div>
-                            <div style={{ fontSize: 12, display: "flex", alignItems: "center", gap: 12 }}>
-                              <span style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>{u.sayi}</span>
-                              <span style={{ fontWeight: 600, color: yaziRengi, minWidth: 46, textAlign: "right" }}>
-                                %{u.doluluk.toString().replace(".", ",")}
-                              </span>
-                            </div>
-                          </div>
-                          <div style={{ width: "100%", height: 5, background: "var(--kenarlik)", borderRadius: 3, overflow: "hidden" }}>
-                            <div style={{ width: `${u.doluluk}%`, height: "100%", background: cubukRengi, borderRadius: 3 }} />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <div style={{ fontSize: 11, color: "var(--yazi-soluk)", marginTop: 12, paddingTop: 8, borderTop: "1px solid var(--kenarlik)" }}>
-                    Alan doluluk, o üründeki kampanyaların yapılandırılmış alanlarının ne kadarının dolu olduğunu gösterir. Düşük oran veri eksikliğidir, hata değildir.
-                  </div>
-                </div>
-
-                {/* Kapsam Dışı Banka Kartı (1 sütun) */}
-                <div style={{ ...bentoKartStil, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                  <div>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                      <span style={bentoBaslikStil}>KAPSAM DIŞI BANKA</span>
-                      <span style={{ fontSize: 10, fontWeight: 600, background: "var(--kenarlik)", color: "var(--yazi-soluk)", padding: "1px 6px", borderRadius: 5 }}>1 banka</span>
-                    </div>
-                    <div style={{ fontSize: 18, fontWeight: 700, color: "var(--yazi-koyu)", marginBottom: 6 }}>
-                      {OLCUMLER.veri.haricBanka}
-                    </div>
-                    <div style={{ fontSize: 12, color: "var(--yazi-normal)", lineHeight: 1.5 }}>
-                      BDDK listesinde yer alıyor ancak ürün/kampanya yayımlamadığı için hariç tutuldu.
-                    </div>
-                  </div>
-                  <div style={{ fontSize: 11, color: "var(--yazi-soluk)", marginTop: 14 }}>
-                    Periyodik olarak yeniden kontrol ediliyor.
-                  </div>
-                </div>
-
-                {/* ===== SATIR 4 — TAM GENİŞLİK BİLGİ KUTUSU ===== */}
-                <div
-                  style={{
-                    gridColumn: "1 / -1",
-                    background: "var(--zemin-yumusak)",
-                    border: "1px solid var(--kenarlik)",
-                    borderRadius: 12,
-                    padding: 14,
-                    fontSize: 12.5,
-                    color: "var(--yazi-normal)",
-                    lineHeight: 1.5,
-                  }}
-                >
-                  Bilinen sınırlama: Aktif/Süresi dolmuş yaşam döngüsü durumu yalnızca PostgreSQL'de hesaplanır. Bu rapor veritabanı okumadığı için aktif kampanya sayısı içermez.
-                </div>
-              </>
-            );
-          })()}
-        </div>
-      </Modal>
     </div>
   );
 }

@@ -27,6 +27,7 @@ import {
 } from "@ant-design/icons";
 import { useAudit } from "../context/AuditContext";
 import KopyalaButonu from "../components/KopyalaButonu";
+import ModelVeriPanelleri from "../components/ModelVeriPanelleri";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -357,9 +358,10 @@ export default function AuditPanel() {
   if (!sonAudit) {
     return (
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-        <Title level={3} style={{ marginBottom: 16 }}>
+        <Title level={3} style={{ marginBottom: 4 }}>
           Jüri Audit Paneli
         </Title>
+        <ModelVeriPanelleri />
 
         <Card className="audit-karti">
           <Space direction="vertical" size={16} style={{ width: "100%" }}>
@@ -431,9 +433,10 @@ export default function AuditPanel() {
   // SORUN 3: Düzen Şeridi & 2-Sütunlu Yapı
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-      <Title level={3} style={{ marginBottom: 16 }}>
+      <Title level={3} style={{ marginBottom: 4 }}>
         Jüri Audit Paneli
       </Title>
+      <ModelVeriPanelleri />
 
       {/* ÜST ŞERİT: Soru metni + trace zamanı + çağrılan araç + yanıt süresi */}
       <div className="audit-ust-serit">

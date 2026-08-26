@@ -1,13 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   Alert,
   Card,
+  Col,
   Descriptions,
   Empty,
   Progress,
+  Row,
   Select,
   Skeleton,
   Space,
+  Statistic,
   Table,
   Tag,
   Tooltip,
@@ -21,6 +25,7 @@ import {
   SafetyOutlined,
 } from "@ant-design/icons";
 import { extractionAuditGetir, kampanyalariGetir } from "../api/client";
+import { OLCUMLER, OLCUM_TARIHI } from "../data/olcumler";
 
 /**
  * ExtractionAudit — Jüri "hangi katman ne değer verdi?" sorusunun ekranı.
@@ -263,6 +268,44 @@ export default function ExtractionAudit() {
           Hangi model hangi değeri çıkardı? Doğrulama sonucu ne?
         </Typography.Text>
       </div>
+
+      {/* Toplu ölçüm özeti - bu sayfadaki kayıt bazlı kanıtın TOPLAM sayısı.
+          Aynı sayılar Jüri Audit Paneli'ndeki Model Metrikleri panelinde de
+          var; buradaki fark, o panelin aggregate sayı verirken bu sayfanın
+          o sayının ARKASINDAKİ kayıt/alan bazlı kanıtı göstermesi - ikisi
+          artık aynı sayfa ailesinde, birbirine referans veriyor. */}
+      <Card size="small" style={{ marginBottom: 20, background: "var(--zemin-yumusak)" }}>
+        <Row gutter={24} align="middle">
+          <Col xs={24} sm={8}>
+            <Statistic
+              title="Dolu Alan Doğruluğu"
+              value={OLCUMLER.cikarim.doluAlanDogrulugu}
+              suffix="%"
+              valueStyle={{ fontSize: 20 }}
+            />
+          </Col>
+          <Col xs={24} sm={8}>
+            <Statistic
+              title="Boş Alan Doğruluğu"
+              value={OLCUMLER.cikarim.bosAlanDogrulugu}
+              suffix="%"
+              valueStyle={{ fontSize: 20 }}
+            />
+          </Col>
+          <Col xs={24} sm={8}>
+            <Statistic
+              title="Makro F1"
+              value={OLCUMLER.cikarim.makroF1}
+              suffix="%"
+              valueStyle={{ fontSize: 20 }}
+            />
+          </Col>
+        </Row>
+        <Typography.Text type="secondary" style={{ fontSize: 11, display: "block", marginTop: 10 }}>
+          Toplam ölçüm ({OLCUM_TARIHI} tarihli, {OLCUMLER.cikarim.makroF1Detay}) — tam metodoloji ve RAG/Scope
+          Guard ölçümleri için <Link to="/audit">Jüri Audit Paneli → Model Metrikleri</Link>.
+        </Typography.Text>
+      </Card>
 
       {/* Kampanya Seçici Dropdown */}
       <div style={{ marginBottom: 20 }}>

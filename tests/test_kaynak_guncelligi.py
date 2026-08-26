@@ -95,7 +95,7 @@ def test_rag_kaynaklari_guncellik_alanini_DOLDURUR():
     )
     sahte_sonuc = SimpleNamespace(
         yeterli_kaynak_var=True, sebep=None, terim_ortusmesi=0.9,
-        eslesen_terimler=["ornek"],
+        eslesen_terimler=["ornek"], terim_agirliklari=[],
         parcalar=[{"skor": 0.9, "ustveri": {
             "metin": "Ornek kampanya metni", "banka": "Test Bankasi",
             "kampanya_adi": "Ornek", "kaynak_url": "https://banka.example/kampanya",
@@ -122,7 +122,7 @@ def test_kaynak_GIZLENMEZ_yalnizca_isaretlenir():
     eski = SimpleNamespace(id=1, kaynak_url="u1", kampanya_bitis=date(2020, 1, 1))
     sahte_sonuc = SimpleNamespace(
         yeterli_kaynak_var=True, sebep=None, terim_ortusmesi=0.9,
-        eslesen_terimler=["ornek"],
+        eslesen_terimler=["ornek"], terim_agirliklari=[],
         parcalar=[{"skor": 0.9, "ustveri": {
             "metin": "Cok eski kampanya", "banka": "Test Bankasi",
             "kampanya_adi": "Eski", "kaynak_url": "u1",

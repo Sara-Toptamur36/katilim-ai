@@ -225,30 +225,6 @@ export const terminolojiGetir = async () => {
   return yanit.data;
 };
 
-// POST /musteri-sesi/siniflandir - serbest metni Complaint Insight
-// taksonomisine (10 tema) gore kural tabanli siniflandirir. HICBIR SEY
-// SAKLAMAZ - sadece siniflandirip doner.
-export const musteriSesiSiniflandir = async (metin) => {
-  const yanit = await client.post("/musteri-sesi/siniflandir", { metin });
-  return yanit.data;
-};
-
-// GET /musteri-sesi/ornekler - sentetik demo seti (Faz 1 T8). Yanit
-// GERCEK sikayet DEGILDIR - "sentetik: true" ve "aciklama" alanlari
-// arayuzde GIZLENMEDEN gosterilmeli (rapor Bolum 5.7/15 seffaflik ilkesi).
-export const musteriSesiOrneklerGetir = async () => {
-  const yanit = await client.get("/musteri-sesi/ornekler");
-  return yanit.data;
-};
-
-// GET /musteri-sesi/yogunluk-ozeti - GERCEK `sikayetler` tablosundan tema
-// bazli gozlenen yogunluk (sentetik ornekler DEGIL). Izin kapisi acilana
-// kadar hep toplam_sikayet: 0 doner - bu dogru bos durumdur.
-export const musteriSesiYogunlukOzetiGetir = async () => {
-  const yanit = await client.get("/musteri-sesi/yogunluk-ozeti");
-  return yanit.data;
-};
-
 // GET /audit/extraction/{kampanya_id} - Bir kampanya icin cikarim katman
 // izlerini gosterir (Regex→GLiNER→Qwen→Resolver zinciri).
 // ROL KISITI: yalnizca banka_calisani/denetleyici/yonetici.

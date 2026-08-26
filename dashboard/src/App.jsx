@@ -11,7 +11,6 @@ import {
   MoonOutlined,
   SunOutlined,
   MenuOutlined,
-  MessageOutlined,
   CalculatorOutlined,
   SettingOutlined,
   LogoutOutlined,
@@ -22,7 +21,6 @@ import Dashboard from "./pages/Dashboard";
 import Kampanyalar from "./pages/Kampanyalar";
 import Karsilastirma from "./pages/Karsilastirma";
 import MetinAnalizi from "./pages/MetinAnalizi";
-import MusteriSesi from "./pages/MusteriSesi";
 import HesapMakinesi from "./pages/HesapMakinesi";
 import Giris from "./pages/Giris";
 import Chatbot from "./pages/Chatbot";
@@ -73,7 +71,6 @@ const GUVEN_MENUSU = [
     ikon: <FileSearchOutlined />,
     roller: ["banka_calisani", "denetleyici", "yonetici"],
   },
-  { yol: "/musteri-sesi", etiket: "Müşteri Sesi", ikon: <MessageOutlined /> },
   { yol: "/audit", etiket: "Jüri Audit Paneli", ikon: <AuditOutlined /> },
   {
     yol: "/extraction-audit",
@@ -108,7 +105,6 @@ const SAYFA_ADLARI = {
   "/karsilastirma": "Karşılaştırma",
   "/hesapla": "Hesap Makinesi",
   "/analiz": "Metin Analizi",
-  "/musteri-sesi": "Müşteri Sesi",
   "/audit": "Jüri Audit Paneli",
   "/extraction-audit": "Çıkarım Denetimi",
   "/giris": "Ayarlar",
@@ -501,7 +497,6 @@ function App() {
                   <Route path="/karsilastirma" element={<Karsilastirma />} />
                   <Route path="/hesapla" element={<HesapMakinesi />} />
                   <Route path="/analiz" element={<MetinAnalizi />} />
-                  <Route path="/musteri-sesi" element={<MusteriSesi />} />
                   <Route path="/chatbot" element={<Chatbot />} />
                   <Route path="/audit" element={<AuditPanel />} />
                   <Route path="/extraction-audit" element={<ExtractionAudit />} />

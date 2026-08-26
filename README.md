@@ -549,9 +549,15 @@ belgeli. Ayrıntı: [`docs/kapsam_ve_veri_ayrimi.md`](docs/kapsam_ve_veri_ayrimi
 Video, sunum ve proje dokümanı yazılırken kullanılacak ortak metin:
 [`docs/nasil_anlatiyoruz.md`](docs/nasil_anlatiyoruz.md)
 
-Kısaca: bu bir **hibrit çıkarım mimarisidir** (regex → GLiNER → Qwen2.5).
-Kullanılan üç model de açık kaynak ve **olduğu gibi**, sürümü sabitlenmiş
-biçimde çalışır — **fine-tuning yoktur**, dolayısıyla iddia da edilmez.
+Kısaca: bu bir **hibrit çıkarım mimarisidir** (regex → GLiNER → LLM).
+Kullanılan modeller açık kaynak ve **olduğu gibi**, sürümü sabitlenmiş
+biçimde çalışır — **fine-tuning/eğitim yoktur**, dolayısıyla iddia da
+edilmez. LLM katmanı iki sağlayıcıdan biriyle çalışabilir: yerel Qwen2.5
+(Ollama, varsayılan, internet gerekmez) veya EVREN (TEKNOFEST'in takıma
+verdiği bulut çıkarım altyapısı, `llm-fast`) — `EVREN_API_KEY`
+tanımlıysa devreye girer. İkisi de **hazır, önceden eğitilmiş** bir
+model; hangisi çağrılırsa çağrılsın mimari (regex → NER → LLM) ve
+çıktı sözleşmesi değişmez.
 
 ### Md. 6 dokümantasyonu (tam metin, tek belge)
 
@@ -746,6 +752,16 @@ Tüm bileşenler açık kaynaklıdır (şartname Md. 5.10 / 8):
 | Arayüz                | React, Ant Design                           | MIT                    |
 
 **Kullanılmayanlar:** özel/custom lisanslı LLM'ler, AGPL kütüphaneler, kapalı kaynak bulut API'leri, ücretli servisler.
+
+> **EVREN istisnası:** Şartname Md. 5.9/5.10'un gerektirdiği çevrimdışı/açık
+> kaynak çalışma şekli **yerel Qwen2.5 + Ollama** ile tam olarak sağlanır —
+> sistem `EVREN_API_KEY` olmadan da eksiksiz çalışır. EVREN (TEKNOFEST'in
+> yarışmaya özel sağladığı bulut çıkarım altyapısı, `llm-fast` modeli),
+> hibrit çıkarımın LLM katmanında Ollama'ya **opsiyonel bir alternatif
+> sağlayıcı** olarak eklendi — üçüncü taraf ücretli bir servis değil, takıma
+> yarışma kapsamında verilen bir kaynak. Yalnızca `.env`'de `EVREN_API_KEY`
+> tanımlıysa devreye girer; mimari, çıktı sözleşmesi ve şartname
+> gereksinimlerini karşılayan temel sistem bundan etkilenmez.
 
 > **NER model tercihi:** Önce BERTurk (`dbmdz/bert-base-turkish-cased`) denendi;
 > bu checkpoint NER için fine-tune edilmemiş olduğundan span çıkarımında

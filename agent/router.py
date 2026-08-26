@@ -560,7 +560,13 @@ def rag_aracini_cagir(
                 "tercih ediyorum."
             ),
             "sebep": sonuc.sebep or "Yeterli kaynak bulunamadi",
-            "veri": {"terim_ortusmesi": sonuc.terim_ortusmesi},
+            "veri": {
+                "terim_ortusmesi": sonuc.terim_ortusmesi,
+                # Cekimser kalindiginda da doldurulur - HANGI kelimenin
+                # kaynaksiz kaldigini gostermek, "kaynak bulunamadi"
+                # gerekcesini somutlastirir (rapor Bolum 5.7/15).
+                "terim_agirliklari": sonuc.terim_agirliklari,
+            },
         }
 
     kaynaklar = []
@@ -629,6 +635,7 @@ def rag_aracini_cagir(
             "terim_ortusmesi": sonuc.terim_ortusmesi,
             "eslesen_terimler": sonuc.eslesen_terimler,
             "parca_sayisi": len(sonuc.parcalar),
+            "terim_agirliklari": sonuc.terim_agirliklari,
         },
     }
 

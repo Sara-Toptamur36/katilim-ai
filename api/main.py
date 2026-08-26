@@ -1119,6 +1119,7 @@ def chat(istek: ChatIstek, kullanici: dict = Depends(token_dogrula)):
             terminoloji_sorunlari=ekstra["terminoloji_sorunlari"],
             dogrulama=ekstra["dogrulama"],
             sql_sorgusu=ekstra["sql_sorgusu"],
+            terim_agirliklari=ekstra["terim_agirliklari"] or [],
         ),
     )
 
@@ -1177,6 +1178,7 @@ async def chat_stream(istek: ChatIstek, kullanici: dict = Depends(token_dogrula)
         terminoloji_sorunlari=ekstra["terminoloji_sorunlari"],
         dogrulama=ekstra["dogrulama"],
         sql_sorgusu=ekstra["sql_sorgusu"],
+        terim_agirliklari=ekstra["terim_agirliklari"] or [],
     )
 
     cevap = sonuc["cevap"]

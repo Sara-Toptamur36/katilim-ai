@@ -91,6 +91,12 @@ class RetrieverSonucu:
     yeterli_kaynak_var: bool = False
     terim_ortusmesi: float = 0.0
     eslesen_terimler: list[str] = field(default_factory=list)
+    # Her sorgu teriminin GOSTERILEN parcalarin ne kadarinda gectigi
+    # (bkz. _terim_agirliklari docstring'i). "Attention" gorsellestirmesi
+    # YASAK (model ic mekanizmasi degil, seffaflik mimarisi kiyaslamasinda
+    # bilerek reddedildi) - bunun yerine bu, yorumlanabilir ve dogrudan
+    # olculebilir bir vekildir.
+    terim_agirliklari: list[dict] = field(default_factory=list)
     sebep: str | None = None
 
 
@@ -131,6 +137,47 @@ def _terim_ortusmesi(terimler: list[str], parcalar: list[dict]) -> tuple[float, 
         t for t in terimler if t in parca_tokenlari or _govde(t) in parca_govdeleri
     ]
     return len(eslesen) / len(terimler), eslesen
+
+
+def _terim_agirliklari(terimler: list[str], parcalar: list[dict]) -> list[dict]:
+    """Her sorgu teriminin GOSTERILEN parcalarin ne kadarinda gectigini olcer.
+
+    NEDEN GEREKLI: mimari kiyaslamada "Attention" gorsellestirmesi bilerek
+    reddedildi - modelin ic dikkat mekanizmasini temsil eden bir sey UI'da
+    gosterilmemeli (yaniltici bir "model bunu bu kelime yuzunden soyledi"
+    izlenimi verir; katilim.py'de boyle bir mekanizma zaten yok, hibrit
+    arama LEXICAL bir sistemdir). Bunun yerine dogrudan olculebilir bir
+    vekil kullanilir: bu terim, kullaniciya gosterilen kaynaklarin kacinda
+    GERCEKTEN geciyor? "kâr payı" 3/3 parcada geciyorsa uzun bar, "ödül"
+    hic gecmiyorsa bar bos - bu ekranda gorulen SEYE dogrudan karsilik
+    gelir, uydurulmus bir agirlik degildir.
+
+    _terim_ortusmesi ile AYNI govde-duyarli tokenlestirmeyi kullanir -
+    iki olcut farkli normalizasyon uygularsa "terim X eslesti ama agirlik
+    0" gibi tutarsiz bir gorunum cikar (bkz. o fonksiyonun docstring'i).
+    """
+    if not terimler:
+        return []
+    if not parcalar:
+        return [{"terim": t, "agirlik": 0.0, "eslesti": False} for t in terimler]
+
+    parca_govde_kumeleri = []
+    for p in parcalar:
+        metin = (p.get("ustveri") or {}).get("metin", "")
+        tokenlar = set(metni_tokenlara_ayir(metin))
+        parca_govde_kumeleri.append((tokenlar, {_govde(tok) for tok in tokenlar}))
+
+    sonuc = []
+    for t in terimler:
+        govde_t = _govde(t)
+        gecen = sum(
+            1
+            for tokenlar, govdeler in parca_govde_kumeleri
+            if t in tokenlar or govde_t in govdeler
+        )
+        agirlik = gecen / len(parcalar)
+        sonuc.append({"terim": t, "agirlik": round(agirlik, 3), "eslesti": gecen > 0})
+    return sonuc
 
 
 def getir(
@@ -381,10 +428,16 @@ def getir(
     else:
         parcalar = aday_havuzu[:limit]
 
+    # GOSTERILEN parcalara gore hesaplanir (banka metadata sozde-terimi
+    # HARIC - terimler soruyu ayirt eden GERCEK kelimelerdir, `eslesen`
+    # gibi metadata notu eklenmez).
+    terim_agirliklari = _terim_agirliklari(terimler, parcalar)
+
     return RetrieverSonucu(
         parcalar=parcalar,
         yeterli_kaynak_var=yeterli,
         terim_ortusmesi=round(ortusme, 3),
         eslesen_terimler=eslesen,
+        terim_agirliklari=terim_agirliklari,
         sebep=sebep,
     )

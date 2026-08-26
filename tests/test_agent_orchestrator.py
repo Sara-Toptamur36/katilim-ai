@@ -403,6 +403,54 @@ def test_gelenek_terim_gecmeyen_soruda_giris_onek_eklenmez():
     assert "geleneksel bankacılık terimidir" not in sonuc["cevap"]
 
 
+# ---------------------------------------------------------------------------
+# Sorgu Esleme Agirliklari (25 Agustos 2026, "Attention" yasagi yerine)
+# ---------------------------------------------------------------------------
+
+
+def test_rag_yolunda_terim_agirliklari_audit_ekstraya_tasinir():
+    """RAG aracinin ham cikardigi 'veri.terim_agirliklari', orchestrator
+    tarafindan audit_ekstra'ya AYNEN tasinmali - Decision Trace'in
+    'Sorgu Esleme Agirliklari' grafigi bunu okur."""
+    from agent.orchestrator import soru_isle
+
+    beklenen = [{"terim": "kâr", "agirlik": 1.0, "eslesti": True}]
+
+    def rag_agirlikli(soru: str, kayit_getirici=None) -> dict:
+        return {
+            "basarili": True,
+            "cevap": "Kaynaklarda bulduklarim: ...",
+            "kaynaklar": [{"kaynak_url": "https://ornek.com", "similarity_score": 0.9}],
+            "veri": {"terim_agirliklari": beklenen},
+        }
+
+    # "taksit" kelimesi yuzunden once HESAPLAMA'ya duser, eksik bilgiyle
+    # basarisiz olup RAG'e geri cekilir (ayni desen: test_arac_yetersiz_
+    # kalirsa_raga_geri_cekilir).
+    sonuc = soru_isle(
+        "Ziraat Katılım kart kampanyalarında taksit var mı?",
+        _sahte_getirici,
+        rag_araci=rag_agirlikli,
+    )
+    assert sonuc["audit_ekstra"]["cagrilan_arac"] == "rag"
+    assert sonuc["audit_ekstra"]["terim_agirliklari"] == beklenen
+
+
+def test_rag_disi_araclarda_terim_agirliklari_none_kalir():
+    """Belge aramayan araclarda (hesaplama/sozluk/karsilastirma) kavramin
+    anlami yok - sessizce bos liste degil, ACIKCA None kalmali (digger
+    'uygulanamaz' alanlarla AYNI konvansiyon, bkz. extraction_confidence)."""
+    from agent.orchestrator import soru_isle
+
+    sonuc = soru_isle(
+        "500.000 TL, %1,99 oranla 24 ay vadeyle taksitim ne kadar olur?",
+        _sahte_getirici,
+        rag_araci=_sahte_rag,
+    )
+    assert sonuc["audit_ekstra"]["cagrilan_arac"] == "calculator"
+    assert sonuc["audit_ekstra"]["terim_agirliklari"] is None
+
+
 def test_sozluk_yanitinda_gelenek_karsilik_bilgi_notu_sayilir():
     """DENETIM BULGUSU: Sozluk aracinin kendi gorevi gelenek karsiligi
     OGRETMEK (terminology/sozluk.json'daki gelenek_karsilik alani, Md.

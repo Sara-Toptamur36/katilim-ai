@@ -493,6 +493,20 @@ class TerminolojiSorunu(BaseModel):
     onerilen: str
 
 
+class TerimAgirligi(BaseModel):
+    """chunking/retriever.py::_terim_agirliklari cikti sekliyle AYNI.
+
+    "Sorgu Esleme Agirliklari" gorsellestirmesinin veri kaynagi - modelin
+    ic attention mekanizmasini TEMSIL ETMEZ (mimari kiyaslamada bilerek
+    reddedildi), yalnizca bu terimin GOSTERILEN kaynaklarin kacinda
+    gectigini gosteren, dogrudan olculebilir bir orandir.
+    """
+
+    terim: str
+    agirlik: float = Field(..., ge=0.0, le=1.0)
+    eslesti: bool
+
+
 class TazelikYanit(BaseModel):
     """Dashboard'un "bu veri ne kadar guncel?" sorusunun cevabi.
 
@@ -907,6 +921,11 @@ class AuditBilgisi(BaseModel):
     # Karsilastirma'da gercek True/False.
     terminoloji_tutarli: bool | None = None
     terminoloji_sorunlari: list[TerminolojiSorunu] = Field(default_factory=list)
+
+    # "Sorgu Esleme Agirliklari" gorsellestirmesi (bkz. TerimAgirligi).
+    # Yalnizca RAG/fallback yolunda dolar; digerlerinde bos liste kalir
+    # (belge aramayan araclarda kavramin anlami yok).
+    terim_agirliklari: list[TerimAgirligi] = Field(default_factory=list)
 
     # Verifier sonucu (validation/verifier.py) - CampaignRecord.dogrulanan_
     # alanlar ile AYNI sekil ({"alan_adi": bool}). TEK kayda dayanan

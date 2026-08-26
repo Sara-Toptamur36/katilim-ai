@@ -371,5 +371,9 @@ def soru_isle(soru: str, kayit_getirici: KayitGetirici, rag_araci=None) -> dict:
             # yonlendirdi mi?" sorusunu dogrudan cevaplar.
             "giris_terminoloji_yonlendirmesi": bool(giris_onek),
             "giris_terminoloji_sorunlari": soru_terminoloji_sonucu["bulunan_sorunlar"],
+            # Yalnizca RAG/fallback doldurur (chunking/retriever.py::
+            # _terim_agirliklari) - diger araclar belge aramadigi icin
+            # kavram anlamsiz, None kalir (uydurulmaz).
+            "terim_agirliklari": veri.get("terim_agirliklari"),
         },
     }

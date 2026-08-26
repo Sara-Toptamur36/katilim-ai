@@ -74,6 +74,13 @@ from agent.router import (
 )
 from terminology.tutarlilik_kontrolu import terminoloji_tutarliligini_kontrol_et
 
+# Bu araclarin YANITI zaten gelenek terimi ACIKCA ogretiyor - Sozluk kendi
+# ters-arama cumlesini uretir ("'Faiz orani' geleneksel... karsiligi Kar
+# Payi"), Kapsam Disi ise sabit, konuyla ilgisiz bir metin doner. Ikisine
+# de asagidaki soru-tarafi on-notu EKLENMEZ, cunku ya zaten var ya da
+# anlamsiz olurdu.
+_TERIM_YONLENDIRME_MUAF_ARACLARI = {"dictionary", "kapsam_disi"}
+
 KayitGetirici = Callable[[str], list]
 
 # Bu araclarin yanitinda gecen bir gelenek terim HATA degil, bilgi
@@ -163,6 +170,48 @@ def _yanit_guveni(arac: str, sonuc: dict, kaynaklar: list) -> float:
     return round(max(skorlar), 4)
 
 
+def _giris_terim_yonlendirme_oneki(sorunlar: list[dict]) -> str:
+    """Soruda gecen gelenek terimler icin kisa, egitici bir on-not uretir.
+
+    NEDEN GEREKTI (dogrulandi, 25 Agustos 2026): "En uygun faizli konut
+    kredisi hangisi?" sorusu niyet katmaninda hicbir anahtar kelimeyle tam
+    eslesmiyor (BILINMIYOR doner) ve yakin varyantlari (ornek: "Hangi
+    bankada en avantajli faizli kredi var?") KARSILASTIRMA'ya dusse bile
+    o arac en az 2 banka adi sart kosuyor (agent/router.py::karsilastirma_
+    aracini_cagir) - jurinin dogal soracagi bir soru banka adi tasimaz,
+    arac basarisiz olur ve sistem RAG'e geri cekilir. Ne RAG ne
+    karsilastirma aracinin gelenek terim aciklama mantigi var; yalnizca
+    Sozluk araci ("...nedir?" tanim sorularinda) bunu yapiyor. Sonuc:
+    Md. 5.5'in ogretmesi gereken tam terim (faiz/kredi) jurinin en dogal
+    soracagi cumlede sessizce atlaniyordu.
+
+    Bu on-ek hangi arac calisirsa calissin (RAG, karsilastirma, hesaplama)
+    ONCE terim farkini ogretip SONRA normal cevaba devam eder - "reddetme
+    degil yonlendirme" ilkesi (rapor Bolum 5.7/15). Tespit mekanizmasi
+    KOPYALANMAZ: terminology/tutarlilik_kontrolu.py::GELENEK_TERIM_
+    ESLESTIRMELERI zaten olculmus hassasiyet/ozgullukle (bkz. tests/
+    test_karsi_ornekler.py) "faizsiz", "kredi karti", "acik kredi" gibi
+    mesru kullanimlari yanlis alarm uretmeden ayirt ediyor - burada
+    yalnizca AYNI kontrol, yanitin degil SORUNUN uzerinde calistiriliyor.
+    """
+    gorulen: dict[str, str] = {}
+    for sorun in sorunlar:
+        gorulen.setdefault(sorun["onerilen"], sorun["gelenek_terim"])
+    if not gorulen:
+        return ""
+    # NOT: "karsiligi X'dir" yerine "karsiligi: X." kullanilir - Turkce unlu
+    # uyumu suffixi ("Kar Payi'dir" mi "Kar Payi'dır" mi?) sozlukteki her
+    # standart_terim icin ayrica hesaplamak gerektirirdi; agent/router.py::
+    # sozluk_aracini_cagir zaten AYNI sebeple bu kalibi kullaniyor (":"),
+    # burada TUTARLILIK icin kopyalanir.
+    cumleler = [
+        f"'{terim}' geleneksel bankacılık terimidir; katılım bankacılığındaki "
+        f"karşılığı: {oneri}."
+        for oneri, terim in gorulen.items()
+    ]
+    return " ".join(cumleler) + " Buna göre yanıtlıyorum:\n\n"
+
+
 def soru_isle(soru: str, kayit_getirici: KayitGetirici, rag_araci=None) -> dict:
     """Bir kullanici sorusunu isler, cevap + Juri Audit Paneli icin
     gereken tum izlenebilirlik alanlarini doner (rapor Bolum 10.2).
@@ -172,6 +221,12 @@ def soru_isle(soru: str, kayit_getirici: KayitGetirici, rag_araci=None) -> dict:
     """
     baslangic = time.time()
     niyet, guven = niyet_tespit_et(soru)
+
+    # SORU tarafinda gelenek terim var mi? (bkz. _giris_terim_yonlendirme_
+    # oneki docstring'i). YANITTAKI kontrolden (asagida, terminoloji_sonucu)
+    # KASITLI OLARAK AYRI: ikisi farkli seyi olcer - biri "kullanici hangi
+    # dilde sordu", digeri "arac hangi dilde cevapladi".
+    soru_terminoloji_sonucu = terminoloji_tutarliligini_kontrol_et(soru)
 
     # `rag_araci` enjekte edilebilir (kayit_getirici ile ayni desen):
     # yonlendirme mantigini test eden birim testleri, gercek embedding
@@ -239,11 +294,28 @@ def soru_isle(soru: str, kayit_getirici: KayitGetirici, rag_araci=None) -> dict:
 
     # Terminology Check (Md. 5.5) - bkz. modul docstring'i "TERMINOLOGY
     # CHECK - RAG'DE NEDEN FARKLI DAVRANIR" / "SOZLUK ARACI DA AYNI
-    # MUAFIYETI ALIR" ve _TERMINOLOJI_BILGI_NOTU_ARACLARI.
+    # MUAFIYETI ALIR" ve _TERMINOLOJI_BILGI_NOTU_ARACLARI. TEMIZ sonuc["cevap"]
+    # uzerinde calisir - asagidaki soru-tarafi on-eki EKLENMEDEN once, cunku
+    # on-ekin kendisi (ornek: "'faizli' geleneksel bankacilik terimidir...")
+    # bilerek gelenek kelimeyi ICERIR ve bu kontrolu yanlislikla tetikler -
+    # bu, aracin URETTIGI cevaptaki gercek bir sizintiyla KARISTIRILMAMALI.
     terminoloji_sonucu = terminoloji_tutarliligini_kontrol_et(sonuc["cevap"])
 
+    # SORU-TARAFI YONLENDIRME (bkz. _giris_terim_yonlendirme_oneki
+    # docstring'i). Sozluk ve Kapsam Disi haric her arac icin: soruda
+    # gelenek terim varsa, cevabin basina kisa bir egitici not eklenir -
+    # "reddetme degil yonlendirme" (rapor Bolum 5.7/15). Kullanicinin
+    # gordugu METIN degisir ama audit'teki terminoloji_sonucu (yukarida)
+    # zaten TEMIZ cevaba gore hesaplandigi icin etkilenmez.
+    giris_onek = (
+        _giris_terim_yonlendirme_oneki(soru_terminoloji_sonucu["bulunan_sorunlar"])
+        if arac not in _TERIM_YONLENDIRME_MUAF_ARACLARI
+        else ""
+    )
+    nihai_cevap = giris_onek + sonuc["cevap"]
+
     return {
-        "cevap": sonuc["cevap"],
+        "cevap": nihai_cevap,
         "kaynaklar": kaynaklar,
         "confidence": _yanit_guveni(arac, sonuc, kaynaklar),
         "fallback": not sonuc.get("basarili", False),
@@ -293,5 +365,11 @@ def soru_isle(soru: str, kayit_getirici: KayitGetirici, rag_araci=None) -> dict:
                 None if arac in _TERMINOLOJI_BILGI_NOTU_ARACLARI else terminoloji_sonucu["tutarli"]
             ),
             "terminoloji_sorunlari": terminoloji_sonucu["bulunan_sorunlar"],
+            # SORU tarafi (yukaridaki iki alanin YANIT tarafiyla
+            # KARISTIRILMAMASI icin ayri adlandirildi). Juri panelinde
+            # "kullanici gelenek terim kullandi mi, sistem bunu yakalayip
+            # yonlendirdi mi?" sorusunu dogrudan cevaplar.
+            "giris_terminoloji_yonlendirmesi": bool(giris_onek),
+            "giris_terminoloji_sorunlari": soru_terminoloji_sonucu["bulunan_sorunlar"],
         },
     }

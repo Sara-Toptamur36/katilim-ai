@@ -285,6 +285,124 @@ def test_temiz_yanitta_terminoloji_tutarli_true_doner():
     assert sonuc["audit_ekstra"]["terminoloji_sorunlari"] == []
 
 
+# ---------------------------------------------------------------------------
+# Soru-tarafi terim yonlendirmesi (25 Agustos 2026, jüri senaryosu dogrulandi)
+# ---------------------------------------------------------------------------
+
+
+def test_faizli_kredi_sorusu_bilinmiyora_duser_ve_rage_gider():
+    """DENETIM BULGUSU: 'En uygun faizli konut kredisi hangisi?' hicbir
+    anahtar kelimeyle tam eslesmiyor (BILINMIYOR doner), bu yuzden ne
+    KARSILASTIRMA ne baska bir arac devreye girer - dogrudan RAG'e gider.
+    Bu test yalnizca YONLENDIRME zincirini kilitler; asil egitici on-not
+    asagidaki testte dogrulanir."""
+    from agent.intent import niyet_tespit_et
+
+    assert niyet_tespit_et("En uygun faizli konut kredisi hangisi?")[0].value == "bilinmiyor"
+
+
+def test_faizli_kredi_sorusunda_terim_yonlendirme_oneki_eklenir():
+    """DENETIM BULGUSU: 'faiz'/'kredi' gecen bir karsilastirma/bilgi
+    sorusunda ne RAG ne Karsilastirma araci (agent/router.py::
+    karsilastirma_aracini_cagir en az 2 banka adi sart kosuyor, dogal bir
+    soru banka adi tasimaz ve RAG'e geri cekilir) gelenek terimi
+    aciklamiyordu - yalnizca Sozluk aracinin tanim sorularinda ("...nedir?")
+    yaptigi seyi, ajan artik HANGI ARAC CALISIRSA CALISSIN cevabin basina
+    ekliyor."""
+    from agent.orchestrator import soru_isle
+
+    def basarili_rag(soru: str, kayit_getirici=None) -> dict:
+        return {
+            "basarili": True,
+            "cevap": "Konut finansmanı kampanyalarımızda kâr payı oranı %1,89 ile başlıyor.",
+            "kaynaklar": [{"kaynak_url": "https://ornek.com", "similarity_score": 0.8}],
+        }
+
+    sonuc = soru_isle(
+        "En uygun faizli konut kredisi hangisi?", _sahte_getirici, rag_araci=basarili_rag
+    )
+    assert sonuc["audit_ekstra"]["cagrilan_arac"] == "rag"
+    assert "geleneksel bankacılık terimidir" in sonuc["cevap"]
+    assert "Kâr Payı" in sonuc["cevap"]
+    assert "Finansman" in sonuc["cevap"]
+    # Asil arac cevabi hala tam olarak icinde olmali - onek EKLENIR,
+    # cevap DEGISTIRILMEZ ("reddetme degil yonlendirme").
+    assert "kâr payı oranı %1,89" in sonuc["cevap"]
+    assert sonuc["audit_ekstra"]["giris_terminoloji_yonlendirmesi"] is True
+    assert len(sonuc["audit_ekstra"]["giris_terminoloji_sorunlari"]) == 2
+
+
+def test_terim_yonlendirme_oneki_yanit_tarafi_terminoloji_kontrolunu_bozmaz():
+    """On-ekin kendisi bilerek 'faiz'/'kredi' iceriyor - bu, aracin
+    URETTIGI temiz cevaptaki gercek bir sizinti sayilmamali. terminoloji_
+    tutarli, on-ek EKLENMEDEN ONCEKI cevaba gore hesaplanir."""
+    from agent.orchestrator import soru_isle
+
+    def basarili_rag(soru: str, kayit_getirici=None) -> dict:
+        return {
+            "basarili": True,
+            "cevap": "Konut finansmanı kampanyalarımızda kâr payı oranı %1,89 ile başlıyor.",
+            "kaynaklar": [{"kaynak_url": "https://ornek.com", "similarity_score": 0.8}],
+        }
+
+    sonuc = soru_isle(
+        "En uygun faizli konut kredisi hangisi?", _sahte_getirici, rag_araci=basarili_rag
+    )
+    # RAG bilgi notu muafiyetinde oldugu icin None - bkz.
+    # _TERMINOLOJI_BILGI_NOTU_ARACLARI. Onemli olan: on-ekteki "faiz"/
+    # "kredi" kelimeleri bu alani YANLIŞLIKLA False'a CEVİRMEMİŞ.
+    assert sonuc["audit_ekstra"]["terminoloji_tutarli"] is None
+    # Aracin kendi cevabinda gercekten hicbir gelenek terim yok.
+    assert sonuc["audit_ekstra"]["terminoloji_sorunlari"] == []
+
+
+def test_sozluk_sorusunda_giris_onek_tekrarlanmaz():
+    """'Faiz orani nedir?' zaten SOZLUK araciyla TAM aciklamali cevaplaniyor
+    (kaynak + tanim dahil) - ayni bilginin BASINA bir de kisa on-not
+    eklemek gereksiz tekrar olurdu. Sozluk aracina on-ek MUAFTIR."""
+    from agent.orchestrator import soru_isle
+
+    sonuc = soru_isle("Faiz oranı nedir?", _sahte_getirici, rag_araci=_sahte_rag)
+    assert sonuc["audit_ekstra"]["cagrilan_arac"] == "dictionary"
+    assert sonuc["audit_ekstra"]["giris_terminoloji_yonlendirmesi"] is False
+    # Cevap hala Sozluk aracinin kendi ters-arama cumlesiyle basliyor,
+    # basina baska bir seyle DUBLE edilmedi.
+    assert sonuc["cevap"].startswith("'Faiz")
+
+
+def test_kapsam_disi_sorusunda_giris_onek_eklenmez():
+    """Kapsam Disi cevabi sabit ve konuyla ilgisizdir - terim iceriyor
+    olsa bile (ornek: 'faizli hesapta TMSF guvencesi var mi?') basina
+    alakasiz bir terim notu eklemek kafa karistirir. Kapsam Disi aracina
+    on-ek MUAFTIR."""
+    from agent.orchestrator import soru_isle
+
+    sonuc = soru_isle(
+        "Faizli hesapta TMSF güvencesi var mı?", _sahte_getirici, rag_araci=_sahte_rag
+    )
+    assert sonuc["audit_ekstra"]["cagrilan_arac"] == "kapsam_disi"
+    assert sonuc["audit_ekstra"]["giris_terminoloji_yonlendirmesi"] is False
+    assert sonuc["cevap"] == sonuc["cevap"].strip()
+    assert "bankanızla iletişime geçin" in sonuc["cevap"]
+
+
+def test_gelenek_terim_gecmeyen_soruda_giris_onek_eklenmez():
+    """Yanlis alarm KORUMASI: 'kredi karti' gibi mesru bir katilim
+    urun adiyla soru sorulunca hicbir onek eklenmemeli - terminology/
+    tutarlilik_kontrolu.py'nin kendi 'guvenli_sonraki_kelime_onekleri'
+    istisnasi (bkz. test_karsi_ornekler.py::MESRU_KULLANIMLAR) burada da
+    gecerli olmali, ayri bir mantik KOPYALANMADIGI icin otomatik gecer."""
+    from agent.orchestrator import soru_isle
+
+    sonuc = soru_isle(
+        "Kuveyt Türk ile Albaraka Türk kredi kartını karsilastir",
+        _sahte_getirici,
+        rag_araci=_sahte_rag,
+    )
+    assert sonuc["audit_ekstra"]["giris_terminoloji_yonlendirmesi"] is False
+    assert "geleneksel bankacılık terimidir" not in sonuc["cevap"]
+
+
 def test_sozluk_yanitinda_gelenek_karsilik_bilgi_notu_sayilir():
     """DENETIM BULGUSU: Sozluk aracinin kendi gorevi gelenek karsiligi
     OGRETMEK (terminology/sozluk.json'daki gelenek_karsilik alani, Md.

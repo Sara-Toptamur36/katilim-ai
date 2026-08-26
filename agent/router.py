@@ -81,8 +81,8 @@ def _bilinen_bankalari_yukle() -> list[str]:
 # daha yuksek cunku tek kelimede yanlis eslesme riski daha buyuk. Yanlis
 # BANKA secmek, banka bulamamaktan kotudur - kullaniciya baska bankanin
 # kampanyasi gosterilirdi.
-_BANKA_TAM_ESIK = 0.80
-_BANKA_KELIME_ESIK = 0.85
+_BANKA_TAM_ESIK = 0.85
+_BANKA_KELIME_ESIK = 0.90
 
 
 def _ayirt_edici_kelimeler(bankalar: list[str]) -> dict[str, str]:
@@ -366,9 +366,8 @@ def toplam_maliyet_aracini_cagir(soru: str, kayit_getirici) -> dict[str, Any]:
     Her bankanin kar_payi_orani_decimal ve vade_ay'i KENDI kampanya
     verisinden gelir; kullanicidan yalnizca ortak bir anapara istenir.
     """
-    s = turkce_ascii_katla(soru)
     bilinen_bankalar = _bilinen_bankalari_yukle()
-    bulunan_bankalar = [b for b in bilinen_bankalar if turkce_ascii_katla(b) in s]
+    bulunan_bankalar = _sorudaki_bankalari_bul(soru, bilinen_bankalar)
 
     if len(bulunan_bankalar) < 2:
         return {

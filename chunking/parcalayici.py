@@ -39,7 +39,7 @@ import re
 # Hedef parca boyutu: cok kucuk parca baglamsiz kalir, cok buyuk parca
 # tek bir sorguya birden fazla konu karistirir. ~700 karakter, gercek
 # kampanya kosullarinin ortalama uzunluguna gore secildi.
-HEDEF_PARCA_BOYUTU = 700
+HEDEF_PARCA_BOYUTU = 900
 ASGARI_PARCA_BOYUTU = 60
 
 # Tam eslesen gurultu satirlari (kucuk harfe cevrilip karsilastirilir)
@@ -267,6 +267,86 @@ def _icerik_ozeti(metin: str) -> str:
     return hashlib.sha256(normalize.encode("utf-8")).hexdigest()
 
 
+def _recursive_split(text: str, chunk_size: int = 900, overlap: int = 150) -> list[str]:
+    """Metni özyinelemeli olarak (paragraf -> cümle -> boşluk) böler ve
+    anlam bütünlüğünü korumaya çalışır. Belirtilen overlap kadar bir
+    önceki parçanın sonundan metin taşır (kayan pencere).
+    """
+    separators = ["\n\n", "\n", ". ", ", ", " "]
+    
+    def _split(text_to_split: str, sep_index: int) -> list[str]:
+        if len(text_to_split) <= chunk_size:
+            return [text_to_split]
+        if sep_index >= len(separators):
+            # Hiçbir ayracla bölünemeyecek kadar uzun bir metin ise (istisnai durum)
+            chunks = []
+            start = 0
+            while start < len(text_to_split):
+                end = start + chunk_size
+                chunks.append(text_to_split[start:end])
+                start += chunk_size - overlap
+            return chunks
+            
+        sep = separators[sep_index]
+        
+        # Regex ile bölüp ayıracı metne yapışık tutuyoruz ki noktalama kaybolmasın.
+        if sep == "\n\n":
+            pattern = r'(\n\n)'
+        elif sep == "\n":
+            pattern = r'(\n)'
+        elif sep == ". ":
+            pattern = r'(\. )'
+        elif sep == ", ":
+            pattern = r'(, )'
+        else: # sep == " "
+            pattern = r'( )'
+            
+        splits = re.split(pattern, text_to_split)
+        
+        pieces = []
+        for i in range(0, len(splits), 2):
+            piece = splits[i]
+            if i + 1 < len(splits):
+                piece += splits[i+1]
+            if piece:
+                pieces.append(piece)
+                
+        chunks = []
+        current_chunk_pieces = []
+        current_length = 0
+        
+        for piece in pieces:
+            if len(piece) > chunk_size:
+                if current_chunk_pieces:
+                    chunks.append("".join(current_chunk_pieces))
+                    current_chunk_pieces = []
+                    current_length = 0
+                sub_chunks = _split(piece, sep_index + 1)
+                chunks.extend(sub_chunks)
+                continue
+                
+            if current_length + len(piece) > chunk_size and current_chunk_pieces:
+                chunks.append("".join(current_chunk_pieces))
+                
+                # Overlap oluştur: mevcut parça hedef overlap'i aşmayacak şekilde
+                # baştan eleman çıkararak küçültülür.
+                while current_chunk_pieces and len("".join(current_chunk_pieces)) > overlap:
+                    current_chunk_pieces.pop(0)
+                
+                current_chunk_pieces.append(piece)
+                current_length = len("".join(current_chunk_pieces))
+            else:
+                current_chunk_pieces.append(piece)
+                current_length += len(piece)
+                
+        if current_chunk_pieces:
+            chunks.append("".join(current_chunk_pieces))
+            
+        return chunks
+
+    return _split(text, 0)
+
+
 def belgeyi_parcala(
     ham_metin: str,
     baslik: str | None = None,
@@ -290,22 +370,14 @@ def belgeyi_parcala(
     # KALIBI ELEME" bolumu. `kalip_satirlar` verilmezse davranis DEGISMEZ:
     # tek belgelik cagrilarda (test, tekil kullanim) sayfalar arasi tekrar
     # olcusu zaten yoktur, o yuzden eleme de yapilamaz.
-    temiz_satirlar = _menu_bloklarini_ele(temiz_satirlar, kalip_satirlar or set())
-
-    parcalar: list[str] = []
-    tampon: list[str] = []
-    uzunluk = 0
-
-    for satir in temiz_satirlar:
-        # Satir tek basina hedef boyutu asiyorsa kendi parcasi olur
-        if uzunluk + len(satir) > hedef_boyut and tampon:
-            parcalar.append(" ".join(tampon))
-            tampon, uzunluk = [], 0
-        tampon.append(satir)
-        uzunluk += len(satir) + 1
-
-    if tampon:
-        parcalar.append(" ".join(tampon))
+    # Menü ve gürültüler elendikten sonra kalan satırları temiz bir metin
+    # haline getirip Özyinelemeli (Recursive) Parçalayıcı'ya veriyoruz.
+    temiz_metin = "\n".join(temiz_satirlar)
+    
+    parcalar = _recursive_split(temiz_metin, chunk_size=hedef_boyut, overlap=150)
+    
+    # Kayan pencere ile bolundugu icin bas-son bosluklari temizleyelim
+    parcalar = [p.strip() for p in parcalar if p.strip()]
 
     # Basligi onek olarak ekle; baslik zaten parcanin icindeyse tekrarlama
     onekli = []

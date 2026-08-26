@@ -269,7 +269,7 @@ def getir(
     if banka_otomatik is None:
         banka_otomatik = os.environ.get("KATILIMAI_BANKA_OTOMATIK", "true").lower() == "true"
     if yeniden_sirala is None:
-        yeniden_sirala = os.environ.get("KATILIMAI_RERANK", "true").lower() == "true"
+        yeniden_sirala = os.environ.get("KATILIMAI_RERANK", "false").lower() == "true"
     if rag_modu is None:
         rag_modu = os.environ.get("RAG_MODE", "hibrit").strip().lower()
     if rag_modu not in ("hibrit", "dense"):

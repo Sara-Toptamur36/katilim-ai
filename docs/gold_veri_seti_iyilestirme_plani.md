@@ -229,11 +229,42 @@ Kod tarafında yapılacak bir şey yok.
 
 ---
 
-## Faz 6 — Eksik Kanıt Spanlarını Tamamla (40 kayıt)
+## Faz 6 — Eksik Kanıt Spanlarını Tamamla: BÜYÜK ÖLÇÜDE TAMAMLANDI (26 Ağustos 2026)
 
-`kanit_spanlari` boş olan kayıtlardan gerçek (referans olmayan) TASLAK
-dışı olanlara span ekleyin — doğrulanabilirliği artırır, gelecekteki
-denetimleri hızlandırır. Faz 1-2 ile birlikte yürütülebilir.
+**Yapıldı:** `gold_dataset/kanit_spani_oner.py` (otomatik, yalnızca tek
+adaylı durumları önerir) + elle inceleme ile kanıtsız dolu alan sayısı
+**71 → 23**'e indirildi (48 alan). Otomatik araç yalnızca 2'sini kendisi
+çözebildi (tek aday); kalan 46'sı **tek tek kaynak metinden okunarak**
+elle karara bağlandı (`kanit_spanlari` boş 40 kayıt hedefindeki karşılığı:
+31 → 27 kayıt — geri kalan 27'nin 8'i zaten "ÖLÇÜM DIŞI - KAYNAK KORPUSTA
+YOK" diye işaretli, gerisi tüm alanları bilerek BELİRSİZ bırakılmış
+kayıtlar - yani span EKLENECEK dolu alanı yok, bu normal).
+
+**Önemli bulgu - küçük sayılarda YANLIŞ POZİTİF eşleşme:** `kanit_spani_
+oner.py`'nin aday bulma mantığı, tek haneli değerleri (ör. `vade_ay=6`,
+`taksit_sayisi=3`) metinde ARAMA yaparken "2026" gibi yıl yazımlarının
+İÇİNDEKİ rakamla da eşleşiyor (`6` → "202**6**"), hatta bazen bir sayının
+BİR BAŞKA sayının içine gömülü alt-dizesiyle de eşleşiyor (`AL-001.
+finansman_tutari=40000` → "1**40.000** TL" içinde yanlışlıkla eşleşti,
+gerçek değer 140.000 ile karıştırılabilirdi). Elle inceleme sırasında bu
+tuzaklar tek tek elendi; hiçbiri yanlışlıkla yazılmadı (`tests/
+test_altin_veri_butunlugu.py::test_kanit_spani_ALANIN_DEGERINI_destekliyor`
+her span'ı doğruladı). Bu, aracın kendisinde iyileştirilebilecek bilinen
+bir sınırlama - küçük sayılarda kelime sınırı (`\b`) kontrolü eklenmesi
+önerilir, bu turda dokunulmadı (araç kodu değil, yalnızca veri düzeltildi).
+
+**Bilerek atlanan bir bulgu:** `DK-007.kar_payi_orani=0`'ın kaynağı
+"peşin fiyatına taksit" ifadesi - bu, `gold_dataset/vade_farksiz_
+duzelt.py`'nin "vade farksız" için verdiği kararla (kart/taksit özelliği,
+gerçek kâr payı kanıtı DEĞİL) AYNI SINIFTAN bir soru. Span uydurmak
+yerine ayrı bir etiketleme incelemesine bırakıldı - bu kayıt hâlâ
+kanıtsız.
+
+**Kalan 23 alan** (`python gold_dataset/kanit_spani_oner.py` ile
+görülebilir): 15'i "değer metinde bulunamadı" (çoğu türetilmiş/kademeli
+değer ya da kampanya rotasyonu - VK-003/006/007 zaten "ÖLÇÜM DIŞI"
+işaretli), 8'i 5+ adaylı (yüksek belirsizlik, tek tek okuma gerektiriyor,
+bu turda kapsam dışı bırakıldı).
 
 ---
 

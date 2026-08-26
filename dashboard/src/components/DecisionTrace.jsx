@@ -31,7 +31,9 @@ import {
  *   trace_id, intent, intent_confidence, cagrilan_arac,
  *   extraction_confidence, retriever_sonuclari, sql_sorgusu,
  *   response_confidence, dogrulama, terminoloji_tutarli,
- *   latency_ms, model, demo_snapshot
+ *   latency_ms, model, demo_snapshot, terim_agirliklari
+ *   (RAG/fallback'te dolar - "Attention" DEGIL, terimin gosterilen
+ *   kaynaklarda ne oranda gectigi, bkz. chunking/retriever.py)
  *
  * 5 adım: Soru → Niyet → Araç → Hesaplama/Retrieval → Doğrulama
  */
@@ -254,6 +256,72 @@ export default function DecisionTrace({ audit, soru }) {
               pagination={false}
               style={{ marginBottom: 16 }}
               scroll={{ x: true }}
+            />
+          </>
+        )}
+
+        {/* Sorgu Eşleşme Ağırlıkları — "Attention" gösterimi YASAK (mimari
+            kıyaslaması madde 5: modelin iç dikkat mekanizmasını temsil eden
+            bir görselleştirme yanıltıcıdır - bu sistemde öyle bir mekanizma
+            da yok, hibrit arama lexical bir sistemdir). Bunun yerine
+            chunking/retriever.py::_terim_agirliklari'nin ürettiği, dogrudan
+            ölçülebilir bir vekil gösterilir: bu terim, GÖSTERİLEN kaynakların
+            kaçında gerçekten geçiyor? */}
+        {audit.terim_agirliklari?.length > 0 && (
+          <>
+            <Typography.Text strong style={{ display: "block", marginBottom: 8 }}>
+              Sorgu Eşleşme Ağırlıkları
+            </Typography.Text>
+            <div style={{ marginBottom: 10 }}>
+              {audit.terim_agirliklari.map((t, i) => (
+                <div
+                  key={i}
+                  style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}
+                >
+                  <Typography.Text
+                    code
+                    style={{
+                      fontSize: 11,
+                      width: 110,
+                      flexShrink: 0,
+                      textAlign: "right",
+                      color: t.eslesti ? undefined : "var(--yazi-soluk, #bfbfbf)",
+                    }}
+                  >
+                    {t.terim}
+                  </Typography.Text>
+                  <div
+                    style={{
+                      flex: 1,
+                      background: "var(--kenarlik, #f0f0f0)",
+                      borderRadius: 4,
+                      height: 14,
+                      overflow: "hidden",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: `${Math.round(t.agirlik * 100)}%`,
+                        height: "100%",
+                        background: t.eslesti ? "#169276" : "transparent",
+                        borderRadius: 4,
+                      }}
+                    />
+                  </div>
+                  <Typography.Text
+                    type="secondary"
+                    style={{ fontSize: 10, width: 32, flexShrink: 0, textAlign: "right" }}
+                  >
+                    %{Math.round(t.agirlik * 100)}
+                  </Typography.Text>
+                </div>
+              ))}
+            </div>
+            <Alert
+              type="warning"
+              showIcon
+              style={{ marginBottom: 16, fontSize: 11 }}
+              message="Bu görselleştirme modelin iç attention mekanizmasını temsil etmez; sorgu kelimelerinin, size gösterilen kaynaklarda ne oranda geçtiğini gösterir."
             />
           </>
         )}

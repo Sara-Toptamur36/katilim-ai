@@ -1,0 +1,53 @@
+{
+  "tarih": "2026-08-26",
+  "evren_aktif": true,
+  "evren_bulgu": "llm-fast varsayilan olarak dusunme zinciri uretiyordu, max_tokens=1024 bunu tuketip cagriyi sessizce bos donduruyordu (finish_reason=length, content=null) - chat_template_kwargs enable_thinking=false ile duzeltildi",
+  "olcume_dahil_edilen_canli_kayit_sayisi": 291,
+  "regex_only": {
+    "dolu_alan_dogrulugu": "77.4",
+    "bos_alan_dogrulugu": "97.45",
+    "makro_precision": "83.12",
+    "makro_recall": "81.24",
+    "makro_f1": "80.66",
+    "alan_bazli_f1": {
+      "kampanya_turu": 81.88,
+      "kampanya_bitis": 95.90,
+      "hedef_kitle": 34.48,
+      "kampanya_baslangic": 97.67,
+      "taksit_sayisi": 88.48,
+      "odul_miktari": 89.36,
+      "odul_birimi": 90.43,
+      "finansman_tutari": 72.73,
+      "kar_payi_orani_percent": 80.00,
+      "erteleme_suresi_ay": 94.74,
+      "vade_ay": 61.54
+    }
+  },
+  "hibrit_regex_llm_evren": {
+    "ner_durumu": "kapali (GLiNER bu makinede torch/Windows native crash veriyor, olcumu etkilemez)",
+    "dolu_alan_dogrulugu": "81.68",
+    "bos_alan_dogrulugu": "96.88",
+    "makro_precision": "82.78",
+    "makro_recall": "84.12",
+    "makro_f1": "82.50",
+    "alan_bazli_f1": {
+      "kampanya_turu": 81.88,
+      "kampanya_bitis": 95.69,
+      "hedef_kitle": 56.95,
+      "kampanya_baslangic": 97.67,
+      "taksit_sayisi": 89.50,
+      "odul_miktari": 90.36,
+      "odul_birimi": 90.82,
+      "finansman_tutari": 72.73,
+      "kar_payi_orani_percent": 80.00,
+      "erteleme_suresi_ay": 94.74,
+      "vade_ay": 57.14
+    }
+  },
+  "kalan_bilinen_tavanlar": [
+    "hedef_kitle 'Belirli segment' (~140 kayit, insan etiketleyicinin baglamsal cikarimina dayaniyor, literal metinde yok)",
+    "Albaraka'nin 'Albaraka Mobil' uzerinden kod ile alinan indirim kampanyalari (13 kayit, metinde hic 'kart' gecmiyor)",
+    "AL-001 vade_ay - muhtemelen guncel olmayan gold etiketi (sayfa artik 'Vade: 6 aya kadar' iceriyor, gold notu 'sayfada vade ifadesi yok' diyordu)"
+  ],
+  "kaynak": "python -m scraper.scripts.extraction_accuracy ve extraction/hybrid_pipeline.kaydi_hibrit_cikar (ner_kullan=False) ile uretildi, ayrinti docs/extraction_accuracy_raporu.md"
+}

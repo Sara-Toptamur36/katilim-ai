@@ -911,3 +911,151 @@ extraction_accuracy`, 291 canlı kayıt - korpus bu tur SIRASINDA da
 büyüdü, bu yüzden ham sayılar önceki turlarla birebir kıyaslanamaz):
 dolu alan doğruluğu %74,57 (918/1231), boş alan doğruluğu %97,38 (46
 yanlış pozitif), Makro F1 %77,89.
+
+---
+
+## Tur — Zayıf alanların sistemli düzeltilmesi + EVREN düşünme-zinciri hatası (26 Ağustos 2026)
+
+**Kapsam:** Regex katmanındaki en zayıf alanlar tek tek kök nedenine
+kadar izlendi; ayrıca EVREN üzerinden ilk gerçek hibrit ölçüm alınırken
+kritik bir entegrasyon hatası bulundu ve düzeltildi.
+
+### 1. Regex katmanı — bulunan kök nedenler
+
+**dunyakatilim.com.tr sayfa kirliliği.** Sayfanın kendi kampanya içeriği
+bittikten SONRA "Diğer Kampanyalar" başlığıyla tamamen ilgisiz başka
+kampanyaların başlığı/açıklaması/bitiş tarihi, ardından tüm sitenin
+footer navigasyon menüsü geliyordu (57/57 dosyada doğrulandı). Bu blokta
+geçen BAŞKA bir kampanyanın "6 Aya Varan Taksit" gibi ifadeleri mevcut
+kaydın kendi `taksit_sayisi`'ymiş gibi yanlışlıkla eşleşiyordu.
+Sayfanın kendi marka kimliği ("© Dünya Katılım Bankası A.Ş...") metinde
+geçiyorsa ve "Diğer Kampanyalar" bulunuyorsa, bu noktadan itibaren
+kırpılıyor — konum eşiği yerine banka-özgü imza kullanıldı, çünkü aynı
+başlık Türkiye Finans/Albaraka'da sayfanın EN BAŞINDA bir nav öğesi
+olarak da geçiyor (konumla ayırt edilemez).
+
+**Albaraka'nın "Business kart... dahil değildir" istisnası.**
+"Ticari Kampanya" anahtar kelimesi ("business kart") bir hariç-tutma
+cümlesinde geçtiğinde bile körü körüne eşleşiyordu — 6 kayıtta
+(AL-006/010/011/013/014/016) yanlışlıkla "Ticari Kampanya" yerine doğrusu
+"Kart Kampanyasi" olması gerekiyordu. Negatif bağlam guard'ı eklendi.
+
+**Eksik çekim ekleri (5 ayrı bulgu):**
+- Ödül ifadelerinde "Hoş Geldin Hediyesi" ve "Bonus Kazanın" gibi ara
+  kelimeler `RE_ODUL` deseninin opsiyonel-kelime grubunda yoktu.
+- `RE_ODUL_TAVAN` "maksimum"un İngilizce yazımı "maximum"u kapsamıyordu.
+- `RE_TAKSIT_SAYISI` yönelme hali ("N taksite") ve "ay" kelimesi hiç
+  geçmeyen "X'a Varan Taksit" biçimini kaçırıyordu (19 + 5 dosyada
+  doğrulandı).
+- `RE_ERTELEME` yalnızca sıfat hali "ertelemeli"yi kabul ediyordu, isim
+  hali "erteleme"yi değil.
+- `RE_ODUL_MIL`, Kuveyt Türk'ün "X Mil'e Varan Fırsat!" başlığını
+  ("hediye" değil "fırsat") hiç yakalamıyordu.
+
+**"Yedek Hesap" ikincil ürün karışıklığı finansman_tutari'na da
+bağlandı.** Bu guard daha önce yalnızca `kar_payi_orani` için kuruluydu;
+aynı ikincil-ürün cümlesi ("...Yedek Hesabınızı kullanabilir, üstelik
+2.500 TL'ye kadar...") finansman_tutari'nı da yanlış yönlendiriyordu
+(TF-005).
+
+**kar_payi_orani'nin "harcama" dışlama kuralı aşırı genişti.**
+"akaryakıt harcamalarınızda %2,99 oran ile **vadelendirilecektir**" gibi
+bir cümlede %2,99 gerçek bir finansman oranıdır (kâr payı oranının ta
+kendisi), ama "harcama" kelimesi geçtiği için dışlanıyordu. Yalnızca
+"harcama" TEK BAŞINA dışlama sebebiyken ve aynı cümlede "vadelendir"
+fiili varsa istisna tanındı (KT-032).
+
+**DENENİP GERİ ALINAN adaylar** (ölçümle doğrulandı, net regresyon
+verdiği için tutulmadı):
+- `kampanya_turu`'nu doğrudan LLM'e sınıflandırtmak — 22 kayıtlık canlı
+  testte 6/22 doğru, "Müşteri Ol Kampanyası"na aşırı eğilim gösterdi.
+- `taksit_sayisi`'nde "N-M" aralığının ilk sayısını da aday saymak —
+  ZK-030/033'ü düzeltti ama AYNI yüzeysel "N-M taksitli...+K taksit"
+  kalıbının ZK-004'te ZIT anlam taşıdığı ortaya çıktı (gold notu: "+8,
+  kampanyanın KENDİ KATTIĞI taksit sayısıdır").
+- Sayfa başlığındaki tek "X Taksit İmkanı" ifadesini de aralık sayan bir
+  kural (KT-044 için) — KT-006/009'da PAYLAŞILAN bir ürün-özelliği
+  boilerplate'ini sahte çok-kademeli teklif gibi gösterip doğru cevabı
+  siliyordu.
+
+### 2. EVREN entegrasyon hatası — düşünme zinciri (kritik bulgu)
+
+İlk gerçek hibrit ölçüm (`kaydi_hibrit_cikar` + EVREN, GLiNER'in bu
+makinede güvenilir şekilde çökmesi nedeniyle NER kapalı) regex-only ile
+neredeyse birebir aynı çıktı — LLM katmanı fiilen hiçbir katkı
+sağlamıyordu, sessizce.
+
+Kök neden: `evren_istemci.sohbet_ile_sor`, `llm-fast` modeline
+`max_tokens=1024` ile istek atıyordu. Bu model VARSAYILAN OLARAK bir
+düşünme zinciri (`reasoning_content`) üretiyor — modülün kendi eski notu
+("thinking varsayılan olarak zaten kapalı") YANLIŞ çıktı, canlı
+doğrulandı. Düşünme zinciri TEK BAŞINA 1024 token'i tüketip
+`finish_reason="length"`, `content=None` ile dönüyordu; gerçek JSON
+cevabına hiç sıra gelmiyordu.
+
+Düzeltme: `chat_template_kwargs={"enable_thinking": false}` (`extra_body`
+ile) gönderiliyor artık. Aynı istek, düşünmeyle ~2000-3000 tamamlama
+tokeni ve saniyeler/onlarca saniye sürerken, düşünme kapatılınca ~44-120
+token ve ~2 saniyede AYNI doğru cevabı veriyor — hem hız hem doğruluk
+kazanımı, ödün yok.
+
+### 3. LLM katmanına eklenen guard'lar (EVREN'in kendi hataları)
+
+Düşünme kapatılıp gerçek cevaplar gelmeye başlayınca, LLM'in regex'in
+zaten sahip olduğu bazı korumalara SAHİP OLMADIĞI ortaya çıktı:
+
+- `odul_birimi` alanı "TL, Mil, Gram... gibi" dediği için model geçersiz
+  birimler uyduruyordu ("kahve", "hizmet", "Premium Üyelik") — kapalı
+  7 değerlik listeye (regex'in kendi `_ODUL_BIRIMI_ANAHTARLARI` +
+  "TL"si ile aynı) kısıtlandı.
+- `taksit_sayisi`'na "birden fazla farklı değer varsa null bırak"
+  talimatı eklendi (regex'in "çoklu aday → boş bırak" ilkesinin LLM
+  karşılığı).
+- `vade_ay`, "erteleme/öteleme/ödemesiz dönem" ifadelerindeki sayıyı da
+  vade sanıyordu (KT-028/040/042) — regex tarafında zaten var olan
+  `_vade_aslinda_taksit_mi` korumasının erteleme karşılığı
+  (`_vade_aslinda_erteleme_mi`) eklendi. Ayrıca "N taksite" (yönelme
+  hali) regex'in kendi düzeltmesiyle TUTARLI hale getirildi (KT-001).
+- `hedef_kitle` artık ölçümün kullandığı `hedef_kitle_segmenti()`
+  sınıflandırıcısından geçiriliyor (güvenlik ağı) — LLM'e doğrudan
+  kategori seçtirmek DENENDİ VE GERİ ALINDI (AL-001'de yanlış kategori
+  üretti).
+
+### 4. Bu tur sonrası anlık görüntü
+
+**Regex-only** (`python -m scraper.scripts.extraction_accuracy`, 291
+canlı kayıt):
+
+| Alan | Önce | Sonra |
+|---|---|---|
+| kampanya_turu | 79,06 | 81,88 |
+| taksit_sayisi | 86,76 | 88,48 |
+| odul_miktari | 84,44 | 89,36 |
+| odul_birimi | 85,56 | 90,43 |
+| finansman_tutari | 68,18 | 72,73 |
+| kar_payi_orani_percent | 73,68 | 80,00 |
+| erteleme_suresi_ay | 88,89 | 94,74 |
+| vade_ay | 62,50 | 61,54 (küçük, gerekçeli düşüş) |
+| **Makro F1** | **77,85** | **80,66** |
+
+**Hibrit (regex + LLM/EVREN, düşünme kapalı, NER kapalı)** — regex-only
+tabanına göre:
+
+| Alan | Regex-only | Hibrit (EVREN) |
+|---|---|---|
+| hedef_kitle | 34,48 | **56,95** |
+| taksit_sayisi | 88,48 | **89,50** |
+| odul_miktari | 89,36 | **90,36** |
+| odul_birimi | 90,43 | **90,82** |
+| vade_ay | 61,54 | 57,14 |
+| **Makro F1** | **80,66** | **82,50** |
+
+**Kalan, ölçülmüş gerçek tavanlar** (bilerek dokunulmadı): `hedef_kitle`
+"Belirli segment" (~140 kayıt, insan etiketleyicinin bağlamsal çıkarımına
+dayanıyor, literal metinde yok); Albaraka'nın "Albaraka Mobil" üzerinden
+kod ile alınan indirim kampanyaları (13 kayıt, metinde hiç "kart"
+geçmiyor, "Albaraka Mobil" TÜM Albaraka sayfalarında geçtiği için ayırt
+edici değil); AL-001'in `vade_ay` hatası muhtemelen GÜNCEL OLMAYAN gold
+etiketinden kaynaklanıyor (sayfa artık "Vade: 6 aya kadar" tablo alanı
+içeriyor, insan notu "sayfada vade ifadesi yok" diyordu — sayfa muhtemelen
+sonradan güncellendi, gold verisi yeniden doğrulanmalı).

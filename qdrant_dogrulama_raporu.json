@@ -1,0 +1,64 @@
+{
+  "tarih": "2026-08-26",
+  "qdrant_hazir": true,
+  "koleksiyon": "kampanya_parcalari",
+  "ham_korpus_belge": 623,
+  "uretilen_chunk": 2127,
+  "qdrant_chunk": 2127,
+  "senkron": true,
+  "banka_detay": {
+    "albaraka": {
+      "toplam_dosya": 45,
+      "yuklenebilen": 45,
+      "basarisiz": 0
+    },
+    "dunyakatilim": {
+      "toplam_dosya": 57,
+      "yuklenebilen": 57,
+      "basarisiz": 0
+    },
+    "emlakkatilim": {
+      "toplam_dosya": 112,
+      "yuklenebilen": 112,
+      "basarisiz": 0
+    },
+    "hayatfinans": {
+      "toplam_dosya": 30,
+      "yuklenebilen": 30,
+      "basarisiz": 0
+    },
+    "kuveytturk": {
+      "toplam_dosya": 123,
+      "yuklenebilen": 123,
+      "basarisiz": 0
+    },
+    "tombank": {
+      "toplam_dosya": 3,
+      "yuklenebilen": 3,
+      "basarisiz": 0
+    },
+    "tombankhadi": {
+      "toplam_dosya": 10,
+      "yuklenebilen": 10,
+      "basarisiz": 0
+    },
+    "turkiyefinans": {
+      "toplam_dosya": 18,
+      "yuklenebilen": 18,
+      "basarisiz": 0
+    },
+    "vakifkatilim": {
+      "toplam_dosya": 106,
+      "yuklenebilen": 106,
+      "basarisiz": 0
+    },
+    "ziraatkatilim": {
+      "toplam_dosya": 119,
+      "yuklenebilen": 119,
+      "basarisiz": 0
+    }
+  },
+  "toplam_dosya": 623,
+  "basarili_yukle": 623,
+  "basarisiz_yukle": 0
+}

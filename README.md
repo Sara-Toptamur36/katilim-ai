@@ -6,6 +6,14 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 
 ---
 
+> ### 🎓 Jüri için tek belge
+>
+> [**`docs/JURI_DOKUMANTASYONU.md`**](docs/JURI_DOKUMANTASYONU.md) — projenin
+> tamamı 30 bölümde: mimari, veri, çıkarım metrikleri (alan bazlı), RAG
+> ölçümü, ajan, güvenlik, çevrimdışı çalışma, **sınırlılıklar** ve her
+> sayının üretim komutu. Her rakamın tarihi ve ölçüldüğü veri kümesi yazılıdır;
+> ölçülmemiş hiçbir şey ölçülmüş gibi sunulmaz.
+
 > **Ekip için iki temel belge:**
 > [`docs/PROJE_TANITIMI.md`](docs/PROJE_TANITIMI.md) — projenin ne olduğu,
 > hangi kararların neden alındığı, nerede olduğumuz.
@@ -35,6 +43,9 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 |                  | `GERCEK_VERI_AKTIF=true` ile canlı PostgreSQL verisi bağlandı (536 kayıt)          | ✅ Tamamlandı |
 |                  | Çıkarım doğruluğu hibrit pipeline ile 291 canlı kayıtta yeniden ölçüldü            | ✅ Tamamlandı |
 |                  | CI regresyonu bulundu ve düzeltildi (`terim_agirliklari` sahte nesne alanı)        | ✅ Tamamlandı |
+|                  | Jüri dokümantasyonu ([`docs/JURI_DOKUMANTASYONU.md`](docs/JURI_DOKUMANTASYONU.md)) — 30 bölüm, her sayı koda/canlı veriye karşı doğrulandı | ✅ Tamamlandı |
+|                  | Metin Analizi + Çıkarım Denetimi ekranları jüri erişimine açıldı (menü rol kısıtı kaldırıldı) | ✅ Tamamlandı |
+|                  | Arayüzdeki bayat tarih/oran etiketleri canlı veriye bağlandı; alan bazlı F1 kırılımı eklendi | ✅ Tamamlandı |
 
 ### Ölçülebilir durum
 
@@ -499,7 +510,7 @@ arayüz kodu geçişte değişmez.
 | GET   | `/kampanyalar/{id}/tarihce` | Değişim tarihçesi — aynı URL'nin geçmiş taramaları (ek veri toplamaz)                      |
 | GET   | `/rakip-analizi`            | Rakip matrisi — tüm kriterler tek tabloda (`?kampanya_turu=`)                              |
 | GET   | `/terminoloji`              | Katılım bankacılığı sözlüğü (31 kavram, Md. 5.5)                                           |
-| POST  | `/cikar`                    | Serbest metinden yapılandırılmış çıktı — MetinAnalizi ekranı (staff-only: `musteri` hariç) |
+| POST  | `/cikar`                    | Serbest metinden yapılandırılmış çıktı — Metin Analizi ekranı. Rol kısıtı (`banka_calisani`/`denetleyici`/`yonetici`) **yalnızca `JWT_AKTIF=true` iken** uygulanır; demo varsayılanında ekran tüm giriş yapmış kullanıcılara (jüri dâhil) açıktır |
 | POST  | `/karsilastir`              | Kampanya karşılaştırma (sabit kriter listesi)                                              |
 | POST  | `/hesapla`                  | Taksit/kâr payı hesabı (saf Python, LLM yok)                                               |
 | POST  | `/chat`                     | Doğal dilde soru-cevap (kaynak + audit bilgisiyle)                                         |
@@ -670,8 +681,8 @@ atfedilmiyor — tıpkı terminoloji karşı-örnek setiyle aynı disiplinde
 (`tests/test_karsi_ornekler.py`), üretim verisine/RAG indeksine sızmadığı
 `tests/test_sentetik_musteri_sesi.py::test_sentetik_ornekler_urun_verisine_sizmamis`
 ile kilitlendi. Uç noktalar (`POST /musteri-sesi/siniflandir`,
-`GET /musteri-sesi/ornekler`) ve dashboard ekranı (`/musteri-sesi`) her
-yanıtta bu verinin **sentetik** olduğunu açıkça belirtir, gizlemez.
+`GET /musteri-sesi/ornekler`, `GET /musteri-sesi/yogunluk-ozeti`) her yanıtta
+bu verinin **sentetik** olduğunu açıkça belirtir, gizlemez.
 
 ### GitHub Pages (statik arayüz)
 

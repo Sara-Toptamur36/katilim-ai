@@ -7,13 +7,23 @@
 //   OLCUM_TARIHI -> makro F1, RAG Recall, cekimserlik, test sayisi.
 //                   Belirli bir veri seti uzerinde OLCULDU.
 //
-// Ikisini tek tarihle gostermek YANILTICI olurdu. 25 Agustos'ta RAG
-// olcumleri guncel indekste (1875 parca) yeniden kosuldu, ama CIKARIM
-// olcumleri (makro F1) hala eski, daha kucuk set uzerinde yapilmis
-// degerlerdir. Yeniden olculene kadar ayrim ekranda korunur.
+// Ikisini tek tarihle gostermek YANILTICI olurdu.
+//
+// GUNCELLEME (26 Agustos 2026): cikarim.makroF1 onceki 98.28 degeri
+// REGEX-ONLY ve kucuk/eski bir canli alt kumeden geliyordu (bkz.
+// docs/extraction_accuracy_raporu.md, 20 Agustos guncellemesi). EVREN
+// entegrasyonundaki sessiz bir hata duzeltildikten sonra (llm-fast
+// dusunme zinciri max_tokens'i tuketip bos donuyordu - chat_template_
+// kwargs enable_thinking=false ile giderildi), 291 canli kayit uzerinde
+// HEM regex-only HEM hibrit (regex+LLM/EVREN) yeniden olculdu - bkz.
+// cikarim_dogruluk_raporu.json. Asagidaki sayilar HIBRIT (calisan
+// sistemin gercekte kullandigi) varyanttir; regex-only tek basina daha
+// dusuktur (%80,66 F1). RAG olcumleri hala 25 Agustos'taki 1875 parcalik
+// indekste - iki taraf farkli tarihte oldugu icin OLCUM_VERI_SETI ikisini
+// ayri ayri belirtir.
 export const VERI_TARIHI = "24 Ağustos 2026";
-export const OLCUM_TARIHI = "25 Ağustos 2026";
-export const OLCUM_VERI_SETI = "129 sorgu / 1875 parçalık indeks";
+export const OLCUM_TARIHI = "26 Ağustos 2026";
+export const OLCUM_VERI_SETI = "291 canlı kayıt (çıkarım) · 129 sorgu / 1875 parça (RAG)";
 
 export const OLCUMLER = {
   // --- VERI: guncel, PostgreSQL'den (VERI_TARIHI) ---
@@ -32,15 +42,15 @@ export const OLCUMLER = {
     goldGercekBanka: 298,
     goldOrnekSenaryo: 4, // sartnamedeki A/B/C/D Bankasi ornegi
   },
-  // --- OLCUM: cikarim olcumleri eski sette; RAG olcumleri
-  //     25 Agustos'ta guncel indekste yeniden kosuldu ---
+  // --- OLCUM: cikarim 26 Agustos'ta hibrit pipeline ile 291 canli
+  //     kayitta yeniden kosuldu; RAG olcumleri 25 Agustos'taki indekste ---
   cikarim: {
-    doluAlanDogrulugu: 98.48,
-    doluAlanDetay: "65/66 alan",
-    bosAlanDogrulugu: 99.17,
-    bosAlanDetay: "120/121 alan - 1 yanlış pozitif",
-    makroF1: 98.28,
-    makroF1Detay: "7 ölçülebilir alan, 5'i %100",
+    doluAlanDogrulugu: 81.68,
+    doluAlanDetay: "hibrit (regex+LLM/EVREN), 291 canlı kayıt",
+    bosAlanDogrulugu: 96.88,
+    bosAlanDetay: "hibrit (regex+LLM/EVREN), 291 canlı kayıt",
+    makroF1: 82.50,
+    makroF1Detay: "11 alan, hibrit (regex+LLM/EVREN) · regex-only tek başına %80,66",
   },
   kapsam: {
     hassasiyet: "24/24",
@@ -81,14 +91,14 @@ export const OLCUMLER = {
   },
   bilinenHatalar: [
     {
-      kod: "DK-002",
-      alan: "Ödül miktarı",
-      aciklama: "Gold değeri doğrulandı, çıkarım motoru yanılıyor.",
+      kod: "EX-HK",
+      alan: "Hedef kitle",
+      aciklama: "\"Belirli segment\" (~140 kayıt) insan etiketleyicinin bağlamsal çıkarımına dayanıyor, kaynak metinde literal olarak geçmiyor — motor bunu yakalayamaz, bilinen bir tavan (26 Ağustos ölçümü).",
     },
     {
-      kod: "TF-001",
-      alan: "Kâr payı oranı",
-      aciklama: "20 Ağustos'ta düzeltildi: \"Kâr paysız ... Yedek Hesap\" yanlış pozitifi (2. bir örnekle doğrulanıp) dar kapsamlı bir guard ile giderildi; sayfadaki gerçek (vadeye göre değişen) oranlar artık kar_payi_tablosu alanında olduğu gibi gösteriliyor, tek sayıya indirgenmiyor. Regex-only fallback katmanında (GPU'suz demo yolu) hâlâ farklı bir düşük güvenli tahmin sorunu var — bilinen, kabul edilmiş bir sınırlama.",
+      kod: "EX-AL",
+      alan: "Kampanya avantajı (Albaraka)",
+      aciklama: "Albaraka Mobil üzerinden kodla alınan indirim kampanyaları (13 kayıt) metinde hiç \"kart\" geçmiyor, mevcut desenler yakalayamıyor (26 Ağustos ölçümü).",
     },
   ],
 };

@@ -45,3 +45,11 @@ def kullanici_olustur(
     oturum.commit()
     oturum.refresh(yeni)
     return yeni
+
+
+def sifre_degistir(oturum: Session, kullanici_adi: str, yeni_sifre: str) -> None:
+    """Mevcut sifre dogrulamasi CAGIRAN tarafta (api/main.py::sifre_degistir_uc,
+    kullanici_dogrula ile) yapilir - burada yalnizca hash guncellenir."""
+    kullanici = kullanici_getir(oturum, kullanici_adi)
+    kullanici.sifre_hash = sifre_hashle(yeni_sifre)
+    oturum.commit()

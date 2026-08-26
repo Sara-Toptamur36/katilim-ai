@@ -232,6 +232,24 @@ class KayitYanit(BaseModel):
     rol: str
 
 
+class SifreDegistirIstek(BaseModel):
+    """POST /kullanici/sifre-degistir istegi.
+
+    JWT_AKTIF durumundan BAGIMSIZ calisir (KayitIstek ile ayni gerekce):
+    mock modda bile kullanici kaydi ve sifre hash'i gercektir, degistirme
+    de gercek olmali - sahte bir "basarili" mesaji gostermek seffaflik
+    ilkesini (rapor Bolum 5.7/15) ihlal ederdi.
+    """
+
+    kullanici_adi: str = Field(..., min_length=1, max_length=100)
+    mevcut_sifre: str = Field(..., min_length=1)
+    yeni_sifre: str = Field(..., min_length=8)
+
+
+class SifreDegistirYanit(BaseModel):
+    basarili: bool = True
+
+
 class MusteriSesiIstek(BaseModel):
     """POST /musteri-sesi/siniflandir istegi - serbest metin.
 

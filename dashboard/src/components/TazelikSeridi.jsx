@@ -96,14 +96,14 @@ export default function TazelikSeridi() {
 
   return (
     <div style={{ marginBottom: 16 }}>
-      {/* DEMO MODE banneri — backend DEMO_MODE=true veya mock veri akarken */}
+      {/* Yerel veri modu banneri — backend DEMO_MODE=true veya mock veri akarken */}
       {veri.demo_mode && (
         <Alert
           type="warning"
           showIcon
           message={
             <span>
-              🟡 <strong>DEMO MODE</strong> — Yerel doğrulanmış veri (PostgreSQL/Qdrant/Ollama).
+              🟡 <strong>YEREL VERİ MODU</strong> — Yerel doğrulanmış veri (PostgreSQL/Qdrant/Ollama).
               Gerçek canlı veri değil.
             </span>
           }

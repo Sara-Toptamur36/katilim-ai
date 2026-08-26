@@ -45,7 +45,12 @@ from complaint.tema_siniflandirici import tema_siniflandir
 from complaint.toplama import yogunluk_ozeti
 from api.db import oturum_al
 from api.kampanya_repository import id_ile_getir_db, kampanyalari_getir_db
-from api.kullanici_repository import kullanici_dogrula, kullanici_getir, kullanici_olustur
+from api.kullanici_repository import (
+    kullanici_dogrula,
+    kullanici_getir,
+    kullanici_olustur,
+    sifre_degistir as sifre_degistir_db,
+)
 from api.logging_config import log
 from api.mock_data import id_ile_getir, kampanyalari_getir
 from api.models import AuditKayit, Sikayet
@@ -61,6 +66,8 @@ from api.schemas import (
     KarsilastirYanit,
     KayitIstek,
     KayitYanit,
+    SifreDegistirIstek,
+    SifreDegistirYanit,
     MusteriSesiIstek,
     MusteriSesiOrnek,
     MusteriSesiOrnekYanit,
@@ -480,6 +487,35 @@ def kayit_ol(istek: KayitIstek):
         yeni = kullanici_olustur(oturum, istek.kullanici_adi, istek.sifre, rol="musteri")
         log.info("yeni musteri kaydi | kullanici_adi=%s", yeni.kullanici_adi)
         return KayitYanit(kullanici_adi=yeni.kullanici_adi, rol=yeni.rol)
+    finally:
+        oturum.close()
+
+
+@app.post(
+    "/kullanici/sifre-degistir",
+    response_model=SifreDegistirYanit,
+    tags=["Kimlik Dogrulama"],
+)
+def sifre_degistir_uc(istek: SifreDegistirIstek):
+    """Mevcut sifreyi dogrulayip yenisiyle degistirir.
+
+    /kayit ile AYNI gerekce: JWT_AKTIF durumundan BAGIMSIZ calisir. Mock
+    modda kullanici kimligi token'dan degil, istek govdesindeki
+    kullanici_adi'ndan gelir (bu modda zaten hicbir Bearer token
+    dogrulanmiyor - bkz. api/auth.py::token_dogrula).
+    """
+    oturum = next(oturum_al())
+    try:
+        kullanici = kullanici_dogrula(oturum, istek.kullanici_adi, istek.mevcut_sifre)
+        if kullanici is None:
+            log.warning(
+                "basarisiz sifre degistirme denemesi | kullanici_adi=%s",
+                istek.kullanici_adi,
+            )
+            raise HTTPException(status_code=401, detail="Mevcut sifre hatali")
+        sifre_degistir_db(oturum, istek.kullanici_adi, istek.yeni_sifre)
+        log.info("sifre degistirildi | kullanici_adi=%s", istek.kullanici_adi)
+        return SifreDegistirYanit(basarili=True)
     finally:
         oturum.close()
 

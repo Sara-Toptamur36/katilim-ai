@@ -2,41 +2,54 @@ import { useEffect, useState } from "react";
 import {
   Alert,
   Button,
-  Collapse,
   Input,
   Space,
   Tabs,
-  Tag,
   Typography,
 } from "antd";
 import {
   CheckCircleOutlined,
   ExclamationCircleOutlined,
-  InfoCircleOutlined,
   LockOutlined,
   LoginOutlined,
-  LogoutOutlined,
   UserAddOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { girisYap, kayitOl, rolAl, rolSil, tokenSil, sistemBilgisi } from "../api/client";
+import {
+  girisYap,
+  kayitOl,
+  rolAl,
+  rolKaydet,
+  rolSil,
+  tokenKaydet,
+  tokenSil,
+  kullaniciAdiKaydet,
+  kullaniciAdiAl,
+  kullaniciAdiSil,
+  oturumBaslangiciKaydet,
+  oturumBaslangiciSil,
+  sistemBilgisi,
+} from "../api/client";
+import Ayarlar from "./Ayarlar";
 
 const { Title, Text, Paragraph } = Typography;
 
-// Yagmur rol tabanli erisimi kurdu (POST /kayit, POST /token, rol_gerekli)
-// ama arayuz hicbirini cagirmiyordu - client.js sabit "mock-token-havin"
-// kullaniyordu. TokenYanit semasindaki `rol` alani kendi aciklamasinda
-// "arayuzun menuyu role gore cizebilmesi icin" diyor; bu ekran o alani
-// nihayet isteyen taraftir.
-
+// Yagmur rol tabanli erisimi kurdu (POST /kayit, POST /token, rol_gerekli).
+// Uygulama artik giris ekrani ARKASINDA (bkz. App.jsx): POST /token yalnizca
+// JWT_AKTIF=true iken calisiyor (varsayilan calisma modu mock) - bu ekran
+// mock modda GIRIS YAP sekmesini de calisir tutmak icin yerel kabul yapiyor
+// (asagida bkz. girisMockKabul). Sunucu zaten mock modda HERHANGI bir
+// Bearer token'i kabul ediyor (api/auth.py::token_dogrula) - bu, o gercekligi
+// giris ekranina tasimaktan ibarettir, yeni bir guvenlik acigi ACMAZ.
 const ASGARI_SIFRE = 8; // api/schemas.py::KayitIstek ile AYNI
 
-export default function Giris() {
+export default function Giris({ onGirisBasarili, onCikisYapildi, koyuMu, temaToggle }) {
   const [kullaniciAdi, setKullaniciAdi] = useState("");
   const [sifre, setSifre] = useState("");
   const [mesaj, setMesaj] = useState(null); // {tip, baslik, metin}
   const [calisiyor, setCalisiyor] = useState(false);
   const [mevcutRol, setMevcutRol] = useState(rolAl());
+  const [mevcutKullaniciAdi, setMevcutKullaniciAdi] = useState(kullaniciAdiAl());
   const [aktifSekme, setAktifSekme] = useState("giris");
 
   // MOCK MOD TESPITI - neden gerekli:
@@ -67,13 +80,31 @@ export default function Giris() {
     setCalisiyor(true);
     setMesaj(null);
     try {
-      const yanit = await girisYap(kullaniciAdi, sifre);
-      setMevcutRol(yanit.rol);
+      let rol;
+      if (mockMod) {
+        // Sunucu POST /token'i mock modda kasitli olarak reddediyor
+        // (api/main.py::token_al). Sunucu zaten bu modda herhangi bir
+        // Bearer token'i sorgusuz kabul ettigi icin (api/auth.py), burada
+        // ayni gercekligi yerel olarak uyguluyoruz: kimlik dogrulanmadan
+        // oturum acilir, kendi kendine kayit olan kullanicilarla AYNI
+        // "musteri" rolu atanir.
+        rol = "musteri";
+        tokenKaydet(`mock-token-${kullaniciAdi}`);
+        rolKaydet(rol);
+      } else {
+        const yanit = await girisYap(kullaniciAdi, sifre);
+        rol = yanit.rol;
+      }
+      kullaniciAdiKaydet(kullaniciAdi);
+      oturumBaslangiciKaydet();
+      setMevcutRol(rol);
+      setMevcutKullaniciAdi(kullaniciAdi);
       setMesaj({
         tip: "success",
         baslik: "Giriş yapıldı",
-        metin: `Rolünüz: ${yanit.rol}. Menü bu role göre çizilecek.`,
+        metin: `Rolünüz: ${rol}.`,
       });
+      onGirisBasarili?.();
     } catch (e) {
       setMesaj({ tip: "error", baslik: "Giriş yapılamadı", metin: hataMetni(e) });
     } finally {
@@ -94,13 +125,21 @@ export default function Giris() {
     setMesaj(null);
     try {
       const yanit = await kayitOl(kullaniciAdi, sifre);
+      // Kayit uc noktasi token dondurmez (bkz. api/schemas.py::KayitYanit) -
+      // JWT_AKTIF=true iken kullanici ayrica giris yapmali; mock modda ise
+      // token zaten sorgulanmadigi icin kayit sonrasi dogrudan oturum acilir.
+      rolKaydet(yanit.rol);
+      kullaniciAdiKaydet(yanit.kullanici_adi);
+      tokenKaydet(`mock-token-${yanit.kullanici_adi}`);
+      oturumBaslangiciKaydet();
+      setMevcutRol(yanit.rol);
+      setMevcutKullaniciAdi(yanit.kullanici_adi);
       setMesaj({
         tip: "success",
         baslik: "Kayıt oluşturuldu",
-        metin: mockMod
-          ? `${yanit.kullanici_adi} — rol: ${yanit.rol}. Demo modunda giriş gerekmediği için kayıt hemen geçerli; tüm ekranlar zaten açık.`
-          : `${yanit.kullanici_adi} — rol: ${yanit.rol}. Şimdi giriş yapabilirsiniz.`,
+        metin: `${yanit.kullanici_adi} — rol: ${yanit.rol}.`,
       });
+      onGirisBasarili?.();
     } catch (e) {
       setMesaj({ tip: "error", baslik: "Kayıt yapılamadı", metin: hataMetni(e) });
     } finally {
@@ -111,12 +150,12 @@ export default function Giris() {
   const cikis = () => {
     tokenSil();
     rolSil();
+    kullaniciAdiSil();
+    oturumBaslangiciSil();
     setMevcutRol(null);
-    setMesaj({
-      tip: "info",
-      baslik: "Çıkış yapıldı",
-      metin: "Menü yeniden tüm ekranları gösteriyor (rol bilinmiyor).",
-    });
+    setMevcutKullaniciAdi(null);
+    setMesaj(null);
+    onCikisYapildi?.();
   };
 
   // Şifre uzunluğunun anlık görsel doğrulaması (min 8 karakter)
@@ -177,18 +216,6 @@ export default function Giris() {
             </div>
           </div>
 
-          {/* Mock modda giris dugmesi PASIF: POST /token bu modda bilerek
-              400 doner. Calisan gibi gorunup hata veren bir dugme yerine
-              nedenini onceden soyluyoruz. */}
-          {mockMod && (
-            <Alert
-              type="info"
-              showIcon
-              title="Demo modunda giriş gerekmiyor"
-              description="Sistem mock kimlik doğrulama ile çalışıyor; tüm ekranlar zaten açık. Gerçek giriş, sunucu JWT_AKTIF=true ile başlatıldığında devreye girer."
-            />
-          )}
-
           <Button
             type="primary"
             block
@@ -196,10 +223,10 @@ export default function Giris() {
             icon={<LoginOutlined />}
             onClick={giris}
             loading={calisiyor}
-            disabled={!kullaniciAdi || !sifre || mockMod}
+            disabled={!kullaniciAdi || !sifre}
             style={{ marginTop: 6 }}
           >
-            {mockMod ? "Giriş yap (demo modunda kapalı)" : "Giriş yap"}
+            Giriş yap
           </Button>
         </Space>
       ),
@@ -213,13 +240,6 @@ export default function Giris() {
       ),
       children: (
         <Space direction="vertical" style={{ width: "100%" }} size={14}>
-          {/* Rol Bilgisi Etiketi: Kayıt olan herkes müşteri rolü alır */}
-          <div style={{ marginBottom: 4 }}>
-            <Tag color="cyan" style={{ fontSize: 12, padding: "4px 8px", width: "100%", textAlign: "center" }}>
-              👤 Kayıt olan tüm kullanıcılar varsayılan olarak "müşteri" rolü alır
-            </Tag>
-          </div>
-
           <div>
             <Text type="secondary" style={{ fontSize: 13 }}>
               Kullanıcı adı
@@ -286,6 +306,22 @@ export default function Giris() {
     },
   ];
 
+  // Oturum acikken bu ekran artik Giris/Kayit sekmelerini degil, Ayarlar
+  // sayfasini gosterir (bkz. kullanici talebi: "girisi ciktan sonraki
+  // giris cikis sayfasi Ayarlar'a donusmeli"). Sekmeler yalnizca oturum
+  // YOKKEN (App.jsx'teki kapi ekrani) gorunur.
+  if (mevcutRol) {
+    return (
+      <Ayarlar
+        kullaniciAdi={mevcutKullaniciAdi}
+        rol={mevcutRol}
+        onCikis={cikis}
+        koyuMu={koyuMu}
+        temaToggle={temaToggle}
+      />
+    );
+  }
+
   return (
     <div className="giris-kapsayici">
       <div className="giris-karti">
@@ -303,41 +339,6 @@ export default function Giris() {
             Katılım bankacılığı yapay zekâ analiz platformu
           </Paragraph>
         </div>
-
-        {/* Oturum Açık ise Mevcut Rolü Belirgin Göster */}
-        {mevcutRol && (
-          <Alert
-            type="info"
-            showIcon
-            message={
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  width: "100%",
-                }}
-              >
-                <span>
-                  Oturum Açık — Rol:{" "}
-                  <Tag color="blue" style={{ fontWeight: 600, marginLeft: 4 }}>
-                    {mevcutRol}
-                  </Tag>
-                </span>
-                <Button
-                  size="small"
-                  type="text"
-                  danger
-                  onClick={cikis}
-                  icon={<LogoutOutlined />}
-                >
-                  Çıkış
-                </Button>
-              </div>
-            }
-            style={{ marginBottom: 16 }}
-          />
-        )}
 
         {/* Giriş Yap / Kayıt Ol Sekmeleri */}
         <Tabs
@@ -357,38 +358,6 @@ export default function Giris() {
             style={{ marginTop: 16 }}
           />
         )}
-
-        {/* Demo Modu Uyarısı: Tek cümle + Katlanır Ayrıntı Bölümü */}
-        <Alert
-          type="warning"
-          showIcon
-          icon={<InfoCircleOutlined />}
-          style={{ marginTop: 20 }}
-          message="Demo modunda giriş yapmadan tüm ekranlara erişebilirsiniz."
-          description={
-            <Collapse
-              ghost
-              size="small"
-              items={[
-                {
-                  key: "detay",
-                  label: (
-                    <Text type="secondary" style={{ fontSize: 11 }}>
-                      Teknik Ayrıntıyı Göster
-                    </Text>
-                  ),
-                  children: (
-                    <Text type="secondary" style={{ fontSize: 12, display: "block", lineHeight: 1.5 }}>
-                      Sistem varsayılan olarak mock kimlik doğrulama ile çalışır: her istek
-                      kabul edilir ve tüm ekranlar açık kalır. Gerçek yetkilendirme yalnızca
-                      sunucu <code>JWT_AKTIF=true</code> ile başlatıldığında devreye girer.
-                    </Text>
-                  ),
-                },
-              ]}
-            />
-          }
-        />
       </div>
     </div>
   );

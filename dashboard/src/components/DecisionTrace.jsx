@@ -164,7 +164,7 @@ export default function DecisionTrace({ audit, soru }) {
               </Tooltip>
             )}
             {audit.demo_snapshot && (
-              <Tag color="gold">DEMO SNAPSHOT</Tag>
+              <Tag color="gold">YEREL SNAPSHOT</Tag>
             )}
           </div>
         }

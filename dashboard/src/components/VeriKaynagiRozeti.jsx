@@ -35,7 +35,7 @@ export default function VeriKaynagiRozeti() {
     return (
       <Tooltip title="Yerel doğrulanmış veri (PostgreSQL/Qdrant/Ollama) — gerçek canlı banka verisi değildir.">
         <Tag color="purple" style={{ margin: 0, fontWeight: 600 }}>
-          🟣 DEMO SNAPSHOT{tarih ? ` — ${tarih}` : ""}
+          🟣 YEREL SNAPSHOT{tarih ? ` — ${tarih}` : ""}
         </Tag>
       </Tooltip>
     );

@@ -17,7 +17,7 @@ import {
  *   CLASSIFIED→ Anahtar kelimeyle sınıflandırıldı        🟣
  *   INFERRED  → Bağlamdan çıkarıldı                      🔶
  *
- * demo_snapshot: True ise "DEMO SNAPSHOT" rozeti gösterilir.
+ * demo_snapshot: True ise "YEREL SNAPSHOT" rozeti gösterilir.
  *
  * Güvenli URL: Sadece izinli resmi domainlere <a href> oluşturulur.
  * Güvensiz/harici URL'lerde link oluşturulmaz, uyarı ikonu gösterilir.
@@ -95,7 +95,7 @@ export default function EvidenceCard({ kaynak, boyut = "normal" }) {
         borderRadius: 6,
       }}
     >
-      {/* DEMO SNAPSHOT rozeti */}
+      {/* Yerel anlık görüntü rozeti */}
       {kaynak.demo_snapshot && (
         <div
           style={{
@@ -112,7 +112,7 @@ export default function EvidenceCard({ kaynak, boyut = "normal" }) {
             zIndex: 1,
           }}
         >
-          DEMO SNAPSHOT
+          YEREL SNAPSHOT
         </div>
       )}
 

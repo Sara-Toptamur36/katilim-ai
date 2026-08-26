@@ -11,6 +11,8 @@ export const API_TABANI = import.meta.env.VITE_API_BASE_URL ?? "http://localhost
 
 const TOKEN_ANAHTARI = "katilimai_token";
 const ROL_ANAHTARI = "katilimai_rol";
+const KULLANICI_ANAHTARI = "katilimai_kullanici_adi";
+const OTURUM_BASLANGIC_ANAHTARI = "katilimai_oturum_baslangic";
 
 export const tokenKaydet = (token) => {
   localStorage.setItem(TOKEN_ANAHTARI, token);
@@ -36,6 +38,25 @@ export const tokenAl = () => {
 export const tokenSil = () => {
   localStorage.removeItem(TOKEN_ANAHTARI);
 };
+
+// Giris ekraninda ust bardaki oturum gostergesi icin - rol tek basina
+// "kim giris yapti" sorusuna cevap vermiyor.
+export const kullaniciAdiKaydet = (ad) => {
+  if (ad) localStorage.setItem(KULLANICI_ANAHTARI, ad);
+};
+
+export const kullaniciAdiAl = () => localStorage.getItem(KULLANICI_ANAHTARI);
+
+export const kullaniciAdiSil = () => localStorage.removeItem(KULLANICI_ANAHTARI);
+
+// Ayarlar sayfasindaki "Oturum Baslangici" alani icin.
+export const oturumBaslangiciKaydet = () => {
+  localStorage.setItem(OTURUM_BASLANGIC_ANAHTARI, new Date().toISOString());
+};
+
+export const oturumBaslangiciAl = () => localStorage.getItem(OTURUM_BASLANGIC_ANAHTARI);
+
+export const oturumBaslangiciSil = () => localStorage.removeItem(OTURUM_BASLANGIC_ANAHTARI);
 
 const client = axios.create({
   baseURL: API_TABANI,
@@ -88,6 +109,16 @@ export const girisYap = async (kullaniciAdi, sifre) => {
   });
   tokenKaydet(yanit.data.access_token);
   rolKaydet(yanit.data.rol);
+  return yanit.data;
+};
+
+// POST /kullanici/sifre-degistir - mevcut sifre sunucuda dogrulanir.
+export const sifreDegistir = async (kullaniciAdi, mevcutSifre, yeniSifre) => {
+  const yanit = await client.post("/kullanici/sifre-degistir", {
+    kullanici_adi: kullaniciAdi,
+    mevcut_sifre: mevcutSifre,
+    yeni_sifre: yeniSifre,
+  });
   return yanit.data;
 };
 

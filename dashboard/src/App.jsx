@@ -13,7 +13,8 @@ import {
   MenuOutlined,
   MessageOutlined,
   CalculatorOutlined,
-  LoginOutlined,
+  SettingOutlined,
+  LogoutOutlined,
 } from "@ant-design/icons";
 
 /* Sayfa bileşenleri */
@@ -35,7 +36,14 @@ import VeriKaynagiRozeti from "./components/VeriKaynagiRozeti";
 import { AuditProvider } from "./context/AuditContext";
 
 /* API istemcisi — veri modu kontrolü için */
-import client, { rolAl } from "./api/client";
+import client, {
+  rolAl,
+  rolSil,
+  tokenSil,
+  kullaniciAdiAl,
+  kullaniciAdiSil,
+  oturumBaslangiciSil,
+} from "./api/client";
 
 const { Sider, Header, Content } = Layout;
 
@@ -73,14 +81,20 @@ const GUVEN_MENUSU = [
     ikon: <FileSearchOutlined />,
     roller: ["banka_calisani", "denetleyici", "yonetici"],
   },
-  { yol: "/giris", etiket: "Giriş / Kayıt", ikon: <LoginOutlined /> },
+  // Bu menu ogesi yalnizca GIRIS YAPILMISKEN gorunur (SolMenu, App()'in
+  // "girisli" dalinda render edilir - bkz. asagidaki if(!girisli) erken
+  // donusu). Yani buraya tiklandiginda Giris.jsx HER ZAMAN Ayarlar
+  // gorunumunu gosterir (mevcutRol dolu), Giris/Kayit sekmelerini degil -
+  // etiket bunu yansitmali (DENETIM BULGUSU 26.08.2026: eskiden "Giriş /
+  // Kayıt" yaziyordu, kullanici menude hic gormeyecegi bir sayfa adi
+  // goruyordu).
+  { yol: "/giris", etiket: "Ayarlar", ikon: <SettingOutlined /> },
 ];
 
-/* Rol BILINMIYORSA hicbir sey gizlenmez.
-   "rol yok" ile "yetkisiz" AYNI SEY DEGILDIR: sistem varsayilan olarak mock
-   kimlik dogrulamayla calisir (rol_gerekli o modda hicbir kisit uygulamaz),
-   dolayisiyla giris yapilmamis olmasi demoyu kilitlememelidir. Menu ancak
-   GERCEK bir rol biliniyorsa suzer. */
+/* Uygulama artik girisin ARKASINDA oldugu icin (bkz. App()::girisli) rol
+   buraya her zaman DOLU gelir - "musteri" (self-servis kayit) veya elle
+   acilmis bir hesabin rolu. rol=null durumu yalnizca teorik bir guvenlik
+   agi olarak kalir; o durumda da hicbir sey gizlenmiyoruz. */
 function menuyuRoleGoreSuz(ogeler, rol) {
   if (!rol) return ogeler;
   return ogeler.filter((o) => !o.roller || o.roller.includes(rol));
@@ -97,7 +111,7 @@ const SAYFA_ADLARI = {
   "/musteri-sesi": "Müşteri Sesi",
   "/audit": "Jüri Audit Paneli",
   "/extraction-audit": "Çıkarım Denetimi",
-  "/giris": "Giriş / Kayıt",
+  "/giris": "Ayarlar",
 };
 
 /* -------------------------------------------------------
@@ -280,7 +294,7 @@ function SolMenu() {
 /* -------------------------------------------------------
    Üst Bar bileşeni
    ------------------------------------------------------- */
-function UstBar({ koyuMu, temaToggle, cekmeceyiAc }) {
+function UstBar({ koyuMu, temaToggle, cekmeceyiAc, kullaniciAdi, rol, onCikis }) {
   const { pathname } = useLocation();
   const sayfaAdi = SAYFA_ADLARI[pathname] || "Sayfa";
 
@@ -306,7 +320,7 @@ function UstBar({ koyuMu, temaToggle, cekmeceyiAc }) {
 
       {/* Sağ taraf: veri modu rozeti + tema düğmesi + profil */}
       <div className="ust-bar-sag">
-        {/* Demo/canlı veri rozeti - her sayfada görünür (bkz. madde 14,
+        {/* Canlı/yerel veri rozeti - her sayfada görünür (bkz. madde 14,
             önceden yalnızca Dashboard'da görünen dağınık göstergelerin
             merkezileştirilmiş hali) */}
         <VeriKaynagiRozeti />
@@ -321,11 +335,11 @@ function UstBar({ koyuMu, temaToggle, cekmeceyiAc }) {
           {koyuMu ? <SunOutlined /> : <MoonOutlined />}
         </button>
 
-        {/* Kullanıcı profili */}
+        {/* Kullanıcı profili + çıkış */}
         <div className="profil-blogu">
           <div className="profil-bilgi">
-            <span className="profil-isim">KatılımAI Ekibi</span>
-            <span className="profil-rol">Demo oturumu</span>
+            <span className="profil-isim">{kullaniciAdi || "Kullanıcı"}</span>
+            <span className="profil-rol">{rol || "—"}</span>
           </div>
           <img
             className="profil-avatar"
@@ -333,6 +347,15 @@ function UstBar({ koyuMu, temaToggle, cekmeceyiAc }) {
             alt=""
           />
         </div>
+
+        <button
+          className="tema-dugme"
+          onClick={onCikis}
+          aria-label="Çıkış yap"
+          title="Çıkış yap"
+        >
+          <LogoutOutlined />
+        </button>
       </div>
     </Header>
   );
@@ -381,6 +404,52 @@ function App() {
   const cekmeceyiAc = useCallback(() => setCekmeceAcik(true), []);
   const cekmeceyiKapat = useCallback(() => setCekmeceAcik(false), []);
 
+  /* ---------- Oturum kapısı ----------
+     Uygulama artik Giris/Kayit ekraninin ARKASINDA: rol yoksa (hic kayit
+     olunmamis/giris yapilmamissa) hicbir sayfa/menu render edilmez, yalnizca
+     Giris ekrani gosterilir. Cikis yapinca ayni sekilde uygulamadan cikilir
+     (bkz. Giris.jsx::cikis -> onCikisYapildi). */
+  const [girisli, setGirisli] = useState(() => !!rolAl());
+  const [kullaniciAdi, setKullaniciAdi] = useState(() => kullaniciAdiAl());
+  const [rol, setRol] = useState(() => rolAl());
+
+  const girisBasarili = useCallback(() => {
+    setGirisli(true);
+    setKullaniciAdi(kullaniciAdiAl());
+    setRol(rolAl());
+  }, []);
+
+  // Ust bardaki dogrudan cikis dugmesi Giris.jsx'in KENDI cikis() akisindan
+  // GECMIYOR - bu yuzden localStorage temizligi burada da yapilir. Giris.jsx
+  // zaten kendi cikis()'inda ayni temizligi yapip bu callback'i cagirdigi
+  // icin cift temizlemenin zarari yok (tekrar cagirmak no-op'tur).
+  const cikisYapildi = useCallback(() => {
+    tokenSil();
+    rolSil();
+    kullaniciAdiSil();
+    oturumBaslangiciSil();
+    setGirisli(false);
+    setKullaniciAdi(null);
+  }, []);
+
+  if (!girisli) {
+    return (
+      <ConfigProvider
+        theme={{
+          algorithm: koyuMu ? antTema.darkAlgorithm : antTema.defaultAlgorithm,
+          token: {
+            colorPrimary: "#169276",
+            borderRadius: 8,
+            fontFamily:
+              '-apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+          },
+        }}
+      >
+        <Giris onGirisBasarili={girisBasarili} koyuMu={koyuMu} temaToggle={temaToggle} />
+      </ConfigProvider>
+    );
+  }
+
   return (
     <ConfigProvider
       theme={{
@@ -421,6 +490,9 @@ function App() {
                 koyuMu={koyuMu}
                 temaToggle={temaToggle}
                 cekmeceyiAc={cekmeceyiAc}
+                kullaniciAdi={kullaniciAdi}
+                rol={rol}
+                onCikis={cikisYapildi}
               />
               <Content className="icerik-alani">
                 <Routes>
@@ -433,7 +505,17 @@ function App() {
                   <Route path="/chatbot" element={<Chatbot />} />
                   <Route path="/audit" element={<AuditPanel />} />
                   <Route path="/extraction-audit" element={<ExtractionAudit />} />
-                  <Route path="/giris" element={<Giris />} />
+                  <Route
+                    path="/giris"
+                    element={
+                      <Giris
+                        onGirisBasarili={girisBasarili}
+                        onCikisYapildi={cikisYapildi}
+                        koyuMu={koyuMu}
+                        temaToggle={temaToggle}
+                      />
+                    }
+                  />
                 </Routes>
               </Content>
             </Layout>

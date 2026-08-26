@@ -229,42 +229,60 @@ Kod tarafında yapılacak bir şey yok.
 
 ---
 
-## Faz 6 — Eksik Kanıt Spanlarını Tamamla: BÜYÜK ÖLÇÜDE TAMAMLANDI (26 Ağustos 2026)
+## Faz 6 — Eksik Kanıt Spanlarını Tamamla: TAMAMLANDI ✅ (26 Ağustos 2026)
 
 **Yapıldı:** `gold_dataset/kanit_spani_oner.py` (otomatik, yalnızca tek
 adaylı durumları önerir) + elle inceleme ile kanıtsız dolu alan sayısı
-**71 → 23**'e indirildi (48 alan). Otomatik araç yalnızca 2'sini kendisi
-çözebildi (tek aday); kalan 46'sı **tek tek kaynak metinden okunarak**
-elle karara bağlandı (`kanit_spanlari` boş 40 kayıt hedefindeki karşılığı:
-31 → 27 kayıt — geri kalan 27'nin 8'i zaten "ÖLÇÜM DIŞI - KAYNAK KORPUSTA
-YOK" diye işaretli, gerisi tüm alanları bilerek BELİRSİZ bırakılmış
-kayıtlar - yani span EKLENECEK dolu alanı yok, bu normal).
+**71 → 14**'e indirildi (57 alan). Otomatik araç yalnızca 2'sini kendisi
+çözebildi (tek aday); kalan 55'i **tek tek kaynak metinden okunarak**
+elle karara bağlandı. Kalan 14'ün TAMAMI için de artık açık bir gerekçe
+var (aşağıda) - hiçbiri "bakılmadı" durumunda değil.
 
-**Önemli bulgu - küçük sayılarda YANLIŞ POZİTİF eşleşme:** `kanit_spani_
-oner.py`'nin aday bulma mantığı, tek haneli değerleri (ör. `vade_ay=6`,
-`taksit_sayisi=3`) metinde ARAMA yaparken "2026" gibi yıl yazımlarının
-İÇİNDEKİ rakamla da eşleşiyor (`6` → "202**6**"), hatta bazen bir sayının
-BİR BAŞKA sayının içine gömülü alt-dizesiyle de eşleşiyor (`AL-001.
-finansman_tutari=40000` → "1**40.000** TL" içinde yanlışlıkla eşleşti,
-gerçek değer 140.000 ile karıştırılabilirdi). Elle inceleme sırasında bu
-tuzaklar tek tek elendi; hiçbiri yanlışlıkla yazılmadı (`tests/
+**İkinci tur bulgusu - "değer metinde bulunamadı" çoğunlukla ARAÇ
+SINIRLAMASIYDI, gerçek eksiklik değildi:** TF-005/DK-001/TOM-002 için
+değer aslında kaynakta duruyordu, yalnızca `kanit_spani_oner.py`'nin
+satır filtresi (12-200 karakter aralığı, tam büyük/küçük harf eşleşmesi)
+onu kaçırıyordu - sırasıyla: satır başında 66 görünmez zero-width-space
+karakteri, cümlenin tek başına 9 karakterlik bir satıra bölünmesi
+("16.500 TL"), ve "250 Bin" (büyük B) ile aracın ürettiği "250 bin"
+(küçük b) arasındaki büyük/küçük harf farkı. Üçü de kaynaktan
+PROGRAMATIK olarak kesilip (elle yeniden yazılmadan - ilk elle yazım
+denemesi virgül öncesi boşluk farkı yüzünden testte kırılmıştı, bkz. commit
+geçmişi) span olarak eklendi.
+
+**Yeni bulgu - kampanya rotasyonu devam ediyor:** `DK-006` (taksit_sayisi=9,
+finansman_tutari=10000) ve `TEK-005` (kampanya_baslangic/bitis) için
+kaynak sayfa artık kayıtlı değeri DESTEKLEMİYOR - DK-006'da yalnızca 3
+kademeli bir taksit sistemi var (kayıtlı 4. kademe "10.000 TL+ → 9
+taksit" metinde yok), TEK-005'te 23 Ağustos'ta referans verilen tarih
+cümlesi de kaybolmuş. Bu iki kayda span EKLENMEDİ - `notlar` alanına
+bulgu eklendi, **değer değiştirilmedi** (Faz 6 kapsamı kanıt ekleme,
+değer düzeltme değil - o ayrı bir etiketleme kararı).
+
+**Kalan 14 alan, tamamı gerekçeli:**
+- **8 alan** (VK-003/006/007): zaten "ÖLÇÜM DIŞI - KAYNAK KORPUSTA YOK"
+  işaretli, span beklenmiyor.
+- **4 alan** (DK-006 ×2, TEK-005 ×2): kampanya rotasyona uğramış,
+  yukarıda açıklandı - yeniden doğrulama gerekiyor (veri toplama ekibi).
+- **1 alan** (`DK-001.vade_ay`): tüm adaylar site footer'ından (telif
+  hakkı/güncelleme tarihi) geliyordu - "6" rakamı "2026" içinde
+  yanlışlıkla eşleşmiş, gerçek kanıt yok.
+- **1 alan** (`DK-007.kar_payi_orani=0`): kaynağı "peşin fiyatına
+  taksit" ifadesi - `gold_dataset/vade_farksiz_duzelt.py`'nin "vade
+  farksız" için verdiği kararla (kart/taksit özelliği, gerçek kâr payı
+  kanıtı DEĞİL) AYNI SINIFTAN bir soru. Span uydurmak yerine ayrı bir
+  etiketleme incelemesine bırakıldı.
+
+**Bilinen araç sınırlaması (bu turda dokunulmadı, ileride iyileştirilebilir):**
+`kanit_spani_oner.py`'nin aday bulma mantığı tek haneli değerleri (`vade_ay=6`
+gibi) ararken "2026" gibi yıl yazımlarının içindeki rakamla ya da bir
+sayının BAŞKA bir sayının içine gömülü alt-dizesiyle (`AL-001.
+finansman_tutari=40000` → "1**40.000** TL" içinde yanlışlıkla eşleşti)
+yanlış pozitif üretebiliyor. Elle inceleme sırasında tüm bu tuzaklar
+tek tek elendi, hiçbiri yanlışlıkla yazılmadı (`tests/
 test_altin_veri_butunlugu.py::test_kanit_spani_ALANIN_DEGERINI_destekliyor`
-her span'ı doğruladı). Bu, aracın kendisinde iyileştirilebilecek bilinen
-bir sınırlama - küçük sayılarda kelime sınırı (`\b`) kontrolü eklenmesi
-önerilir, bu turda dokunulmadı (araç kodu değil, yalnızca veri düzeltildi).
-
-**Bilerek atlanan bir bulgu:** `DK-007.kar_payi_orani=0`'ın kaynağı
-"peşin fiyatına taksit" ifadesi - bu, `gold_dataset/vade_farksiz_
-duzelt.py`'nin "vade farksız" için verdiği kararla (kart/taksit özelliği,
-gerçek kâr payı kanıtı DEĞİL) AYNI SINIFTAN bir soru. Span uydurmak
-yerine ayrı bir etiketleme incelemesine bırakıldı - bu kayıt hâlâ
-kanıtsız.
-
-**Kalan 23 alan** (`python gold_dataset/kanit_spani_oner.py` ile
-görülebilir): 15'i "değer metinde bulunamadı" (çoğu türetilmiş/kademeli
-değer ya da kampanya rotasyonu - VK-003/006/007 zaten "ÖLÇÜM DIŞI"
-işaretli), 8'i 5+ adaylı (yüksek belirsizlik, tek tek okuma gerektiriyor,
-bu turda kapsam dışı bırakıldı).
+her span'ı doğruladı) - küçük sayılarda kelime sınırı (`\b`) kontrolü
+eklenmesi önerilir.
 
 ---
 

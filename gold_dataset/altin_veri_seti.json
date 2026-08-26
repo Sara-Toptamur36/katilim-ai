@@ -350,7 +350,8 @@
     "kanit_spanlari": {
       "finansman_tutari": "Yeni Sağlam Kart Troy müşterilerine özel 50.000 TL'ye kadar vade farksız 5 taksit fırsatını kaçırmayın!",
       "kampanya_bitis": "1.08.2026 - 31.08.2026",
-      "kampanya_baslangic": "1.08.2026 - 31.08.2026"
+      "kampanya_baslangic": "1.08.2026 - 31.08.2026",
+      "taksit_sayisi": "Yeni Sağlam Kart Troy'lulara Özel Vade Farksız 5 Aya Varan Taksit İmkanı!"
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
@@ -1015,7 +1016,9 @@
     "kanit_spanlari": {
       "kampanya_baslangic": "Kampanya 1 Ağustos - 31 Ağustos 2026 tarihleri arasında geçerlidir.",
       "kampanya_bitis": "Kampanya 1 Ağustos - 31 Ağustos 2026 tarihleri arasında geçerlidir.",
-      "vade_ay": "Kampanya kapsamında yukarıdaki tarih aralığında mobilden Türkiye Finanslı olan müşterilere %0 kâr payı oranı ve 3 ay vadeli olarak 50.000 TL’ye kadar İhtiyaç Finansmanı başvurusu yapma avantajı sunulacaktır."
+      "vade_ay": "Kampanya kapsamında yukarıdaki tarih aralığında mobilden Türkiye Finanslı olan müşterilere %0 kâr payı oranı ve 3 ay vadeli olarak 50.000 TL’ye kadar İhtiyaç Finansmanı başvurusu yapma avantajı sunulacaktır.",
+      "kar_payi_orani": "Mobilden Türkiye Finanslı Ol, Kâr Paysız 50.000 TL'ye Varan İhtiyaç Finansmanını Kaçırma!",
+      "finansman_tutari": "Mobilden Türkiye Finanslı Ol, Kâr Paysız 50.000 TL'ye Varan İhtiyaç Finansmanını Kaçırma!"
     },
     "alan_belirtilmemis": {
       "odul_miktari": true,
@@ -1093,7 +1096,8 @@
       "finansman_tutari": "400.000 TL'ye Kadar İhtiyaç Finansmanı Kullanın, 3 Ay Öteleme Fırsatından Yararlanın!",
       "vade_ay": "Finansman tutarının 250.000 TL’ye kadar olması durumunda maksimum 24 ay,",
       "kampanya_baslangic": "Kampanyadan 1 Ağustos - 31 Ağustos 2026 tarihleri arasında yararlanabilirsiniz.",
-      "kampanya_bitis": "Kampanyadan 1 Ağustos - 31 Ağustos 2026 tarihleri arasında yararlanabilirsiniz."
+      "kampanya_bitis": "Kampanyadan 1 Ağustos - 31 Ağustos 2026 tarihleri arasında yararlanabilirsiniz.",
+      "odul_miktari": "Kampanya kapsamında belirtilen tarih aralığında mobilden Türkiye Finanslı olan müşterilerimize, aşağıdaki ürün ve hizmetlerden yararlanmaları halinde 11.000 TL’ye varan bonus kazanma fırsatı sunulacaktır:"
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
@@ -1126,7 +1130,8 @@
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
       "kampanya_baslangic": "Kampanya 1 Ağustos - 31 Ağustos 2026 tarihleri arasında geçerlidir.",
-      "kampanya_bitis": "Kampanya 1 Ağustos - 31 Ağustos 2026 tarihleri arasında geçerlidir."
+      "kampanya_bitis": "Kampanya 1 Ağustos - 31 Ağustos 2026 tarihleri arasında geçerlidir.",
+      "odul_miktari": "Faturaları Unutun, 4.000 TL'ye Varan Bonus Kazanın!"
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
@@ -1647,7 +1652,7 @@
     "ekran_goruntusu": "TEK-005.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-08-23",
-    "notlar": "Fatura/vergi/BES odemesi ve para transferi kapsam disi\n2026-08-23: kampanya rotasyonu - tarih kaynak sayfadan yeniden okundu (Kampanya 1-31 Ağustos 2026 tarihleri arasında geçerlidir.)",
+    "notlar": "Fatura/vergi/BES odemesi ve para transferi kapsam disi\n2026-08-23: kampanya rotasyonu - tarih kaynak sayfadan yeniden okundu (Kampanya 1-31 Ağustos 2026 tarihleri arasında geçerlidir.) | BULGU (26 Agustos 2026, Faz 6 kanit taramasi): 23 Agustos notunda referans verilen '1-31 Agustos 2026 tarihleri arasinda gecerlidir' cumlesi ARTIK kaynak sayfada yok - kampanya 23 Agustos'tan SONRA tekrar rotasyona ugramis olabilir. kampanya_baslangic/bitis icin kanit eklenemedi - yeniden dogrulanmali.",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
@@ -1761,7 +1766,9 @@
     "notlar": "Bolgeye ozel (4 il), suresi belirtilmemis; alt sinir vade 2 ay, alt sinir tutar 6.500 TL",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "finansman_tutari": "Finansman işlemlerinde minimum 6.500 TL , maksimum 16.500 TL kullandırılacaktır."
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "odul_miktari": true,
@@ -1796,7 +1803,9 @@
     "notlar": "Hem davet eden hem davet edilenin Paraf Kart basvurusu sart; 0,1 gram x 10 davet = 1 gram ust sinir\n2026-08-23: sayfada kampanya tarihi hic verilmiyor",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "odul_miktari": "Altın Kesenizde 0,1 gram altın biriktirebilirsiniz."
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1937,7 +1946,7 @@
     "ekran_goruntusu": "DK-006.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-07-28",
-    "notlar": "Kademeli sistem: 100-1.000 TL->3 taksit, 1.000-6.000 TL->6 taksit, 6.000-10.000 TL->6 taksit, 10.000 TL+ secili urun->9 taksit. En ust dilim alindi DUZELTME (23 Agustos 2026): vade_ay=9 -> taksit_sayisi=9. kademeli taksit (3/6/9), Alisveris Puani Kampanyasi - vade yok. Taksit ADEDI ile finansman SURESI ayni alan degildir.",
+    "notlar": "Kademeli sistem: 100-1.000 TL->3 taksit, 1.000-6.000 TL->6 taksit, 6.000-10.000 TL->6 taksit, 10.000 TL+ secili urun->9 taksit. En ust dilim alindi DUZELTME (23 Agustos 2026): vade_ay=9 -> taksit_sayisi=9. kademeli taksit (3/6/9), Alisveris Puani Kampanyasi - vade yok. Taksit ADEDI ile finansman SURESI ayni alan degildir. | BULGU (26 Agustos 2026, Faz 6 kanit taramasi): kaynak sayfa SU AN yalnizca 3 kademeli taksit sistemi gosteriyor (100-1.000 TL->3, 1.000-6.000 TL->3, 6.000 TL+->6) - kayitli 4. kademe ('10.000 TL+ -> 9 taksit') artik metinde YOK. Kampanya rotasyona ugramis olabilir, taksit_sayisi=9/finansman_tutari=10000 icin kanit eklenemedi - yeniden dogrulanmali.",
     "taksit_sayisi": 9,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
@@ -2246,7 +2255,8 @@
     "kanit_spanlari": {
       "kampanya_bitis": "Kampanya 19.01.2026 – 30.09.2026 tarihleri arasında Hadi Black Kredi Kartı ile yapılacak özel okul ödemelerinde geçerlidir.",
       "kampanya_baslangic": "Kampanya 19.01.2026 – 30.09.2026 tarihleri arasında Hadi Black Kredi Kartı ile yapılacak özel okul ödemelerinde geçerlidir.",
-      "taksit_sayisi": "Özel Okul Ödemelerinde 10 Taksit, üstelik vade farksız!"
+      "taksit_sayisi": "Özel Okul Ödemelerinde 10 Taksit, üstelik vade farksız!",
+      "finansman_tutari": "STANDART PAKET seçen müşteriler; 250 Bin TL ye kadar yapacakları Özel Okul Ödemelerinde kampanya süresi boyunca her gün, Günlük Kazandıran Hesabında 250 Bin TL birikim bulunması veya toplam açık kredi (Taksitli veya Veresiye Kredi) bakiyesinin 250 Bin TL olması halinde vade farkı iadesi harcama yapılan kredi kartına yapılacaktır."
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
@@ -3640,7 +3650,8 @@
       "vade_ay": "2 ay ertelemeli İhtiyaç Kart, yeni müşterilere özel 100.000 TL’ye kadar %1,99 oranla 12 aya varan taksit fırsatı sunuyor!",
       "finansman_tutari": "2 ay ertelemeli İhtiyaç Kart, yeni müşterilere özel 100.000 TL’ye kadar %1,99 oranla 12 aya varan taksit fırsatı sunuyor!",
       "kampanya_baslangic": "22.10.2025 - 31.12.2026",
-      "kampanya_bitis": "22.10.2025 - 31.12.2026"
+      "kampanya_bitis": "22.10.2025 - 31.12.2026",
+      "erteleme_suresi_ay": "2 ay ertelemeli İhtiyaç Kart'ta yeni müşterilere özel 100.000 TL’ye kadar %1,99 oranla 12 aya varan taksit fırsatı!"
     },
     "alan_belirtilmemis": {
       "odul_miktari": true,

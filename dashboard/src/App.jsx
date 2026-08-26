@@ -28,6 +28,9 @@ import Chatbot from "./pages/Chatbot";
 import AuditPanel from "./pages/AuditPanel";
 import ExtractionAudit from "./pages/ExtractionAudit";
 
+/* Bileşenler */
+import VeriKaynagiRozeti from "./components/VeriKaynagiRozeti";
+
 /* Bağlam sağlayıcıları */
 import { AuditProvider } from "./context/AuditContext";
 
@@ -301,8 +304,13 @@ function UstBar({ koyuMu, temaToggle, cekmeceyiAc }) {
         </div>
       </div>
 
-      {/* Sağ taraf: tema düğmesi + profil */}
+      {/* Sağ taraf: veri modu rozeti + tema düğmesi + profil */}
       <div className="ust-bar-sag">
+        {/* Demo/canlı veri rozeti - her sayfada görünür (bkz. madde 14,
+            önceden yalnızca Dashboard'da görünen dağınık göstergelerin
+            merkezileştirilmiş hali) */}
+        <VeriKaynagiRozeti />
+
         {/* Koyu tema düğmesi */}
         <button
           className="tema-dugme"

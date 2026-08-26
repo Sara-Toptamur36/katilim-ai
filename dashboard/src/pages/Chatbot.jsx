@@ -13,6 +13,7 @@ import {
   MenuUnfoldOutlined,
   InfoCircleOutlined,
   ClearOutlined,
+  CloseOutlined,
 } from "@ant-design/icons";
 import { chatGonder, tokenAl, API_TABANI } from "../api/client";
 import ChatMesaji from "../components/ChatMesaji";
@@ -515,6 +516,25 @@ export default function Chatbot() {
       {/* === SOL: Sohbet geçmişi paneli === */}
       <aside className={`sohbet-gecmis-panel ${gecmisAcik ? "acik" : "kapali"}`}>
         <div className="sohbet-gecmis-icerik">
+          {/* Panel başlığı + kapatma düğmesi. GEREKÇE: dar ekranlarda panel
+              "acik" iken position:absolute olup ana alanın üstüne biniyor
+              (bkz. tema.css @media max-width:1200px) - ana alandaki
+              gecmis-toggle-dugme de panelin ALTINDA kalıp tıklanamaz hale
+              geliyordu (kullanıcı bulgusu: "panel açıldıktan sonra kapatma
+              yeri yok"). Panelin KENDİ içinde bir kapatma düğmesi, hangi
+              ekran genişliğinde olursa olsun her zaman erişilebilir. */}
+          <div className="sohbet-gecmis-baslik-satiri">
+            <span className="sohbet-gecmis-baslik-metni">Sohbetler</span>
+            <button
+              className="sohbet-gecmis-kapat-dugme"
+              onClick={() => setGecmisAcik(false)}
+              aria-label="Geçmişi kapat"
+              title="Geçmişi kapat"
+            >
+              <CloseOutlined />
+            </button>
+          </div>
+
           {/* Yeni Sohbet düğmesi */}
           <button className="yeni-sohbet-dugme" onClick={yeniSohbet}>
             <PlusOutlined />
@@ -723,7 +743,7 @@ export default function Chatbot() {
               onKeyDown={tusYakala}
               placeholder="Örn: A Bankası'nın konut finansmanı oranı ne?"
               disabled={bekleniyor}
-              autoSize={{ minRows: 1, maxRows: 4 }}
+              autoSize={{ minRows: 2, maxRows: 6 }}
               className="sohbet-textarea"
             />
             <Button

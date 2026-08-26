@@ -657,6 +657,42 @@ html[data-tema="koyu"] .tema-dugme:hover {
   gap: 12px;
 }
 
+/* Panel başlığı + kapatma düğmesi — panelin HER ZAMAN kendi içinde
+   erişilebilir bir kapatma yolu olsun diye (bkz. Chatbot.jsx gerekçesi). */
+.sohbet-gecmis-baslik-satiri {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  padding: 0 2px;
+}
+
+.sohbet-gecmis-baslik-metni {
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--yazi-koyu);
+}
+
+.sohbet-gecmis-kapat-dugme {
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--yazi-soluk);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  transition: all 150ms ease;
+}
+
+.sohbet-gecmis-kapat-dugme:hover {
+  background: var(--kenarlik);
+  color: var(--yazi-koyu);
+}
+
 /* "+ Yeni Sohbet" düğmesi */
 .yeni-sohbet-dugme {
   display: flex;
@@ -1036,20 +1072,39 @@ html[data-tema="koyu"] .tema-dugme:hover {
 .sohbet-yazma-kutu {
   display: flex;
   align-items: flex-end;
-  gap: 10px;
+  gap: 8px;
   max-width: 860px;
   margin: 0 auto;
+  padding: 12px 14px;
+  border: 1px solid var(--kenarlik);
+  border-radius: 20px;
+  background: var(--kart);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  transition: border-color 150ms ease;
 }
 
-.sohbet-textarea {
+.sohbet-yazma-kutu:focus-within {
+  border-color: var(--marka-400);
+}
+
+.sohbet-textarea,
+.sohbet-textarea.ant-input {
   flex: 1;
   resize: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 6px 4px !important;
+  font-size: 15px !important;
+  line-height: 1.55 !important;
 }
 
 .sohbet-gonder-dugme {
   background: var(--marka-500) !important;
   border-color: var(--marka-500) !important;
   flex-shrink: 0;
+  width: 38px !important;
+  height: 38px !important;
 }
 
 .sohbet-gonder-dugme:hover:not(:disabled) {

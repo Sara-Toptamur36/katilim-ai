@@ -1,6 +1,22 @@
 import { useEffect, useState } from "react";
 import { tazelikGetir, kampanyalariGetir } from "../api/client";
-import { OLCUMLER, BANKA_DAGILIMI, URUN_AILESI, ALAN_DOLULUGU, SISTEM_DURUMU } from "../data/olcumler";
+import {
+  OLCUMLER,
+  BANKA_DAGILIMI,
+  URUN_AILESI,
+  ALAN_DOLULUGU,
+  SISTEM_DURUMU,
+  VERI_TARIHI,
+} from "../data/olcumler";
+
+function tarihMetni(isoMetin) {
+  if (!isoMetin) return null;
+  return new Date(isoMetin).toLocaleDateString("tr-TR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
 
 // Genel Bakış ve Jüri Audit Paneli AYNI canlı veri hesaplamalarını kullanır
 // (tekil kampanya sayısı, banka/ürün ailesi dağılımı, alan doluluğu). Önceden
@@ -27,6 +43,13 @@ export function useCanliVeriOzet() {
   const ragParca = tazelik?.rag_parca_sayisi ?? SISTEM_DURUMU.qdrantParca;
   const ragBelge = tazelik?.rag_belge_sayisi ?? SISTEM_DURUMU.qdrantBelge;
   const hacimCanli = tazelik != null;
+  // DENETIM BULGUSU (26.08.2026): Dashboard "Veri: {tarih}" etiketi
+  // VERI_TARIHI sabitini (24 Agustos) gosteriyordu ama hemen yanindaki
+  // sayilar (tekilKampanya vb.) CANLI /sistem/tazelik'ten geliyor - API
+  // baglantiliyken tarama gercekte daha yeni oldugunda etiket bayat
+  // kaliyordu. tazelik.son_tarama VARSA o kullanilir, yoksa (API kapali)
+  // statik VERI_TARIHI'ne duser.
+  const sonTarama = tarihMetni(tazelik?.son_tarama) ?? VERI_TARIHI;
 
   // Izlenen bes alan, olcumler.js'teki "doluluk" tanimiyla AYNI olmali.
   const IZLENEN_ALANLAR = [
@@ -123,6 +146,7 @@ export function useCanliVeriOzet() {
     kampanyalar,
     tekilKampanya,
     anlikGoruntu,
+    sonTarama,
     ragParca,
     ragBelge,
     hacimCanli,

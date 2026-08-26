@@ -305,8 +305,15 @@ export default function ExtractionAudit() {
           </Col>
         </Row>
         <Typography.Text type="secondary" style={{ fontSize: 11, display: "block", marginTop: 10 }}>
-          Toplam ölçüm ({OLCUM_TARIHI} tarihli, {OLCUMLER.cikarim.makroF1Detay}) — tam metodoloji ve RAG/Scope
-          Guard ölçümleri için <Link to="/audit">Jüri Audit Paneli → Model Metrikleri</Link>.
+          Toplam ölçüm ({OLCUM_TARIHI} tarihli, {OLCUMLER.cikarim.makroF1Detay}) — alan bazlı kırılım, tam
+          metodoloji ve RAG/Scope Guard ölçümleri için{" "}
+          <Link to="/audit">Jüri Audit Paneli → Model Metrikleri</Link>.
+        </Typography.Text>
+        {/* Asagidaki zincir (Regex -> GLiNER -> Qwen -> Resolver) sistemin
+            TASARIMIDIR; olculen kosuda NER devre disiydi. Ikisi karistirilmasin
+            diye olcum serigi burada acikca belirtilir. */}
+        <Typography.Text type="secondary" style={{ fontSize: 11, display: "block", marginTop: 6 }}>
+          {OLCUMLER.cikarim.nerDurumu}
         </Typography.Text>
       </Card>
 

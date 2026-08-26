@@ -51,6 +51,30 @@ export const OLCUMLER = {
     bosAlanDetay: "hibrit (regex+LLM/EVREN), 291 canlı kayıt",
     makroF1: 82.50,
     makroF1Detay: "11 alan, hibrit (regex+LLM/EVREN) · regex-only tek başına %80,66",
+    // DURUSTLUK NOTU (README, 26.08.2026 ablation bolumu): bu kosuda
+    // GLiNER bu makinede yuklenirken coktugu icin (torch/Windows yerel
+    // hatasi) NER katmani DEVRE DISIYDI. Yani "hibrit" burada gercekte
+    // regex + LLM'dir. NER'in katkisi "yok" DEGIL, "olculmedi"dir -
+    // ekranda da boyle yazilir, ucu birden calismis gibi gosterilmez.
+    nerDurumu: "Bu ölçümde NER (GLiNER) devre dışıydı — raporlanan hibrit gerçekte regex + LLM'dir. NER'in katkısı ölçülmemiştir.",
+    // Alan bazli F1 - cikarim_dogruluk_raporu.json'dan (hibrit varyant).
+    // NEDEN EKRANDA: tek bir makro F1 sayisi sistemin nerede iyi, nerede
+    // zayif oldugunu gizler. 23 Agustos'ta "bilinen zayif alan" diye
+    // isaretlenen kampanya_turu (%35,63) ve hedef_kitle (R %19,67)
+    // 26 Agustos'ta olculur bicimde duzeldi - once/sonra gorunur olmali.
+    alanBazliF1: [
+      { alan: "Kampanya başlangıç", f1: 97.67 },
+      { alan: "Kampanya bitiş", f1: 95.69 },
+      { alan: "Erteleme süresi", f1: 94.74 },
+      { alan: "Ödül birimi", f1: 90.82 },
+      { alan: "Ödül miktarı", f1: 90.36 },
+      { alan: "Taksit sayısı", f1: 89.50 },
+      { alan: "Kampanya türü", f1: 81.88, oncekiF1: 35.63 },
+      { alan: "Kâr payı oranı", f1: 80.00 },
+      { alan: "Finansman tutarı", f1: 72.73 },
+      { alan: "Hedef kitle", f1: 56.95, oncekiF1: 19.67 },
+      { alan: "Vade", f1: 57.14 },
+    ],
   },
   kapsam: {
     hassasiyet: "24/24",

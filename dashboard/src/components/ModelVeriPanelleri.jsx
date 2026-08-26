@@ -3,7 +3,6 @@ import { Modal } from "antd";
 import {
   OLCUMLER,
   OLCUM_TARIHI,
-  VERI_TARIHI,
   OLCUM_VERI_SETI,
   ZAMAN_EKSENI,
 } from "../data/olcumler";
@@ -23,6 +22,7 @@ export default function ModelVeriPanelleri() {
   const {
     tekilKampanya,
     anlikGoruntu,
+    sonTarama,
     urunAilesi,
     ragParca,
     bankaDagilimi,
@@ -202,6 +202,53 @@ export default function ModelVeriPanelleri() {
             <div style={{ fontSize: 11, color: "var(--yazi-soluk)", marginTop: 6 }}>{OLCUMLER.cikarim.makroF1Detay}</div>
           </div>
 
+          {/* Alan Bazlı F1 — 3 sütun (tam genişlik).
+              NEDEN VAR: tek bir makro F1, sistemin nerede iyi nerede zayıf
+              olduğunu gizler. 23 Ağustos'ta "bilinen zayıf alan" diye
+              işaretlenen iki alan 26 Ağustos'ta ölçülür biçimde düzeldi —
+              önce/sonra görünür olmalı, düzelme de zayıflık da saklanmaz. */}
+          <div style={{ ...bentoKartStil, gridColumn: "span 3" }}>
+            <div style={bentoBaslikStil}>ALAN BAZLI F1 (HİBRİT)</div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))",
+                gap: "10px 20px",
+              }}
+            >
+              {OLCUMLER.cikarim.alanBazliF1.map((a) => (
+                <div key={a.alan}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 3 }}>
+                    <span style={{ fontSize: 12.5, color: "var(--yazi-normal)" }}>
+                      {a.alan}
+                      {a.oncekiF1 != null && (
+                        <span style={{ fontSize: 11, color: "#0c765f", fontWeight: 600, marginLeft: 6 }}>
+                          ↑ %{a.oncekiF1.toString().replace(".", ",")}'den
+                        </span>
+                      )}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 12.5,
+                        fontWeight: 650,
+                        color: a.f1 >= 80 ? "#0c765f" : a.f1 >= 60 ? "#b8873a" : "#c0663a",
+                      }}
+                    >
+                      %{a.f1.toString().replace(".", ",")}
+                    </span>
+                  </div>
+                  <DolulukCubugu
+                    yuzde={a.f1}
+                    renk={a.f1 >= 80 ? "#169276" : a.f1 >= 60 ? "#d4a34b" : "#d08659"}
+                  />
+                </div>
+              ))}
+            </div>
+            <div style={{ fontSize: 11, color: "var(--yazi-soluk)", marginTop: 14, paddingTop: 10, borderTop: "1px solid var(--kenarlik)" }}>
+              {OLCUMLER.cikarim.nerDurumu}
+            </div>
+          </div>
+
           {/* RAG Performansı — 2 sütun */}
           <div style={{ ...bentoKartStil, gridColumn: "span 2" }}>
             <div style={bentoBaslikStil}>RAG PERFORMANSI</div>
@@ -368,7 +415,7 @@ export default function ModelVeriPanelleri() {
               Veri Kaynakları
             </div>
             <div style={{ fontSize: 12, color: "var(--yazi-soluk)", fontWeight: 400, marginTop: 2 }}>
-              Kapsam raporu: {VERI_TARIHI} · PostgreSQL'den okundu
+              Kapsam raporu: {sonTarama} · PostgreSQL'den okundu
             </div>
           </div>
         }

@@ -7,13 +7,7 @@ import {
   AuditOutlined,
 } from "@ant-design/icons";
 import client from "../api/client";
-import {
-  OLCUMLER,
-  OLCUM_TARIHI,
-  VERI_TARIHI,
-  SISTEM_DURUMU,
-  KAYNAK_TAKIP,
-} from "../data/olcumler";
+import { OLCUMLER, OLCUM_TARIHI, KAYNAK_TAKIP } from "../data/olcumler";
 import TazelikSeridi from "../components/TazelikSeridi";
 import { useCanliVeriOzet } from "../hooks/useCanliVeriOzet";
 
@@ -37,6 +31,7 @@ export default function Dashboard() {
   const {
     tekilKampanya,
     anlikGoruntu,
+    sonTarama,
     ragParca,
     ragBelge,
     urunAilesi,
@@ -617,7 +612,7 @@ export default function Dashboard() {
             whiteSpace: "nowrap",
           }}
         >
-          <span>Veri: {VERI_TARIHI}</span>
+          <span>Veri: {sonTarama}</span>
           <span style={{ margin: "0 6px", opacity: 0.5 }}>·</span>
           <span>Ölçüm: {OLCUM_TARIHI}</span>
         </div>
@@ -1244,7 +1239,7 @@ export default function Dashboard() {
                   Bu oranlar yalnızca regex katmanının sonucudur. NER ve LLM katmanları daha fazlasını doldurur — bu bir alt sınır göstergesidir, kesin doluluk değildir.
                 </div>
                 <div>
-                  Doluluk oranı ile çıkarım doğruluğu farklı şeylerdir: doluluk, bankaların o alanı kaç kampanyada yayımladığını gösterir; %98,28 makro F1 ise yayımlanan alanları ne kadar doğru okuduğumuzu ölçer.
+                  Doluluk oranı ile çıkarım doğruluğu farklı şeylerdir: doluluk, bankaların o alanı kaç kampanyada yayımladığını gösterir; %{OLCUMLER.cikarim.makroF1.toString().replace(".", ",")} makro F1 ise yayımlanan alanları ne kadar doğru okuduğumuzu ölçer.
                 </div>
               </div>
             </div>
@@ -1494,7 +1489,7 @@ export default function Dashboard() {
                     marginTop: 2,
                   }}
                 >
-                  BDDK listesindeki 10 katılım bankasının resmî kampanya sayfaları · son tarama {SISTEM_DURUMU.sonTarama}
+                  BDDK listesindeki 10 katılım bankasının resmî kampanya sayfaları · son tarama {sonTarama}
                 </div>
               </div>
 

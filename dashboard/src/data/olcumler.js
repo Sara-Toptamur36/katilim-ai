@@ -85,16 +85,18 @@ export const OLCUMLER = {
     abstentionKapsamDisi: 40,
     abstentionKapsamDisiDetay: "4/10 kapsam dışı soruda cevap üretilmedi",
   },
+  // CI'nin kendi calisan sayisi (gh run view, GitHub Actions - "not slow"
+  // takimi) DENETIM BULGUSU (26.08.2026): 2 test kirikti, "Sorgu Eslesme
+  // Agirliklari" ozelligi eklenince test_kaynak_guncelligi.py'deki
+  // SimpleNamespace sahte nesneleri terim_agirliklari alanini almamisti.
+  // Duzeltildi (bkz. tests/test_kaynak_guncelligi.py); sayilar CI'nin
+  // GERCEK son calismasindan (yerel .env/GERCEK_VERI_AKTIF etkisinden
+  // ARINDIRILMIS, CI hicbir zaman yerel .env gormez).
   test: {
-    gecen: 723,
-    yavas: 44,
+    gecen: 1278,
+    yavas: 46,
   },
   bilinenHatalar: [
-    {
-      kod: "EX-HK",
-      alan: "Hedef kitle",
-      aciklama: "\"Belirli segment\" (~140 kayıt) insan etiketleyicinin bağlamsal çıkarımına dayanıyor, kaynak metinde literal olarak geçmiyor — motor bunu yakalayamaz, bilinen bir tavan (26 Ağustos ölçümü).",
-    },
     {
       kod: "EX-AL",
       alan: "Kampanya avantajı (Albaraka)",

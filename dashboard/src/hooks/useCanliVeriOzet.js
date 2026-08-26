@@ -79,6 +79,45 @@ export function useCanliVeriOzet() {
   const urunAilesiToplam = urunAilesi.reduce((t, u) => t + u.sayi, 0);
   const alanDolulukToplam = alanDolulugu[0]?.toplam ?? urunAilesiToplam;
 
+  // --- CANLI BANKA DAGILIMI ---
+  // DENETIM BULGUSU (26.08.2026): "Banka Bazinda Dagilim" karti sabit
+  // BANKA_DAGILIMI'nden (24 Agustos anlik goruntusu) okuyordu - o tarihte
+  // Vakif Katilim 3 kampanyaydi, /kampanyalar'daki GUNCEL sayi 100. Sabit
+  // veriyle "Vakif Katilim yalnizca 3 kampanya toplayabildi, veri kapsami
+  // bosluguydu" denmesi artik YANLIS bilgi vermek olurdu - gercekte o
+  // bankadan cok daha fazla kampanya toplanmis, sadece ekran eski
+  // anlik goruntuyu gosteriyordu. tekil canli /kampanyalar'dan sayilir;
+  // snapshot/gold icin canli bir uc nokta olmadigindan (backend banka
+  // kirilimi sunmuyor) statik BANKA_DAGILIMI'nden isimle eslenerek alinir -
+  // bu ikisi zaten sik degismeyen degerlerdir.
+  const bankaDagilimi = kampanyalar
+    ? Object.entries(
+        kampanyalar.reduce((grup, k) => {
+          const ad = k.banka || "Belirtilmemiş";
+          grup[ad] = (grup[ad] ?? 0) + 1;
+          return grup;
+        }, {})
+      )
+        .map(([banka, tekil]) => {
+          const statik = BANKA_DAGILIMI.find((b) => b.banka === banka);
+          return { banka, tekil, snapshot: statik?.snapshot ?? null, gold: statik?.gold ?? null };
+        })
+        .sort((a, b) => b.tekil - a.tekil)
+    : BANKA_DAGILIMI;
+
+  const bankaDagilimiToplami = bankaDagilimi.reduce((t, b) => t + b.tekil, 0);
+  const enBuyukBankaTekil = bankaDagilimi[0]?.tekil ?? 1;
+
+  const baskinBankalar = bankaDagilimi.slice(0, 2).map((b) => b.banka);
+  const baskinYuzde = Math.round(
+    (100 * bankaDagilimi.slice(0, 2).reduce((t, b) => t + b.tekil, 0)) / bankaDagilimiToplami
+  );
+  const zayifBankalar = [...bankaDagilimi]
+    .sort((a, b) => a.tekil - b.tekil)
+    .slice(0, 3)
+    .map((b) => `${b.banka} ${b.tekil}`)
+    .join(", ");
+
   return {
     tazelik,
     kampanyalar,
@@ -92,25 +131,11 @@ export function useCanliVeriOzet() {
     dagilimCanli,
     urunAilesiToplam,
     alanDolulukToplam,
+    bankaDagilimi,
+    bankaDagilimiToplami,
+    enBuyukBankaTekil,
+    baskinBankalar,
+    baskinYuzde,
+    zayifBankalar,
   };
 }
-
-// Baskin bankalar VERIDEN hesaplanir, isim olarak GOMULMEZ - BANKA_DAGILIMI
-// degistikce siralama degisir. Statik veriye bagli oldugu icin modul
-// seviyesinde bir kere hesaplanir, hook'a gerek yoktur.
-export const BASKIN_BANKALAR = [...BANKA_DAGILIMI]
-  .sort((a, b) => b.tekil - a.tekil)
-  .slice(0, 2)
-  .map((b) => b.banka);
-
-export const BASKIN_YUZDE = Math.round(
-  (100 * [...BANKA_DAGILIMI].sort((a, b) => b.tekil - a.tekil).slice(0, 2)
-    .reduce((t, b) => t + b.tekil, 0)) /
-    BANKA_DAGILIMI.reduce((t, b) => t + b.tekil, 0),
-);
-
-export const ZAYIF_BANKALAR = [...BANKA_DAGILIMI]
-  .sort((a, b) => a.tekil - b.tekil)
-  .slice(0, 3)
-  .map((b) => `${b.banka} ${b.tekil}`)
-  .join(", ");

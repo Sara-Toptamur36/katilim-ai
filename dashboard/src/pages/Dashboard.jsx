@@ -11,12 +11,11 @@ import {
   OLCUMLER,
   OLCUM_TARIHI,
   VERI_TARIHI,
-  BANKA_DAGILIMI,
   SISTEM_DURUMU,
   KAYNAK_TAKIP,
 } from "../data/olcumler";
 import TazelikSeridi from "../components/TazelikSeridi";
-import { useCanliVeriOzet, BASKIN_BANKALAR, BASKIN_YUZDE, ZAYIF_BANKALAR } from "../hooks/useCanliVeriOzet";
+import { useCanliVeriOzet } from "../hooks/useCanliVeriOzet";
 
 export default function Dashboard() {
   const [apiBagli, setApiBagli] = useState(false);
@@ -44,6 +43,11 @@ export default function Dashboard() {
     alanDolulugu,
     urunAilesiToplam,
     alanDolulukToplam,
+    bankaDagilimi,
+    enBuyukBankaTekil,
+    baskinBankalar,
+    baskinYuzde,
+    zayifBankalar,
   } = useCanliVeriOzet();
 
   return (
@@ -923,7 +927,7 @@ export default function Dashboard() {
         });
 
         /* -- Çubuk grafik verileri -- */
-        const enBuyuk = 109;
+        const enBuyuk = enBuyukBankaTekil;
 
         return (
           <div className="grafik-izgarasi">
@@ -1088,10 +1092,10 @@ export default function Dashboard() {
 
               {/* Çubuk grafik satırları */}
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {BANKA_DAGILIMI.map((b) => {
+                {bankaDagilimi.map((b) => {
                   const yuzde = (b.tekil / enBuyuk) * 100;
                   /* Baskın iki banka altın, diğerleri yeşil */
-                  const baskinMi = BASKIN_BANKALAR.includes(b.banka);
+                  const baskinMi = baskinBankalar.includes(b.banka);
                   return (
                     <div className="cubuk-satir" key={b.banka}>
                       <span className="cubuk-banka-adi">{b.banka}</span>
@@ -1123,7 +1127,7 @@ export default function Dashboard() {
                   lineHeight: 1.45,
                 }}
               >
-                Altın renkli iki banka ({BASKIN_BANKALAR.join(" ve ")}) toplam kampanyaların %{BASKIN_YUZDE}'sini oluşturuyor. Diğer uçta {ZAYIF_BANKALAR} kampanya toplanabildi — dağılım dengesizdir.
+                Altın renkli iki banka ({baskinBankalar.join(" ve ")}) toplam kampanyaların %{baskinYuzde}'sini oluşturuyor. Diğer uçta {zayifBankalar} kampanya var — bu bir tarama eksikliği değil, bu bankaların o an sitesinde yayında olan kampanya sayısı bu kadardır.
               </div>
             </div>
 

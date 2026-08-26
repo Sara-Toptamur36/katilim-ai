@@ -5,10 +5,9 @@ import {
   OLCUM_TARIHI,
   VERI_TARIHI,
   OLCUM_VERI_SETI,
-  BANKA_DAGILIMI,
   ZAMAN_EKSENI,
 } from "../data/olcumler";
-import { useCanliVeriOzet, BASKIN_BANKALAR, BASKIN_YUZDE, ZAYIF_BANKALAR } from "../hooks/useCanliVeriOzet";
+import { useCanliVeriOzet } from "../hooks/useCanliVeriOzet";
 
 // Model Metrikleri ve Veri Kaynakları panelleri ONCEDEN Genel Bakış'taydı.
 // DENETIM BULGUSU (26.08.2026): ilk giren biri (jüri) Genel Bakış'ta daha
@@ -25,6 +24,13 @@ export default function ModelVeriPanelleri() {
     tekilKampanya,
     anlikGoruntu,
     urunAilesi,
+    ragParca,
+    bankaDagilimi,
+    bankaDagilimiToplami,
+    enBuyukBankaTekil,
+    baskinBankalar,
+    baskinYuzde,
+    zayifBankalar,
   } = useCanliVeriOzet();
 
   const modelPaneliniAc = () => {
@@ -329,7 +335,19 @@ export default function ModelVeriPanelleri() {
             }}
           >
             <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>⚠</span>
-            <span>Bu değerler canlı telemetri değildir. {OLCUM_TARIHI} tarihinde <strong>{OLCUM_VERI_SETI}</strong> üzerinde ölçülmüştür. Veri o tarihten sonra büyüdü ({tekilKampanya} tekil kampanya) — bu oranlar <strong>yeni set üzerinde yeniden ölçülmedi</strong>.</span>
+            {/* DENETIM BULGUSU (26.08.2026): eskiden bu uyari cikarim VE RAG'i
+                TEK cumlede "yeniden olculmedi" diye birlikte etiketliyordu -
+                ama cikarim {OLCUM_TARIHI}'nde GUNCEL 291 kayitlik canli
+                sette olculdu (yani zaten "yeni set"), yalniz RAG hala eski
+                indekste. Iki farkli gercegi tek cumleye sikistirmak yanlis
+                bilgi veriyordu, ayri ayri yazildi. */}
+            <span>
+              Çıkarım oranları (Dolu/Boş Alan, Makro F1) <strong>{OLCUM_TARIHI}</strong> tarihinde{" "}
+              <strong>291 canlı kayıt</strong> üzerinde, güncel veriyle ölçüldü. RAG Performansı ise{" "}
+              <strong>{OLCUMLER.rag.indeksTarihi}</strong> tarihindeki <strong>{OLCUMLER.rag.indekslenenParca} parçalık</strong> indekste
+              ölçüldü; canlı indeks o tarihten sonra {ragParca} parçaya büyüdü — <strong>yalnızca RAG oranları
+              yeni indekste henüz yeniden ölçülmedi</strong>.
+            </span>
           </div>
         </div>
       </Modal>
@@ -397,10 +415,9 @@ export default function ModelVeriPanelleri() {
           <div style={{ ...bentoKartStil, gridColumn: "span 2" }}>
             <div style={bentoBaslikStil}>BANKA BAZINDA DAĞILIM</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {BANKA_DAGILIMI.map((b) => {
-                const maxTekil = 109;
-                const yuzde = (b.tekil / maxTekil) * 100;
-                const baskinMi = BASKIN_BANKALAR.includes(b.banka);
+              {bankaDagilimi.map((b) => {
+                const yuzde = (b.tekil / enBuyukBankaTekil) * 100;
+                const baskinMi = baskinBankalar.includes(b.banka);
                 const cubukRengi = baskinMi ? "#d4a34b" : "#169276";
 
                 return (
@@ -419,9 +436,9 @@ export default function ModelVeriPanelleri() {
                       <div style={{ fontSize: 11, color: "var(--yazi-soluk)", display: "flex", alignItems: "center", gap: 4 }}>
                         <span style={{ fontWeight: 600, color: "var(--yazi-koyu)" }}>{b.tekil}</span>
                         <span>|</span>
-                        <span>{b.snapshot}</span>
+                        <span>{b.snapshot ?? "—"}</span>
                         <span>|</span>
-                        <span>{b.gold}</span>
+                        <span>{b.gold ?? "—"}</span>
                       </div>
                     </div>
                     <div style={{ width: "100%", height: 5, background: "var(--kenarlik)", borderRadius: 3, overflow: "hidden" }}>
@@ -434,15 +451,22 @@ export default function ModelVeriPanelleri() {
               <div style={{ borderTop: "2px solid var(--kenarlik)", paddingTop: 8, marginTop: 4, display: "flex", justifyContent: "space-between", alignItems: "center", fontWeight: 700 }}>
                 <span style={{ fontSize: 13, color: "var(--yazi-koyu)" }}>Toplam</span>
                 <div style={{ fontSize: 11, color: "var(--yazi-koyu)", display: "flex", alignItems: "center", gap: 4 }}>
-                  <span>{BANKA_DAGILIMI.reduce((s, b) => s + b.tekil, 0)}</span>
+                  <span>{bankaDagilimiToplami}</span>
                   <span>|</span>
-                  <span>{BANKA_DAGILIMI.reduce((s, b) => s + b.snapshot, 0)}</span>
+                  <span>{bankaDagilimi.reduce((s, b) => s + (b.snapshot ?? 0), 0)}</span>
                   <span>|</span>
-                  <span>{BANKA_DAGILIMI.reduce((s, b) => s + b.gold, 0)}</span>
+                  <span>{bankaDagilimi.reduce((s, b) => s + (b.gold ?? 0), 0)}</span>
                 </div>
               </div>
             </div>
 
+            {/* DENETIM BULGUSU (26.08.2026): eskiden burada "veri kapsami
+                boslugu" deniyordu - bu, dusuk sayili bankalarin taramada
+                KACIRILDIGINI ima ediyordu. Gercekte oyle degil: ör. T.O.M.
+                Katilim'in kendi sitesi zaten tek bir sayfada birkac
+                kampanya yayinliyor (bkz. docs/extraction_accuracy_
+                raporu.md, "C6" bulgusu) - dusuk sayi bankanin kendi
+                yayinladigi kampanya adedidir, tarama eksikligi degil. */}
             <div
               style={{
                 background: "var(--uyari-zemin)",
@@ -455,7 +479,7 @@ export default function ModelVeriPanelleri() {
                 marginTop: 12,
               }}
             >
-              Altın renkli iki banka ({BASKIN_BANKALAR.join(" ve ")}) toplam kampanyaların %{BASKIN_YUZDE}'sini oluşturuyor. Diğer uçta {ZAYIF_BANKALAR} kampanya toplanabildi. Bu bir veri kapsamı boşluğudur, gizlenmemektedir.
+              Altın renkli iki banka ({baskinBankalar.join(" ve ")}) toplam kampanyaların %{baskinYuzde}'sini oluşturuyor. Diğer uçta {zayifBankalar} kampanya var — bu bir tarama eksikliği değil, bu bankaların o an sitesinde yayında olan kampanya sayısı bu kadardır.
             </div>
           </div>
 

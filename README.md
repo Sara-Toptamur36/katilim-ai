@@ -126,12 +126,47 @@ komutları [Test](#test) bölümünde._
 > kombinasyonu imkânsız kılıyor; çelişkili etiketleri listeleyen rapor:
 > `python -m gold_dataset.etiket_celiskisi_raporu`
 >
-> **Bilinen zayıf alanlar (açıkça raporlanır):** `kampanya_turu` F1 %35,63
-> (anahtar kelime sınıflandırması — Md. 5.4 için yetersiz),
-> `kampanya_baslangic` R %20,27 (precision %100 — bulduğunda doğru buluyor,
-> ama çoğu sayfada başlangıç tarihi hiç yazmıyor), `hedef_kitle` R %19,67
-> (altın veri etiketi bir insan özeti; o cümle sayfada aynen geçmiyor —
-> regex'in ulaşamadığı bir alan, NER/LLM katmanının işi).
+> **Bu blok 23 Ağustos'taki durumu anlatır; o gün "bilinen zayıf" diye
+> işaretlenen üç alanın ikisi 26 Ağustos'ta ölçülür biçimde düzeldi.**
+> Güncel değerler ve hangi kök nedenin nasıl kapatıldığı bir alt başlıkta.
+
+#### 26 Ağustos: zayıf alanların sistemli düzeltilmesi
+
+23 Ağustos'ta "bilinen zayıf" diye işaretlenen alanlar tek tek kök nedene
+kadar izlendi. Aşağıdaki tablo aynı ölçüm komutunun (`python -m
+scraper.scripts.extraction_accuracy`, 291 canlı kayıt) önce/sonra çıktısıdır:
+
+| Alan                     | 23 Ağustos | 26 Ağustos (regex) | 26 Ağustos (hibrit) |
+| ------------------------ | ---------- | ------------------ | ------------------- |
+| `kampanya_turu`          | %35,63     | **%81,88**         | %81,88              |
+| `hedef_kitle`            | R %19,67   | %34,48             | **%56,95**          |
+| `odul_miktari`           | —          | %89,36             | **%90,36**          |
+| `odul_birimi`            | —          | %90,43             | **%90,82**          |
+| `taksit_sayisi`          | —          | %88,48             | **%89,50**          |
+| `erteleme_suresi_ay`     | —          | **%94,74**         | %94,74              |
+| `kar_payi_orani_percent` | %80,00     | **%80,00**         | %80,00              |
+| `finansman_tutari`       | —          | %72,73             | %72,73              |
+| **Makro F1**             | %67,09     | **%80,66**         | **%82,50**          |
+
+Bulunan kök nedenlerden bazıları (tamamı
+[`docs/extraction_accuracy_raporu.md`](docs/extraction_accuracy_raporu.md)'de):
+sayfanın kendi içeriği bittikten sonra gelen **ilgisiz kampanya listesi**
+(bir bankanın her sayfasında başka kampanyaların taksit/ödül ifadeleri
+vardı ve motor bunları o kaydın kendi değeri sanıyordu); istisna
+cümlelerinin **olumlu sanılması** ("Business kartlar dahil değildir"
+ifadesi o kampanyayı "Ticari Kampanya" yapıyordu); ve Türkçe **çekim
+eklerinin** desende eksik olması ("6 taksite", "3 Ay Erteleme").
+
+**Hâlâ açık olan iki alan, gerekçesiyle:**
+
+- `kampanya_baslangic` R %95,45'e çıktı ama bu alan zaten precision %100
+  ile çalışıyordu — kalan kaçırmalar çoğu sayfada başlangıç tarihinin
+  **hiç yazmamasından** kaynaklanıyor, motorun ulaşabileceği bir bilgi değil.
+- `hedef_kitle` hibritte %56,95'e çıktı ama gold'daki baskın sınıf
+  ("Belirli segment", ~140 kayıt) bir **insan çıkarımıdır** — etiketi
+  yazan kişi sayfadaki ürün adından/kampanya tipinden anlam çıkarmış,
+  o cümle metinde aynen geçmiyor. Bu, kural genişleterek kapatılabilecek
+  bir boşluk değil; denendi ve ölçümle reddedildi (ayrıntı raporda).
 
 > Aşağıdaki anlatı ilk ölçüldüğü tarihteki (251 tekil / 300 anlık görüntü)
 > sayılarla yazıldı; **güncel sayılar yukarıdaki "Ölçülebilir durum"
@@ -162,6 +197,13 @@ kampanyanın tamamen kaldırılması: T.O.M. Katılım'ın 3 kampanyasından 2's
 (restoran ve market iade kampanyaları) 18 Ağustos taramasında artık sitede
 bulunamadı — canlı sayfa doğrudan kontrol edilerek scraper hatası olmadığı
 doğrulandı (bkz. [md6_veri_bolumu.md](docs/md6_veri_bolumu.md#33-somut-örnek)).
+
+> **Aşağıdaki üç blok RAG ölçümünün tarihsel seyridir** (17 → 21 → 23
+> Ağustos). Her biri kendi tarihindeki indeks boyutuyla yazılmıştır;
+> **güncel RAG sayıları yukarıdaki "Ölçülebilir durum" tablosundadır**
+> (indeks 26 Ağustos'ta 2127 parçaya büyüdü, Recall o boyutta henüz
+> yeniden ölçülmedi). Buradaki değer, sayılar değil **hangi bulgunun
+> neden çıktığıdır** — o gerekçeler hâlâ geçerli.
 
 **RAG indeksi 17 Ağustos'ta yeniden kuruldu** (263 belge → 817 parça) ve ölçüm
 tekrarlandı. İki bulgu çıktı, ikisi de raporlanıyor:
@@ -222,15 +264,28 @@ hangisinin "doğru" olduğu yorum gerektiriyor). Ayrıntı:
 > Yöntem ve tespit edilen yanlış pozitifler:
 > [`docs/extraction_accuracy_raporu.md`](docs/extraction_accuracy_raporu.md)
 >
-> **Yukarıdaki sayılar deterministik katmanın (regex + doğrulama) sonucudur.**
-> Hibrit boru hattının LLM katmanı `temperature=0` ile çağrılsa bile
-> çalıştırmalar arasında oynayabiliyor (ölçüldü: aynı veri setinde %89,06 ↔
-> %87,5) — Ollama'nın çalışma zamanı determinizmi tam garanti etmiyor. Ayrıca
-> GPU'suz makinede kayıt başına 150–300 sn sürdüğü için 263 kayıtlık tam
-> ablation koşusu henüz yapılamadı; `scraper/scripts/ablation.py` bu durumda
-> LLM varyantını `GEÇERSİZ` olarak işaretler — "katkı yok" diye yanlış bir
-> sonuç raporlamaz. Katman katkısının tam ölçümü GPU'lu bir makinede
-> yapılacaktır.
+> **İki varyant ayrı ayrı raporlanır — birbirinin yerine geçmez.**
+> "Ölçülebilir durum" tablosundaki çıkarım satırları **hibrit** (regex +
+> LLM) varyantı gösterir, çünkü çalışan sistem bunu kullanır; yanına
+> **regex-only** sayısı da yazılır, çünkü o katman deterministiktir ve
+> LLM olmadan da (internetsiz, Ollama kapalı) sistemin garanti ettiği
+> taban odur.
+>
+> **LLM katmanının determinizmi tam değildir** ve bu gizlenmez:
+> `temperature=0` ile çağrılsa bile çalıştırmalar arasında oynayabiliyor
+> (ölçüldü: aynı veri setinde %89,06 ↔ %87,5). Bu yüzden hibrit sayı
+> "kesin" değil, **ölçülmüş bir aralığın** temsilcisidir; regex-only sayı
+> ise tekrar üretilebilirdir.
+>
+> **Katman katkısının ayrıştırılması (ablation) hâlâ eksik.** 26 Ağustos'ta
+> hibrit boru hattı 291 canlı kayıtta uçtan uca koşturuldu (EVREN
+> sağlayıcısıyla, bkz. yukarıdaki güncelleme), ama bu **tek bir varyanttır** —
+> `scraper/scripts/ablation.py`'nin ürettiği "regex / +NER / +NER+LLM"
+> üçlü karşılaştırması yapılmadı. Ayrıca bu koşuda **NER katmanı devre
+> dışıydı**: GLiNER bu makinede yüklenirken çöküyor (torch/Windows yerel
+> hatası), dolayısıyla raporlanan hibrit sayı gerçekte **regex + LLM**'dir.
+> NER'in katkısı bu yüzden ölçülmemiş durumdadır — "katkısı yok" denmez,
+> **ölçülmedi** denir.
 
 **Şu an:** Uç noktalar gerçek verilerle çalışır. Veri kaynağı `GERCEK_VERI_AKTIF`
 ortam değişkeniyle seçilir (`false` = mock/sözleşme testi verisi, `true` = PostgreSQL).
@@ -346,12 +401,19 @@ internetten iner. Demo günü internet olmayabileceği için, internet varken
 python cevrimdisi_hazirlik_kontrolu.py
 ```
 
+> **EVREN bu kontrolü etkilemez — bilerek.** EVREN tanım gereği çevrimiçi
+> bir bağımlılıktır; betik onu ayrı bir "opsiyonel, çevrimiçi" başlığı
+> altında raporlar ve **offline hazırlık sonucuna dahil etmez**. Md.
+> 5.9'un istediği internetsiz çalışabilirlik yerel yığınla (Ollama +
+> yerel embedding + Docker imajları) sağlanır; EVREN kapalıyken sistem
+> tam işlevle çalışmaya devam eder.
+
 ### Gerçek veriyi yükle (isteğe bağlı)
 
 ```bash
 python -m scraper.scripts.postgrese_yukle      # ham veriyi PostgreSQL'e aktar
 python -m extraction.regex_ile_zenginlestir    # finansal alanları çıkar
-python -m chunking.indeksleyici                # RAG indeksini kur (~700 parça)
+python -m chunking.indeksleyici                # RAG indeksini kur (2127 parça)
 ollama pull qwen2.5:7b-instruct-q4_K_M         # hibrit çıkarımın LLM katmanı
 ```
 
@@ -441,8 +503,11 @@ arayüz kodu geçişte değişmez.
 | POST  | `/karsilastir`              | Kampanya karşılaştırma (sabit kriter listesi)                                              |
 | POST  | `/hesapla`                  | Taksit/kâr payı hesabı (saf Python, LLM yok)                                               |
 | POST  | `/chat`                     | Doğal dilde soru-cevap (kaynak + audit bilgisiyle)                                         |
+| POST  | `/chat/stream`              | Aynı yanıt, parça parça (SSE) — arayüzde yazılıyor etkisi için                             |
+| GET   | `/audit/extraction/{id}`    | Çıkarım izi — hangi alanı hangi katman (regex/NER/LLM) hangi güvenle doldurdu, altın veri referansıyla (Jüri Audit Paneli) |
 | POST  | `/musteri-sesi/siniflandir` | Serbest metni Complaint Insight taksonomisine (10 tema) göre sınıflandırır                 |
 | GET   | `/musteri-sesi/ornekler`    | Sentetik Complaint Insight demo seti — **gerçek şikâyet değildir**                         |
+| GET   | `/musteri-sesi/yogunluk-ozeti` | Tema bazında **adet** döner (yüzde/oran DEĞİL — bkz. "Şikâyet hattı" bölümü)            |
 
 ```bash
 curl -H "Authorization: Bearer test-token" \
@@ -687,10 +752,14 @@ tasarım ilkesi olarak sunulmakla birlikte uçtan uca çalışan bir özellik de
   henüz tanımlı olmadığı için gösterge `veri_yok` döner — **sıfır yazılmaz**,
   çünkü geri bildirim yokluğu "müşteriler memnun değil" anlamına gelmez.
   Kaynak eklendiğinde skorun şekli değişmez, yalnızca `durum` alanı dolar.
-- **Hibrit katman katkısının tam ölçümü:** LLM katmanı GPU'suz makinede kayıt
-  başına 150–300 sn sürdüğü için 263 kayıtlık ablation koşusu yapılamadı.
-  `ablation.py` bu durumda LLM varyantını `GEÇERSİZ` işaretler; "katkı yok"
-  diye yanlış bir sonuç raporlamaz.
+- **Hibrit katman katkısının ayrıştırılması (ablation):** 26 Ağustos'ta hibrit
+  boru hattı 291 canlı kayıtta uçtan uca koşturuldu (EVREN sağlayıcısıyla,
+  makro F1 %82,50) — yani "hibrit çalışıyor mu" sorusu artık ölçülmüş
+  durumda. Ama `ablation.py`'nin ürettiği **üçlü karşılaştırma** (regex /
+  +NER / +NER+LLM) hâlâ yapılmadı; ayrıca o koşuda **GLiNER yüklenemediği
+  için NER katmanı devre dışıydı** (torch/Windows yerel çökmesi), yani
+  raporlanan sayı gerçekte regex + LLM'dir. **NER'in katkısı ölçülmemiştir** —
+  "katkısı yok" denmez.
 - **Gerçek Complaint Insight verisi:** yukarıdaki Müşteri Sesi modülü şu an
   yalnızca sentetik veriyle çalışıyor. **Hat kurulu, veri yok** — şikâyet
   veri modeli, PII temizliği, izin kapısı ve kampanya eşleştirmesi yazıldı
@@ -721,7 +790,13 @@ katilim-ai/
 │   └── veri/kapsam_disi/   # Kapsam olcumu icin karsi-ornek seti (URUN VERISI DEGIL)
 ├── docs/             # Proje dokumantasyonu + olcum raporlari
 ├── donanim.py        # Donanim profili (GPU/VRAM tespiti + ayarlar)
-└── donanim_testi.py  # Tanilama + hiz olcumu (baska makinede calistirilir)
+├── donanim_testi.py  # Tanilama + hiz olcumu (baska makinede calistirilir)
+├── ortam_yukle.py    # .env'i process ortamina yukler - HER giris noktasinin
+│                     #   EN BASINDA import edilmeli (yoksa .env sessizce yok sayilir)
+├── evren_istemci.py  # EVREN (TEKNOFEST bulut cikarim) OpenAI-uyumlu istemcisi
+│                     #   EVREN_API_KEY yoksa tum fonksiyonlar pasif doner
+├── demo_baslat.py    # Tek komutla demo (Docker + alembic + API)
+└── cevrimdisi_hazirlik_kontrolu.py  # Md. 5.9: internetsiz calisabilirlik kontrolu
 ```
 
 ## Ekip ve Sorumluluklar
@@ -806,8 +881,16 @@ komutlarla yeniden üretilir:
 python -m scraper.scripts.extraction_accuracy         # dolu/bos alan dogrulugu + alan bazli F1
 python -m scraper.scripts.hibrit_extraction_accuracy  # regex + NER + LLM
 python -m scraper.scripts.ablation                    # katman katkisi tablosu
+python -m scraper.scripts.rag_degerlendirme           # RAG Recall@k + cekimserlik
 pytest tests/test_karsi_ornekler.py -s                # kapsam olcumu (hassasiyet/ozgulluk)
 ```
+
+> **LLM katmanının sağlayıcısı ölçümde de seçilebilir:** `.env`'de
+> `EVREN_API_KEY` tanımlıysa hibrit ölçüm EVREN'in `llm-fast` modelini,
+> tanımlı değilse yerel Ollama'yı kullanır. Aynı komut, hangi sağlayıcının
+> kullanıldığını çıktının başında yazar — iki koşunun sayıları
+> karıştırılmasın diye. **Ölçüm raporlarında hangi sağlayıcıyla
+> koşulduğu her zaman belirtilir** ([`cikarim_dogruluk_raporu.json`](cikarim_dogruluk_raporu.json)).
 
 Bir kampanyanın zaman içinde ne değiştirdiğini görmek için
 (`scraper/scripts/kampanya_tarihcesi.py`, ek veri toplamaz):

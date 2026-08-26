@@ -674,6 +674,39 @@ Yerel hibrit hat her iki EVREN modunu da geçiyor — özellikle `banka_ve_konu`
 
 ---
 
+### Yeniden doğrulama — 26 Ağustos 2026 (Sorgu Eşleşme Ağırlıkları eklendi + ilk kez yerel Qdrant indeksine karşı uçtan uca doğrulandı)
+
+**Bulgu 17 — UI mimari kıyaslamasında "Attention" görselleştirmesi bilerek reddedildi (bu sistemde öyle bir mekanizma yok, hibrit arama lexical bir sistemdir); yerine `chunking/retriever.py::_terim_agirliklari` eklendi, ama repoda o güne kadar hiçbir zaman gerçek bir Qdrant indeksine karşı çalıştırılmamıştı.**
+
+Özellik: her sorgu terimi için, kullanıcıya **gösterilen** RAG parçalarının kaçında o terimin geçtiğini (0–1 oran, `_terim_ortusmesi` ile AYNI gövde-duyarlı tokenlestirme) ölçen bir alan eklendi ve `DecisionTrace.jsx`'te bar grafiği + zorunlu bir dürüstlük notuyla ("Bu görselleştirme modelin iç attention mekanizmasını temsil etmez...") gösterildi. 7 birim testiyle (Qdrant gerektirmeden) hesaplama mantığı doğrulandı, ama bu ortamda `.qdrant_yerel` hiç kurulmamıştı — yani özelliğin GERÇEK, dolu bir dizi üretip üretmediği hiç görülmemişti.
+
+**Docker'sız yerel indeks — nasıl kurulur:** `chunking/qdrant_baglanti.py`'nin `QDRANT_YEREL_YOL` ortam değişkeni, `QdrantClient(path=...)` ile dosya tabanlı yerel bir Qdrant başlatır; sunucu/Docker gerekmez. Gerekenler zaten yerelde kurulu çıktı: `sentence-transformers` (5.5.0) ve `intfloat/multilingual-e5-base` modeli HuggingFace önbelleğinde (`~/.cache/huggingface`) hazırdı — internet gerekmedi.
+
+```bash
+QDRANT_YEREL_YOL=".qdrant_yerel" python -m chunking.indeksleyici
+```
+
+Sonuç: **623 belge → 2127 parça**, ~34 dakika (parçalama 2,86 sn, indeksleme 2045 sn — büyük kısmı embedding hesaplaması, GPU'suz ölçüldü).
+
+**Uçtan uca doğrulama:** Aynı `QDRANT_YEREL_YOL` ile `api.main` başlatıldı, tarayıcıdan gerçek bir soru gönderildi ("Kuveyt Türk'ün konut finansmanı kâr payı oranı ne kadar?"). RAG 3 parça buldu (`yeterli_kaynak_var=True`, yanıt güveni %75) ve Karar Zinciri modalında Sorgu Eşleşme Ağırlıkları ilk kez GERÇEK, değişken barlarla render oldu:
+
+| Terim | Ağırlık |
+|---|---|
+| konut | %67 |
+| finansmanı | %100 |
+| kâr | %67 |
+| payı | %33 |
+| oranı | %67 |
+| ün | %0 |
+
+Dürüstlük notu doğru şekilde göründü, konsolda yeni hata yok.
+
+**Yan bulgu — tokenizer artığı (küçük, düzeltilmedi):** `ün` ayrı bir "terim" olarak listelendi — `metni_tokenlara_ayir` (bu betiğin yazdığı yeni bir kod değil, `_terim_ortusmesi`'nin de kullandığı mevcut tokenizer), kesme işaretinden sonraki iyelik ekini ("Kuveyt Türk'**ün**") ayrı bir kelime sayıyor. Zararsız (yalnızca %0 bar üretiyor, yanlış bir eşleşme iddia etmiyor) ama temiz değil - kesme işaretinden sonraki kısa ekleri (2-3 harf) filtrelemek küçük bir iyileştirme olurdu, ölçülüp ayrı bir işe açılabilir.
+
+**Yan bulgu 2 — aynı sorguda gözlemlenen menü kirliliği:** En düşük rerank skoruna sahip 3. parça ("Kuveyt Türk'ten KFK Destekli Yatırım Finansmanı") soruyla zayıf ilgili görünüyor; en yüksek benzerlikli 1. parça ("12 Aya Kadar Ödemesiz Dönemli Ve İndirimli Tarım Finansmanı") site menüsünden gelen başlıkları da taşıyor (`Hakkımızda Finans Portalı ... Kartlarımızın Ortak Özellikleri ...`). Bu, `docs/gold_veri_seti_iyilestirme_plani.md` Faz 1'de ayrı açılan scraper içerik-ayrıştırma görevinin (task_4ee8a8bb) RAG tarafındaki somut karşılığı - aynı kök sorunun iki farklı ölçüm yüzeyi.
+
+---
+
 ## 7. Bilinçli sınırlar
 
 - **LLM ile özetleme yok.** RAG, bulduğu kaynak parçalarını **birebir**
@@ -697,3 +730,8 @@ Yerel hibrit hat her iki EVREN modunu da geçiyor — özellikle `banka_ve_konu`
   bloklarının bazıları (ör. "İştiraklerimiz Şube ve ATM'ler Bize
   Ulaşın...") bu kalıba uymadığı için indekste kalabiliyor. Bkz. Bulgu
   10'un yan bulgusu.
+- **Sorgu Eşleşme Ağırlıkları'nda küçük bir tokenizer artığı var (26
+  Ağustos'ta bulundu, henüz düzeltilmedi).** `metni_tokenlara_ayir`
+  kesme işaretinden sonraki iyelik ekini ("Kuveyt Türk'**ün**") ayrı bir
+  terim sayabiliyor - %0 ağırlıklı, zararsız ama gürültülü bir satır
+  üretiyor. Bkz. Bulgu 17'nin yan bulgusu.

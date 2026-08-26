@@ -250,28 +250,30 @@ PROGRAMATIK olarak kesilip (elle yeniden yazılmadan - ilk elle yazım
 denemesi virgül öncesi boşluk farkı yüzünden testte kırılmıştı, bkz. commit
 geçmişi) span olarak eklendi.
 
-**Yeni bulgu - kampanya rotasyonu devam ediyor:** `DK-006` (taksit_sayisi=9,
-finansman_tutari=10000) ve `TEK-005` (kampanya_baslangic/bitis) için
-kaynak sayfa artık kayıtlı değeri DESTEKLEMİYOR - DK-006'da yalnızca 3
-kademeli bir taksit sistemi var (kayıtlı 4. kademe "10.000 TL+ → 9
-taksit" metinde yok), TEK-005'te 23 Ağustos'ta referans verilen tarih
-cümlesi de kaybolmuş. Bu iki kayda span EKLENMEDİ - `notlar` alanına
-bulgu eklendi, **değer değiştirilmedi** (Faz 6 kapsamı kanıt ekleme,
-değer düzeltme değil - o ayrı bir etiketleme kararı).
+**Kalan 14 kanıtsız alan SİLİNDİ (26 Ağustos 2026, kullanıcı talebiyle):**
+Kanıt uydurulamayan 14 değer, `vade_farksiz_duzelt.py` ile AYNI ilkeyle
+(Excel hücresini boşaltmak = incelenmiş bir sütunda "kaynakta belirtilmemiş"
+demektir) temizlendi - **tahmin edilmedi, silindi**. Gerekçeler:
 
-**Kalan 14 alan, tamamı gerekçeli:**
-- **8 alan** (VK-003/006/007): zaten "ÖLÇÜM DIŞI - KAYNAK KORPUSTA YOK"
-  işaretli, span beklenmiyor.
-- **4 alan** (DK-006 ×2, TEK-005 ×2): kampanya rotasyona uğramış,
-  yukarıda açıklandı - yeniden doğrulama gerekiyor (veri toplama ekibi).
-- **1 alan** (`DK-001.vade_ay`): tüm adaylar site footer'ından (telif
+- **8 alan** (VK-003/006/007, taksit_sayisi + kampanya_baslangic/bitis):
+  zaten "ÖLÇÜM DIŞI - KAYNAK KORPUSTA YOK" işaretliydi, kaynak hiç
+  arşivlenmemiş.
+- **4 alan** (DK-006 taksit_sayisi/finansman_tutari, TEK-005 kampanya_
+  baslangic/bitis): kampanya rotasyona uğramış - kayıtlı 4. taksit
+  kademesi ("10.000 TL+ → 9 taksit") ve TEK-005'in tarih cümlesi kaynak
+  sayfada artık yok.
+- **1 alan** (`DK-001.vade_ay=6`): tüm adaylar site footer'ından (telif
   hakkı/güncelleme tarihi) geliyordu - "6" rakamı "2026" içinde
   yanlışlıkla eşleşmiş, gerçek kanıt yok.
-- **1 alan** (`DK-007.kar_payi_orani=0`): kaynağı "peşin fiyatına
-  taksit" ifadesi - `gold_dataset/vade_farksiz_duzelt.py`'nin "vade
-  farksız" için verdiği kararla (kart/taksit özelliği, gerçek kâr payı
-  kanıtı DEĞİL) AYNI SINIFTAN bir soru. Span uydurmak yerine ayrı bir
-  etiketleme incelemesine bırakıldı.
+- **1 alan** (`DK-007.kar_payi_orani=0`, `oran_periyodu` ile birlikte):
+  kaynağı "peşin fiyatına taksit" ifadesi - `gold_dataset/vade_farksiz_
+  duzelt.py`'nin "vade farksız" için verdiği kararla (kart/taksit
+  özelliği, gerçek kâr payı kanıtı DEĞİL) AYNI SINIFTAN bir soru.
+
+`gold_dataset/kanit_spani_oner.py` şu an **0** kanıtsız dolu alan
+gösteriyor - Faz 6 tam anlamıyla kapandı. DK-006/TEK-005'in `notlar`
+alanına silme kaydı düşüldü (rotasyon nedeniyle bu iki kayıt yeniden
+kaynaktan doğrulanmayı bekliyor, veri toplama ekibi işi).
 
 **Bilinen araç sınırlaması (bu turda dokunulmadı, ileride iyileştirilebilir):**
 `kanit_spani_oner.py`'nin aday bulma mantığı tek haneli değerleri (`vade_ay=6`

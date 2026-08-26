@@ -714,14 +714,14 @@
     "odul_birimi": null,
     "kampanya_avantaji": "Bireysel kredi kartıyla sağlık harcamasına vade farksız 5 taksit",
     "masraf_durumu": null,
-    "kampanya_baslangic": "2026-01-02",
-    "kampanya_bitis": "2026-12-31",
+    "kampanya_baslangic": null,
+    "kampanya_bitis": null,
     "hedef_kitle": "Bireysel kredi kartı sahipleri",
     "ekran_goruntusu": "VK-003.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-07-28",
     "notlar": "OLCUM DISI - KAYNAK KORPUSTA YOK (25 Agustos 2026): bu sayfa scraper raw_data korpusunde hicbir zaman arsivlenmemis (kontrol edildi, ne guncel ne eski bir kayit var) - kampanya rotasyonla siteden kalkmis olabilir. Etiket kayit girildigi anda kaynaktan alinmisti (Kural 4), ama artik otomatik dogrulanamiyor ve etiket_celiskisi_raporu.py / extraction_accuracy.py gibi olcumlerin DISINDA tutuluyor - bu YANLIS etiket anlamina gelmez, yalnizca yeniden dogrulanamaz anlamina gelir. Müşteri başına en fazla 3 harcama taksitlendirilebilir DUZELTME (23 Agustos 2026): vade_ay=5 -> taksit_sayisi=5. Saglik harcamasi taksitlendirmesi - Kart Kampanyasi. Taksit ADEDI ile finansman SURESI ayni alan degildir. | DUZELTME (25 Agustos 2026): kar_payi_orani 0 -> bos. Kaynak sayfa 23 Agustos duzeltmesi sirasinda zaten rotasyona girmisti, bu yuzden gold_dataset/vade_farksiz_duzelt.py bu kaydi hic gormedi (kaynak eslesmeyen kayitlari atlar) ve sadece taksit_sayisi duzeltildi, kar_payi_orani unutuldu. Kampanya adi zaten \"Vade Farksiz\" tasiyor - ayni 23 Agustos karariyla (kart taksit ozelligi, finansman orani degil) tutarli hale getirildi.",
-    "taksit_sayisi": 5,
+    "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
       "finansman_tutari": "Kampanya 2.000 TL – 100.000 TL arasındaki sağlık harcamaları için geçerlidir."
@@ -731,6 +731,8 @@
       "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
+      "kampanya_bitis": true,
+      "taksit_sayisi": true,
       "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
@@ -818,14 +820,14 @@
     "odul_birimi": null,
     "kampanya_avantaji": "TROY kredi kartıyla eğitim harcamasına vade farksız 5 taksit",
     "masraf_durumu": null,
-    "kampanya_baslangic": "2026-01-02",
-    "kampanya_bitis": "2026-12-31",
+    "kampanya_baslangic": null,
+    "kampanya_bitis": null,
     "hedef_kitle": "Bireysel TROY kredi kartı sahipleri",
     "ekran_goruntusu": "VK-006.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-07-28",
     "notlar": "OLCUM DISI - KAYNAK KORPUSTA YOK (25 Agustos 2026): bu sayfa scraper raw_data korpusunde hicbir zaman arsivlenmemis (kontrol edildi, ne guncel ne eski bir kayit var) - kampanya rotasyonla siteden kalkmis olabilir. Etiket kayit girildigi anda kaynaktan alinmisti (Kural 4), ama artik otomatik dogrulanamiyor ve etiket_celiskisi_raporu.py / extraction_accuracy.py gibi olcumlerin DISINDA tutuluyor - bu YANLIS etiket anlamina gelmez, yalnizca yeniden dogrulanamaz anlamina gelir. Sadece TROY kart, ek/sanal kartlar dahil; müşteri başına en fazla 3 harcama DUZELTME (23 Agustos 2026): vade_ay=5 -> taksit_sayisi=5. Egitim harcamasi taksitlendirmesi - Kart Kampanyasi. Taksit ADEDI ile finansman SURESI ayni alan degildir. | DUZELTME (25 Agustos 2026): kar_payi_orani 0 -> bos. Kaynak sayfa 23 Agustos duzeltmesi sirasinda zaten rotasyona girmisti, bu yuzden gold_dataset/vade_farksiz_duzelt.py bu kaydi hic gormedi (kaynak eslesmeyen kayitlari atlar) ve sadece taksit_sayisi duzeltildi, kar_payi_orani unutuldu. Kampanya adi zaten \"Vade Farksiz\" tasiyor - ayni 23 Agustos karariyla (kart taksit ozelligi, finansman orani degil) tutarli hale getirildi.",
-    "taksit_sayisi": 5,
+    "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
       "finansman_tutari": "Kampanya 2.000 TL – 700.000 TL arasındaki eğitim harcamaları için geçerlidir."
@@ -835,6 +837,8 @@
       "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
+      "kampanya_bitis": true,
+      "taksit_sayisi": true,
       "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
@@ -854,8 +858,8 @@
     "odul_birimi": null,
     "kampanya_avantaji": "Görüntülü görüşmeyle dijital müşteri olup dijital yatırım hesabı açanlara hisse senedi işlemlerinde standart yerine on binde 5 komisyon (%75 indirim)",
     "masraf_durumu": null,
-    "kampanya_baslangic": "2021-12-14",
-    "kampanya_bitis": "2027-12-31",
+    "kampanya_baslangic": null,
+    "kampanya_bitis": null,
     "hedef_kitle": "Görüntülü görüşmeyle yeni müşteri olan, dijitalden yatırım hesabı açan bireysel müşteriler",
     "ekran_goruntusu": "VK-007.png",
     "giren_kisi": "Sara Toptamur",
@@ -869,6 +873,7 @@
       "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
+      "kampanya_bitis": true,
       "finansman_tutari": true,
       "taksit_sayisi": true,
       "erteleme_suresi_ay": true,
@@ -1646,13 +1651,13 @@
     "odul_birimi": "TL",
     "kampanya_avantaji": "Görüntülü görüşmeyle yeni müşteri olana ilk harcamasının %50'si, en fazla 500 TL nakit iade",
     "masraf_durumu": null,
-    "kampanya_baslangic": "2026-08-01",
-    "kampanya_bitis": "2026-08-31",
+    "kampanya_baslangic": null,
+    "kampanya_bitis": null,
     "hedef_kitle": "Görüntülü görüşmeyle yeni müşteri olan, Debit Kart alan bireysel müşteriler",
     "ekran_goruntusu": "TEK-005.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-08-23",
-    "notlar": "Fatura/vergi/BES odemesi ve para transferi kapsam disi\n2026-08-23: kampanya rotasyonu - tarih kaynak sayfadan yeniden okundu (Kampanya 1-31 Ağustos 2026 tarihleri arasında geçerlidir.) | BULGU (26 Agustos 2026, Faz 6 kanit taramasi): 23 Agustos notunda referans verilen '1-31 Agustos 2026 tarihleri arasinda gecerlidir' cumlesi ARTIK kaynak sayfada yok - kampanya 23 Agustos'tan SONRA tekrar rotasyona ugramis olabilir. kampanya_baslangic/bitis icin kanit eklenemedi - yeniden dogrulanmali.",
+    "notlar": "Fatura/vergi/BES odemesi ve para transferi kapsam disi\n2026-08-23: kampanya rotasyonu - tarih kaynak sayfadan yeniden okundu (Kampanya 1-31 Ağustos 2026 tarihleri arasında geçerlidir.) | BULGU (26 Agustos 2026, Faz 6 kanit taramasi): 23 Agustos notunda referans verilen '1-31 Agustos 2026 tarihleri arasinda gecerlidir' cumlesi ARTIK kaynak sayfada yok - kampanya 23 Agustos'tan SONRA tekrar rotasyona ugramis olabilir. kampanya_baslangic/bitis icin kanit eklenemedi - yeniden dogrulanmali. | SILINDI (26 Agustos 2026): kampanya_baslangic/bitis kanitsiz oldugu icin bosaltildi.",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
@@ -1662,6 +1667,7 @@
       "kar_payi_orani": true,
       "vade_ay": true,
       "masraf_durumu": true,
+      "kampanya_bitis": true,
       "finansman_tutari": true,
       "taksit_sayisi": true,
       "erteleme_suresi_ay": true
@@ -1751,7 +1757,7 @@
     "kar_payi_orani": null,
     "maliyet_orani": null,
     "oran_periyodu": null,
-    "vade_ay": 6,
+    "vade_ay": null,
     "finansman_tutari": 16500,
     "odul_miktari": null,
     "odul_birimi": null,
@@ -1771,6 +1777,7 @@
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
+      "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
       "kampanya_bitis": true,
@@ -1935,7 +1942,7 @@
     "maliyet_orani": null,
     "oran_periyodu": null,
     "vade_ay": null,
-    "finansman_tutari": 10000,
+    "finansman_tutari": null,
     "odul_miktari": null,
     "odul_birimi": null,
     "kampanya_avantaji": "Paraf ile Hepsiburada'da 10.000 TL+ seçili ürün alışverişine peşin fiyatına 9 taksit",
@@ -1946,8 +1953,8 @@
     "ekran_goruntusu": "DK-006.png",
     "giren_kisi": "Sara Toptamur",
     "giris_tarihi": "2026-07-28",
-    "notlar": "Kademeli sistem: 100-1.000 TL->3 taksit, 1.000-6.000 TL->6 taksit, 6.000-10.000 TL->6 taksit, 10.000 TL+ secili urun->9 taksit. En ust dilim alindi DUZELTME (23 Agustos 2026): vade_ay=9 -> taksit_sayisi=9. kademeli taksit (3/6/9), Alisveris Puani Kampanyasi - vade yok. Taksit ADEDI ile finansman SURESI ayni alan degildir. | BULGU (26 Agustos 2026, Faz 6 kanit taramasi): kaynak sayfa SU AN yalnizca 3 kademeli taksit sistemi gosteriyor (100-1.000 TL->3, 1.000-6.000 TL->3, 6.000 TL+->6) - kayitli 4. kademe ('10.000 TL+ -> 9 taksit') artik metinde YOK. Kampanya rotasyona ugramis olabilir, taksit_sayisi=9/finansman_tutari=10000 icin kanit eklenemedi - yeniden dogrulanmali.",
-    "taksit_sayisi": 9,
+    "notlar": "Kademeli sistem: 100-1.000 TL->3 taksit, 1.000-6.000 TL->6 taksit, 6.000-10.000 TL->6 taksit, 10.000 TL+ secili urun->9 taksit. En ust dilim alindi DUZELTME (23 Agustos 2026): vade_ay=9 -> taksit_sayisi=9. kademeli taksit (3/6/9), Alisveris Puani Kampanyasi - vade yok. Taksit ADEDI ile finansman SURESI ayni alan degildir. | BULGU (26 Agustos 2026, Faz 6 kanit taramasi): kaynak sayfa SU AN yalnizca 3 kademeli taksit sistemi gosteriyor (100-1.000 TL->3, 1.000-6.000 TL->3, 6.000 TL+->6) - kayitli 4. kademe ('10.000 TL+ -> 9 taksit') artik metinde YOK. Kampanya rotasyona ugramis olabilir, taksit_sayisi=9/finansman_tutari=10000 icin kanit eklenemedi - yeniden dogrulanmali. | SILINDI (26 Agustos 2026): taksit_sayisi/finansman_tutari kanitsiz oldugu icin bosaltildi.",
+    "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
       "kampanya_bitis": "Bitiş Tarihi: 31 Ağustos 2026"
@@ -1957,6 +1964,8 @@
       "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,
+      "finansman_tutari": true,
+      "taksit_sayisi": true,
       "erteleme_suresi_ay": true,
       "odul_birimi": true
     }
@@ -1967,9 +1976,9 @@
     "kampanya_adi": "N11'de Peşin Fiyatına 3 Taksit Fırsatı",
     "kampanya_turu": "Alisveris Puani Kampanyasi",
     "kaynak_url": "www.dunyakatilim.com.tr/kampanyalar/n11",
-    "kar_payi_orani": 0,
+    "kar_payi_orani": null,
     "maliyet_orani": null,
-    "oran_periyodu": "belirsiz",
+    "oran_periyodu": null,
     "vade_ay": null,
     "finansman_tutari": 2000,
     "odul_miktari": null,
@@ -1991,6 +2000,7 @@
       "taksit_sayisi": "N11'de Peşin Fiyatına 3 Taksit Fırsatı"
     },
     "alan_belirtilmemis": {
+      "kar_payi_orani": true,
       "vade_ay": true,
       "odul_miktari": true,
       "masraf_durumu": true,

@@ -161,7 +161,9 @@
     "kanit_spanlari": {
       "taksit_sayisi": "Taksitlio’nun anlaşmalı olduğu mağazalarda yapacağınız 100.000 TL’ye kadar alışverişlerinizde 6 taksite kadar %2,99 avantajlı kar payı oranı ile alışveriş yapmanın tadını çıkarın!",
       "kampanya_baslangic": "20.01.2026 - 31.12.2026",
-      "kampanya_bitis": "20.01.2026 - 31.12.2026"
+      "kampanya_bitis": "20.01.2026 - 31.12.2026",
+      "finansman_tutari": "Kampanya kapsamında 100.000 TL’ye kadar alışveriş ödemelerinizi 6 taksite kadar %2,99 kampanyalı oran ile yapabilirsiniz.",
+      "kar_payi_orani": "Taksitlio’nun anlaşmalı olduğu mağazalarda yapacağınız alışverişlerinizde yeni müşteriye özel %2,99 kar payı oranlı Taksitlio Alışveriş Finansmanı sizlerle!"
     },
     "alan_belirtilmemis": {
       "vade_ay": true,
@@ -308,7 +310,9 @@
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
-      "kampanya_bitis": "30.04.2026 - 31.12.2026"
+      "kampanya_bitis": "30.04.2026 - 31.12.2026",
+      "kampanya_baslangic": "30.04.2026 - 31.12.2026",
+      "odul_miktari": "Yeni Kuveyt Türk Mobil Müşterilerine 10.000 Mil'e Varan Fırsat!"
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
@@ -343,7 +347,11 @@
     "notlar": "vade_ay alanı burada \"taksit sayısı\" anlamında kullanıldı, klasik kredi vadesi değil - CampaignRecord şemasıyla tam örtüşmüyor, ekiple bu ayrımı konuşmak gerekebilir | [9 Agu] vade_ay->taksit_sayisi tasindi (Vade Farksiz 5 Aya Varan Taksit Imkani); sayfada vade ifadesi yok\n2026-08-23: kampanya rotasyonu - tarih kaynak sayfadan yeniden okundu (Kampanya 1-31 Ağustos 2026 tarihleri arasında geçerlidir.)",
     "taksit_sayisi": 5,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "finansman_tutari": "Yeni Sağlam Kart Troy müşterilerine özel 50.000 TL'ye kadar vade farksız 5 taksit fırsatını kaçırmayın!",
+      "kampanya_bitis": "1.08.2026 - 31.08.2026",
+      "kampanya_baslangic": "1.08.2026 - 31.08.2026"
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -378,7 +386,9 @@
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
-      "kampanya_baslangic": "20.07.2026 - 31.12.2026"
+      "kampanya_baslangic": "20.07.2026 - 31.12.2026",
+      "kampanya_bitis": "Kampanya son geçerlilik tarihi 31.12.2026'dır.",
+      "odul_miktari": "Davet Kodu ile Müşteri Olup Memnuniyet Anketine Katılanlara Toplamda 750 TL Hediye!"
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
@@ -418,7 +428,8 @@
       "kampanya_baslangic": "1 Ocak 2026 – 31 Aralık 2026",
       "kampanya_bitis": "1 Ocak 2026 – 31 Aralık 2026",
       "kar_payi_orani": "%0 kâr payı ile 40.000 TL’ye kadar",
-      "taksit_sayisi": "1 Ocak 2026 – 31 Aralık 2026"
+      "taksit_sayisi": "1 Ocak 2026 – 31 Aralık 2026",
+      "finansman_tutari": "40.000 TL’ye Kadar Vade Farksız Finansman Desteği"
     },
     "alan_belirtilmemis": {
       "vade_ay": true,
@@ -490,7 +501,11 @@
     "notlar": "Kampanya 1.000 kişiyle sınırlı; Master Gold Virtual/Standart ve Business kartlar hariç",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "kampanya_baslangic": "Kampanya 1 Temmuz – 31 Ağustos 2026 tarihlerinde geçerlidir.",
+      "kampanya_bitis": "Kampanya 1 Temmuz – 31 Ağustos 2026 tarihlerinde geçerlidir.",
+      "odul_miktari": "Kampanya müşteri bazındadır, bir müşteri en fazla 1.250 TL Worldpuan kazanabilir."
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -525,7 +540,8 @@
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
-      "kampanya_bitis": "Kampanya 31 Aralık 2026 tarihine kadar geçerlidir."
+      "kampanya_bitis": "Kampanya 31 Aralık 2026 tarihine kadar geçerlidir.",
+      "odul_miktari": "Albaraka Türk'e müşteri olan her yakınınız için 500 TL, toplamda 5.000 TL'ye varan Worldpuan kazanın! Üstelik davet edilen yakınınınız da 500 TL Worldpuan kazanıyor!"
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
@@ -562,7 +578,9 @@
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
       "kampanya_baslangic": "1 – 31 Temmuz 2026",
-      "kampanya_bitis": "1 – 31 Temmuz 2026"
+      "kampanya_bitis": "1 – 31 Temmuz 2026",
+      "taksit_sayisi": "TROY kredi kartlarınız ile yapacağınız 1.000 TL- 100.000 TL arası sağlık harcamalarınıza vade farksız 6 taksit fırsatı!",
+      "finansman_tutari": "1.000 TL- 100.000 TL"
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
@@ -599,7 +617,9 @@
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
       "kampanya_baslangic": "1 Temmuz 2026 -30 Eylül 2026",
-      "kampanya_bitis": "1 Temmuz 2026 -30 Eylül 2026"
+      "kampanya_bitis": "1 Temmuz 2026 -30 Eylül 2026",
+      "taksit_sayisi": "Vade farksız 6 taksit fırsatından yararlanın.",
+      "finansman_tutari": "Kampanya, World özellikli bireysel kredi kartları ile tek çekim olarak yaptığınız 30.000 TL- 500.000 TL arası eğitim harcamalarınız için geçerlidir."
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
@@ -702,7 +722,9 @@
     "notlar": "OLCUM DISI - KAYNAK KORPUSTA YOK (25 Agustos 2026): bu sayfa scraper raw_data korpusunde hicbir zaman arsivlenmemis (kontrol edildi, ne guncel ne eski bir kayit var) - kampanya rotasyonla siteden kalkmis olabilir. Etiket kayit girildigi anda kaynaktan alinmisti (Kural 4), ama artik otomatik dogrulanamiyor ve etiket_celiskisi_raporu.py / extraction_accuracy.py gibi olcumlerin DISINDA tutuluyor - bu YANLIS etiket anlamina gelmez, yalnizca yeniden dogrulanamaz anlamina gelir. Müşteri başına en fazla 3 harcama taksitlendirilebilir DUZELTME (23 Agustos 2026): vade_ay=5 -> taksit_sayisi=5. Saglik harcamasi taksitlendirmesi - Kart Kampanyasi. Taksit ADEDI ile finansman SURESI ayni alan degildir. | DUZELTME (25 Agustos 2026): kar_payi_orani 0 -> bos. Kaynak sayfa 23 Agustos duzeltmesi sirasinda zaten rotasyona girmisti, bu yuzden gold_dataset/vade_farksiz_duzelt.py bu kaydi hic gormedi (kaynak eslesmeyen kayitlari atlar) ve sadece taksit_sayisi duzeltildi, kar_payi_orani unutuldu. Kampanya adi zaten \"Vade Farksiz\" tasiyor - ayni 23 Agustos karariyla (kart taksit ozelligi, finansman orani degil) tutarli hale getirildi.",
     "taksit_sayisi": 5,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "finansman_tutari": "Kampanya 2.000 TL – 100.000 TL arasındaki sağlık harcamaları için geçerlidir."
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -804,7 +826,9 @@
     "notlar": "OLCUM DISI - KAYNAK KORPUSTA YOK (25 Agustos 2026): bu sayfa scraper raw_data korpusunde hicbir zaman arsivlenmemis (kontrol edildi, ne guncel ne eski bir kayit var) - kampanya rotasyonla siteden kalkmis olabilir. Etiket kayit girildigi anda kaynaktan alinmisti (Kural 4), ama artik otomatik dogrulanamiyor ve etiket_celiskisi_raporu.py / extraction_accuracy.py gibi olcumlerin DISINDA tutuluyor - bu YANLIS etiket anlamina gelmez, yalnizca yeniden dogrulanamaz anlamina gelir. Sadece TROY kart, ek/sanal kartlar dahil; müşteri başına en fazla 3 harcama DUZELTME (23 Agustos 2026): vade_ay=5 -> taksit_sayisi=5. Egitim harcamasi taksitlendirmesi - Kart Kampanyasi. Taksit ADEDI ile finansman SURESI ayni alan degildir. | DUZELTME (25 Agustos 2026): kar_payi_orani 0 -> bos. Kaynak sayfa 23 Agustos duzeltmesi sirasinda zaten rotasyona girmisti, bu yuzden gold_dataset/vade_farksiz_duzelt.py bu kaydi hic gormedi (kaynak eslesmeyen kayitlari atlar) ve sadece taksit_sayisi duzeltildi, kar_payi_orani unutuldu. Kampanya adi zaten \"Vade Farksiz\" tasiyor - ayni 23 Agustos karariyla (kart taksit ozelligi, finansman orani degil) tutarli hale getirildi.",
     "taksit_sayisi": 5,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "finansman_tutari": "Kampanya 2.000 TL – 700.000 TL arasındaki eğitim harcamaları için geçerlidir."
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -914,7 +938,9 @@
     "taksit_sayisi": null,
     "erteleme_suresi_ay": 3,
     "kanit_spanlari": {
-      "erteleme_suresi_ay": "​​​​​​​​​​​​Banka çalışanlarına, ​kendi çalışanlarımıza sunduğumuz sabit ve avantajlı oranlarla 3 ay ertelemeli ihtiyaç finansmanı Türkiye Finans’ta!"
+      "erteleme_suresi_ay": "​​​​​​​​​​​​Banka çalışanlarına, ​kendi çalışanlarımıza sunduğumuz sabit ve avantajlı oranlarla 3 ay ertelemeli ihtiyaç finansmanı Türkiye Finans’ta!",
+      "finansman_tutari": "Kampanya kapsamında 1.000 TL-1.000.000 TL arasındaki ihtiyaçlarını için finansman başvurusu yapabilirsiniz.",
+      "vade_ay": "İhtiyaç Finansmanına uygulanacak maksimum vade süresi 36 aydır."
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
@@ -988,7 +1014,8 @@
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
       "kampanya_baslangic": "Kampanya 1 Ağustos - 31 Ağustos 2026 tarihleri arasında geçerlidir.",
-      "kampanya_bitis": "Kampanya 1 Ağustos - 31 Ağustos 2026 tarihleri arasında geçerlidir."
+      "kampanya_bitis": "Kampanya 1 Ağustos - 31 Ağustos 2026 tarihleri arasında geçerlidir.",
+      "vade_ay": "Kampanya kapsamında yukarıdaki tarih aralığında mobilden Türkiye Finanslı olan müşterilere %0 kâr payı oranı ve 3 ay vadeli olarak 50.000 TL’ye kadar İhtiyaç Finansmanı başvurusu yapma avantajı sunulacaktır."
     },
     "alan_belirtilmemis": {
       "odul_miktari": true,
@@ -1025,7 +1052,8 @@
     "kanit_spanlari": {
       "kampanya_baslangic": "Kampanya 1 Ağustos - 31 Ağustos 2026 tarihleri arasında geçerlidir.",
       "kampanya_bitis": "Kampanya 1 Ağustos - 31 Ağustos 2026 tarihleri arasında geçerlidir.",
-      "kar_payi_orani": "Mobilden yeni müşterilere özel %0 kâr payı ile 50.000 TL'ye varan İhtiyaç Finansmanı fırsatı ile ilgili detaylı bilgi için"
+      "kar_payi_orani": "Mobilden yeni müşterilere özel %0 kâr payı ile 50.000 TL'ye varan İhtiyaç Finansmanı fırsatı ile ilgili detaylı bilgi için",
+      "odul_miktari": "Gönderdiğiniz davet kodu ile mobilden Türkiye Finanslı olan ve Happy Bonus kredi kartlarını kullanan her yakınınız için 500 TL, toplamda 5.000TL bonus kazanabilirsiniz."
     },
     "alan_belirtilmemis": {
       "vade_ay": true,
@@ -1169,7 +1197,11 @@
     "notlar": "Aile Kart, Bagimsiz Kart ve ticari/ucretsiz kartlar kapsam disi; kart 90 gun iptal edilmezse odul kalici",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "odul_miktari": "en fazla 5.000 TL Bankkart Lira",
+      "kampanya_bitis": "10 Temmuz 2026 - 7 Ağustos 2026",
+      "kampanya_baslangic": "10 Temmuz 2026 - 7 Ağustos 2026"
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1205,7 +1237,8 @@
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
       "kampanya_baslangic": "10 Temmuz 2026 - 7 Ağustos 2026",
-      "kampanya_bitis": "10 Temmuz 2026 - 7 Ağustos 2026"
+      "kampanya_bitis": "10 Temmuz 2026 - 7 Ağustos 2026",
+      "odul_miktari": "en fazla 1.500 TL Bankkart Lira"
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
@@ -1315,7 +1348,8 @@
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
       "kampanya_baslangic": "10 Temmuz 2026 - 7 Ağustos 2026",
-      "kampanya_bitis": "10 Temmuz 2026 - 7 Ağustos 2026"
+      "kampanya_bitis": "10 Temmuz 2026 - 7 Ağustos 2026",
+      "odul_miktari": "bir defa ve en fazla 1.500 TL"
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
@@ -1350,7 +1384,11 @@
     "notlar": "E-ticaret kapsam disi; Aile Kart/Bagimsiz Kart/ticari kartlar dahil degil",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "odul_miktari": "en fazla 1.000 TL Bankkart Lira",
+      "kampanya_baslangic": "10 Temmuz - 7 Ağustos 2026",
+      "kampanya_bitis": "10 Temmuz - 7 Ağustos 2026"
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1424,7 +1462,8 @@
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
       "kampanya_baslangic": "10 Temmuz 2026 - 7 Ağustos 2026",
-      "kampanya_bitis": "10 Temmuz 2026 - 7 Ağustos 2026"
+      "kampanya_bitis": "10 Temmuz 2026 - 7 Ağustos 2026",
+      "odul_miktari": "en fazla 750 TL Bankkart Lira"
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
@@ -1461,7 +1500,8 @@
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
       "kampanya_baslangic": "Kampanya 14 Temmuz - 31 Temmuz 2026 tarihleri arasında Emlak Katılım Mobil’den gerçekleştirilen ödemeler için geçerlidir.",
-      "kampanya_bitis": "Kampanya 14 Temmuz - 31 Temmuz 2026 tarihleri arasında Emlak Katılım Mobil’den gerçekleştirilen ödemeler için geçerlidir."
+      "kampanya_bitis": "Kampanya 14 Temmuz - 31 Temmuz 2026 tarihleri arasında Emlak Katılım Mobil’den gerçekleştirilen ödemeler için geçerlidir.",
+      "odul_miktari": "Kampanya müşteri bazındadır ve bir müşteri en fazla 500 TL nakit iade kazanabilir."
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
@@ -1498,7 +1538,8 @@
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
       "kampanya_baslangic": "Kampanya 1-31 Temmuz 2026 tarihleri arasında geçerlidir.",
-      "kampanya_bitis": "Kampanya 1-31 Temmuz 2026 tarihleri arasında geçerlidir."
+      "kampanya_bitis": "Kampanya 1-31 Temmuz 2026 tarihleri arasında geçerlidir.",
+      "odul_miktari": "Kampanya müşteri bazlı olup, bir müşteri kampanyaya bir kez katılabilir ve en fazla 1.500 TL ParafPara kazanabilir."
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
@@ -1535,7 +1576,8 @@
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
       "kampanya_baslangic": "Kampanya 1 -31 Temmuz 2026 tarihleri arasında geçerlidir.",
-      "kampanya_bitis": "Kampanya 1 -31 Temmuz 2026 tarihleri arasında geçerlidir."
+      "kampanya_bitis": "Kampanya 1 -31 Temmuz 2026 tarihleri arasında geçerlidir.",
+      "odul_miktari": "Kampanya müşteri bazlı olup, bir müşteri kampanyaya bir kez katılabilir ve en fazla 300 TL ParafPara kazanabilir."
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
@@ -1572,7 +1614,8 @@
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
       "kampanya_baslangic": "Kampanya 1-31 Ağustos 2026 tarihleri arasında geçerlidir.",
-      "kampanya_bitis": "Kampanya 1-31 Ağustos 2026 tarihleri arasında geçerlidir."
+      "kampanya_bitis": "Kampanya 1-31 Ağustos 2026 tarihleri arasında geçerlidir.",
+      "odul_miktari": "Kampanya müşteri bazlı olup, bir müşteri kampanyaya bir kez katılabilir ve en fazla 200 TL ParafPara kazanabilir."
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
@@ -1607,7 +1650,9 @@
     "notlar": "Fatura/vergi/BES odemesi ve para transferi kapsam disi\n2026-08-23: kampanya rotasyonu - tarih kaynak sayfadan yeniden okundu (Kampanya 1-31 Ağustos 2026 tarihleri arasında geçerlidir.)",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "odul_miktari": "Kampanya müşteri bazındadır ve her müşteri en fazla 500 TL nakit iade kazanabilir."
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1643,7 +1688,8 @@
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
       "kampanya_baslangic": "Kampanya 1-31 Ağustos 2026 tarihleri arasında geçerlidir.",
-      "kampanya_bitis": "Kampanya 1-31 Ağustos 2026 tarihleri arasında geçerlidir."
+      "kampanya_bitis": "Kampanya 1-31 Ağustos 2026 tarihleri arasında geçerlidir.",
+      "odul_miktari": "Uçak Bileti Harcamalarınıza 2.000 TL ParafPara!"
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
@@ -1785,7 +1831,9 @@
     "notlar": "Bitis tarihi yok (surekli); odul yalnizca fiziki altin olarak teslim edilir, harcamada kullanilamaz",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "odul_miktari": "Kampanyadan kazanılabilecek ödül miktarı, bir takvim yılı içerisinde en fazla 5 gram olacaktır."
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -1930,7 +1978,8 @@
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
       "finansman_tutari": "Peşin fiyatına 3 taksit uygulaması sepet toplamı 2.000 TL ve üzeri siparişlerde geçerlidir.",
-      "kampanya_bitis": "Bitiş Tarihi: 31 Ağustos 2026"
+      "kampanya_bitis": "Bitiş Tarihi: 31 Ağustos 2026",
+      "taksit_sayisi": "N11'de Peşin Fiyatına 3 Taksit Fırsatı"
     },
     "alan_belirtilmemis": {
       "vade_ay": true,
@@ -2040,7 +2089,10 @@
     "notlar": "Somut oran/rakam verilmiyor (risk seviyesine gore belirlenen limitler), genel tanitim niteliginde",
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
-    "kanit_spanlari": {},
+    "kanit_spanlari": {
+      "kampanya_baslangic": "Kampanya, 1 Haziran 2026 – 31 Ağustos 2026 tarihleri arasında geçerlidir.",
+      "kampanya_bitis": "Kampanya, 1 Haziran 2026 – 31 Ağustos 2026 tarihleri arasında geçerlidir."
+    },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
       "vade_ay": true,
@@ -2078,7 +2130,8 @@
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
       "kampanya_baslangic": "Kampanya Dönemi: 17 Ağustos - 17 Eylül 2026",
-      "kampanya_bitis": "Kampanya Dönemi: 17 Ağustos - 17 Eylül 2026"
+      "kampanya_bitis": "Kampanya Dönemi: 17 Ağustos - 17 Eylül 2026",
+      "odul_miktari": "Davet eden kişi, davet ettiği kişinin kampanya koşullarını sağlaması halinde, kişi başı maksimum 2.000 TL, toplamda 5 kişi için maksimum 10.000 TL nakit ödül kazanabilir."
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
@@ -2114,7 +2167,8 @@
     "taksit_sayisi": null,
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
-      "kampanya_bitis": "Kampanya Dönemi: 17 Temmuz - 17 Eylül 2026"
+      "kampanya_bitis": "Kampanya Dönemi: 17 Temmuz - 17 Eylül 2026",
+      "kampanya_baslangic": "17 Temmuz - 17 Eylül 2026"
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
@@ -2229,7 +2283,8 @@
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
       "kampanya_bitis": "Kampanya 26 Aralık 2025 - 25 Mart 2026 tarihleri arasında geçerlidir.",
-      "kampanya_baslangic": "Kampanya 26 Aralık 2025 - 25 Mart 2026 tarihleri arasında geçerlidir."
+      "kampanya_baslangic": "Kampanya 26 Aralık 2025 - 25 Mart 2026 tarihleri arasında geçerlidir.",
+      "odul_miktari": "Tüm Marketlerde Geçerli, 1.000 TL’ye kadar iade!"
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
@@ -2813,7 +2868,8 @@
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
       "kampanya_baslangic": "Kampanya 15 Haziran 2026 saat 00.01 – 15 Temmuz 2026 saat 23.59 arasında geçerlidir.",
-      "kampanya_bitis": "Kampanya 15 Haziran 2026 saat 00.01 – 15 Temmuz 2026 saat 23.59 arasında geçerlidir."
+      "kampanya_bitis": "Kampanya 15 Haziran 2026 saat 00.01 – 15 Temmuz 2026 saat 23.59 arasında geçerlidir.",
+      "odul_miktari": "Dünya Katılım TROY kartlarınızla, LC Waikiki’de 3.000 TL ve üzeri alışverişlerinize 300 TL İndirim Fırsatı!"
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,
@@ -3505,7 +3561,8 @@
     "erteleme_suresi_ay": null,
     "kanit_spanlari": {
       "kampanya_baslangic": "15.06.2025 - 31.12.2026",
-      "kampanya_bitis": "15.06.2025 - 31.12.2026"
+      "kampanya_bitis": "15.06.2025 - 31.12.2026",
+      "odul_miktari": "Yakınlarını Kuveyt Türk'e Davet Et Toplamda 5.000 TL'ye Varan Hediye Kazan!"
     },
     "alan_belirtilmemis": {
       "kar_payi_orani": true,

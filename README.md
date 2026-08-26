@@ -30,45 +30,62 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 | **Tamamlamalar** | Verifier → ajan yanıt yoluna bağlandı (karşılaştırma + toplam maliyet)             | ✅ Tamamlandı |
 |                  | Zaman aşımı tabanlı kademeli fallback (`KATILIMAI_ARAC_ZAMAN_ASIMI`)               | ✅ Tamamlandı |
 |                  | RAG exact arama modu (`KATILIMAI_RAG_EXACT_MOD=true`) — Recall@1 kararlı           | ✅ Tamamlandı |
+| **26 Ağustos**   | Gerçek giriş/kayıt/çıkış + Ayarlar ekranı (şifre değiştirme dahil)                 | ✅ Tamamlandı |
+|                  | Genel Bakış / Jüri Audit Paneli yeniden konumlandırıldı (Model Metrikleri + Veri Kaynakları Audit'e taşındı) | ✅ Tamamlandı |
+|                  | `GERCEK_VERI_AKTIF=true` ile canlı PostgreSQL verisi bağlandı (536 kayıt)          | ✅ Tamamlandı |
+|                  | Çıkarım doğruluğu hibrit pipeline ile 291 canlı kayıtta yeniden ölçüldü            | ✅ Tamamlandı |
+|                  | CI regresyonu bulundu ve düzeltildi (`terim_agirliklari` sahte nesne alanı)        | ✅ Tamamlandı |
 
 ### Ölçülebilir durum
 
-_Son ölçüm: 23 Ağustos 2026. Tüm sayılar depodaki komutlarla yeniden
-üretilebilir — üretim komutları [Test](#test) bölümünde._
+_Son ölçüm: 26 Ağustos 2026 (çıkarım + veri) · 25 Ağustos 2026 (RAG — aşağıya
+bakınız). Tüm sayılar depodaki komutlarla yeniden üretilebilir — üretim
+komutları [Test](#test) bölümünde._
 
-> **Çıkarım doğruluğu yeniden ölçülmeyi bekliyor.** Altın Veri Seti 24
-> Ağustos'ta 107'den **298 imzalı kayda** çıktı (kuyruktaki 195 taslak
-> insan doğrulamasından geçip imzalandı; kampanya olmayan bir kayıt ve
-> kaynağı otomatik tarayıcıya kapalı dört kayıt setten çıkarıldı).
-> Aşağıdaki çıkarım doğruluk satırları hâlâ **93 imzalı canlı kayıt**
-> üzerinde ölçülmüştür — örneklem üç katına çıktığı için sayıların
-> yeniden üretilmesi gerekir:
+> **26 Ağustos 2026 güncellemesi — çıkarım doğruluğu HİBRİT pipeline ile,
+> 291 canlı kayıtta yeniden ölçüldü.** EVREN entegrasyonundaki sessiz bir
+> hata bulunup düzeltildi: `llm-fast` varsayılan olarak bir "düşünme
+> zinciri" üretiyordu, bu da `max_tokens` sınırını tüketip çağrıyı
+> sessizce boş döndürüyordu (`finish_reason=length`, `content=null`) —
+> `chat_template_kwargs.enable_thinking=false` ile giderildi. Düzeltme
+> sonrası hem regex-only hem hibrit (regex+LLM/EVREN) varyantı, önceki
+> 93 kayıtlık örneklemin üç katından fazlası olan **291 canlı kayıtta**
+> yeniden ölçüldü. Aşağıdaki çıkarım satırları HİBRİT (çalışan sistemin
+> gerçekte kullandığı) varyantı gösterir; ayrıntı:
+> [`cikarim_dogruluk_raporu.json`](cikarim_dogruluk_raporu.json),
+> [`docs/extraction_accuracy_raporu.md`](docs/extraction_accuracy_raporu.md).
 >
-> ```bash
-> python scraper/scripts/extraction_accuracy.py
-> ```
+> Ayrıca aynı gün, gerçek veri (`GERCEK_VERI_AKTIF=true`) ile çalışan API'de
+> banka bazında dağılım denetlendi: statik anlık görüntüde Vakıf Katılım
+> yalnızca 3 kampanya gösteriyordu, canlı veride **100** çıktı — dashboard'daki
+> "Veri Kaynakları" paneli artık bunu statik değil canlı hesaplıyor.
 
-| Gösterge                                      | Değer                                                                                |
-| --------------------------------------------- | ------------------------------------------------------------------------------------ |
-| Kapsanan katılım bankası                      | **9 / 10** (BDDK listesi; Adil Katılım gerekçeli hariç — ürün/kampanya yayımlamıyor) |
-| Toplanan gerçek kampanya                      | **251** tekil kampanya (300 tarihli anlık görüntü)                                   |
-| Değişimi yakalanan kampanya                   | **40 / 251** içerik güncellemesi; **25**'inde izlenen alan değişti                   |
-| Altın Veri Seti                               | **298** kayıt, tamamı imzalı (ölçüme giren); taslak kalmadı                          |
-| Çıkarım — dolu alan doğruluğu                 | **%52,07** (239/459 alan, 11 alan · 93 imzalı canlı kayıt) — _ölçüm 23 Ağustos_      |
-| Çıkarım — boş alan doğruluğu (yanlış pozitif) | **%95,15** (490/515 alan) — 25 yanlış pozitif — _ölçüm 23 Ağustos_                   |
-| Çıkarım — makro F1 (11 alan)                  | **%67,09** (makro P %75,33 / R %66,08) — _ölçüm 23 Ağustos_                          |
-| Çıkarım — makro F1 (sayısal çekirdek, 7 alan) | **%81,66** — oran/tutar/süre alanları — _ölçüm 23 Ağustos_                           |
-| Terminoloji sözlüğü                           | **31** kavram (geleneksel karşılığı + tanım kaynağıyla)                              |
-| Kapsam ölçümü (Scope Guard)                   | hassasiyet **24/24**, özgüllük **10/10**                                             |
-| RAG — indekslenen parça                       | **878** (300 belgeden, 21 Ağustos'ta yeniden kuruldu)                                |
-| RAG — değerlendirme seti                      | **185** soru, 6 kategori (32'lik dar setten büyütüldü — aşağıya bakınız)             |
-| RAG — Recall@5 (genel / kategori bazlı)       | **%88,24** genel — doğal_soru %92,86, **banka_ve_konu %52,38** (Recall@1 %14,29)     |
-| RAG — abstention doğruluğu                    | alan dışı **%86,67** · alan içi kapsam dışı **%50,0** (ayrı raporlanır)              |
-| Otomatik test                                 | **1235** test (aktif), CI her push'ta çalışır (34 yavaş test manuel çalıştırma)      |
+| Gösterge                                      | Değer                                                                                        |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Kapsanan katılım bankası                      | **9 / 10** (BDDK listesi; Adil Katılım gerekçeli hariç — ürün/kampanya yayımlamıyor)          |
+| Toplanan gerçek kampanya                      | **536** kayıt PostgreSQL'de yapılandırılmış (`GERCEK_VERI_AKTIF=true`); 525 tekil taranmış ham sayfa, 623 anlık görüntü — üçü farklı şeyi ölçer, ayrıntı dashboard'da |
+| Altın Veri Seti                               | **302** kayıt, tamamı imzalı (ölçüme giren); taslak kalmadı                                   |
+| Çıkarım — dolu alan doğruluğu (hibrit)        | **%81,68** — 291 canlı kayıt, 11 alan — _ölçüm 26 Ağustos_                                    |
+| Çıkarım — boş alan doğruluğu (yanlış pozitif) | **%96,88** — 291 canlı kayıt — _ölçüm 26 Ağustos_                                              |
+| Çıkarım — makro F1 (11 alan, hibrit)          | **%82,50** (regex-only tek başına **%80,66**) — _ölçüm 26 Ağustos_                            |
+| Terminoloji sözlüğü                           | **31** kavram (geleneksel karşılığı + tanım kaynağıyla)                                        |
+| Kapsam ölçümü (Scope Guard)                   | hassasiyet **24/24**, özgüllük **10/10**                                                       |
+| RAG — indekslenen parça (Recall'ün ölçüldüğü) | **1875** parça / 513 belge, 25 Ağustos — canlı indeks o tarihten sonra **2127 parçaya** büyüdü, Recall henüz yeni indekste yeniden ölçülmedi |
+| RAG — değerlendirme seti                      | **129** sorgu, `exact=True`                                                                    |
+| RAG — Recall@5 (genel)                        | **%87,60** (Recall@3 %84,50, Recall@1 %72,09 — HNSW yaklaşık arama nedeniyle koşular arası oynar) |
+| RAG — abstention doğruluğu                    | alan dışı **%86,67** (13/15) · alan içi kapsam dışı **%40,0** (izole ölçüm; uçtan uca ölçümde %90,0 — bkz. [`docs/rag_tasarim_ve_olcum.md`](docs/rag_tasarim_ve_olcum.md) Bulgu 12) |
+| Otomatik test                                 | **1278** test geçiyor (CI, `-m "not slow"`), 0 hata, 90 atlandı — CI her push'ta çalışır       |
 
-> **Yavaş testler:** `tests/SLOW_test_sprint_is_listesi.py` (34 test) rutin
-> CI'da çalıştırılmıyor — sprint iş listesi üretimi 3+ dakika sürüyor. Manuel
-> çalıştırma: `PYTEST_SLOW_TESTS=1 pytest tests/SLOW_test_sprint_is_listesi.py`
+> **Yavaş testler — iki ayrı grup, karıştırılmamalı:**
+> `tests/SLOW_test_sprint_is_listesi.py` (**34** test) modül seviyesinde
+> `PYTEST_SLOW_TESTS` ortam değişkeniyle skip edilir — sprint iş listesi
+> üretimi 3+ dakika sürüyor. Manuel çalıştırma:
+> `PYTEST_SLOW_TESTS=1 pytest tests/SLOW_test_sprint_is_listesi.py`
+>
+> Ayrıca 8 ayrı test dosyasında `@pytest.mark.slow` ile işaretli **46** test
+> (Ollama/GLiNER/Qdrant gerektirir) `pytest -m "not slow"` ile CI'da
+> **deselect** edilir — `PYTEST_SLOW_TESTS` değişkeninden bağımsız, ayrı bir
+> mekanizmadır. Çalıştırmak için: `pytest -m "slow"`
 
 > ### Çıkarım metrikleri 23 Ağustos'ta AŞAĞI yönlü düzeltildi — nedeni önemli
 >
@@ -115,6 +132,12 @@ _Son ölçüm: 23 Ağustos 2026. Tüm sayılar depodaki komutlarla yeniden
 > ama çoğu sayfada başlangıç tarihi hiç yazmıyor), `hedef_kitle` R %19,67
 > (altın veri etiketi bir insan özeti; o cümle sayfada aynen geçmiyor —
 > regex'in ulaşamadığı bir alan, NER/LLM katmanının işi).
+
+> Aşağıdaki anlatı ilk ölçüldüğü tarihteki (251 tekil / 300 anlık görüntü)
+> sayılarla yazıldı; **güncel sayılar yukarıdaki "Ölçülebilir durum"
+> tablosundadır** (536 kayıt, 26 Ağustos). Metodoloji (neden iki ayrı sayı
+> tutulduğu, delta takibinin nasıl çalıştığı) hâlâ geçerli — o yüzden
+> tarihsel örnekleriyle birlikte aşağıda korunuyor.
 
 **Kayıt sayısı neden iki türlü:** Scraper eski taramaları **silmez** — değişiklik
 takibi (SHA-256 delta) bunu gerektirir. Bu yüzden diskte 300 tarihli dosya var
@@ -407,6 +430,7 @@ arayüz kodu geçişte değişmez.
 | GET   | `/sistem/tazelik`           | Veri/RAG indeksinin ne kadar güncel olduğu (son tarama, gün farkı)                         |
 | POST  | `/token`                    | Kullanıcı adı-parola ile JWT (yalnızca `JWT_AKTIF=true`)                                   |
 | POST  | `/kayit`                    | Kendi kendine kayıt — rol her zaman `musteri` (istemciden kabul edilmez)                   |
+| POST  | `/kullanici/sifre-degistir` | Mevcut şifreyi doğrulayıp yenisiyle değiştirir (`JWT_AKTIF` durumundan bağımsız çalışır)    |
 | GET   | `/kampanyalar`              | Kampanya listesi (`?banka=` `?kampanya_turu=`)                                             |
 | GET   | `/kampanyalar/{id}`         | Tek kampanya detayı                                                                        |
 | GET   | `/kampanyalar/{id}/etki`    | Etki skoru — piyasaya göre eksen eksen yüzdelik sıra                                       |

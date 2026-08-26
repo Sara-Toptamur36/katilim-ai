@@ -34,8 +34,11 @@ import { OLCUMLER, OLCUM_TARIHI } from "../data/olcumler";
  * Her alan için: mevcut değer, çıkarım katmanı, güven, gold reference,
  * doğrulandı mı?
  *
- * ROL KISITI: Bu sayfa yalnızca banka_calisani / denetleyici / yonetici
- * rolüne gösterilmeli (menü kısıtı App.jsx'te yapılıyor).
+ * DENETIM BULGUSU (26.08.2026): eskiden menude yalnizca banka_calisani/
+ * denetleyici/yonetici rolune gosteriliyordu; jüri kendi (musteri) hesabiyla
+ * bu sayfayi goremiyordu. Sartname Md. 6 geregi jurinin canli cikarim
+ * denetimini arayuzden yapabilmesi icin App.jsx::GUVEN_MENUSU'ndeki rol
+ * kisiti kaldirildi - tum giris yapmis kullanicilara acik.
  */
 
 const KATMAN_RENK = {
@@ -260,7 +263,7 @@ export default function ExtractionAudit() {
             Çıkarım Denetimi (Extraction Audit)
           </Typography.Title>
           <Tag color="blue" icon={<SafetyOutlined />}>
-            Yetkili Ekran (Banka Çalışanı / Denetleyici / Yönetici)
+            Denetim Ekranı — Jüri Erişimine Açık
           </Tag>
         </div>
         <Typography.Text type="secondary">

@@ -60,23 +60,26 @@ const KONTROL_MENUSU = [
 ];
 
 const GUVEN_MENUSU = [
-  // `roller`: yalnizca API'de GERCEKTEN bir kisit varsa yazilir. Metin
-  // Analizi, POST /cikar ucuna dayanir ve o uc rol_gerekli(["banka_calisani",
-  // "denetleyici", "yonetici"]) ile korunur - menu bu kisiti YANSITIR,
-  // kendi basina politika UYDURMAZ. Digerlerinde API kisiti olmadigi icin
-  // burada da yoktur.
+  // Metin Analizi ve Cikarim Denetimi eskiden yalnizca banka_calisani/
+  // denetleyici/yonetici rolune `roller` filtresiyle gosteriliyordu. API
+  // tarafindaki rol_gerekli(["banka_calisani","denetleyici","yonetici"])
+  // kisiti SADECE JWT_AKTIF=true iken calisir (varsayilan mock/demo modda
+  // hicbir etkisi yok, bkz. api/main.py::cikar), yani bu iki sayfa fiilen
+  // her zaman erisilebilirdi - sadece menude GIZLIYORDU. Sartname Md. 6
+  // jurinin serbest metin -> yapilandirilmis cikti akisini CANLI gormesini
+  // gerektirdigi icin (bkz. api/main.py::cikar), bu iki sayfa DENETIM
+  // BULGUSU (26.08.2026) sonrasi tum giris yapmis rollere acildi - jüri
+  // kendi (musteri) hesabiyla giris yapip buradan kontrol edebilsin diye.
   {
     yol: "/analiz",
     etiket: "Metin Analizi",
     ikon: <FileSearchOutlined />,
-    roller: ["banka_calisani", "denetleyici", "yonetici"],
   },
   { yol: "/audit", etiket: "Jüri Audit Paneli", ikon: <AuditOutlined /> },
   {
     yol: "/extraction-audit",
     etiket: "Çıkarım Denetimi",
     ikon: <FileSearchOutlined />,
-    roller: ["banka_calisani", "denetleyici", "yonetici"],
   },
   // Bu menu ogesi yalnizca GIRIS YAPILMISKEN gorunur (SolMenu, App()'in
   // "girisli" dalinda render edilir - bkz. asagidaki if(!girisli) erken

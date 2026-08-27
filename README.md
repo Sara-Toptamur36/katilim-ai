@@ -78,7 +78,13 @@ komutları [Test](#test) bölümünde._
 | Altın Veri Seti                               | **302** kayıt, tamamı imzalı (ölçüme giren); taslak kalmadı                                   |
 | Çıkarım — dolu alan doğruluğu (hibrit)        | **%81,68** — 291 canlı kayıt, 11 alan — _ölçüm 26 Ağustos_                                    |
 | Çıkarım — boş alan doğruluğu (yanlış pozitif) | **%96,88** — 291 canlı kayıt — _ölçüm 26 Ağustos_                                              |
-| Çıkarım — makro F1 (11 alan, hibrit)          | **%82,50** (regex-only tek başına **%80,66**) — _ölçüm 26 Ağustos_                            |
+| Çıkarım — makro F1 (11 alan, hibrit)          | **%82,50** (regex-only **%80,66**, EVREN pipeline **%87,25**) — _ölçüm 26-27 Ağustos_        |
+| **EVREN Full Pipeline Benchmark**             | Regex → Regex+NER → Regex+NER+EVREN → Final (validation) — _ölçüm 27 Ağustos_                |
+| Pipeline F1 (Regex only)                      | **%72,14** (TP: 708, FP: 38, FN: 509)                                                        |
+| Pipeline F1 (Regex + NER)                     | **%71,92** (NER katkısı: +3 TP, +11 FP — net negatif)                                        |
+| Pipeline F1 (Regex + NER + EVREN)             | **%74,69** (EVREN katkısı: +49 TP, +9 FP — net pozitif)                                      |
+| Pipeline F1 (Final + Validation)              | **%87,25** (Validation katkısı: +12,56 puan)                                                 |
+| EVREN Recovery (Regex+NER bulamadı, EVREN buldu) | **38/112** çağrıda yeni alan buldu                                                      |
 | Terminoloji sözlüğü                           | **31** kavram (geleneksel karşılığı + tanım kaynağıyla)                                        |
 | Kapsam ölçümü (Scope Guard)                   | hassasiyet **24/24**, özgüllük **10/10**                                                       |
 | RAG — indekslenen parça (Recall'ün ölçüldüğü) | **1875** parça / 513 belge, 25 Ağustos — canlı indeks o tarihten sonra **2127 parçaya** büyüdü, Recall henüz yeni indekste yeniden ölçülmedi |
@@ -765,12 +771,19 @@ tasarım ilkesi olarak sunulmakla birlikte uçtan uca çalışan bir özellik de
   Kaynak eklendiğinde skorun şekli değişmez, yalnızca `durum` alanı dolar.
 - **Hibrit katman katkısının ayrıştırılması (ablation):** 26 Ağustos'ta hibrit
   boru hattı 291 canlı kayıtta uçtan uca koşturuldu (EVREN sağlayıcısıyla,
-  makro F1 %82,50) — yani "hibrit çalışıyor mu" sorusu artık ölçülmüş
-  durumda. Ama `ablation.py`'nin ürettiği **üçlü karşılaştırma** (regex /
-  +NER / +NER+LLM) hâlâ yapılmadı; ayrıca o koşuda **GLiNER yüklenemediği
-  için NER katmanı devre dışıydı** (torch/Windows yerel çökmesi), yani
-  raporlanan sayı gerçekte regex + LLM'dir. **NER'in katkısı ölçülmemiştir** —
-  "katkısı yok" denmez.
+  makro F1 %82,50). **27 Ağustos'ta EVREN full pipeline benchmark tamamlandı**
+  — dört aşamalı karşılaştırma (Regex → Regex+NER → Regex+NER+EVREN → Final+Validation)
+  yapıldı. Sonuçlar:
+  - **Regex Only F1**: %72,14 (TP: 708, FP: 38, FN: 509)
+  - **Regex + NER F1**: %71,92 (NER katkısı +3 TP, +11 FP → net negatif)
+  - **Regex + NER + EVREN F1**: %74,69 (EVREN katkısı +49 TP, +9 FP → net pozitif)
+  - **Final F1 (Validation sonrası)**: %87,25 (+12,56 puan iyileşme)
+  - **EVREN Recovery**: 38/112 çağrıda Regex+NER'in bulamadığı alanları buldu
+  
+  **NER'in katkısı artık ölçülmüştür** — 54 kayıtta çalıştı, minimal katkı sağladı
+  (+3 doğru alan, +11 yanlış alan). EVREN'in katkısı ise belirgin ve kanıtlanmış (+49 alan).
+  
+  Detaylı rapor: [`EVREN_FULL_PIPELINE_BENCHMARK.md`](EVREN_FULL_PIPELINE_BENCHMARK.md)
 - **Gerçek Complaint Insight verisi:** yukarıdaki Müşteri Sesi modülü şu an
   yalnızca sentetik veriyle çalışıyor. **Hat kurulu, veri yok** — şikâyet
   veri modeli, PII temizliği, izin kapısı ve kampanya eşleştirmesi yazıldı
@@ -892,6 +905,7 @@ komutlarla yeniden üretilir:
 python -m scraper.scripts.extraction_accuracy         # dolu/bos alan dogrulugu + alan bazli F1
 python -m scraper.scripts.hibrit_extraction_accuracy  # regex + NER + LLM
 python -m scraper.scripts.ablation                    # katman katkisi tablosu
+python evren_full_pipeline_benchmark.py               # EVREN full pipeline benchmark (Regex → NER → EVREN → Validation)
 python -m scraper.scripts.rag_degerlendirme           # RAG Recall@k + cekimserlik
 pytest tests/test_karsi_ornekler.py -s                # kapsam olcumu (hassasiyet/ozgulluk)
 ```

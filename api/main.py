@@ -41,6 +41,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from agent.orchestrator import soru_isle
 from api.auth import GERCEK_JWT_AKTIF, rol_gerekli, token_dogrula, token_uret
+from complaint.izin_kapisi import herhangi_bir_izin_var_mi
 from complaint.tema_siniflandirici import tema_siniflandir
 from complaint.toplama import yogunluk_ozeti
 from api.db import oturum_al
@@ -783,13 +784,19 @@ def musteri_sesi_yogunluk_ozeti(kullanici: dict = Depends(token_dogrula)):
     durumda `toplam_sikayet: 0` doner, hata FIRLATILMAZ: bos veri gecerli
     ve dogru bir durumdur, "henuz veri yok" demek "sistem bozuk" demek
     degildir.
+
+    `kapsam_durumu`: bos donusun IKI FARKLI sebebi olabilir - hicbir
+    kaynak icin izin yoksa ("izin_yok") veya izin var ama henuz sikayet
+    islenmemisse ("izin_var_veri_yok"). Bu ayrim, izin dosyasina
+    kaynaktan bagimsiz bakan `herhangi_bir_izin_var_mi()` ile kurulur.
     """
+    izin_var = herhangi_bir_izin_var_mi()
     oturum = next(oturum_al())
     try:
         sikayetler = oturum.query(Sikayet).all()
     finally:
         oturum.close()
-    return MusteriSesiYogunlukYanit(**yogunluk_ozeti(sikayetler))
+    return MusteriSesiYogunlukYanit(**yogunluk_ozeti(sikayetler, izin_var=izin_var))
 
 
 @app.get(

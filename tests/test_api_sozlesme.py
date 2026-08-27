@@ -731,6 +731,26 @@ def test_musteri_sesi_siniflandir_bilinen_temayi_bulur():
     assert govde["eslesen_ifadeler"]
 
 
+def test_musteri_sesi_siniflandir_kural_setinin_surumunu_dondurur():
+    """Complaint Insight plan revizyonu (26 Agustos 2026): audit-trail -
+    yanit HANGI kural setiyle siniflandirildigini soylemeli, tema
+    bulunsun ya da bulunmasin."""
+    from complaint.tema_siniflandirici import TEMA_SURUMU
+
+    eslesen = client.post(
+        "/musteri-sesi/siniflandir",
+        json={"metin": "odul yatmadi"},
+        headers=GECERLI_BASLIK,
+    ).json()
+    eslesmeyen = client.post(
+        "/musteri-sesi/siniflandir",
+        json={"metin": "yarin hava nasil olacak"},
+        headers=GECERLI_BASLIK,
+    ).json()
+    assert eslesen["tema_surumu"] == TEMA_SURUMU
+    assert eslesmeyen["tema_surumu"] == TEMA_SURUMU
+
+
 def test_musteri_sesi_siniflandir_alan_disi_metinde_tema_uydurmaz():
     yanit = client.post(
         "/musteri-sesi/siniflandir",
@@ -760,6 +780,21 @@ def test_musteri_sesi_yogunluk_ozeti_bos_tabloda_sifir_doner():
     assert not any("oran" in a or "yuzde" in a for a in govde)
 
 
+@pytest.mark.skipif(not DB_ERISILEBILIR, reason=DB_YOK_MESAJI)
+def test_musteri_sesi_yogunluk_ozeti_kapsam_durumu_tasir():
+    """Complaint Insight plan revizyonu (26 Agustos 2026): temiz bir
+    ortamda (izin dosyasi yok) bos sonucun sebebi `izin_yok` olmalidir -
+    "izin var ama veri gelmedi" ile KARISTIRILMAMALI."""
+    yanit = client.get("/musteri-sesi/yogunluk-ozeti", headers=GECERLI_BASLIK)
+    assert yanit.status_code == 200
+    govde = yanit.json()
+    assert govde["kapsam_durumu"] in ("izin_yok", "izin_var_veri_yok", "veri_var")
+    if govde["toplam_sikayet"] == 0:
+        # Depoda izin dosyasi ships EDILMEZ (bkz. complaint/izin_kapisi.py) -
+        # bu ortamda bos sonucun sebebi izin yoklugudur.
+        assert govde["kapsam_durumu"] in ("izin_yok", "izin_var_veri_yok")
+
+
 def test_musteri_sesi_ornekler_sentetik_oldugunu_acikca_belirtir():
     """DURUSTLUK: donen veri gercek sikayet degil - yanit bunu ACIKCA
     soylemeli, arayuz bu alani gizlemeden gostermeli (rapor Bolum 5.7/15
@@ -773,3 +808,12 @@ def test_musteri_sesi_ornekler_sentetik_oldugunu_acikca_belirtir():
     assert len(govde["temalar"]) == 10
     for ornek in govde["ornekler"]:
         assert ornek["tema"] is not None, f"{ornek['id']} kendi ornek setinde siniflandirilamadi"
+
+
+def test_musteri_sesi_ornekler_kural_setinin_surumunu_tasir():
+    from complaint.tema_siniflandirici import TEMA_SURUMU
+
+    yanit = client.get("/musteri-sesi/ornekler", headers=GECERLI_BASLIK)
+    govde = yanit.json()
+    for ornek in govde["ornekler"]:
+        assert ornek["tema_surumu"] == TEMA_SURUMU

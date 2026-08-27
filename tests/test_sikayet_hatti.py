@@ -18,13 +18,15 @@ import pytest
 
 from complaint.izin_kapisi import (
     IzinYok,
+    herhangi_bir_izin_var_mi,
     izin_var_mi,
     izinleri_oku,
     izni_zorunlu_kil,
 )
 from complaint.kampanya_eslestirme import ASGARI_GUVEN, kampanya_esle
 from complaint.pii_temizleme import temizle
-from complaint.toplama import hazirla, yogunluk_ozeti
+from complaint.tema_siniflandirici import TEMA_SURUMU
+from complaint.toplama import _dedup_anahtari, hazirla, kaydet, yogunluk_ozeti
 
 
 class SahteKampanya:
@@ -395,3 +397,177 @@ def test_ek_toleransi_alan_disi_metni_hala_reddediyor():
 
     assert tema_siniflandir("yarin hava nasil olacak acaba")["tema"] is None
     assert tema_siniflandir("makarna tarifi ariyorum")["tema"] is None
+
+
+# ---------------------------------------------------------------------------
+# Complaint Insight plan revizyonu (26 Agustos 2026) - denetim alanlari
+#
+#   P0: kapsam_durumu, tema_surumu, cozum_durumu
+#   P1: yineleme (dedup) isaretlemesi, orta guven ayrimi
+#
+# Bu testlerin ISI de ustteki dort kirmizi cizgiyle AYNI ilkeyi
+# uygulamak: yeni alanlar sessizce UYDURULMAZ, ya gercek bir sinyalden
+# turer ya da acikca "bilinmiyor/yok" der.
+# ---------------------------------------------------------------------------
+
+
+def test_dedup_anahtari_noktalama_ve_buyuk_kucuk_harfi_yok_sayar():
+    """BULGU (once ONE inceleme onerisi): sonuna nokta/unlem konmus bir
+    sikayet, konmamis olandan FARKLI sayilirsa yineleme kontrolu hicbir
+    ise yaramaz. Anahtar, kucuk harfe katlanip (Turkce diyakritik dahil)
+    noktalama silindikten SONRA hesaplanir."""
+    a = _dedup_anahtari("Odulum hesabima yatmadi.")
+    b = _dedup_anahtari("odulum hesabima yatmadi")
+    c = _dedup_anahtari("ODULUM   HESABIMA YATMADI!!!")
+    assert a == b == c
+
+
+def test_dedup_anahtari_farkli_icerikte_farkli_kalir():
+    """Normalizasyon anlamsiz bir esitleme YARATMAMALI - degisiklik
+    yalnizca noktalama/buyuk-kucuk harfi yok sayar, ICERIGI degil."""
+    assert _dedup_anahtari("odulum hesabima yatmadi") != _dedup_anahtari(
+        "taksitlerim yanlis hesaplandi"
+    )
+
+
+def test_bilinen_hash_verilmezse_yineleme_supheli_UYDURULMAZ():
+    """`bilinen_icerik_hashleri` verilmezse kiyaslanacak veri yoktur -
+    bu "temiz" ilan etmek DEGIL, "kontrol uygulanamadi" demektir; yine de
+    varsayilan deger False'tur (positif bir iddia yapilmaz)."""
+    hazir = hazirla("odul yatmadi", kaynak="sentetik", izin_zorunlu=False)
+    assert hazir.yineleme_supheli is False
+
+
+def test_bilinen_hash_icinde_gecen_icerik_yineleme_supheli_isaretlenir():
+    """Ayni icerik (normalize edildikten sonra) daha once gorulduyse
+    ISARETLENIR - ama ENGELLENMEZ: kayit yine olusur, karar insana
+    birakilir (bkz. modul docstring'i)."""
+    ilk = hazirla("Odulum hesabima yatmadi.", kaynak="sentetik", izin_zorunlu=False)
+    ikinci = hazirla(
+        "odulum hesabima yatmadi", kaynak="sentetik", izin_zorunlu=False,
+        bilinen_icerik_hashleri={ilk.icerik_hash},
+    )
+    assert ikinci.yineleme_supheli is True
+    assert ikinci.temiz_metin  # kayit yine olusuyor, atilmiyor
+
+
+def test_farkli_icerik_bilinen_hashler_icinde_yineleme_SAYILMAZ():
+    farkli = hazirla(
+        "taksitlerim yanlis hesaplandi", kaynak="sentetik", izin_zorunlu=False,
+        bilinen_icerik_hashleri={_dedup_anahtari("odulum hesabima yatmadi")},
+    )
+    assert farkli.yineleme_supheli is False
+
+
+def test_hazirlanan_kayit_kural_setinin_surumunu_tasir():
+    """`tema_surumu`, hem tema bulunsun hem bulunmasin DONMELI - audit
+    trail'in "hangi kural setiyle degerlendirildi?" sorusu, tema None
+    donse bile cevaplanabilmeli."""
+    eslesen = hazirla("odul yatmadi", kaynak="sentetik", izin_zorunlu=False)
+    eslesmeyen = hazirla("yarin hava nasil olacak", kaynak="sentetik", izin_zorunlu=False)
+    assert eslesen.tema_surumu == TEMA_SURUMU
+    assert eslesmeyen.tema_surumu == TEMA_SURUMU
+
+
+def test_kaydet_denetim_alanlarini_satira_eksiksiz_tasir(tmp_path, monkeypatch):
+    """kaydet(), hazirla()'nin urettigi P0/P1 denetim alanlarini
+    (icerik_hash, yineleme_supheli, tema_surumu) VE cozum_durumu=None'i
+    Sikayet satirina tasimali - tek bir yerde unutulan alan, denetim
+    izini sessizce kaybederdi (bkz. api/models.py::Sikayet docstring'i)."""
+    import complaint.izin_kapisi as izin_kapisi_modulu
+
+    izin_dosyasi_yolu = tmp_path / "izin.json"
+    izin_dosyasi_yolu.write_text(
+        json.dumps([{
+            "kaynak": "test_kaynagi", "onaylayan": "Hukuk Birimi",
+            "kurum": "PeacewAI", "onay_tarihi": "2026-08-01",
+            "kapsam": "tema analizi",
+        }]),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(izin_kapisi_modulu, "IZIN_DOSYASI", izin_dosyasi_yolu)
+
+    hazir = hazirla("odul yatmadi", kaynak="test_kaynagi", bugun=date(2026, 8, 21))
+
+    class SahteOturum:
+        def __init__(self):
+            self.eklenen = None
+
+        def add(self, satir):
+            self.eklenen = satir
+
+    oturum = SahteOturum()
+    kaydet(oturum, hazir, bugun=date(2026, 8, 21))
+
+    satir = oturum.eklenen
+    assert satir.icerik_hash == hazir.icerik_hash
+    assert satir.yineleme_supheli is False
+    assert satir.tema_surumu == hazir.tema_surumu
+    assert satir.cozum_durumu is None
+
+
+def test_sikayet_satirinda_cozum_durumu_varsayilan_NONE_dur():
+    """Cozum sureci Faz 2'de gercek destek akisina baglanana kadar
+    HICBIR YOL bu alani doldurmaz - varsayilan `None`dir, "acik" gibi
+    bir deger UYDURULMAZ."""
+    from api.models import Sikayet
+
+    assert Sikayet().cozum_durumu is None
+
+
+def test_kapsam_durumu_hicbir_izin_yoksa_izin_yok_doner():
+    ozet = yogunluk_ozeti([], izin_var=False)
+    assert ozet["kapsam_durumu"] == "izin_yok"
+    assert ozet["toplam_sikayet"] == 0
+
+
+def test_kapsam_durumu_izin_var_ama_veri_yoksa_ayirt_edilir():
+    """Bos tablo IKI FARKLI sebepten olabilir - "izin hic yok" ile "izin
+    var ama henuz sikayet gelmedi" AYNI CUMLEYLE anlatilmamali."""
+    ozet = yogunluk_ozeti([], izin_var=True)
+    assert ozet["kapsam_durumu"] == "izin_var_veri_yok"
+    assert ozet["toplam_sikayet"] == 0
+
+
+def test_kapsam_durumu_veri_varsa_izin_bayragindan_BAGIMSIZ_veri_var_doner():
+    """Veri varsa zaten cevap nettir - `izin_var` parametresi ne olursa
+    olsun (izin sonradan iptal edilmis bile olsa gecmis kayit VARDIR)."""
+    hazir = hazirla("odul yatmadi", kaynak="sentetik", izin_zorunlu=False)
+    assert yogunluk_ozeti([hazir], izin_var=False)["kapsam_durumu"] == "veri_var"
+    assert yogunluk_ozeti([hazir], izin_var=True)["kapsam_durumu"] == "veri_var"
+
+
+def test_herhangi_bir_izin_var_mi_kaynaktan_bagimsizdir(izin_dosyasi):
+    """`izin_var_mi` belirli bir kaynagi sorar; bu fonksiyon GENEL kapsam
+    durumu icin herhangi bir gecerli izin arar - hangi kaynak oldugu
+    onemli degildir."""
+    assert herhangi_bir_izin_var_mi(bugun=date(2026, 8, 21), dosya=izin_dosyasi) is True
+    assert herhangi_bir_izin_var_mi(bugun=date(2026, 8, 21), dosya=None) is False
+
+
+def test_orta_guven_sinyal_var_ama_esik_alti_isaretlenir():
+    """Banka adi TEK BASINA eslesmeye yetmez (0.45 < 0.50) ama bu, "hicbir
+    sinyal yok" ile AYNI SEY DEGILDIR - orta_guven_mi bu ikisini ayirir."""
+    k = SahteKampanya(1, "Kuveyt Turk", "Egitim Harcamalarina Taksit")
+    sonuc = kampanya_esle("Kuveyt Turk ile ilgili bir sorunum var", [k])
+    assert sonuc.eslesti_mi is False
+    assert sonuc.orta_guven_mi is True
+
+
+def test_orta_guven_hic_sinyal_yokken_False_doner():
+    k = SahteKampanya(1, "Albaraka Turk", "Konut Finansmani")
+    sonuc = kampanya_esle("bambaska bir konu hakkinda sikayet", [k])
+    assert sonuc.guven == 0.0
+    assert sonuc.orta_guven_mi is False
+
+
+def test_orta_guven_esigi_gecen_eslesmede_False_doner():
+    """Zaten eslesmis (esigi gecmis) bir kayit "orta guven kuyrugu"na
+    DUSMEMELI - o kuyruk yalnizca esik ALTINDAKI ama sinyali OLAN
+    kayitlar icindir."""
+    k = SahteKampanya(7, "Kuveyt Turk", "Egitim Harcamalarina Taksit")
+    sonuc = kampanya_esle(
+        "Kuveyt Turk egitim harcamalarina taksit kampanyasindan yararlanamadim", [k]
+    )
+    assert sonuc.eslesti_mi is True
+    assert sonuc.orta_guven_mi is False

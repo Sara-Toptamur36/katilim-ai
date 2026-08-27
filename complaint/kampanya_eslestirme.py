@@ -89,6 +89,22 @@ class EslesmeSonucu:
     def eslesti_mi(self) -> bool:
         return self.kampanya_id is not None
 
+    @property
+    def orta_guven_mi(self) -> bool:
+        """Esigi gecmedi AMA hicbir sinyal de yakalanmadi degil.
+
+        Eslesmeyen her sikayet ayni kefeye konmamali: "banka adi gecti
+        ama ikinci sinyal yok" (0.45) ile "hicbir sey eslesmedi" (0.0)
+        farkli seylerdir. Ilki bir INSAN GOZDEN GECIRME kuyrugu icin
+        adaydir - ikincisi degildir.
+
+        YENI BIR ESIK UYDURULMADI: mevcut, zaten gerekceli agirliklardan
+        (AGIRLIK_BANKA/KAMPANYA_ADI/ODUL_BIRIMI) turetilir - "guven > 0"
+        yeterlidir, cunku puanlama zaten sifirdan farkli her deger icin
+        en az bir sinyalin (banka/ad/birim) eslestigini garanti eder.
+        """
+        return not self.eslesti_mi and self.guven > 0.0
+
 
 def _kelimeler(metin: str) -> set[str]:
     katlanmis = turkce_ascii_kucult(metin or "")

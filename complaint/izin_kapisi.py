@@ -110,6 +110,19 @@ def izin_var_mi(kaynak: str, bugun: date | None = None, dosya: Path | None = Non
     )
 
 
+def herhangi_bir_izin_var_mi(bugun: date | None = None, dosya: Path | None = None) -> bool:
+    """KAYNAKTAN BAGIMSIZ: en az bir gecerli izin var mi?
+
+    `izin_var_mi` belirli bir kaynagi sorar; bu fonksiyon "hic kaynak
+    baglanmadi mi, yoksa baglandi da henuz sikayet mi gelmedi" ayrimini
+    yapmasi gereken ozet ekranlar icindir (bkz. complaint/toplama.py
+    ::yogunluk_ozeti, kapsam_durumu alani). Tekil bir kaynagin degil,
+    GENEL kapsam durumunun sorusudur - "veri neden yok?" sorusuna dogru
+    cevabi vermek icin (izin hic yok / izin var ama sikayet gelmedi).
+    """
+    return any(i.gecerli_mi(bugun) for i in izinleri_oku(dosya))
+
+
 def izni_zorunlu_kil(kaynak: str, bugun: date | None = None, dosya: Path | None = None) -> Izin:
     """Izin yoksa IzinYok firlatir. Sikayet verisine dokunan HER yol bunu
     once cagirmali (bkz. complaint/toplama.py)."""

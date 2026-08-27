@@ -119,11 +119,20 @@ _TEMA_DESENLERI = {
     for tema, ifadeler in _TEMA_IFADELERI_KATLANMIS.items()
 }
 
+# Kural setinin SURUMU - siniflandirma SONUCUYLA BIRLIKTE saklanir (bkz.
+# complaint/toplama.py::hazirla, api/models.py::Sikayet.tema_surumu).
+# _TEMA_IFADELERI degistiginde (yeni ifade eklenir/cikarilirsa) bu deger
+# de artirilmalidir - aksi halde eski kayitlarin HANGI kural setiyle
+# uretildigi denetlenemez: bir kural degisikligi sonrasi tema dagilimi
+# kaydiginda, bu "veri degisti mi kural mi degisti" sorusunu ayirt eder.
+TEMA_SURUMU = "1.0"
+
 
 def tema_siniflandir(metin: str) -> dict:
     """Serbest metni 10 temali taksonomiye (mentor 3.3) gore siniflandirir.
 
-    Donen sozluk: {"tema": str|None, "guven": float, "eslesen_ifadeler": list[str]}.
+    Donen sozluk: {"tema": str|None, "guven": float,
+    "eslesen_ifadeler": list[str], "tema_surumu": str}.
     Hicbir tema esik degerini gecemezse tema None doner - UYDURULMAZ.
 
     Guven, en cok eslesen temanin eslesme sayisinin normalize edilmis
@@ -144,7 +153,12 @@ def tema_siniflandir(metin: str) -> dict:
             en_iyi_eslesenler = eslesenler
 
     if not en_iyi_eslesenler:
-        return {"tema": None, "guven": 0.0, "eslesen_ifadeler": []}
+        return {
+            "tema": None,
+            "guven": 0.0,
+            "eslesen_ifadeler": [],
+            "tema_surumu": TEMA_SURUMU,
+        }
 
     # Guven: 1 eslesme 0.6, 2+ eslesme 0.85 - regex_extractor.py'deki
     # "baglam eslesmeli desen" (0.85-0.9) / "genel fallback" (0.6) ayrimiyla
@@ -152,4 +166,9 @@ def tema_siniflandir(metin: str) -> dict:
     # tek bir ifadeden daha guvenilirdir.
     guven = 0.6 if len(en_iyi_eslesenler) == 1 else 0.85
 
-    return {"tema": en_iyi_tema, "guven": guven, "eslesen_ifadeler": en_iyi_eslesenler}
+    return {
+        "tema": en_iyi_tema,
+        "guven": guven,
+        "eslesen_ifadeler": en_iyi_eslesenler,
+        "tema_surumu": TEMA_SURUMU,
+    }

@@ -15,6 +15,11 @@ Kaynak: On Degerlendirme Raporu Bolum 15 (CampaignRecord) + sartname Md. 5.3
 #   demo_snapshot   → Kaynak + AuditBilgisi'ne eklendi (sahte veri etiketi)
 #   dataset_version, rag_index_version, model_version, rule_version,
 #   demo_mode, git_commit, last_ci → TazelikYanit'a eklendi (System Health)
+#   tema_surumu     → MusteriSesiYanit + MusteriSesiOrnek'e eklendi (hangi
+#                      kural setiyle siniflandirildi - audit-trail)
+#   kapsam_durumu   → MusteriSesiYogunlukYanit'a eklendi (izin_yok /
+#                      izin_var_veri_yok / veri_var - "veri neden yok?"
+#                      sorusunun cevabi, complaint/toplama.py::yogunluk_ozeti)
 """
 
 from datetime import date
@@ -268,6 +273,13 @@ class MusteriSesiYanit(BaseModel):
     )
     guven: float = Field(0.0, ge=0.0, le=1.0)
     eslesen_ifadeler: list[str] = Field(default_factory=list)
+    tema_surumu: str | None = Field(
+        None,
+        description=(
+            "Siniflandirmayi ureten kural setinin surumu "
+            "(complaint/tema_siniflandirici.py::TEMA_SURUMU) - audit-trail."
+        ),
+    )
 
 
 class MusteriSesiOrnek(BaseModel):
@@ -276,6 +288,7 @@ class MusteriSesiOrnek(BaseModel):
     tema: str | None
     guven: float
     eslesen_ifadeler: list[str]
+    tema_surumu: str | None = None
 
 
 class MusteriSesiOrnekYanit(BaseModel):
@@ -310,11 +323,20 @@ class MusteriSesiYogunlukYanit(BaseModel):
     KIRMIZI CIZGI (Rehber_Zeynep_Veri.md): "Sikayet orani" denmez - musteri/
     islem paydasi yoksa oran degildir. Bu yuzden `olcu` alani hep
     "gozlenen_yogunluk"dur, hicbir yerde yuzde/oran uretilmez.
+
+    `kapsam_durumu`: `toplam_sikayet == 0` TEK BASINA "veri yok" demek
+    yaniltici olabilir - "hicbir kaynak icin izin yok" ile "izin var ama
+    henuz sikayet gelmedi" farkli durumlardir (bkz.
+    complaint/toplama.py::yogunluk_ozeti docstring'i).
     """
 
     olcu: str = "gozlenen_yogunluk"
     aciklama: str = (
         "Adetlerdir, oran DEGILDIR - musteri/islem paydasi bilinmiyor."
+    )
+    kapsam_durumu: str = Field(
+        "izin_yok",
+        description="izin_yok | izin_var_veri_yok | veri_var",
     )
     toplam_sikayet: int
     temalar: dict[str, int]

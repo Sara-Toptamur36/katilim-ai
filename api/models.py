@@ -151,6 +151,14 @@ class Sikayet(Base):
     HAM METIN YOKTUR: yalnizca `temiz_metin` saklanir. PII temizligi
     KAYITTAN ONCE yapilir (complaint/pii_temizleme.py); ham metin hicbir
     asamada diske yazilmaz.
+
+    DENETIM ALANLARI (26 Agustos 2026 eklendi - bkz. complaint/toplama.py):
+    `icerik_hash`/`yineleme_supheli` yineleme-supheli kayitlari ISARETLER,
+    SILMEZ; `tema_surumu` bir kaydin HANGI kural setiyle siniflandirildigini
+    saklar; `cozum_durumu` HENUZ ISLENMEYEN bir alandir (asagi bak) - hepsi
+    `nullable=True` ve Python tarafinda varsayilani `None`/`False`dir, bu
+    yuzden eldeki (sentetik) kayitlar/testler bu sutunlar YOKKEN yazilmis
+    olsa da gecerliligini korur.
     """
 
     __tablename__ = "sikayetler"
@@ -162,9 +170,28 @@ class Sikayet(Base):
     pii_bulundu = Column(Boolean, default=False)
     insan_kontrolu_gerekir = Column(Boolean, default=False, index=True)
 
+    # Normalize edilmis icerik hash'i (complaint/toplama.py::_dedup_anahtari)
+    # + o hash'in daha once gorulup gorulmedigi. ENGELLEME degil ISARETLEME:
+    # spam/mukerrer AYIKLAMAK icin degil, insan onayina KUYRUKLAMAK icindir.
+    icerik_hash = Column(String(64), nullable=True, index=True)
+    yineleme_supheli = Column(Boolean, default=False, index=True)
+
     # --- Siniflandirma (complaint/tema_siniflandirici.py) ---
     tema = Column(String(50), nullable=True, index=True)
     tema_kaniti = Column(String(200), nullable=True)
+    # Kural setinin surumu (complaint/tema_siniflandirici.py::TEMA_SURUMU) -
+    # kural seti degisirse eski/yeni kayitlar bu alanla ayirt edilebilir.
+    tema_surumu = Column(String(20), nullable=True)
+
+    # Sikayetin isleyis durumu (acik/islemde/cozuldu/reddedildi - serbest
+    # metin, DB seviyesinde CHECK YOK, digerlerinde oldugu gibi "kaynakta
+    # olmayan deger uretme" ilkesiyle). SU AN HICBIR YOL BUNU DOLDURMAZ:
+    # cozum sureci gercek destek/CRM akisina baglanana kadar (Faz 2)
+    # DAIMA None'dir - "acik" gibi bir varsayim UYDURULMAZ. Sutun,
+    # onay geldiginde acele sema tasarlamamak icin simdiden acilir
+    # (c9d2e4a17b30'un "sikayetler tablosu su an bos kalir" gerekcesiyle
+    # AYNI mantik).
+    cozum_durumu = Column(String(30), nullable=True)
 
     # --- Kaynak ve izin izi ---
     # Hangi izin kaydiyla toplandigi saklanir: denetimde "bu satir hangi

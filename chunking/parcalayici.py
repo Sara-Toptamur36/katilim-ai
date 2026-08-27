@@ -370,6 +370,7 @@ def belgeyi_parcala(
     # KALIBI ELEME" bolumu. `kalip_satirlar` verilmezse davranis DEGISMEZ:
     # tek belgelik cagrilarda (test, tekil kullanim) sayfalar arasi tekrar
     # olcusu zaten yoktur, o yuzden eleme de yapilamaz.
+    temiz_satirlar = _menu_bloklarini_ele(temiz_satirlar, kalip_satirlar or set())
     # Menü ve gürültüler elendikten sonra kalan satırları temiz bir metin
     # haline getirip Özyinelemeli (Recursive) Parçalayıcı'ya veriyoruz.
     temiz_metin = "\n".join(temiz_satirlar)

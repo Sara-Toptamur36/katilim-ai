@@ -6,6 +6,7 @@ import {
   CheckCircleOutlined,
   WarningOutlined,
 } from "@ant-design/icons";
+import KaynakMetniGoster from "./sohbet/KaynakMetniGoster";
 
 /**
  * EvidenceCard — Tek bir kaynağı "nereden, nasıl, ne kadar güvenle?" gösterir.
@@ -240,24 +241,8 @@ export default function EvidenceCard({ kaynak, boyut = "normal" }) {
         )}
       </div>
 
-      {/* Evidence span */}
-      {kaynak.metin && (
-        <blockquote
-          style={{
-            margin: 0,
-            padding: "8px 12px",
-            borderLeft: "3px solid #1677ff",
-            background: "var(--kart-ustu)",
-            borderRadius: "0 6px 6px 0",
-            fontSize: 12,
-            lineHeight: 1.6,
-          }}
-        >
-          <Typography.Text type="secondary" italic>
-            "{kaynak.metin}"
-          </Typography.Text>
-        </blockquote>
-      )}
+      {/* Evidence span - varsayilan olarak kirpilir, "Devamını göster" ile acilir */}
+      <KaynakMetniGoster metin={kaynak.metin} boyut={boyut} />
     </Card>
   );
 }

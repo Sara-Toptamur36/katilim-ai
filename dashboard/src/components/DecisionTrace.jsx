@@ -140,7 +140,7 @@ export default function DecisionTrace({ audit, soru }) {
           onClick={() => setAcik(true)}
           style={{ fontSize: 11, color: "#8c8c8c" }}
         >
-          Karar zinciri
+          Karar izini göster
         </Button>
       </Tooltip>
 

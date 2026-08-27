@@ -1230,6 +1230,86 @@ html[data-tema="koyu"] .sohbet-audit-ozet {
 }
 
 /* ==========================================================
+   Sohbet Cevabı Yeniden Tasarımı — SONUÇ başlığı, kampanya kartı,
+   hesaplama kartı (bkz. ChatMesaji.jsx::GovdeIcerigi)
+   ========================================================== */
+
+.sohbet-asistan-etiket {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--yazi-soluk, #7b8c86);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.sonuc-baslik-blok {
+  margin-bottom: 8px;
+}
+
+.sonuc-baslik-etiket {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--marka-500, #169276);
+  margin-bottom: 2px;
+}
+
+.sonuc-baslik-metin {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--yazi-koyu, #192b27);
+  line-height: 1.45;
+}
+
+.sonuc-baslik-aciklama {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--yazi-normal, #4f625c);
+  line-height: 1.5;
+}
+
+.kampanya-karti-satirlar,
+.hesaplama-karti-satirlar {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kampanya-karti-satir,
+.hesaplama-karti-satir {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0;
+  border-bottom: 1px dashed var(--kenarlik, #e4ddcb);
+  font-size: 13px;
+}
+
+.kampanya-karti-satir:last-child,
+.hesaplama-karti-satir:last-child {
+  border-bottom: none;
+}
+
+.kampanya-karti-etiket,
+.hesaplama-karti-etiket {
+  color: var(--yazi-soluk, #7b8c86);
+}
+
+.kampanya-karti-deger,
+.hesaplama-karti-deger {
+  font-weight: 600;
+  color: var(--yazi-koyu, #192b27);
+  text-align: right;
+}
+
+html[data-tema="koyu"] .sonuc-baslik-metin,
+html[data-tema="koyu"] .kampanya-karti-deger,
+html[data-tema="koyu"] .hesaplama-karti-deger {
+  color: var(--yazi-koyu, #eef6f3);
+}
+
+/* ==========================================================
    Karşılaştırma Sayfası ve Terminoloji Sözlüğü Sınıfları
    ========================================================== */
 .karsilastirma-karti {

@@ -12,6 +12,16 @@ import { Card, Typography, Tag, Progress, Alert } from "antd";
 const DUSUK_GUVEN_ESIGI = 0.5;
 import EvidenceCard from "./EvidenceCard";
 import DecisionTrace from "./DecisionTrace";
+import SonucBaslik from "./sohbet/SonucBaslik";
+import HesaplamaKarti from "./sohbet/HesaplamaKarti";
+import KampanyaKarti from "./sohbet/KampanyaKarti";
+import KarsilastirmaTablosu from "./sohbet/KarsilastirmaTablosu";
+import {
+  kisaSonucCikar,
+  kalanAciklamaCikar,
+  hesaplamaOnekiCikar,
+  kampanyalariGrupla,
+} from "../utils/cevapBicimlendirme";
 
 
 // Md. 5.5 - Terminoloji Kontrolu kartinin metinleri. Uc durum BILEREK
@@ -60,17 +70,81 @@ function terminolojiDurumu(mesaj) {
   return sorunVar ? "bilgi" : null;
 }
 
+// Bu mesaj icin "SONUÇ" ustbaslığı ile yapilandirilmis govde (kampanya
+// kartlari / karsilastirma tablosu / hesaplama karti) gosterilsin mi?
+// Kullanici mesajlarinda, hata/cekimserlik/streaming durumunda HAYIR -
+// oralarda ham metin zaten dogru gosterimdir.
+function yapilandirilmisGovdeUygunMu(mesaj, kullaniciMi) {
+  return !kullaniciMi && !mesaj.streaming && !mesaj.hata && !mesaj.fallback;
+}
+
+// RAG araci basarili oldugunda cevap metni, kaynak parcalarinin BIREBIR
+// numaralanmis kopyasidir ("Kaynaklarda bulduklarim:\n1. ...\n2. ...",
+// bkz. agent/router.py::rag_aracini_cagir). Bu metni SONUÇ satirinda
+// oldugu gibi basmak, asagidaki kampanya kartlarinda/Kaynaklar bolumunde
+// GOSTERILECEK olan ayni metni tekrar etmek anlamina gelirdi - bu yuzden
+// RAG yolunda SONUÇ icin sabit, kisa bir baslik kullanilir; asil icerik
+// yapilandirilmis kartlarda ve Kaynaklar bolumunde gosterilir.
+function ragSonucBasligi(kampanyaSayisi) {
+  if (kampanyaSayisi >= 2) return "Bulunan seçenekler:";
+  if (kampanyaSayisi === 1) return "Bulunan sonuç:";
+  return "Kaynaklarda bulunan bilgiler:";
+}
+
+function GovdeIcerigi({ mesaj, kampanyalar }) {
+  const arac = mesaj.cagrilanArac;
+
+  let kisaSonuc = null;
+  let kalanAciklama = null;
+
+  if (arac === "rag") {
+    kisaSonuc = ragSonucBasligi(kampanyalar.length);
+  } else if (arac === "calculator") {
+    // Hesaplama karti sayilari zaten yapilandirilmis gosterir; ustte
+    // yalnizca kart URETMEDEN once gelen bir on-metin varsa (ornek:
+    // terminoloji yonlendirme cumlesi) gosterilir - ayni cumle iki kez
+    // basilmasin diye asil hesaplama cumlesi burada TEKRARLANMAZ.
+    kisaSonuc = hesaplamaOnekiCikar(mesaj.metin);
+  } else {
+    kisaSonuc = kisaSonucCikar(mesaj.metin);
+    kalanAciklama = kalanAciklamaCikar(mesaj.metin, kisaSonuc);
+  }
+
+  return (
+    <>
+      <div className="sohbet-asistan-etiket">KatılımAI</div>
+      <SonucBaslik kisaSonuc={kisaSonuc} aciklama={kalanAciklama} />
+
+      {arac === "calculator" && <HesaplamaKarti cevapMetni={mesaj.metin} />}
+
+      {arac !== "calculator" && kampanyalar.length === 1 && (
+        <KampanyaKarti kampanya={kampanyalar[0]} />
+      )}
+
+      {arac !== "calculator" && kampanyalar.length >= 2 && (
+        <KarsilastirmaTablosu kampanyalar={kampanyalar} />
+      )}
+    </>
+  );
+}
+
 export default function ChatMesaji({ mesaj }) {
   const kullaniciMi = mesaj.rol === "kullanici";
   const durum = kullaniciMi ? null : terminolojiDurumu(mesaj);
+  const yapilandirilmisGoster = yapilandirilmisGovdeUygunMu(mesaj, kullaniciMi);
+  const kampanyalar = yapilandirilmisGoster ? kampanyalariGrupla(mesaj.kaynaklar) : [];
 
   return (
     <div style={{ marginBottom: 16 }}>
-      <div>
-        <strong>{kullaniciMi ? "Siz:" : "KatılımAI:"}</strong>{" "}
-        {mesaj.metin}
-        {mesaj.streaming && <span>▍</span>}
-      </div>
+      {yapilandirilmisGoster ? (
+        <GovdeIcerigi mesaj={mesaj} kampanyalar={kampanyalar} />
+      ) : (
+        <div>
+          <strong>{kullaniciMi ? "Siz:" : "KatılımAI:"}</strong>{" "}
+          {mesaj.metin}
+          {mesaj.streaming && <span>▍</span>}
+        </div>
+      )}
 
       {/* CEKIMSERLIK (abstention) - projenin juriye anlatilan ana mesaji:
           "bilmiyorum diyebilen sistem". Bu yuzden kucuk bir uyari degil,

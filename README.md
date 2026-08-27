@@ -51,7 +51,7 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 
 _Son ölçüm: 27 Ağustos 2026. Tüm sayılar depodaki komutlarla yeniden üretilebilir — üretim komutları [Test](#test) bölümünde._
 
-> **Güncel sistem performansı (27 Ağustos 2026)**
+> **Güncel sistem performansı**
 >
 > **Extraction Pipeline**: Regex → NER → EVREN → Validation, **291 canlı kayıt**
 > üzerinde test edildi. **Final F1: %87,25** (Precision %93,85, Recall %81,51).
@@ -138,13 +138,13 @@ _Son ölçüm: 27 Ağustos 2026. Tüm sayılar depodaki komutlarla yeniden üret
 > işaretlenen üç alanın ikisi 26 Ağustos'ta ölçülür biçimde düzeldi.**
 > Güncel değerler ve hangi kök nedenin nasıl kapatıldığı bir alt başlıkta.
 
-#### 26 Ağustos: zayıf alanların sistemli düzeltilmesi
+#### zayıf alanların sistemli düzeltilmesi
 
-23 Ağustos'ta "bilinen zayıf" diye işaretlenen alanlar tek tek kök nedene
+Önceden "bilinen zayıf" diye işaretlenen alanlar tek tek kök nedene
 kadar izlendi. Aşağıdaki tablo aynı ölçüm komutunun (`python -m
 scraper.scripts.extraction_accuracy`, 291 canlı kayıt) önce/sonra çıktısıdır:
 
-| Alan                     | 23 Ağustos | 26 Ağustos (regex) | 26 Ağustos (hibrit) |
+| Alan                     | Eski       | Bir Önceki (regex) | Güncel(hibrit)      |
 | ------------------------ | ---------- | ------------------ | ------------------- |
 | `kampanya_turu`          | %35,63     | **%81,88**         | %81,88              |
 | `hedef_kitle`            | R %19,67   | %34,48             | **%56,95**          |

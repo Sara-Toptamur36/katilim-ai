@@ -49,35 +49,28 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 
 ### Ölçülebilir durum
 
-_Son ölçüm: 26 Ağustos 2026 (çıkarım + veri) · 27 Ağustos 2026 (RAG — özyinelemeli parçalama). Tüm sayılar depodaki komutlarla yeniden üretilebilir — üretim komutları [Test](#test) bölümünde._
+_Son ölçüm: 27 Ağustos 2026. Tüm sayılar depodaki komutlarla yeniden üretilebilir — üretim komutları [Test](#test) bölümünde._
 
-> **26 Ağustos 2026 güncellemesi — çıkarım doğruluğu HİBRİT pipeline ile,
-> 291 canlı kayıtta yeniden ölçüldü.** EVREN entegrasyonundaki sessiz bir
-> hata bulunup düzeltildi: `llm-fast` varsayılan olarak bir "düşünme
-> zinciri" üretiyordu, bu da `max_tokens` sınırını tüketip çağrıyı
-> sessizce boş döndürüyordu (`finish_reason=length`, `content=null`) —
-> `chat_template_kwargs.enable_thinking=false` ile giderildi. Düzeltme
-> sonrası hem regex-only hem hibrit (regex+LLM/EVREN) varyantı, önceki
-> 93 kayıtlık örneklemin üç katından fazlası olan **291 canlı kayıtta**
-> yeniden ölçüldü. Aşağıdaki çıkarım satırları HİBRİT (çalışan sistemin
-> gerçekte kullandığı) varyantı gösterir; ayrıntı:
-> [`cikarim_dogruluk_raporu.json`](cikarim_dogruluk_raporu.json),
-> [`docs/extraction_accuracy_raporu.md`](docs/extraction_accuracy_raporu.md).
+> **Güncel sistem performansı (27 Ağustos 2026)**
 >
-> Ayrıca aynı gün, gerçek veri (`GERCEK_VERI_AKTIF=true`) ile çalışan API'de
-> banka bazında dağılım denetlendi: statik anlık görüntüde Vakıf Katılım
-> yalnızca 3 kampanya gösteriyordu, canlı veride **100** çıktı — dashboard'daki
-> "Veri Kaynakları" paneli artık bunu statik değil canlı hesaplıyor.
+> **Extraction Pipeline**: Regex → NER → EVREN → Validation, **291 canlı kayıt**
+> üzerinde test edildi. **Final F1: %87,25** (Precision %93,85, Recall %81,51).
+> Detay: [`EVREN_FULL_PIPELINE_BENCHMARK.md`](EVREN_FULL_PIPELINE_BENCHMARK.md)
+>
+> **RAG**: Özyinelemeli parçalama (900 karakter / 150 örtüşme) ile **2.304 parça**
+> üzerinde **138 sorgu** ile ölçüldü. Recall@5 genel %76,81, tam başlık %96,00.
+> Abstention (halüsinasyon engelleme) %100 başarı (uçtan uca).
+> Detay: [`docs/rag_tasarim_ve_olcum.md`](docs/rag_tasarim_ve_olcum.md)
 
 | Gösterge                                      | Değer                                                                                        |
 | --------------------------------------------- | ---------------------------------------------------------------------------------------------- |
 | Kapsanan katılım bankası                      | **9 / 10** (BDDK listesi; Adil Katılım gerekçeli hariç — ürün/kampanya yayımlamıyor)          |
 | Toplanan gerçek kampanya                      | **536** kayıt PostgreSQL'de yapılandırılmış (`GERCEK_VERI_AKTIF=true`); 525 tekil taranmış ham sayfa, 623 anlık görüntü — üçü farklı şeyi ölçer, ayrıntı dashboard'da |
 | Altın Veri Seti                               | **302** kayıt, tamamı imzalı (ölçüme giren); taslak kalmadı                                   |
-| Çıkarım — dolu alan doğruluğu (hibrit)        | **%81,68** — 291 canlı kayıt, 11 alan — _ölçüm 26 Ağustos_                                    |
-| Çıkarım — boş alan doğruluğu (yanlış pozitif) | **%96,88** — 291 canlı kayıt — _ölçüm 26 Ağustos_                                              |
-| Çıkarım — makro F1 (11 alan, final pipeline)  | **%87,25** (Regex→NER→EVREN→Validation, 291 kayıt) —
-| **EVREN Full Pipeline Benchmark**             | Regex → Regex+NER → Regex+NER+EVREN → Final (validation) —             |
+| Çıkarım — dolu alan doğruluğu (final pipeline) | **%81,68** — 291 canlı kayıt, 11 alan                                                        |
+| Çıkarım — boş alan doğruluğu (yanlış pozitif) | **%96,88** — 291 canlı kayıt                                                                  |
+| Çıkarım — makro F1 (11 alan, final pipeline)  | **%87,25** (Regex→NER→EVREN→Validation, 291 kayıt)                                           |
+| **EVREN Full Pipeline Benchmark**             | Regex → Regex+NER → Regex+NER+EVREN → Final (validation)                                     |
 | Pipeline F1 (Regex only)                      | **%72,14** (TP: 708, FP: 38, FN: 509)                                                        |
 | Pipeline F1 (Regex + NER)                     | **%71,92** (NER katkısı: +3 TP, +11 FP — net negatif)                                        |
 | Pipeline F1 (Regex + NER + EVREN)             | **%74,69** (EVREN katkısı: +49 TP, +9 FP — net pozitif)                                      |
@@ -85,9 +78,9 @@ _Son ölçüm: 26 Ağustos 2026 (çıkarım + veri) · 27 Ağustos 2026 (RAG —
 | EVREN Recovery (Regex+NER bulamadı, EVREN buldu) | **38/112** çağrıda yeni alan buldu                                                      |
 | Terminoloji sözlüğü                           | **31** kavram (geleneksel karşılığı + tanım kaynağıyla)                                        |
 | Kapsam ölçümü (Scope Guard)                   | hassasiyet **24/24**, özgüllük **10/10**                                                       |
-| RAG — indekslenen parça (Recall'ün ölçüldüğü) | **2304** parça / 623 belge — Özyinelemeli parçalama (900 karakter / 150 örtüşme) —
-| RAG — değerlendirme seti                      | **138** sorgu (kapsam dışı eskimiş 22 soru elendi), `exact=True`                                |
-| RAG — Recall@5 (genel)                        | **%76,81** (Recall@3 %73,19, Recall@1 %60,14 — `tam_ad` kategorisinde Recall@5 **%96,00**) —
+| RAG — indekslenen parça                       | **2.304** parça / 623 belge — Özyinelemeli parçalama (900 karakter / 150 örtüşme)            |
+| RAG — değerlendirme seti                      | **138** sorgu (kapsam dışı eskimiş 22 soru elendi), `exact=True`                              |
+| RAG — Recall@5 (genel)                        | **%76,81** (Recall@3 %73,19, Recall@1 %60,14 — `tam_ad` kategorisinde Recall@5 **%96,00**)   |
 | RAG — abstention doğruluğu                    | alan dışı **%93,33** (14/15) · alan içi kapsam dışı **%40,0** (izole; uçtan uca niyet yönlendirmeli ölçümde **%100,0** — 10/10) |
 | Otomatik test                                 | **1278** test geçiyor (CI, `-m "not slow"`), 0 hata, 90 atlandı — CI her push'ta çalışır       |
 

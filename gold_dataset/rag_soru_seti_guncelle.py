@@ -33,6 +33,8 @@ Kullanim:
 
 from __future__ import annotations
 
+import ortam_yukle  # noqa: F401 - side effect: .env process ortamina yuklenir
+
 import argparse
 import collections
 import json

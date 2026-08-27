@@ -20,6 +20,8 @@ Kullanim:
 
 from __future__ import annotations
 
+import ortam_yukle  # noqa: F401 - side effect: .env process ortamina yuklenir
+
 from extraction.hybrid_pipeline import kaydi_hibrit_cikar
 from scraper.scripts.extraction_accuracy import extraction_accuracy_hesapla, ozet_yazdir
 

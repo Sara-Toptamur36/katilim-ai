@@ -37,6 +37,8 @@ cumle ve aday deger yan yana durur. Karar okuyanindir.
 
 from __future__ import annotations
 
+import ortam_yukle  # noqa: F401 - side effect: .env process ortamina yuklenir
+
 import argparse
 import json
 import re

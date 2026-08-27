@@ -51,6 +51,8 @@ Kullanim:
 
 from __future__ import annotations
 
+import ortam_yukle  # noqa: F401 - side effect: .env process ortamina yuklenir
+
 import json
 from pathlib import Path
 

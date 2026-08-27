@@ -20,6 +20,8 @@ Kullanim:
     python -m scraper.scripts.postgrese_yukle
 """
 
+import ortam_yukle  # noqa: F401 - side effect: .env process ortamina yuklenir
+
 import json
 import re
 from datetime import datetime

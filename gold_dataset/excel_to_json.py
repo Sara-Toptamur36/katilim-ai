@@ -35,6 +35,8 @@ INCELENMIS_ALANLAR'a eklemek. Etiketlemeyi hizlandirmak icin:
     python gold_dataset/etiketleme_yardimcisi.py
 """
 
+import ortam_yukle  # noqa: F401 - side effect: .env process ortamina yuklenir
+
 import json
 import re
 import sys

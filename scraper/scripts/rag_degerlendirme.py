@@ -31,6 +31,15 @@ Kullanim:
 
 from __future__ import annotations
 
+# DENETIM BULGUSU (27.08.2026): bu betik `chunking/indeksleyici.py` ile AYNI
+# hatayi tasiyordu - ortam_yukle hic import edilmiyordu. Sonuc: .env'deki
+# QDRANT_YEREL_YOL okunmuyor, chunking/qdrant_baglanti.py varsayilan Docker
+# sunucusuna (bos "kampanya_parcalari" koleksiyonu, 0 kayit) dusuyor ve TUM
+# kategoriler sessizce %0 Recall veriyordu - retrieval degil, ortam
+# yuklemesi kirikti. `import ortam_yukle` diger tum giris noktalariyla
+# AYNI zorunlu kalibi izler (bkz. ortam_yukle.py docstring'i).
+import ortam_yukle  # noqa: F401 - side effect: .env process ortamina yuklenir
+
 import json
 from pathlib import Path
 

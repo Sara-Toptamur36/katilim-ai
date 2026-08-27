@@ -28,20 +28,9 @@ import {
 import { useAudit } from "../context/AuditContext";
 import KopyalaButonu from "../components/KopyalaButonu";
 import ModelVeriPanelleri from "../components/ModelVeriPanelleri";
+import { ALAN_ADLARI } from "../utils/alanEtiketleri";
 
 const { Title, Text, Paragraph } = Typography;
-
-// Alan adları haritası
-const ALAN_ADLARI = {
-  kar_payi_orani_percent: "Kâr payı oranı",
-  vade_ay: "Vade",
-  taksit_sayisi: "Taksit sayısı",
-  odul_miktari: "Ödül miktarı",
-  finansman_tutari: "Finansman tutarı",
-  masraf_durumu: "Masraf durumu",
-  tahsis_ucreti: "Tahsis ücreti",
-  erteleme_suresi_ay: "Erteleme süresi",
-};
 
 // Yığılmış çubuk alt bileşeni (kayit_sayisi genişliğinde)
 function YigilmisCubuk({

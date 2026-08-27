@@ -1247,12 +1247,54 @@ html[data-tema="koyu"] .sohbet-audit-ozet {
   margin-bottom: 8px;
 }
 
+.sonuc-baslik-ust-satir {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
 .sonuc-baslik-etiket {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.06em;
   color: var(--marka-500, #169276);
-  margin-bottom: 2px;
+}
+
+.sonuc-baslik-ust-satir-sag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sonuc-baslik-sure {
+  font-size: 11px;
+  color: var(--yazi-soluk, #7b8c86);
+}
+
+.sonuc-baslik-durum-rozeti {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.sonuc-baslik-durum-rozeti.success {
+  background: rgba(22, 146, 118, 0.14);
+  color: var(--marka-500, #169276);
+}
+
+.sonuc-baslik-durum-rozeti.warning {
+  background: rgba(194, 142, 40, 0.16);
+  color: #c28e28;
+}
+
+.sonuc-baslik-durum-rozeti.default {
+  background: var(--kenarlik, #e4ddcb);
+  color: var(--yazi-soluk, #7b8c86);
 }
 
 .sonuc-baslik-metin {
@@ -1267,6 +1309,73 @@ html[data-tema="koyu"] .sohbet-audit-ozet {
   font-size: 13px;
   color: var(--yazi-normal, #4f625c);
   line-height: 1.5;
+}
+
+.sohbet-alt-baslik {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--yazi-soluk, #7b8c86);
+  margin: 14px 0 4px;
+}
+
+.sonuc-ipucu-not {
+  font-size: 12px;
+  color: #8a6d1f;
+  background: rgba(194, 142, 40, 0.1);
+  border: 1px solid rgba(194, 142, 40, 0.25);
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin: 6px 0;
+  max-width: 520px;
+}
+
+html[data-tema="koyu"] .sonuc-ipucu-not {
+  color: #e0c37a;
+}
+
+.sonraki-adimlar-blok {
+  margin-top: 14px;
+}
+
+.sonraki-adimlar-liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sonraki-adimlar-liste a {
+  font-size: 13px;
+  color: var(--marka-500, #169276);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sonraki-adimlar-liste a:hover {
+  text-decoration: underline;
+}
+
+.karsilastirma-tablosu-not {
+  font-size: 12px;
+  color: var(--yazi-soluk, #7b8c86);
+  margin-top: 6px;
+  max-width: 900px;
+}
+
+.sonuc-dogrulanamayan-not {
+  font-size: 12px;
+  color: #c28e28;
+  background: rgba(194, 142, 40, 0.1);
+  border: 1px solid rgba(194, 142, 40, 0.3);
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin-top: 6px;
+  max-width: 520px;
 }
 
 .kampanya-karti-satirlar,
@@ -1306,6 +1415,82 @@ html[data-tema="koyu"] .sohbet-audit-ozet {
 html[data-tema="koyu"] .sonuc-baslik-metin,
 html[data-tema="koyu"] .kampanya-karti-deger,
 html[data-tema="koyu"] .hesaplama-karti-deger {
+  color: var(--yazi-koyu, #eef6f3);
+}
+
+/* Kampanya karti - yatay, cok bolumlu duzen (kimlik / avantaj / ilgili
+   bilgiler / kaynak tarihi). Genis ekranda tek satirda dort bolum yan
+   yana; dar ekranda (mobil/tablet) alt alta yigilir - responsive yapi
+   BOZULMAZ, satir kirilmasi flex-wrap ile dogal olarak olusur. */
+.kampanya-karti-satir-govde {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.kampanya-karti-bolum {
+  flex: 1 1 160px;
+  min-width: 140px;
+}
+
+.kampanya-karti-kimlik {
+  flex-basis: 190px;
+  max-width: 220px;
+}
+
+.kampanya-karti-tarih-bolum {
+  flex: 0 1 130px;
+  min-width: 120px;
+}
+
+.kampanya-karti-banka {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--yazi-koyu, #192b27);
+  margin-bottom: 4px;
+}
+
+.kampanya-karti-adi {
+  margin-top: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--marka-500, #169276);
+}
+
+.kampanya-karti-alan-baslik {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--yazi-soluk, #7b8c86);
+  margin-bottom: 4px;
+}
+
+.kampanya-karti-avantaj-metni {
+  font-size: 13px;
+  color: var(--yazi-normal, #4f625c);
+  line-height: 1.45;
+}
+
+.kampanya-karti-ilgili-liste {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.kampanya-karti-ilgili-satir {
+  color: var(--yazi-normal, #4f625c);
+}
+
+.kampanya-karti-tarih {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--yazi-koyu, #192b27);
+}
+
+html[data-tema="koyu"] .kampanya-karti-banka,
+html[data-tema="koyu"] .kampanya-karti-tarih {
   color: var(--yazi-koyu, #eef6f3);
 }
 

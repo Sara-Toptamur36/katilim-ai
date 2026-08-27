@@ -5,6 +5,8 @@
 // okunabilir hale getirir. Hicbir fonksiyon sayi UYDURMAZ - bir deger
 // bulunamazsa null doner, cagiran taraf "Belirtilmemiş" gosterir.
 
+import { ALAN_ADLARI } from "./alanEtiketleri";
+
 // calculator/calculator.py::TaksitSonucu.ozet_metni() DETERMINISTIK bir
 // sablondan uretilir (LLM degil, dogrudan sayilardan). Bu regex O sablonu
 // eslestirir - baska bir yerden sayi UYDURMAZ, yalnizca cevap metninde
@@ -19,6 +21,18 @@
 const HESAPLAMA_SABLONU =
   /([\d.,]+)\s*TL tutar[ıi]nda finansman,\s*ayl[ıi]k %([\d.,]+) k[âa]r pay[ıi] oran[ıi] ve (\d+) ay vade ile:\s*ayl[ıi]k taksit ([\d.,]+) TL,\s*toplam geri [öo]deme ([\d.,]+) TL \(toplam k[âa]r pay[ıi] ([\d.,]+) TL\)/;
 
+// Turkce sira sayilarindaki nokta ("100. yılına", "5. kata") cumle sonu
+// DEGILDIR ama "[.!?](?=\s|$)" tek basina bunu ayirt edemez - rakamdan
+// hemen sonraki nokta, ardindan kucuk harfle devam eden metinde bir sira
+// sayi bicimidir. Olculdu (28.08.2026): "Cumhuriyetimizin 100. yılına
+// özel..." cumlesi bu ayrim olmadan "Cumhuriyetimizin 100." olarak
+// kirpiliyordu, anlamli bir kisa sonuc uretmiyordu.
+function siraSayiNoktasiMi(metin, noktaIndex) {
+  const oncesi = metin.slice(Math.max(0, noktaIndex - 3), noktaIndex);
+  const sonrasi = metin.slice(noktaIndex + 1, noktaIndex + 3);
+  return /\d$/.test(oncesi) && /^\s[a-zçğıöşü]/.test(sonrasi);
+}
+
 /**
  * Cevap metninden ilk cumleyi (kisa sonuc) cikarir.
  * Cumle sinirini gecemezse metnin tamamini (uzunsa kirpilmis) dondurur.
@@ -27,9 +41,17 @@ export function kisaSonucCikar(cevap, maksUzunluk = 220) {
   if (!cevap) return "";
   const temiz = cevap.trim();
 
-  // Ilk cumle sinirini bul (". ", "! ", "? " veya satir sonu)
-  const esleme = temiz.match(/^.*?[.!?](?=\s|$)/);
-  let ilkCumle = esleme ? esleme[0].trim() : temiz;
+  // Ilk GERCEK cumle sonunu bul (". ", "! ", "? " veya satir sonu) - sira
+  // sayi noktalari atlanir.
+  const adaylar = /[.!?](?=\s|$)/g;
+  let esleme = null;
+  let m;
+  while ((m = adaylar.exec(temiz))) {
+    if (temiz[m.index] === "." && siraSayiNoktasiMi(temiz, m.index)) continue;
+    esleme = m;
+    break;
+  }
+  let ilkCumle = esleme ? temiz.slice(0, esleme.index + 1).trim() : temiz;
 
   if (ilkCumle.length > maksUzunluk) {
     ilkCumle = ilkCumle.slice(0, maksUzunluk).trim() + "…";
@@ -186,4 +208,82 @@ export function kampanyalariGrupla(kaynaklar) {
   }
 
   return Array.from(gruplar.values());
+}
+
+// Dogrulama durumunun kullaniciya gosterilen etiketi ve rengi.
+// audit.dogrulama backend'de zaten hesaplanmis, ARANMA/BENZERLIK
+// skorundan (confidence) FARKLI bir eksen: "cevaptaki sayilar kaynakta
+// dogrulandi mi?" sorusunun cevabidir (bkz. validation/yanit_dogrulama.py).
+// dogrulama yoksa (arac bu kavrami uretmiyorsa, orn. sozluk) null doner.
+const DOGRULAMA_DURUM_META = {
+  dogrulandi: { etiket: "Doğrulandı", renk: "success" },
+  kismi: { etiket: "Kısmi Doğrulama", renk: "warning" },
+  calistirilmamis: { etiket: "Doğrulanamadı", renk: "default" },
+};
+
+export function dogrulamaDurumMeta(dogrulama) {
+  if (!dogrulama?.durum) return null;
+  return DOGRULAMA_DURUM_META[dogrulama.durum] ?? null;
+}
+
+/**
+ * Dogrulama ozetindeki alanlardan, kaynakta DOGRULANAMAYAN (dogrulanamayan > 0)
+ * olanlarin Turkce etiketlerini dondurur. Boş dizi = ya dogrulama yok ya da
+ * tum alanlar sorunsuz - iki durum da cagiran tarafta ayirt edilir
+ * (dogrulama objesinin kendisi null/dolu kontrolüyle).
+ */
+export function dogrulanamayanAlanEtiketleri(dogrulama) {
+  if (!dogrulama?.alanlar?.length) return [];
+  return dogrulama.alanlar
+    .filter((a) => (a.dogrulanamayan ?? 0) > 0)
+    .map((a) => ALAN_ADLARI[a.alan] ?? a.alan);
+}
+
+/**
+ * audit.latency_ms -> "4,2 sn" bicimi. Milisaniye backend'den GERCEK
+ * olcum degeridir (bkz. AuditBilgisi.latency_ms); burada yalnizca birim
+ * donusumu yapilir, yeni bir sure HESAPLANMAZ.
+ */
+export function sureMetni(latencyMs) {
+  if (latencyMs == null) return null;
+  return `${(latencyMs / 1000).toFixed(1).replace(".", ",")} sn`;
+}
+
+/**
+ * Bir kampanyanin "one cikan avantaji" - kaynak parcasinin ILK CUMLESI.
+ * Yeni bir ozet UYETMEZ; kisaSonucCikar ile AYNI mekanizmayi kaynak
+ * metnine uygular. Kaynak yoksa/bossa null doner.
+ */
+export function oneCikanAvantajCikar(birlesikMetin) {
+  if (!birlesikMetin) return null;
+  const cumle = kisaSonucCikar(birlesikMetin, 140);
+  return cumle || null;
+}
+
+// Benzerlik skoruna gore kategorik "eslesme kalitesi" rozeti. Ayni esik
+// degerleri (0.6 / 0.8) EvidenceCard.jsx'teki renklendirmeyle AYNIDIR -
+// tek bir yerde tanimlanmadigi icin burada tekrarlanir ama deger olarak
+// kasitli tutarlidir (iki bilesen ayni skoru FARKLI kategorilere
+// bolerse jüri gozunde celiskili gorunurdu).
+export function esleseKaliteMeta(similarityScore) {
+  if (similarityScore == null) return null;
+  if (similarityScore >= 0.8) return { etiket: "Tam Eşleşme", renk: "success" };
+  if (similarityScore >= 0.6) return { etiket: "Kısmi Eşleşme", renk: "warning" };
+  return { etiket: "Zayıf Eşleşme", renk: "error" };
+}
+
+/**
+ * Bir kampanya karti/tablo satiri icin gosterilecek TEK durum rozetini
+ * secer. Guncellik (aktif/suresi_dolmus) biliniyorsa ONCELIKLIDIR - bu
+ * dogrudan kaynaktan gelen bir gercektir. Guncellik bilinmiyorsa (backend
+ * "bilinmiyor" dondurdugunde) yerine arama benzerligine dayali eslesme
+ * kalitesi gosterilir; boylece rozet hicbir zaman bos kalmaz ama iki
+ * FARKLI kavram (tazelik / eslesme) tek etikette KARISTIRILMAZ - hangisinin
+ * gosterildigi `tur` alaniyla ayirt edilir.
+ */
+export function kampanyaRozetiMeta(guncellik, similarityScore) {
+  if (guncellik === "aktif") return { etiket: "Güncel", renk: "success", tur: "guncellik" };
+  if (guncellik === "suresi_dolmus") return { etiket: "Süresi dolmuş", renk: "error", tur: "guncellik" };
+  const kalite = esleseKaliteMeta(similarityScore);
+  return kalite ? { ...kalite, tur: "eslesme" } : null;
 }

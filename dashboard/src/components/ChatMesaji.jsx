@@ -16,11 +16,15 @@ import SonucBaslik from "./sohbet/SonucBaslik";
 import HesaplamaKarti from "./sohbet/HesaplamaKarti";
 import KampanyaKarti from "./sohbet/KampanyaKarti";
 import KarsilastirmaTablosu from "./sohbet/KarsilastirmaTablosu";
+import SonrakiAdimlar from "./sohbet/SonrakiAdimlar";
 import {
   kisaSonucCikar,
   kalanAciklamaCikar,
   hesaplamaOnekiCikar,
   kampanyalariGrupla,
+  dogrulamaDurumMeta,
+  dogrulanamayanAlanEtiketleri,
+  sureMetni,
 } from "../utils/cevapBicimlendirme";
 
 
@@ -85,20 +89,32 @@ function yapilandirilmisGovdeUygunMu(mesaj, kullaniciMi) {
 // GOSTERILECEK olan ayni metni tekrar etmek anlamina gelirdi - bu yuzden
 // RAG yolunda SONUÇ icin sabit, kisa bir baslik kullanilir; asil icerik
 // yapilandirilmis kartlarda ve Kaynaklar bolumunde gosterilir.
-function ragSonucBasligi(kampanyaSayisi) {
-  if (kampanyaSayisi >= 2) return "Bulunan seçenekler:";
-  if (kampanyaSayisi === 1) return "Bulunan sonuç:";
-  return "Kaynaklarda bulunan bilgiler:";
+// dogrulama.durum RAG/kampanya aramasinda VAR OLAN bir veridir (verifier
+// zaten calisiyor, bkz. validation/yanit_dogrulama.py) ama daha once SONUÇ
+// satirina hic yansimiyordu - kullanici "Bulunan seçenekler:" gibi sabit,
+// bilgisiz bir baslikla karsilasiyordu. Burada kaynaktaki SAYILARI degil,
+// yalnizca yapisal gercekleri (kac kayit, dogrulama durumu) cumleye doker.
+function ragSonucBasligi(kampanyaSayisi, dogrulamaDurumu) {
+  if (kampanyaSayisi === 0) return "Kaynaklarda bulunan bilgiler:";
+  const adet = kampanyaSayisi >= 2 ? `${kampanyaSayisi} kampanya` : "1 kampanya";
+  if (dogrulamaDurumu === "kismi") {
+    return `Sorgunuzla birebir eşleşen, doğrulanmış bir teklif bulunamadı. İlgili ${adet} listelendi.`;
+  }
+  if (dogrulamaDurumu === "dogrulandi") {
+    return `Sorgunuzla eşleşen, kaynakta doğrulanmış ${adet} bulundu:`;
+  }
+  return `Sorgunuzla ilgili ${adet} bulundu:`;
 }
 
 function GovdeIcerigi({ mesaj, kampanyalar }) {
   const arac = mesaj.cagrilanArac;
+  const dogrulama = mesaj.auditHam?.dogrulama ?? null;
 
   let kisaSonuc = null;
   let kalanAciklama = null;
 
   if (arac === "rag") {
-    kisaSonuc = ragSonucBasligi(kampanyalar.length);
+    kisaSonuc = ragSonucBasligi(kampanyalar.length, dogrulama?.durum);
   } else if (arac === "calculator") {
     // Hesaplama karti sayilari zaten yapilandirilmis gosterir; ustte
     // yalnizca kart URETMEDEN once gelen bir on-metin varsa (ornek:
@@ -110,20 +126,63 @@ function GovdeIcerigi({ mesaj, kampanyalar }) {
     kalanAciklama = kalanAciklamaCikar(mesaj.metin, kisaSonuc);
   }
 
+  const dogrulanamayanlar = dogrulanamayanAlanEtiketleri(dogrulama);
+
+  // Kucuk sonuc kumelerinde (<=3) hem tek tek kart hem karsilastirma
+  // tablosu birlikte gosterilir - kart detayi, tablo taranabilirligi
+  // saglar. Daha kalabalik sonuclarda yalnizca tablo gosterilir, aksi
+  // halde kart yigini kaydirma yorgunlugu yaratir.
+  const kartGoster = arac !== "calculator" && kampanyalar.length >= 1 && kampanyalar.length <= 3;
+  const tabloGoster = arac !== "calculator" && kampanyalar.length >= 2;
+
   return (
     <>
       <div className="sohbet-asistan-etiket">KatılımAI</div>
-      <SonucBaslik kisaSonuc={kisaSonuc} aciklama={kalanAciklama} />
+      <SonucBaslik
+        kisaSonuc={kisaSonuc}
+        aciklama={kalanAciklama}
+        durumRozetesi={dogrulamaDurumMeta(dogrulama)}
+        sure={sureMetni(mesaj.auditHam?.latency_ms)}
+      />
+
+      {/* Sabit, veri UYETMEYEN bir kullanim ipucu - yalnizca incelenecek
+          kampanya oldugunda gosterilir. Hicbir sayi/iddia icermez. */}
+      {(kartGoster || tabloGoster) && (
+        <div className="sonuc-ipucu-not">
+          💡 Daha net bir karşılaştırma için kampanyaları inceleyebilir veya finansman hesabı yapabilirsiniz.
+        </div>
+      )}
 
       {arac === "calculator" && <HesaplamaKarti cevapMetni={mesaj.metin} />}
 
-      {arac !== "calculator" && kampanyalar.length === 1 && (
-        <KampanyaKarti kampanya={kampanyalar[0]} />
+      {kartGoster && (
+        <>
+          {kampanyalar.length > 1 && (
+            <div className="sohbet-alt-baslik">Önerilen Kampanyalar</div>
+          )}
+          {kampanyalar.map((k, i) => (
+            <KampanyaKarti key={i} kampanya={k} />
+          ))}
+        </>
       )}
 
-      {arac !== "calculator" && kampanyalar.length >= 2 && (
-        <KarsilastirmaTablosu kampanyalar={kampanyalar} />
+      {/* ADIM 4 - belirsizlik uyarisi: cevapta gecen sayilarin HANGILERI
+          kaynakta dogrulanamadi acikca soylenir; hicbir alan "dogru gibi"
+          gosterilmez. Veri audit.dogrulama.alanlar'dan gelir, uydurulmaz. */}
+      {dogrulanamayanlar.length > 0 && (
+        <div className="sonuc-dogrulanamayan-not">
+          Not: {dogrulanamayanlar.join(", ")} bilgisi kaynaklarda doğrulanamamıştır.
+        </div>
       )}
+
+      {tabloGoster && (
+        <>
+          <div className="sohbet-alt-baslik">Karşılaştırma Tablosu</div>
+          <KarsilastirmaTablosu kampanyalar={kampanyalar} />
+        </>
+      )}
+
+      {(kartGoster || tabloGoster) && <SonrakiAdimlar />}
     </>
   );
 }

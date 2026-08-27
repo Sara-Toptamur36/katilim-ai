@@ -140,8 +140,8 @@ _Son ölçüm: 27 Ağustos 2026. Tüm sayılar depodaki komutlarla yeniden üret
 > | Düzeltme                                  | Etki                                                      |
 > | ----------------------------------------- | --------------------------------------------------------- |
 > | `vade farksız` kararı tek yöne sabitlendi | kâr payı oranı F1 **%26,09 → %80,00** (R %15,38 → %80,00) |
-> | `hedef_kitle` segment düzeyinde ölçülüyor | F1 **%0,00 → %30,00** (önce ölçülemezdi)                  |
-> | Ölçüme imza filtresi eklendi              | 293 kayıt → **93 imzalı** kayıt                           |
+> | `hedef_kitle` segment düzeyinde ölçülüyor | F1 **%0,00 → %56,95** (önce ölçülemezdi)                  |
+> | Ölçüme imza filtresi eklendi              | 298 kayıt → **273 imzalı** kayıt                           |
 >
 > `vade farksız` hatası nasıl oluştu, kayda değer: iki ayrı commit **zıt
 > yönde** karar verdi — biri altın veriye `kar_payi_orani = 0` yazdı, diğeri

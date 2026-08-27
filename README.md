@@ -98,9 +98,9 @@ _Son ölçüm: 27 Ağustos 2026. Tüm sayılar depodaki komutlarla yeniden üret
 > ### Çıkarım metrikleri 23 Ağustos'ta AŞAĞI yönlü düzeltildi — nedeni önemli
 >
 > Bu satırlar önceki sürümde **%98,48 / %99,17 / %98,28** yazıyordu. O sayılar
-> doğruydu ama **başka bir şeyi** ölçüyordu: 302 kayıtlık altın veri setinde,
-> **yalnızca 7 sayısal alan** üzerinde. O günden bu yana iki şey değişti ve
-> ikisi de ölçümü zorlaştırdı:
+> doğruydu ama **başka bir şeyi** ölçüyordu: o tarihteki **64 kayıtlık** altın
+> veri setinde, **yalnızca 7 sayısal alan** üzerinde. O günden bu yana iki şey
+> değişti ve ikisi de ölçümü zorlaştırdı:
 >
 > 1. **Ölçüm kapsamı 7 alandan 11 alana çıktı.** Şartname Md. 5.4 (kampanya
 >    türü) ve Md. 5.3 (hedef kitle, kampanya süresi) alanları ölçüme dahil
@@ -108,14 +108,32 @@ _Son ölçüm: 27 Ağustos 2026. Tüm sayılar depodaki komutlarla yeniden üret
 >    zayıf olduğu, farklı yöntem gerektiren alanlar. Kapsam dışında
 >    bırakılsalardı sayı yüksek kalırdı ama şartnamenin sorduğu şey
 >    ölçülmemiş olurdu.
-> 2. **Altın veri seti 64 → 307 satıra büyüdü** (o ölçümde 107'si imzalı;
->    24 Ağustos'ta imzalı sayı **298**'e çıktı, ölçüm henüz yenilenmedi).
->    Örneklem büyüdükçe motorun gerçek seviyesi ortaya çıktı.
+> 2. **Altın veri seti 64 → 307 satıra büyüdü** (o ölçümde 107'si imzalı).
+>    Örneklem büyüdükçe motorun gerçek seviyesi ortaya çıktı. Bugün set
+>    **298 imzalı** kayıt (+ 4 sentetik referans satırı = 302); taslak
+>    kuyruğu kapandı ve ölçüm yenilendi — güncel değerler yukarıdaki tabloda.
 >
-> Yani **kalite düşmedi, ölçüm dürüstleşti.** İki sayı ayrı ayrı verilir:
-> sınıflandırma/tarih alanlarını da içeren toplam (**%67,09**) ve regex
-> katmanının asıl sorumluluğu olan sayısal çekirdek (**%81,66**). Tek bir
-> ortalama, iki farklı işi birbirinin arkasına saklardı.
+> Yani **kalite düşmedi, ölçüm dürüstleşti.** O gün iki sayı ayrı ayrı
+> verilmişti: sınıflandırma/tarih alanlarını da içeren toplam (**%67,09**)
+> ve regex katmanının asıl sorumluluğu olan sayısal çekirdek (**%81,66**).
+> Tek bir ortalama, iki farklı işi birbirinin arkasına saklardı.
+>
+> **Bu ayrımın nedeni sonradan büyük ölçüde ortadan kalktı.** Aynı bölünme
+> bugün ölçüldüğünde (`extraction_accuracy`, **regex-only makro F1**,
+> 291 canlı kayıt — yukarıdaki tablodaki *final pipeline* sayılarıyla
+> karıştırılmamalı, o mikro F1'dir):
+>
+> | Alan kümesi                  | 23 Ağustos | Bugün      |
+> | ---------------------------- | ---------- | ---------- |
+> | Sayısal çekirdek (7 alan)    | %81,66     | **%82,47** |
+> | Sınıflandırma/tarih (4 alan) | —          | **%77,48** |
+> | Toplam (11 alan)             | %67,09     | **%80,66** |
+>
+> Aradaki **14,6 puanlık uçurum 1,8 puana indi** — çünkü toplamı aşağı
+> çeken asıl alan `kampanya_turu`'ydu (%35,63 → %81,88, kök nedeni
+> aşağıdaki alt başlıkta). İki sayı hâlâ ayrı raporlanıyor, ama artık
+> "regex sayısal alanlarda iyi, sınıflandırmada kötü" şeklindeki eski
+> tablo geçerli değil.
 >
 > **Aynı gün kapatılan üç hata ve ölçülmüş etkileri:**
 >
@@ -176,9 +194,40 @@ eklerinin** desende eksik olması ("6 taksite", "3 Ay Erteleme").
   o cümle metinde aynen geçmiyor. Bu, kural genişleterek kapatılabilecek
   bir boşluk değil; denendi ve ölçümle reddedildi (ayrıntı raporda).
 
+#### Altın veri setinin doğrulanabilirliği (kanıt spanları)
+
+Yukarıdaki bütün oranlar altın veri setine göre hesaplanıyor — yani
+**referansın kendisi yanlışsa ölçüm de sessizce yanlış çıkar.** Bu yüzden
+her dolu alanın yanına, o değeri haklı çıkaran **kaynak cümlesi** (kanıt
+spanı) konuyor: bir değer tartışmalı olduğunda tek yol bankanın sayfasını
+yeniden açmaktır, sayfa değişmişse (kampanya rotasyonu) kanıt tamamen
+kaybolur. Span, etiketleme anındaki gerekçeyi dondurur.
+
+| Gösterge                          | Değer                            |
+| --------------------------------- | -------------------------------- |
+| Kanıt spanı girilmiş imzalı kayıt | **273 / 298**                    |
+| Toplam kanıt spanı                | **691**                          |
+| Kanıtsız kalan dolu alan          | **0** (tarama başında **71**'di) |
+
+Kanıtı bulunamayan **14 alan tahmin edilmedi, silindi** — kaynak sayfada
+karşılığı olmayan bir değeri "muhtemelen doğrudur" diye bırakmak, ölçümü
+olduğundan iyi gösterirdi. Silinenlerin gerekçeleri ayrı ayrı kayıtlı:
+**8**'i kaynağı hiç arşivlenmemiş kayıtlar, **4**'ü kampanya rotasyonuyla
+sayfadan kalkmış değerler, **1**'i yalnızca sitenin altbilgisinde ("2026"
+içindeki "6") tesadüfen eşleşen bir sayı, **1**'i de ayrı bir etiketleme
+kararı bekleyen sınır vaka — ayrıntı
+[`docs/gold_veri_seti_iyilestirme_plani.md`](docs/gold_veri_seti_iyilestirme_plani.md)
+Faz 6'da.
+
+Spanların gerçekten kaynak metinde geçtiğini
+[`tests/test_altin_veri_butunlugu.py`](tests/test_altin_veri_butunlugu.py)
+her koşuda doğruluyor — elle yazılmış "yaklaşık doğru" bir cümle testten
+geçmez. Kanıtsız alanları listeleyen rapor:
+`python gold_dataset/kanit_spani_oner.py`
+
 > Aşağıdaki anlatı ilk ölçüldüğü tarihteki (251 tekil / 300 anlık görüntü)
 > sayılarla yazıldı; **güncel sayılar yukarıdaki "Ölçülebilir durum"
-> tablosundadır** (536 kayıt, 26 Ağustos). Metodoloji (neden iki ayrı sayı
+> tablosundadır** (536 kayıt). Metodoloji (neden iki ayrı sayı
 > tutulduğu, delta takibinin nasıl çalıştığı) hâlâ geçerli — o yüzden
 > tarihsel örnekleriyle birlikte aşağıda korunuyor.
 

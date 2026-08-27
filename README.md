@@ -58,7 +58,7 @@ _Son ölçüm: 27 Ağustos 2026. Tüm sayılar depodaki komutlarla yeniden üret
 > Detay: [`EVREN_FULL_PIPELINE_BENCHMARK.md`](EVREN_FULL_PIPELINE_BENCHMARK.md)
 >
 > **RAG**: Özyinelemeli parçalama (900 karakter / 150 örtüşme) ile **2.304 parça**
-> üzerinde **138 sorgu** ile ölçüldü. Recall@5 genel %76,81, tam başlık %96,00.
+> üzerinde **138 sorgu** ile ölçüldü. Recall@5 genel %81,88, tam başlık %96,00.
 > Abstention (halüsinasyon engelleme) %100 başarı (uçtan uca).
 > Detay: [`docs/rag_tasarim_ve_olcum.md`](docs/rag_tasarim_ve_olcum.md)
 
@@ -80,7 +80,7 @@ _Son ölçüm: 27 Ağustos 2026. Tüm sayılar depodaki komutlarla yeniden üret
 | Kapsam ölçümü (Scope Guard)                   | hassasiyet **24/24**, özgüllük **10/10**                                                       |
 | RAG — indekslenen parça                       | **2.304** parça / 623 belge — Özyinelemeli parçalama (900 karakter / 150 örtüşme)            |
 | RAG — değerlendirme seti                      | **138** sorgu (kapsam dışı eskimiş 22 soru elendi), `exact=True`                              |
-| RAG — Recall@5 (genel)                        | **%76,81** (Recall@3 %73,19, Recall@1 %60,14 — `tam_ad` kategorisinde Recall@5 **%96,00**)   |
+| RAG — Recall@5 (genel)                        | **%81,88** (Recall@3 %78,99, Recall@1 %68,12 — `tam_ad` kategorisinde Recall@5 **%96,00**)   |
 | RAG — abstention doğruluğu                    | alan dışı **%93,33** (14/15) · alan içi kapsam dışı **%40,0** (izole; uçtan uca niyet yönlendirmeli ölçümde **%100,0** — 10/10) |
 | Otomatik test                                 | **1278** test geçiyor (CI, `-m "not slow"`), 0 hata, 90 atlandı — CI her push'ta çalışır       |
 

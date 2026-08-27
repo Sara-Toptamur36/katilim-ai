@@ -26,6 +26,19 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+# DENETIM BULGUSU (27.08.2026): bu betik dogrudan `python -m
+# chunking.indeksleyici` ile calistirilan bir giris noktasidir (bkz. yukarida
+# "Kullanim" ve README) ama ortam_yukle'yi HIC import etmiyordu. ortam_yukle.py
+# kendi docstring'inde ACIKCA uyariyor: chunking/embedding.py ve chunking/
+# qdrant_baglanti.py, EVREN_API_KEY / EVREN_EMBED_KULLAN / QDRANT_KOLEKSIYON
+# gibi degiskenleri MODUL IMPORT ANINDA okuyor - bu satir onlardan ONCE
+# calismazsa .env'deki degerler sessizce goz ardi ediliyor. Olculdu: .env'de
+# EVREN_EMBED_KULLAN=true olmasina ragmen bu betik CLI'dan calistirildiginda
+# gomme_aktif_mi() False donuyor, embedding sessizce yerel modele (ve yanlis
+# vektor boyutuna) duseyordu - rapor 5.6'nin tarif ettigi tam da "sessiz
+# basarisizlik" turu.
+import ortam_yukle  # noqa: F401 - side effect: .env process ortamina yuklenir
+
 from chunking.embedding import VEKTOR_BOYUTU, belgeleri_vektore_cevir
 from chunking.indeks_durumu import indeks_durumu_yaz
 from chunking.parcalayici import kayitlari_parcala

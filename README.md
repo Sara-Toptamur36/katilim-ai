@@ -76,8 +76,8 @@ _Son ölçüm: 26 Ağustos 2026 (çıkarım + veri) · 27 Ağustos 2026 (RAG —
 | Altın Veri Seti                               | **302** kayıt, tamamı imzalı (ölçüme giren); taslak kalmadı                                   |
 | Çıkarım — dolu alan doğruluğu (hibrit)        | **%81,68** — 291 canlı kayıt, 11 alan — _ölçüm 26 Ağustos_                                    |
 | Çıkarım — boş alan doğruluğu (yanlış pozitif) | **%96,88** — 291 canlı kayıt — _ölçüm 26 Ağustos_                                              |
-| Çıkarım — makro F1 (11 alan, final pipeline)  | **%87,25** (Regex→NER→EVREN→Validation, 291 kayıt) — _ölçüm 27 Ağustos_                      |
-| **EVREN Full Pipeline Benchmark**             | Regex → Regex+NER → Regex+NER+EVREN → Final (validation) — _ölçüm 27 Ağustos_                |
+| Çıkarım — makro F1 (11 alan, final pipeline)  | **%87,25** (Regex→NER→EVREN→Validation, 291 kayıt) —
+| **EVREN Full Pipeline Benchmark**             | Regex → Regex+NER → Regex+NER+EVREN → Final (validation) —             |
 | Pipeline F1 (Regex only)                      | **%72,14** (TP: 708, FP: 38, FN: 509)                                                        |
 | Pipeline F1 (Regex + NER)                     | **%71,92** (NER katkısı: +3 TP, +11 FP — net negatif)                                        |
 | Pipeline F1 (Regex + NER + EVREN)             | **%74,69** (EVREN katkısı: +49 TP, +9 FP — net pozitif)                                      |
@@ -85,9 +85,9 @@ _Son ölçüm: 26 Ağustos 2026 (çıkarım + veri) · 27 Ağustos 2026 (RAG —
 | EVREN Recovery (Regex+NER bulamadı, EVREN buldu) | **38/112** çağrıda yeni alan buldu                                                      |
 | Terminoloji sözlüğü                           | **31** kavram (geleneksel karşılığı + tanım kaynağıyla)                                        |
 | Kapsam ölçümü (Scope Guard)                   | hassasiyet **24/24**, özgüllük **10/10**                                                       |
-| RAG — indekslenen parça (Recall'ün ölçüldüğü) | **2304** parça / 623 belge — Özyinelemeli parçalama (900 karakter / 150 örtüşme) — _ölçüm 27 Ağustos_ |
+| RAG — indekslenen parça (Recall'ün ölçüldüğü) | **2304** parça / 623 belge — Özyinelemeli parçalama (900 karakter / 150 örtüşme) —
 | RAG — değerlendirme seti                      | **138** sorgu (kapsam dışı eskimiş 22 soru elendi), `exact=True`                                |
-| RAG — Recall@5 (genel)                        | **%76,81** (Recall@3 %73,19, Recall@1 %60,14 — `tam_ad` kategorisinde Recall@5 **%96,00**) — _ölçüm 27 Ağustos_ |
+| RAG — Recall@5 (genel)                        | **%76,81** (Recall@3 %73,19, Recall@1 %60,14 — `tam_ad` kategorisinde Recall@5 **%96,00**) —
 | RAG — abstention doğruluğu                    | alan dışı **%93,33** (14/15) · alan içi kapsam dışı **%40,0** (izole; uçtan uca niyet yönlendirmeli ölçümde **%100,0** — 10/10) |
 | Otomatik test                                 | **1278** test geçiyor (CI, `-m "not slow"`), 0 hata, 90 atlandı — CI her push'ta çalışır       |
 
@@ -105,7 +105,7 @@ _Son ölçüm: 26 Ağustos 2026 (çıkarım + veri) · 27 Ağustos 2026 (RAG —
 > ### Çıkarım metrikleri 23 Ağustos'ta AŞAĞI yönlü düzeltildi — nedeni önemli
 >
 > Bu satırlar önceki sürümde **%98,48 / %99,17 / %98,28** yazıyordu. O sayılar
-> doğruydu ama **başka bir şeyi** ölçüyordu: 64 kayıtlık altın veri setinde,
+> doğruydu ama **başka bir şeyi** ölçüyordu: 302 kayıtlık altın veri setinde,
 > **yalnızca 7 sayısal alan** üzerinde. O günden bu yana iki şey değişti ve
 > ikisi de ölçümü zorlaştırdı:
 >

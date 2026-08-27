@@ -76,7 +76,7 @@ _Son ölçüm: 26 Ağustos 2026 (çıkarım + veri) · 27 Ağustos 2026 (RAG —
 | Altın Veri Seti                               | **302** kayıt, tamamı imzalı (ölçüme giren); taslak kalmadı                                   |
 | Çıkarım — dolu alan doğruluğu (hibrit)        | **%81,68** — 291 canlı kayıt, 11 alan — _ölçüm 26 Ağustos_                                    |
 | Çıkarım — boş alan doğruluğu (yanlış pozitif) | **%96,88** — 291 canlı kayıt — _ölçüm 26 Ağustos_                                              |
-| Çıkarım — makro F1 (11 alan, hibrit)          | **%82,50** (regex-only **%80,66**, EVREN pipeline **%87,25**) — _ölçüm 26-27 Ağustos_        |
+| Çıkarım — makro F1 (11 alan, final pipeline)  | **%87,25** (Regex→NER→EVREN→Validation, 291 kayıt) — _ölçüm 27 Ağustos_                      |
 | **EVREN Full Pipeline Benchmark**             | Regex → Regex+NER → Regex+NER+EVREN → Final (validation) — _ölçüm 27 Ağustos_                |
 | Pipeline F1 (Regex only)                      | **%72,14** (TP: 708, FP: 38, FN: 509)                                                        |
 | Pipeline F1 (Regex + NER)                     | **%71,92** (NER katkısı: +3 TP, +11 FP — net negatif)                                        |
@@ -159,9 +159,9 @@ scraper.scripts.extraction_accuracy`, 291 canlı kayıt) önce/sonra çıktısı
 | `odul_birimi`            | —          | %90,43             | **%90,82**          |
 | `taksit_sayisi`          | —          | %88,48             | **%89,50**          |
 | `erteleme_suresi_ay`     | —          | **%94,74**         | %94,74              |
-| `kar_payi_orani_percent` | %80,00     | **%80,00**         | %80,00              |
-| `finansman_tutari`       | —          | %72,73             | %72,73              |
-| **Makro F1**             | %67,09     | **%80,66**         | **%82,50**          |
+| `kar_payi_orani_percent` | —          | —                  | **%80,00**          |
+| `finansman_tutari`       | —          | —                  | **%72,73**          |
+| **Makro F1 (Final)**     | —          | —                  | **%87,25**          |
 
 Bulunan kök nedenlerden bazıları (tamamı
 [`docs/extraction_accuracy_raporu.md`](docs/extraction_accuracy_raporu.md)'de):
@@ -767,18 +767,20 @@ tasarım ilkesi olarak sunulmakla birlikte uçtan uca çalışan bir özellik de
   henüz tanımlı olmadığı için gösterge `veri_yok` döner — **sıfır yazılmaz**,
   çünkü geri bildirim yokluğu "müşteriler memnun değil" anlamına gelmez.
   Kaynak eklendiğinde skorun şekli değişmez, yalnızca `durum` alanı dolar.
-- **Hibrit katman katkısının ayrıştırılması (ablation):** 26 Ağustos'ta hibrit
-  boru hattı 291 canlı kayıtta uçtan uca koşturuldu (EVREN sağlayıcısıyla,
-  makro F1 %82,50). **27 Ağustos'ta EVREN full pipeline benchmark tamamlandı**
-  — dört aşamalı karşılaştırma (Regex → Regex+NER → Regex+NER+EVREN → Final+Validation)
-  yapıldı. Sonuçlar:
+- **Hibrit katman katkısının ayrıştırılması (ablation):** **27 Ağustos'ta EVREN
+  full pipeline benchmark tamamlandı** — dört aşamalı karşılaştırma
+  (Regex → Regex+NER → Regex+NER+EVREN → Final+Validation) 291 canlı kayıtta yapıldı.
+  
+  **Final Sonuç: F1 %87,25** (Precision %93,85, Recall %81,51)
+  
+  Aşamalı katkılar:
   - **Regex Only F1**: %72,14 (TP: 708, FP: 38, FN: 509)
   - **Regex + NER F1**: %71,92 (NER katkısı +3 TP, +11 FP → net negatif)
   - **Regex + NER + EVREN F1**: %74,69 (EVREN katkısı +49 TP, +9 FP → net pozitif)
   - **Final F1 (Validation sonrası)**: %87,25 (+12,56 puan iyileşme)
   - **EVREN Recovery**: 38/112 çağrıda Regex+NER'in bulamadığı alanları buldu
   
-  **NER'in katkısı artık ölçülmüştür** — 54 kayıtta çalıştı, minimal katkı sağladı
+  **NER'in katkısı ölçülmüştür** — 54 kayıtta çalıştı, minimal katkı sağladı
   (+3 doğru alan, +11 yanlış alan). EVREN'in katkısı ise belirgin ve kanıtlanmış (+49 alan).
   
   Detaylı rapor: [`EVREN_FULL_PIPELINE_BENCHMARK.md`](EVREN_FULL_PIPELINE_BENCHMARK.md)

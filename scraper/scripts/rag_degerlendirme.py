@@ -112,6 +112,7 @@ def kategori_bazli_recall_olc(
     banka_otomatik: bool | None = None,
     yeniden_sirala: bool | None = None,
     exact: bool = True,
+    tur_boost: bool | None = None,
 ) -> dict:
     """Her KATEGORI icin ayri Recall@k.
 
@@ -165,6 +166,7 @@ def kategori_bazli_recall_olc(
             banka_otomatik=banka_otomatik,
             yeniden_sirala=yeniden_sirala,
             exact=exact,
+            tur_boost=tur_boost,
         )
         bulunan = {
             (p.get("ustveri") or {}).get("kaynak_url", "").rstrip("/").split("/")[-1]
@@ -203,6 +205,7 @@ def abstention_olc(
     banka_otomatik: bool | None = None,
     yeniden_sirala: bool | None = None,
     exact: bool = True,
+    tur_boost: bool | None = None,
 ) -> dict:
     """Cevabi kaynaklarda OLMAYAN sorularda sistem cekimser kaliyor mu?
 
@@ -229,6 +232,7 @@ def abstention_olc(
                 banka_otomatik=banka_otomatik,
                 yeniden_sirala=yeniden_sirala,
                 exact=exact,
+                tur_boost=tur_boost,
             )
             if sonuc.yeterli_kaynak_var:
                 yanlis.append({
@@ -464,6 +468,20 @@ if __name__ == "__main__":
         print(f"  Not: {son['kapsam_disi_eskimis']} soru olcum disi - beklenen belgesi")
         print("  indekste yok (kampanya rotasyonu). Bunlari 'bulunamadi' saymak")
         print("  retrieval'i degil veri eskimesini olcerdi." + chr(10))
+
+    # KATILIMAI_TUR_BOOST OLCUMU (chunking/kampanya_turu_tespit.py) -
+    # KATILIMAI_BANKA_OTOMATIK ile AYNI disiplin: bayrak varsayilan KAPALI,
+    # burada KAPALI/ACIK karsilastirmasi kosulup rapora yazilir, ancak
+    # olcum sonucu OLUMLU cikmadan varsayilan yapilmaz.
+    print("--- kampanya_turu boost: KAPALI/ACIK karsilastirmasi (banka_ve_konu) ---")
+    kapali = son["kategoriler"].get("banka_ve_konu", {"isabet": 0, "toplam": 0, "recall": 0.0})
+    acik_son = kategori_bazli_recall_olc(k=5, tur_boost=True)
+    acik = acik_son["kategoriler"].get("banka_ve_konu", {"isabet": 0, "toplam": 0, "recall": 0.0})
+    print(f"  kapali (varsayilan)  %{kapali['recall']:>6}  ({kapali['isabet']}/{kapali['toplam']})")
+    print(f"  acik  (KATILIMAI_TUR_BOOST=true) %{acik['recall']:>6}  ({acik['isabet']}/{acik['toplam']})")
+    print(f"  genel recall (acikken)          %{acik_son['genel_recall']}  "
+          "(diger kategorileri BOZMADIGINI dogrulamak icin)")
+    print()
 
     ayrisim = banka_ve_konu_belirsizlik_ayrisimi()
     if ayrisim:

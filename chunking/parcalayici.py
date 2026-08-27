@@ -36,6 +36,14 @@ from __future__ import annotations
 import hashlib
 import re
 
+# Kampanya turu payload'a burada eklenir - cikarim MOTORUYLA AYNI
+# fonksiyonu kullanir, YENIDEN YAZILMAZ. Iki ayri siniflandirma (biri
+# extraction/, biri chunking/) sessizce birbirinden sapabilirdi; ayni
+# fonksiyonu paylasmak bu riski yapisal olarak ortadan kaldirir. `chunking`
+# -> `extraction` yonunde YENI bir bagimlilik ama tersi (extraction ->
+# chunking) YOK, dongusel import riski tasimiyor.
+from extraction.regex_extractor import _kampanya_turunu_tespit_et
+
 # Hedef parca boyutu: cok kucuk parca baglamsiz kalir, cok buyuk parca
 # tek bir sorguya birden fazla konu karistirir. ~700 karakter, gercek
 # kampanya kosullarinin ortalama uzunluguna gore secildi.
@@ -190,6 +198,38 @@ def _menu_bloklarini_ele(satirlar: list[str], kalip_satirlar: set[str]) -> list[
             sonuc.extend(blok)
         i = j
     return sonuc
+
+
+def _parca_anlamli_mi(parca: str) -> bool:
+    """Recursive split SONRASI bir parca cogunlukla ETIKET-GIBI (menu/link)
+    satirlardan mi olusuyor, yoksa gercek kampanya cumleleri mi tasiyor?
+
+    DENETIM BULGUSU (27 Agustos 2026, 930739e sonrasi olculdu): 930739e
+    `_menu_bloklarini_ele`'yi devreye soktu ama bu fonksiyon BLOK bazinda
+    calisir (MENU_BLOK_ASGARI=5 ardisik satir VE MENU_BLOK_KALIP_ORANI=0,8
+    esigi) - bu esigi tutturmayan (kisa ya da karisik) menu artiklari
+    SILINMEDEN kalir. Onceden bu artiklar gercek kampanya cumleleriyle
+    AYNI 900 karakterlik parcanin icinde "gizleniyordu" (zararsizdi, cunku
+    parca yine de gercek icerik tasiyordu); 930739e buyuk menu bloklarini
+    sildikten SONRA bu KUCUK artiklar cevrelerindeki gercek icerikten
+    KOPUP kendi baslarina izole bir recursive-split parcasi haline
+    gelebiliyor. Olculdu: "Dis Ticaret Kartlar Yatirim Nakit Yonetimi..."
+    gibi saf menu parcalari boylece indekse giriyor ve "Kartlar" menu
+    linki, "kart" sorgularinda (banka_ve_konu kategorisi) YANLIS POZITIF
+    uretiyordu - Recall@5 bu regresyonla %40'tan %16'ya dustu (bkz. docs/
+    rag_tasarim_ve_olcum.md).
+
+    OLCUT: parcanin ETIKET-GIBI satir orani MENU_BLOK_KALIP_ORANI esigini
+    (ayni sabit, tutarlilik icin) gecerse parca elenir. Cok kisa (< 3
+    satirlik) parcalara uygulanmaz - tek/iki satirlik gercek bir kampanya
+    cumlesi yanlislikla "etiket gibi" gorunebilir (kisa ve noktasiz),
+    guvenli tarafta kalinir.
+    """
+    satirlar = [s for s in parca.split("\n") if s.strip()]
+    if len(satirlar) < 3:
+        return True
+    etiket_orani = sum(_etiket_gibi_mi(s) for s in satirlar) / len(satirlar)
+    return etiket_orani < MENU_BLOK_KALIP_ORANI
 
 
 def _gurultu_mu(satir: str) -> bool:
@@ -385,6 +425,8 @@ def belgeyi_parcala(
     for p in parcalar:
         if len(p) < ASGARI_PARCA_BOYUTU:
             continue
+        if not _parca_anlamli_mi(p):
+            continue
         onekli.append(p if baslik and baslik in p else (f"{baslik} — {p}" if baslik else p))
     return onekli
 
@@ -393,7 +435,7 @@ def kayitlari_parcala(kayitlar: list[dict]) -> list[dict]:
     """Birden cok scraper kaydini parcalar ve TEKILLESTIRIR.
 
     Donen her oge: {"metin": str, "banka": str, "kaynak_url": str,
-    "kampanya_adi": str, "erisim_zamani": str}
+    "kampanya_adi": str, "erisim_zamani": str, "kampanya_turu": str | None}
 
     Ayni icerik birden fazla kayitta geciyorsa yalnizca ILK gorulen
     indekslenir (Tasarim Karari 3).
@@ -413,6 +455,12 @@ def kayitlari_parcala(kayitlar: list[dict]) -> list[dict]:
         kaynak_url = kayit.get("url") or ""
         baslik = basligi_bul(ham, kaynak_url)
         banka_kaliplari = kaliplar.get(kayit.get("banka") or "", set())
+        # KAYIT BASINA BIR KEZ hesaplanir (parca basina degil): tur KAYDIN
+        # (kampanyanin) niteligidir, ayni kaydin her parcasi ayni turu
+        # tasir. Ham (tam) metin uzerinde calisir - _kampanya_turunu_
+        # tespit_et extraction pipeline'inda da ayni girdiyle (ham_metin)
+        # cagrilir, tutarliligi bu sekilde korunur.
+        tur = _kampanya_turunu_tespit_et(ham)
         for parca in belgeyi_parcala(
             ham, baslik=baslik, kalip_satirlar=banka_kaliplari
         ):
@@ -427,6 +475,7 @@ def kayitlari_parcala(kayitlar: list[dict]) -> list[dict]:
                     "kaynak_url": kayit.get("url"),
                     "kampanya_adi": baslik,
                     "erisim_zamani": kayit.get("erisim_zamani"),
+                    "kampanya_turu": tur,
                 }
             )
     return sonuc

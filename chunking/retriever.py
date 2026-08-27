@@ -29,6 +29,7 @@ from dataclasses import dataclass, field
 
 from chunking.banka_tespit import banka_tespit
 from chunking.embedding import sorguyu_vektore_cevir
+from chunking.kampanya_turu_tespit import kampanya_turu_tespit
 from chunking.qdrant_baglanti import (
     VARSAYILAN_KOLEKSIYON,
     coklu_filtre,
@@ -190,6 +191,7 @@ def getir(
     banka_otomatik: bool | None = None,
     yeniden_sirala: bool | None = None,
     rag_modu: str | None = None,
+    tur_boost: bool | None = None,
 ) -> RetrieverSonucu:
     """Soruya en ilgili parcalari getirir; kaynak yetersizse bunu bildirir.
 
@@ -258,10 +260,27 @@ def getir(
     uzerinde karsilastirmali olarak yeniden olcmeyi (Recall@1/@3, gecikme)
     mumkun kilmak icin hala mevcut.
 
-    NEDEN BAYRAKLI (metodoloji): bu iki katman da retrieval sonucunu
+    `tur_boost` acikken sorguda gecen kampanya turu (kart/ihtiyac
+    finansmani/konut vb., bkz. chunking/kampanya_turu_tespit.py) aday
+    havuzu icinde ONE ALINIR - `banka` parametresinin AKSINE bir Qdrant
+    `must` filtresi DEGILDIR, HICBIR aday elenmez, yalnizca sira degisir.
+    Bilincli tercih: query-side siniflandiricinin F1'i %78,55 - sert
+    filtre olsaydi yanlis siniflandirilan dogru cevaplar aday havuzundan
+    tamamen silinirdi (bkz. chunking/kampanya_turu_tespit.py docstring'i).
+
+    VARSAYILAN KAPALI - banka_otomatik'in AKSINE bu bayrak HENUZ
+    olculmedi. `KATILIMAI_BANKA_OTOMATIK` yalnizca gercek A/B olcumu
+    (yukaridaki k=1/k=3/k=5 tablosu) ACIK varsayilani DOGRULADIKTAN SONRA
+    varsayilan yapildi - ayni disiplin burada da uygulanir: ELLE ACMAK
+    ICIN `KATILIMAI_TUR_BOOST=true`, olcum ayni desende `python -m
+    scraper.scripts.rag_degerlendirme` ile yapilir (banka_ve_konu Recall
+    kapali/acik karsilastirilir). Iyilesme dogrulanmadan varsayilan
+    yapilmamalidir.
+
+    NEDEN BAYRAKLI (metodoloji): bu katmanlar retrieval sonucunu
     degistirir. Kapatilabilir olmadiklari surece "katkisi ne kadar?"
     sorusu OLCULEMEZ - depodaki her kalite karari olcumle alindi
-    (bkz. docs/rag_tasarim_ve_olcum.md), bu ikisi de ayni cubuga tabi.
+    (bkz. docs/rag_tasarim_ve_olcum.md), hepsi ayni cubuga tabi.
     scraper/scripts/rag_degerlendirme.py bu bayraklarla A/B kosar.
     """
     if exact is None:
@@ -274,6 +293,8 @@ def getir(
         rag_modu = os.environ.get("RAG_MODE", "hibrit").strip().lower()
     if rag_modu not in ("hibrit", "dense"):
         raise ValueError(f"Bilinmeyen RAG_MODE: {rag_modu!r} (beklenen: 'hibrit' | 'dense')")
+    if tur_boost is None:
+        tur_boost = os.environ.get("KATILIMAI_TUR_BOOST", "false").lower() == "true"
 
     if not qdrant_hazir_mi():
         return RetrieverSonucu(sebep="Vektor veritabanina (Qdrant) erisilemiyor")
@@ -340,6 +361,28 @@ def getir(
         arama_sorgusu = soru
         terimler = _ayirt_edici_terimler(soru)
         aday_havuzu = _ara(None, soru)
+
+    # --- Kampanya turu: SIRALAMA boostu (SERT filtre DEGIL) --------------
+    # `banka`'nin aksine burada Qdrant filtresine gecmiyoruz - bkz.
+    # chunking/kampanya_turu_tespit.py docstring'i. Kararli (stable)
+    # bolme: turu eslesen adaylar ONE alinir, ELENEN hicbir aday yok,
+    # ne eslesenler ne eslesmeyenler kendi ARALARINDAKI sirayi kaybeder
+    # (RRF/dense skoruna gore geldikleri sira korunur). Bu yuzden
+    # asagidaki abstention kontrolu (on_siralama_ilk_k) skor uzerinde
+    # DEGIL, yalnizca hangi adaylarin ilk `limit`e girdigi uzerinde
+    # etkilenir - skor degerleri (ustveri.vektor_skoru) DEGISMEZ.
+    if tur_boost:
+        hedef_tur = kampanya_turu_tespit(soru)
+        if hedef_tur is not None:
+            eslesenler = [
+                p for p in aday_havuzu
+                if (p.get("ustveri") or {}).get("kampanya_turu") == hedef_tur
+            ]
+            eslesmeyenler = [
+                p for p in aday_havuzu
+                if (p.get("ustveri") or {}).get("kampanya_turu") != hedef_tur
+            ]
+            aday_havuzu = eslesenler + eslesmeyenler
 
     if not aday_havuzu:
         return RetrieverSonucu(sebep="Arama hicbir sonuc dondurmedi")

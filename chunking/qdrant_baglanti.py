@@ -425,8 +425,27 @@ def yogun_ara(
     ]
 
 
-def coklu_filtre(banka: str | None = None, hedef_tarih: str | None = None):
-    """Banka ve/veya tarihe (valid_at) gore Qdrant filtresi uretir.
+def coklu_filtre(
+    banka: str | None = None,
+    hedef_tarih: str | None = None,
+    kampanya_turu: str | None = None,
+):
+    """Banka, kampanya turu ve/veya tarihe (valid_at) gore Qdrant filtresi uretir.
+
+    ==================================================================
+    UYARI - `kampanya_turu` GENELDE VERILMEMELI (SERT FILTRE RISKI)
+    ==================================================================
+    Bu parametre var OLMASI ile HER ZAMAN kullanilmasi gerektigi FARKLI
+    seylerdir. chunking/kampanya_turu_tespit.py'nin besledigi siniflandirma
+    olculen F1 %78,55 ile mukemmel degil (bkz. docs/kampanya_turu_olcum_
+    raporu.md); bunu buradan `must` kosuluna vermek DOGRU cevabi yanlis
+    siniflandirma yuzunden aday havuzundan TAMAMEN SILER - kaciran bir
+    aramadan daha kotudur. VARSAYILAN uretim yolu (chunking/retriever.py::
+    getir) bu parametreyi coklu_filtre'ye GECIRMEZ; onun yerine aday
+    havuzu icinde bir SIRALAMA boostu (KATILIMAI_TUR_BOOST) kullanir -
+    hicbir aday elenmez. Bu parametre yalnizca ELLE, olculmus bir deney
+    icin (ornegin sert filtre vs. soft-boost karsilastirmasi) verilmelidir.
+    ==================================================================
 
     ==================================================================
     UYARI - `hedef_tarih` SU AN CALISMAZ, ACMAYIN
@@ -467,6 +486,10 @@ def coklu_filtre(banka: str | None = None, hedef_tarih: str | None = None):
     kosullar = []
     if banka:
         kosullar.append(FieldCondition(key="banka", match=MatchValue(value=banka)))
+    if kampanya_turu:
+        kosullar.append(
+            FieldCondition(key="kampanya_turu", match=MatchValue(value=kampanya_turu))
+        )
     if hedef_tarih:
         # Geçmişe yönelik sorgularda 'valid_at' aralığı.
         # Basitlik acisindan 'valid_at_start' <= hedef_tarih <= 'valid_at_end' seklinde eklenebilir, 

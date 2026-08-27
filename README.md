@@ -49,9 +49,7 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 
 ### Ölçülebilir durum
 
-_Son ölçüm: 26 Ağustos 2026 (çıkarım + veri) · 25 Ağustos 2026 (RAG — aşağıya
-bakınız). Tüm sayılar depodaki komutlarla yeniden üretilebilir — üretim
-komutları [Test](#test) bölümünde._
+_Son ölçüm: 26 Ağustos 2026 (çıkarım + veri) · 27 Ağustos 2026 (RAG — özyinelemeli parçalama). Tüm sayılar depodaki komutlarla yeniden üretilebilir — üretim komutları [Test](#test) bölümünde._
 
 > **26 Ağustos 2026 güncellemesi — çıkarım doğruluğu HİBRİT pipeline ile,
 > 291 canlı kayıtta yeniden ölçüldü.** EVREN entegrasyonundaki sessiz bir
@@ -87,10 +85,10 @@ komutları [Test](#test) bölümünde._
 | EVREN Recovery (Regex+NER bulamadı, EVREN buldu) | **38/112** çağrıda yeni alan buldu                                                      |
 | Terminoloji sözlüğü                           | **31** kavram (geleneksel karşılığı + tanım kaynağıyla)                                        |
 | Kapsam ölçümü (Scope Guard)                   | hassasiyet **24/24**, özgüllük **10/10**                                                       |
-| RAG — indekslenen parça (Recall'ün ölçüldüğü) | **1875** parça / 513 belge, 25 Ağustos — canlı indeks o tarihten sonra **2127 parçaya** büyüdü, Recall henüz yeni indekste yeniden ölçülmedi |
-| RAG — değerlendirme seti                      | **129** sorgu, `exact=True`                                                                    |
-| RAG — Recall@5 (genel)                        | **%87,60** (Recall@3 %84,50, Recall@1 %72,09 — HNSW yaklaşık arama nedeniyle koşular arası oynar) |
-| RAG — abstention doğruluğu                    | alan dışı **%86,67** (13/15) · alan içi kapsam dışı **%40,0** (izole ölçüm; uçtan uca ölçümde %90,0 — bkz. [`docs/rag_tasarim_ve_olcum.md`](docs/rag_tasarim_ve_olcum.md) Bulgu 12) |
+| RAG — indekslenen parça (Recall'ün ölçüldüğü) | **2304** parça / 623 belge — Özyinelemeli parçalama (900 karakter / 150 örtüşme) — _ölçüm 27 Ağustos_ |
+| RAG — değerlendirme seti                      | **138** sorgu (kapsam dışı eskimiş 22 soru elendi), `exact=True`                                |
+| RAG — Recall@5 (genel)                        | **%76,81** (Recall@3 %73,19, Recall@1 %60,14 — `tam_ad` kategorisinde Recall@5 **%96,00**) — _ölçüm 27 Ağustos_ |
+| RAG — abstention doğruluğu                    | alan dışı **%93,33** (14/15) · alan içi kapsam dışı **%40,0** (izole; uçtan uca niyet yönlendirmeli ölçümde **%100,0** — 10/10) |
 | Otomatik test                                 | **1278** test geçiyor (CI, `-m "not slow"`), 0 hata, 90 atlandı — CI her push'ta çalışır       |
 
 > **Yavaş testler — iki ayrı grup, karıştırılmamalı:**

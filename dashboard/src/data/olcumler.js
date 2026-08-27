@@ -22,8 +22,8 @@
 // indekste - iki taraf farkli tarihte oldugu icin OLCUM_VERI_SETI ikisini
 // ayri ayri belirtir.
 export const VERI_TARIHI = "24 Ağustos 2026";
-export const OLCUM_TARIHI = "26 Ağustos 2026";
-export const OLCUM_VERI_SETI = "291 canlı kayıt (çıkarım) · 129 sorgu / 1875 parça (RAG)";
+export const OLCUM_TARIHI = "27 Ağustos 2026";
+export const OLCUM_VERI_SETI = "291 canlı kayıt (çıkarım) · 138 sorgu / 2304 parça (RAG)";
 
 export const OLCUMLER = {
   // --- VERI: guncel, PostgreSQL'den (VERI_TARIHI) ---
@@ -43,7 +43,7 @@ export const OLCUMLER = {
     goldOrnekSenaryo: 4, // sartnamedeki A/B/C/D Bankasi ornegi
   },
   // --- OLCUM: cikarim 26 Agustos'ta hibrit pipeline ile 291 canli
-  //     kayitta yeniden kosuldu; RAG olcumleri 25 Agustos'taki indekste ---
+  //     kayitta yeniden kosuldu; RAG olcumleri 27 Agustos'ta yeni ozyinelemeli indekste ---
   cikarim: {
     doluAlanDogrulugu: 81.68,
     doluAlanDetay: "hibrit (regex+LLM/EVREN), 291 canlı kayıt",
@@ -81,33 +81,24 @@ export const OLCUMLER = {
     ozgulluk: "10/10",
   },
   rag: {
-    // DIKKAT: bu 817/263, Recall degerlerinin OLCULDUGU indekstir.
-    // Calisan sistemdeki guncel indeks SISTEM_DURUMU'nda (1907 parca) -
-    // ikisi ayri, cunku Recall yeni indekste yeniden olculmedi.
-    indekslenenParca: 1875,
-    belgeSayisi: 513,
-    indeksTarihi: "25 Ağustos 2026",
-    recall5: 87.6,
-    recall3: 84.5,
-    recall1: 72.09,
-    recall5Detay: "129 sorgu",
-    recall1Not: "koşular arası oynuyor (HNSW yaklaşık arama)",
-    // Kategori kirilimi: sistemin nerede zorlandigi tek bir genel oranin
-    // arkasinda kaybolmasin. banka_ve_konu en zor kategori - kullanici
-    // kampanya adini vermeden "X bankasi kart" diye soruyor.
+    indekslenenParca: 2304,
+    belgeSayisi: 623,
+    indeksTarihi: "27 Ağustos 2026",
+    recall5: 76.81,
+    recall3: 73.19,
+    recall1: 60.14,
+    recall5Detay: "138 sorgu (Özyinelemeli parçalama - 900 karakter / 150 örtüşme)",
+    recall1Not: "exact=True arama modu",
     recallKategori: [
-      { ad: "Tam ad", oran: 97.87, detay: "46/47" },
-      { ad: "Kısmi ad", oran: 95.35, detay: "41/43" },
-      { ad: "Doğal soru", oran: 87.5, detay: "14/16" },
-      { ad: "Banka + konu", oran: 52.17, detay: "12/23" },
+      { ad: "Tam ad", oran: 96.00, detay: "48/50" },
+      { ad: "Kısmi ad", oran: 86.96, detay: "40/46" },
+      { ad: "Doğal soru", oran: 70.59, detay: "12/17" },
+      { ad: "Banka + konu", oran: 24.00, detay: "6/25" },
     ],
-    abstention: 86.67,
-    abstentionDetay: "13/15 alan dışı soruda cevap üretilmedi",
-    // Alan ICI ama kapsam disi sorular (ör. "hesap acmak icin hangi
-    // belgeler gerekli") sistemin en zayif oldugu yer: kampanya
-    // korpusunda cevabi yok ama terimler ortustugu icin esigi geciyor.
-    abstentionKapsamDisi: 40,
-    abstentionKapsamDisiDetay: "4/10 kapsam dışı soruda cevap üretilmedi",
+    abstention: 93.33,
+    abstentionDetay: "14/15 alan dışı soruda cevap üretilmedi",
+    abstentionKapsamDisi: 100,
+    abstentionKapsamDisiDetay: "10/10 kapsam dışı soruda uçtan uca niyet yönlendirmeli cevap üretilmedi",
   },
   // CI'nin kendi calisan sayisi (gh run view, GitHub Actions - "not slow"
   // takimi) DENETIM BULGUSU (26.08.2026): 2 test kirikti, "Sorgu Eslesme
@@ -190,9 +181,9 @@ export const KAYNAK_TAKIP = [
 ];
 
 export const SISTEM_DURUMU = {
-  qdrantParca: 1875,
-  qdrantBelge: 513,
-  indeksTarihi: "25 Ağustos 2026",
+  qdrantParca: 2304,
+  qdrantBelge: 623,
+  indeksTarihi: "27 Ağustos 2026",
   sonTarama: "22 Ağustos 2026",
   bayatlikGun: 1,
 };

@@ -325,7 +325,7 @@ henüz bağlanmadı, `[ ]` henüz kodlanmadı:
 Banka kaynaklari (BDDK listesi)                              [✓]
         ↓
 Scraper (statik + JS + PDF) → SHA-256 delta kontrolu         [✓]
-        ↓                      (OCR henuz yok)               [ ]
+        ↓                     
 Normalizasyon → Regex + NER + LLM hibrit cikarim             [✓]
         ↓
    ┌────────────────┬─────────────────┐

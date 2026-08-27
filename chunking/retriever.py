@@ -268,14 +268,22 @@ def getir(
     filtre olsaydi yanlis siniflandirilan dogru cevaplar aday havuzundan
     tamamen silinirdi (bkz. chunking/kampanya_turu_tespit.py docstring'i).
 
-    VARSAYILAN KAPALI - banka_otomatik'in AKSINE bu bayrak HENUZ
-    olculmedi. `KATILIMAI_BANKA_OTOMATIK` yalnizca gercek A/B olcumu
-    (yukaridaki k=1/k=3/k=5 tablosu) ACIK varsayilani DOGRULADIKTAN SONRA
-    varsayilan yapildi - ayni disiplin burada da uygulanir: ELLE ACMAK
-    ICIN `KATILIMAI_TUR_BOOST=true`, olcum ayni desende `python -m
-    scraper.scripts.rag_degerlendirme` ile yapilir (banka_ve_konu Recall
-    kapali/acik karsilastirilir). Iyilesme dogrulanmadan varsayilan
-    yapilmamalidir.
+    VARSAYILAN ACIK (28 Agustos 2026 - olculup dogrulandi, banka_otomatik
+    ile AYNI disiplin: once olc, sonra varsayilan yap). 623 belge/2187
+    parcalik TEMIZ (930739e + menu artigi filtresi dahil) indekste
+    `python -m scraper.scripts.rag_degerlendirme` ile KAPALI/ACIK
+    karsilastirmasi kosuldu:
+
+        banka_ve_konu Recall@5   %16,00 -> %32,00  (2 kati)
+        GENEL Recall@5           %75,36 -> %76,81  (DUSMEDI, hafif arti)
+
+    Diger kategorileri BOZMADIGI (genel recall dustyse geri alinacakti,
+    tam tersi oldu) ve hedeflenen kategoriyi net iyilestirdigi icin
+    varsayilan ACIK yapildi. ELLE KAPATMAK ICIN: `KATILIMAI_TUR_BOOST=false`.
+
+    OLCUM YOLU (tekrar dogrulamak icin): `python -m scraper.scripts.
+    rag_degerlendirme` - script hem varsayilan (acik) hem KAPALI kosuyu
+    ayrica raporlar.
 
     NEDEN BAYRAKLI (metodoloji): bu katmanlar retrieval sonucunu
     degistirir. Kapatilabilir olmadiklari surece "katkisi ne kadar?"
@@ -294,7 +302,7 @@ def getir(
     if rag_modu not in ("hibrit", "dense"):
         raise ValueError(f"Bilinmeyen RAG_MODE: {rag_modu!r} (beklenen: 'hibrit' | 'dense')")
     if tur_boost is None:
-        tur_boost = os.environ.get("KATILIMAI_TUR_BOOST", "false").lower() == "true"
+        tur_boost = os.environ.get("KATILIMAI_TUR_BOOST", "true").lower() == "true"
 
     if not qdrant_hazir_mi():
         return RetrieverSonucu(sebep="Vektor veritabanina (Qdrant) erisilemiyor")

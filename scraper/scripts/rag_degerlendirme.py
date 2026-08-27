@@ -470,17 +470,20 @@ if __name__ == "__main__":
         print("  retrieval'i degil veri eskimesini olcerdi." + chr(10))
 
     # KATILIMAI_TUR_BOOST OLCUMU (chunking/kampanya_turu_tespit.py) -
-    # KATILIMAI_BANKA_OTOMATIK ile AYNI disiplin: bayrak varsayilan KAPALI,
-    # burada KAPALI/ACIK karsilastirmasi kosulup rapora yazilir, ancak
-    # olcum sonucu OLUMLU cikmadan varsayilan yapilmaz.
-    print("--- kampanya_turu boost: KAPALI/ACIK karsilastirmasi (banka_ve_konu) ---")
-    kapali = son["kategoriler"].get("banka_ve_konu", {"isabet": 0, "toplam": 0, "recall": 0.0})
-    acik_son = kategori_bazli_recall_olc(k=5, tur_boost=True)
-    acik = acik_son["kategoriler"].get("banka_ve_konu", {"isabet": 0, "toplam": 0, "recall": 0.0})
-    print(f"  kapali (varsayilan)  %{kapali['recall']:>6}  ({kapali['isabet']}/{kapali['toplam']})")
-    print(f"  acik  (KATILIMAI_TUR_BOOST=true) %{acik['recall']:>6}  ({acik['isabet']}/{acik['toplam']})")
-    print(f"  genel recall (acikken)          %{acik_son['genel_recall']}  "
-          "(diger kategorileri BOZMADIGINI dogrulamak icin)")
+    # 28 Agustos 2026'da ACIK/KAPALI karsilastirmasi olumlu ciktigi icin
+    # (banka_ve_konu %16->%32, genel recall DUSMEDI) bayrak varsayilan
+    # ACIK yapildi (bkz. chunking/retriever.py::getir docstring'i).
+    # Yukaridaki ana tablo (`son`, tur_boost=None) ARTIK bu yeni varsayilanla
+    # (ACIK) kosuyor - karsilastirma icin burada AYRICA KAPALI (tur_boost=
+    # False) kosulup rapora yazilir, boylece bayrak gelecekte tekrar
+    # degistirilirse fark hala tek komutla goruleceklendir.
+    print("--- kampanya_turu boost: ACIK (varsayilan) / KAPALI karsilastirmasi (banka_ve_konu) ---")
+    acik = son["kategoriler"].get("banka_ve_konu", {"isabet": 0, "toplam": 0, "recall": 0.0})
+    kapali_son = kategori_bazli_recall_olc(k=5, tur_boost=False)
+    kapali = kapali_son["kategoriler"].get("banka_ve_konu", {"isabet": 0, "toplam": 0, "recall": 0.0})
+    print(f"  acik (varsayilan, KATILIMAI_TUR_BOOST=true)  %{acik['recall']:>6}  ({acik['isabet']}/{acik['toplam']})")
+    print(f"  kapali (KATILIMAI_TUR_BOOST=false)            %{kapali['recall']:>6}  ({kapali['isabet']}/{kapali['toplam']})")
+    print(f"  genel recall (acikken, yukaridaki ana tablo)  %{son['genel_recall']}")
     print()
 
     ayrisim = banka_ve_konu_belirsizlik_ayrisimi()

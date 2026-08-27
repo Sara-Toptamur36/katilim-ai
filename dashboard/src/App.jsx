@@ -14,6 +14,7 @@ import {
   CalculatorOutlined,
   SettingOutlined,
   LogoutOutlined,
+  CommentOutlined,
 } from "@ant-design/icons";
 
 /* Sayfa bileşenleri */
@@ -26,6 +27,7 @@ import Giris from "./pages/Giris";
 import Chatbot from "./pages/Chatbot";
 import AuditPanel from "./pages/AuditPanel";
 import ExtractionAudit from "./pages/ExtractionAudit";
+import MusteriSesi from "./pages/MusteriSesi";
 
 /* Bileşenler */
 import VeriKaynagiRozeti from "./components/VeriKaynagiRozeti";
@@ -81,6 +83,7 @@ const GUVEN_MENUSU = [
     etiket: "Çıkarım Denetimi",
     ikon: <FileSearchOutlined />,
   },
+  { yol: "/musteri-sesi", etiket: "Müşteri Sesi", ikon: <CommentOutlined /> },
   // Bu menu ogesi yalnizca GIRIS YAPILMISKEN gorunur (SolMenu, App()'in
   // "girisli" dalinda render edilir - bkz. asagidaki if(!girisli) erken
   // donusu). Yani buraya tiklandiginda Giris.jsx HER ZAMAN Ayarlar
@@ -503,6 +506,7 @@ function App() {
                   <Route path="/chatbot" element={<Chatbot />} />
                   <Route path="/audit" element={<AuditPanel />} />
                   <Route path="/extraction-audit" element={<ExtractionAudit />} />
+                  <Route path="/musteri-sesi" element={<MusteriSesi />} />
                   <Route
                     path="/giris"
                     element={

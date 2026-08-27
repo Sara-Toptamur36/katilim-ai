@@ -85,6 +85,20 @@ class EslesmeSonucu:
     guven: float
     gerekce: dict[str, Any] = field(default_factory=dict)
 
+    # --- UC SEVIYELI ENTITY RESOLUTION (27 Agustos 2026 eklendi) ---
+    # `guven` (yukarida) HER ZAMAN kampanya (Seviye 3, en dusuk guvenli)
+    # seviyesidir - degismedi, geriye donuk uyumluluk icin. Bu iki alan
+    # AYRI, DAHA YUKSEK guvenli seviyeleri disari verir: bir sikayetin
+    # HANGI kampanya oldugu belirsiz kalsa bile (guven < esik), HANGI
+    # BANKA ve HANGI URUN TURU oldugu cogu zaman hala soylenebilir. Bu
+    # ayrim mentor geri bildirimindeki "cogu zaman dusuk guvenli olan
+    # kampanya eslesmesini ZORUNLU degil OPSIYONEL yapin" onerisinin
+    # dogrudan karsiligidir - opsiyonel olan zaten kampanya_id'ydi,
+    # burada bankayi/urun turunu de AYRI GORULEBILIR kilariz.
+    banka_eslesti: bool = False
+    urun_turu_guven: float = 0.0
+    urun_turu_gerekce: dict[str, Any] = field(default_factory=dict)
+
     @property
     def eslesti_mi(self) -> bool:
         return self.kampanya_id is not None
@@ -131,9 +145,40 @@ def _pencere_icinde_mi(sikayet_tarihi: date | None, kampanya) -> bool | None:
     return True
 
 
+def _urun_turu_guveni(temiz_metin: str, kampanya) -> tuple[float, dict[str, Any]]:
+    """SEVIYE 2 (PRODUCT) sinyali - kampanya_adi'ndan BAGIMSIZ hesaplanir.
+
+    NEDEN AYRI FONKSIYON: kampanya_turu ("Konut Finansmani Kampanyasi"
+    gibi) ozel bir kampanyaya degil, bir URUN KATEGORISINE aittir - bir
+    bankanin konut finansmani urununde onlarca kampanyasi olabilir ama
+    "bu sikayet konut finansmaniyla ilgili" iddiasi, "bu sikayet TAM
+    OLARAK KAMPANYA_17 ile ilgili" iddiasindan cok daha az risklidir.
+    Mentor geri bildirimindeki "PRODUCT orta/yuksek guven" seviyesi
+    budur - kampanya adindan (Seviye 3) daha az kirilgan, cunku urun
+    turu ifadeleri musteri dilinde dogal olarak daha sik gecer ("konut
+    finansmani", "tasit finansmani" gibi somut, gunluk terimler).
+    """
+    tur = getattr(kampanya, "kampanya_turu", None)
+    if not tur or tur == "Belirlenemedi":
+        return 0.0, {"sebep": "kampanyanin urun_turu bilgisi yok"}
+
+    tur_kelimeleri = _kelimeler(tur)
+    ortak = tur_kelimeleri & _kelimeler(temiz_metin)
+    if not ortak or not tur_kelimeleri:
+        return 0.0, {}
+
+    oran = round(len(ortak) / len(tur_kelimeleri), 4)
+    return oran, {"urun_turu": tur, "ortak_kelimeler": sorted(ortak)}
+
+
 def _tek_kampanyayi_puanla(
     temiz_metin: str, kampanya, sikayet_tarihi: date | None
-) -> tuple[float, dict[str, Any]]:
+) -> tuple[float, dict[str, Any], bool, float, dict[str, Any]]:
+    """Doner: (kampanya_guveni, gerekce, banka_eslesti, urun_turu_guveni,
+    urun_turu_gerekce). Ilk iki deger ONCEKI davranisla AYNIDIR - Seviye 3
+    (kampanya) skoru. Son ucu YENI: Seviye 1 (banka) ve Seviye 2 (urun
+    turu), kampanya skorundan BAGIMSIZ hesaplanir ve ELEME onlari da
+    kapsar (bkz. asagida pencere kontrolu)."""
     metin_katlanmis = turkce_ascii_kucult(temiz_metin or "")
     metin_kelimeleri = _kelimeler(temiz_metin)
     gerekce: dict[str, Any] = {}
@@ -141,11 +186,14 @@ def _tek_kampanyayi_puanla(
 
     pencere = _pencere_icinde_mi(sikayet_tarihi, kampanya)
     if pencere is False:
-        # ELEME - puan toplamaya hic baslanmaz.
-        return 0.0, {"pencere_disi": True}
+        # ELEME - hicbir seviye (banka/urun/kampanya) puanlanmaz. Pencere
+        # disindaki bir kampanyanin bankasini/urununu "eslesti" saymak,
+        # zaman elemesinin amacini bosa cikarirdi.
+        return 0.0, {"pencere_disi": True}, False, 0.0, {}
 
     banka = getattr(kampanya, "banka", None)
-    if banka and turkce_ascii_kucult(banka) in metin_katlanmis:
+    banka_eslesti = bool(banka and turkce_ascii_kucult(banka) in metin_katlanmis)
+    if banka_eslesti:
         puan += AGIRLIK_BANKA
         gerekce["banka"] = banka
 
@@ -168,7 +216,9 @@ def _tek_kampanyayi_puanla(
     # denetlenebilsin.
     gerekce["zaman_penceresi"] = "icinde" if pencere is True else "bilinmiyor"
 
-    return round(min(puan, 1.0), 4), gerekce
+    urun_guveni, urun_gerekce = _urun_turu_guveni(temiz_metin, kampanya)
+
+    return round(min(puan, 1.0), 4), gerekce, banka_eslesti, urun_guveni, urun_gerekce
 
 
 def kampanya_esle(
@@ -190,11 +240,14 @@ def kampanya_esle(
         for kampanya in kampanyalar
     ]
     puanlar.sort(key=lambda p: p[1], reverse=True)
-    en_iyi, en_iyi_puan, en_iyi_gerekce = puanlar[0]
+    en_iyi, en_iyi_puan, en_iyi_gerekce, banka_eslesti, urun_guveni, urun_gerekce = puanlar[0]
 
     # BERABERLIK KONTROLU: iki kampanya ayni puani aldiysa hangisi
     # oldugunu SOYLEYEMEYIZ. Rastgele birini secmek, olmayan bir
-    # kesinlik uretmek olurdu.
+    # kesinlik uretmek olurdu. Banka/urun turu seviyeleri YINE DE
+    # dondurulur - Seviye 3'te (kampanya) belirsizlik olmasi, Seviye
+    # 1/2'nin (banka/urun) de belirsiz oldugu anlamina gelmez; iki
+    # beraberlik adayi COGUNLUKLA ayni bankaya/urune aittir.
     if len(puanlar) > 1 and abs(puanlar[1][1] - en_iyi_puan) < 1e-9 and en_iyi_puan > 0:
         return EslesmeSonucu(
             None,
@@ -204,6 +257,9 @@ def kampanya_esle(
                 "aday_sayisi": sum(1 for p in puanlar if abs(p[1] - en_iyi_puan) < 1e-9),
                 "guven": en_iyi_puan,
             },
+            banka_eslesti,
+            urun_guveni,
+            urun_gerekce,
         )
 
     if en_iyi_puan < asgari_guven:
@@ -215,6 +271,12 @@ def kampanya_esle(
                 "en_yakin_aday": getattr(en_iyi, "kampanya_adi", None),
                 **en_iyi_gerekce,
             },
+            banka_eslesti,
+            urun_guveni,
+            urun_gerekce,
         )
 
-    return EslesmeSonucu(getattr(en_iyi, "id", None), en_iyi_puan, en_iyi_gerekce)
+    return EslesmeSonucu(
+        getattr(en_iyi, "id", None), en_iyi_puan, en_iyi_gerekce,
+        banka_eslesti, urun_guveni, urun_gerekce,
+    )

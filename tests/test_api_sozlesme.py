@@ -804,7 +804,7 @@ def test_musteri_sesi_ornekler_sentetik_oldugunu_acikca_belirtir():
     govde = yanit.json()
     assert govde["sentetik"] is True
     assert "sentetik" in govde["aciklama"].lower()
-    assert len(govde["ornekler"]) == 20
+    assert len(govde["ornekler"]) == 46  # v1.4: kalan ifade kapsama boslugu kapatildi
     assert len(govde["temalar"]) == 10
     for ornek in govde["ornekler"]:
         assert ornek["tema"] is not None, f"{ornek['id']} kendi ornek setinde siniflandirilamadi"
@@ -817,3 +817,48 @@ def test_musteri_sesi_ornekler_kural_setinin_surumunu_tasir():
     govde = yanit.json()
     for ornek in govde["ornekler"]:
         assert ornek["tema_surumu"] == TEMA_SURUMU
+
+
+def test_musteri_sesi_ornekler_onem_ve_cozum_alanlarini_tasir():
+    """27 Agustos 2026: uc nokta artik hazirla() HATTININ TAMAMINDAN
+    geciyor - onem_derecesi/cozum_durumu her ornekte gecerli bir
+    degerde olmali, keyfi/bos DEGIL."""
+    yanit = client.get("/musteri-sesi/ornekler", headers=GECERLI_BASLIK)
+    govde = yanit.json()
+    for ornek in govde["ornekler"]:
+        assert ornek["onem_derecesi"] in {"YUKSEK", "ORTA", "DUSUK"}
+        assert ornek["cozum_durumu"] in {"cozuldu", "kismen", "cozulmedi", "bilinmiyor"}
+        assert isinstance(ornek["dusuk_bilgi_supheli"], bool)
+        assert isinstance(ornek["yineleme_supheli"], bool)
+
+
+def test_musteri_sesi_ornekler_veritabanina_yazmaz():
+    """hazirla() cagrilmasi kaydet()'i CAGIRMAZ - bu uc nokta halen
+    `sikayetler` tablosuna dokunmaz (bkz. docs/kapsam_ve_veri_ayrimi.md
+    §6). Iki cagri arasinda tablo satir sayisi DEGISMEMELI."""
+    from api.db import oturum_al
+    from api.models import Sikayet
+
+    oturum = next(oturum_al())
+    try:
+        once = oturum.query(Sikayet).count()
+    finally:
+        oturum.close()
+
+    client.get("/musteri-sesi/ornekler", headers=GECERLI_BASLIK)
+
+    oturum = next(oturum_al())
+    try:
+        sonra = oturum.query(Sikayet).count()
+    finally:
+        oturum.close()
+
+    assert sonra == once
+
+
+def test_musteri_sesi_ornekler_orneklem_notu_yogunluk_ozetinde_var():
+    """Mentor geri bildirimi: temsil yanliligi uyarisi HER yanitta
+    gorunmeli, arayuz sayilari yanlislikla genelleyemesin."""
+    yanit = client.get("/musteri-sesi/yogunluk-ozeti", headers=GECERLI_BASLIK)
+    govde = yanit.json()
+    assert "temsil" in govde["orneklem_notu"].lower() or "tum" in govde["orneklem_notu"].lower()

@@ -233,4 +233,20 @@ export const extractionAuditGetir = async (kampanyaId) => {
   return yanit.data;
 };
 
+// GET /musteri-sesi/ornekler - SENTETIK sikayet demo seti (Faz 1 T8).
+// `sentetik: true` HER YANITTA gelir - arayuz bunu ASLA gercek veri gibi
+// gostermemeli (bkz. MusteriSesi.jsx SENTETIK rozeti).
+export const musteriSesiOrnekleriGetir = async () => {
+  const yanit = await client.get("/musteri-sesi/ornekler");
+  return yanit.data;
+};
+
+// GET /musteri-sesi/yogunluk-ozeti - GERCEK `sikayetler` tablosundan tema
+// bazli gozlenen yogunluk. Izin kapisi kapaliyken DAIMA toplam_sikayet: 0
+// ve kapsam_durumu: "izin_yok" doner - bu bir hata degil, dogru bos durum.
+export const musteriSesiYogunlukGetir = async () => {
+  const yanit = await client.get("/musteri-sesi/yogunluk-ozeti");
+  return yanit.data;
+};
+
 export default client;

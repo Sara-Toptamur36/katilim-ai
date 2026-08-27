@@ -43,7 +43,7 @@ from agent.orchestrator import soru_isle
 from api.auth import GERCEK_JWT_AKTIF, rol_gerekli, token_dogrula, token_uret
 from complaint.izin_kapisi import herhangi_bir_izin_var_mi
 from complaint.tema_siniflandirici import tema_siniflandir
-from complaint.toplama import yogunluk_ozeti
+from complaint.toplama import hazirla, yogunluk_ozeti
 from api.db import oturum_al
 from api.kampanya_repository import id_ile_getir_db, kampanyalari_getir_db
 from api.kullanici_repository import (
@@ -759,14 +759,37 @@ def musteri_sesi_ornekler(kullanici: dict = Depends(token_dogrula)):
     DURUSTLUK: donen 'ornekler' GERCEK sikayet DEGILDIR, elle yazilmis
     sentetik veridir (bkz. MusteriSesiOrnekYanit.aciklama alani, her
     yanitta tekrar edilir - dashboard bunu gizlemeden gostermeli).
+
+    27 Agustos 2026'dan itibaren `complaint/toplama.py::hazirla` HATTININ
+    TAMAMINDAN gecirilir (yalnizca tema_siniflandir DEGIL) - boylece
+    dashboard PII maskeleme, onem derecesi, cozum durumu ve dusuk-bilgi
+    isaretini de gorebilir. VERITABANINA YAZILMAZ: `hazirla()` cagrilir,
+    `kaydet()` cagrilmaz - bu ornekler HALA `sikayetler` tablosuna
+    girmez (bkz. docs/kapsam_ve_veri_ayrimi.md §6).
     """
     with open(SENTETIK_MUSTERI_SESI_YOLU, encoding="utf-8") as f:
         veri = json.load(f)
 
-    ornekler = [
-        MusteriSesiOrnek(id=o["id"], metin=o["metin"], **tema_siniflandir(o["metin"]))
-        for o in veri["ornekler"]
-    ]
+    bilinen_hashler: list[str] = []
+    ornekler = []
+    for o in veri["ornekler"]:
+        hazir = hazirla(
+            o["metin"], kaynak="sentetik_musteri_sesi", izin_zorunlu=False,
+            bilinen_icerik_hashleri=bilinen_hashler,
+        )
+        bilinen_hashler.append(hazir.icerik_hash)
+        ornekler.append(MusteriSesiOrnek(
+            id=o["id"],
+            metin=hazir.temiz_metin,
+            tema=hazir.tema,
+            guven=tema_siniflandir(o["metin"])["guven"],
+            eslesen_ifadeler=tema_siniflandir(o["metin"])["eslesen_ifadeler"],
+            tema_surumu=hazir.tema_surumu,
+            onem_derecesi=hazir.onem_derecesi,
+            cozum_durumu=hazir.cozum_durumu,
+            dusuk_bilgi_supheli=hazir.dusuk_bilgi_supheli,
+            yineleme_supheli=hazir.yineleme_supheli,
+        ))
     return MusteriSesiOrnekYanit(temalar=veri["temalar"], ornekler=ornekler)
 
 

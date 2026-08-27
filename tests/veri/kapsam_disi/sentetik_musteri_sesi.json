@@ -1,47 +1,651 @@
 {
   "_aciklama": "SENTETIK MUSTERI SESI SETI - Faz 1 T8 (mentorun 3.7'deki en dusuk riskli yol onerisi). Bu dosya BILEREK tests/veri/ altindadir: icerigi veritabanina, altin veri setine ve RAG indeksine ASLA girmez - urun verisi DEGILDIR, yalnizca Complaint Insight konseptinin OLCULEBILIR bir demosu icindir. Dogrulama icin bkz. tests/test_sentetik_musteri_sesi.py.",
   "_uretim_yontemi": "Ornekler ELLE yazildi; hicbiri gercek bir sikayetten kopyalanmadi ve hicbiri gercek bir bankaya atfedilmiyor (banka adi yerine 'A Bankasi' ya da kendi kampanyalarimizdan turetilmis genel ifadeler kullanildi). Gercek Sikayetvar/musteri platformu verisi ancak kurumsal/hukuki izin surecinden (KVKK) sonra, Faz 2'de ingest edilecek - bkz. PeacewAI_Faz_Plani_ve_Is_Bolumu.docx Bolum 4 'Faz 2'nin kapilari'.",
-  "_surum": "1.0 - 20 Agustos 2026",
+  "_surum": "1.4 - 27 Agustos 2026",
   "_taksonomi_kaynagi": "Mentorun 3.3'teki 10 temali taksonomisi (Rehber_Yagmur_NLP.docx)",
-
   "temalar": [
-    { "kod": "REWARD_NOT_CREDITED", "ad": "Odul yatmadi", "aciklama": "Vaat edilen odul/puan/nakit iade hesaba gecmedi" },
-    { "kod": "ELIGIBILITY_MISMATCH", "ad": "Kosul uyusmazligi", "aciklama": "Musteri kosulu sagladigini saniyor ama kampanya kapsami disinda" },
-    { "kod": "INSTALLMENT_MATURITY", "ad": "Taksit/vade uyusmazligi", "aciklama": "Taksit sayisi, vade veya erteleme beklentisi gerceklesenle uyusmuyor" },
-    { "kod": "MERCHANT_MCC_SCOPE", "ad": "Isyeri kapsam disi", "aciklama": "Isyeri/harcama turu kampanyaya dahil sanildi ama degil" },
-    { "kod": "ACTIVATION_REGISTRATION", "ad": "Aktivasyon sorunu", "aciklama": "Kampanyaya katilim icin gereken aktivasyon yapilmamis/basarisiz olmus" },
-    { "kod": "DATE_EXPIRY", "ad": "Tarih uyusmazligi", "aciklama": "Kampanya baslangic/bitis tarihiyle ilgili yanlis anlama" },
-    { "kod": "CARD_PRODUCT_MISMATCH", "ad": "Kart/urun uyusmazligi", "aciklama": "Yanlis kart veya urun turu kampanyaya baglanmis" },
-    { "kod": "FEE_CHARGE", "ad": "Beklenmeyen ucret", "aciklama": "Masrafsiz sanilan islemde ucret/komisyon kesildi" },
-    { "kod": "COMMUNICATION_AMBIGUITY", "ad": "Iletisim belirsizligi", "aciklama": "Kampanya metni yaniltici veya eksik anlasilmis" },
-    { "kod": "SERVICE_RESOLUTION", "ad": "Cozum surecinde sorun", "aciklama": "Cagri merkezi/sube basvurusu sorunu cozmedi" }
+    {
+      "kod": "REWARD_NOT_CREDITED",
+      "ad": "Odul yatmadi",
+      "aciklama": "Vaat edilen odul/puan/nakit iade hesaba gecmedi"
+    },
+    {
+      "kod": "ELIGIBILITY_MISMATCH",
+      "ad": "Kosul uyusmazligi",
+      "aciklama": "Musteri kosulu sagladigini saniyor ama kampanya kapsami disinda"
+    },
+    {
+      "kod": "INSTALLMENT_MATURITY",
+      "ad": "Taksit/vade uyusmazligi",
+      "aciklama": "Taksit sayisi, vade veya erteleme beklentisi gerceklesenle uyusmuyor"
+    },
+    {
+      "kod": "MERCHANT_MCC_SCOPE",
+      "ad": "Isyeri kapsam disi",
+      "aciklama": "Isyeri/harcama turu kampanyaya dahil sanildi ama degil"
+    },
+    {
+      "kod": "ACTIVATION_REGISTRATION",
+      "ad": "Aktivasyon sorunu",
+      "aciklama": "Kampanyaya katilim icin gereken aktivasyon yapilmamis/basarisiz olmus"
+    },
+    {
+      "kod": "DATE_EXPIRY",
+      "ad": "Tarih uyusmazligi",
+      "aciklama": "Kampanya baslangic/bitis tarihiyle ilgili yanlis anlama"
+    },
+    {
+      "kod": "CARD_PRODUCT_MISMATCH",
+      "ad": "Kart/urun uyusmazligi",
+      "aciklama": "Yanlis kart veya urun turu kampanyaya baglanmis"
+    },
+    {
+      "kod": "FEE_CHARGE",
+      "ad": "Beklenmeyen ucret",
+      "aciklama": "Masrafsiz sanilan islemde ucret/komisyon kesildi"
+    },
+    {
+      "kod": "COMMUNICATION_AMBIGUITY",
+      "ad": "Iletisim belirsizligi",
+      "aciklama": "Kampanya metni yaniltici veya eksik anlasilmis"
+    },
+    {
+      "kod": "SERVICE_RESOLUTION",
+      "ad": "Cozum surecinde sorun",
+      "aciklama": "Cagri merkezi/sube basvurusu sorunu cozmedi"
+    }
   ],
-
   "ornekler": [
-    { "id": "SM-001", "tema": "REWARD_NOT_CREDITED", "metin": "A Bankasi'nin kampanyasina katildim ama vaat edilen Worldpuan hesabima hala yatmadi, 2 haftadir bekliyorum." },
-    { "id": "SM-002", "tema": "REWARD_NOT_CREDITED", "metin": "Kampanya kosullarini tamamladim fakat 500 TL'lik odul tutari hesabima gecmedi, musteri hizmetleri de net bir tarih veremedi." },
-    { "id": "SM-003", "tema": "ELIGIBILITY_MISMATCH", "metin": "Yeni musteri kampanyasindan yararlanabilecegimi dusunuyordum ama meger daha once hesabim varmis, uygun degilmisim." },
-    { "id": "SM-004", "tema": "ELIGIBILITY_MISMATCH", "metin": "Kampanyanin herkese acik oldugunu saniyordum, aradigimda sadece belirli musteri segmenti icin gecerli oldugunu soylediler." },
-    { "id": "SM-005", "tema": "INSTALLMENT_MATURITY", "metin": "Kampanyada 12 taksit yaziyordu ama basvurumda sadece 6 taksit secenegi cikti." },
-    { "id": "SM-006", "tema": "INSTALLMENT_MATURITY", "metin": "Odemesiz donem olacagini saniyordum, ilk ay yine taksit tahsil edildi." },
-    { "id": "SM-007", "tema": "MERCHANT_MCC_SCOPE", "metin": "Markette yaptigim alisverisin kampanya kapsaminda oldugunu dusunuyordum ama bu isyeri kampanyaya dahil degilmis." },
-    { "id": "SM-008", "tema": "MERCHANT_MCC_SCOPE", "metin": "Akaryakit kampanyasi her istasyonda gecerli saniyordum, benim gittigim istasyon anlasmali degilmis." },
-    { "id": "SM-009", "tema": "ACTIVATION_REGISTRATION", "metin": "Kampanyaya katilmak icin aktivasyon yapmam gerektigini bilmiyordum, uygulamada boyle bir adim goremedim." },
-    { "id": "SM-010", "tema": "ACTIVATION_REGISTRATION", "metin": "Aktivasyon butonuna bastim ama islem basarisiz oldu, tekrar denedim yine olmadi." },
-    { "id": "SM-011", "tema": "DATE_EXPIRY", "metin": "Kampanyanin suresinin doldugunu bilmiyordum, sayfada bitis tarihi net gorunmuyordu." },
-    { "id": "SM-012", "tema": "DATE_EXPIRY", "metin": "Basvurumu son gun yaptim ama sistem kampanyanin bir gun once bittigini soyledi." },
-    { "id": "SM-013", "tema": "CARD_PRODUCT_MISMATCH", "metin": "Kampanya belirli bir kart turu icin gecerliymis, benim kartim farkli bir urun oldugu icin yararlanamadim." },
-    { "id": "SM-014", "tema": "CARD_PRODUCT_MISMATCH", "metin": "Kredi kartimla degil banka kartimla harcama yaptigim icin kampanyadan faydalanamamisim." },
-    { "id": "SM-015", "tema": "FEE_CHARGE", "metin": "Masrafsiz oldugu yaziyordu ama hesap ozetimde tahsis ucreti gorundu." },
-    { "id": "SM-016", "tema": "FEE_CHARGE", "metin": "Kampanya ucretsiz saniyordum, islem sonunda beklenmedik bir komisyon kesildi." },
-    { "id": "SM-017", "tema": "COMMUNICATION_AMBIGUITY", "metin": "Kampanya metni cok karisik yazilmis, hangi urunler icin gecerli oldugunu anlayamadim." },
-    { "id": "SM-018", "tema": "COMMUNICATION_AMBIGUITY", "metin": "Duyuru sayfasinda kosullar net degildi, aradigim sart hicbir yerde yazmiyordu." },
-    { "id": "SM-019", "tema": "SERVICE_RESOLUTION", "metin": "Cagri merkezini aradim ama sorunum cozulmedi, farkli temsilciler farkli seyler soyledi." },
-    { "id": "SM-020", "tema": "SERVICE_RESOLUTION", "metin": "Subeye gittim ama kampanyayla ilgili net bir cevap alamadim, beni tekrar cagri merkezine yonlendirdiler." }
+    {
+      "id": "SM-001",
+      "tema": "REWARD_NOT_CREDITED",
+      "metin": "A Bankasi'nin kampanyasina katildim ama vaat edilen Worldpuan hesabima hala yatmadi, 2 haftadir bekliyorum."
+    },
+    {
+      "id": "SM-002",
+      "tema": "REWARD_NOT_CREDITED",
+      "metin": "Kampanya kosullarini tamamladim fakat 500 TL'lik odul tutari hesabima gecmedi, musteri hizmetleri de net bir tarih veremedi."
+    },
+    {
+      "id": "SM-003",
+      "tema": "ELIGIBILITY_MISMATCH",
+      "metin": "Yeni musteri kampanyasindan yararlanabilecegimi dusunuyordum ama meger daha once hesabim varmis, uygun degilmisim."
+    },
+    {
+      "id": "SM-004",
+      "tema": "ELIGIBILITY_MISMATCH",
+      "metin": "Kampanyanin herkese acik oldugunu saniyordum, aradigimda sadece belirli musteri segmenti icin gecerli oldugunu soylediler."
+    },
+    {
+      "id": "SM-005",
+      "tema": "INSTALLMENT_MATURITY",
+      "metin": "Kampanyada 12 taksit yaziyordu ama basvurumda sadece 6 taksit secenegi cikti."
+    },
+    {
+      "id": "SM-006",
+      "tema": "INSTALLMENT_MATURITY",
+      "metin": "Odemesiz donem olacagini saniyordum, ilk ay yine taksit tahsil edildi."
+    },
+    {
+      "id": "SM-007",
+      "tema": "MERCHANT_MCC_SCOPE",
+      "metin": "Markette yaptigim alisverisin kampanya kapsaminda oldugunu dusunuyordum ama bu isyeri kampanyaya dahil degilmis."
+    },
+    {
+      "id": "SM-008",
+      "tema": "MERCHANT_MCC_SCOPE",
+      "metin": "Akaryakit kampanyasi her istasyonda gecerli saniyordum, benim gittigim istasyon anlasmali degilmis."
+    },
+    {
+      "id": "SM-009",
+      "tema": "ACTIVATION_REGISTRATION",
+      "metin": "Kampanyaya katilmak icin aktivasyon yapmam gerektigini bilmiyordum, uygulamada boyle bir adim goremedim."
+    },
+    {
+      "id": "SM-010",
+      "tema": "ACTIVATION_REGISTRATION",
+      "metin": "Aktivasyon butonuna bastim ama islem basarisiz oldu, tekrar denedim yine olmadi."
+    },
+    {
+      "id": "SM-011",
+      "tema": "DATE_EXPIRY",
+      "metin": "Kampanyanin suresinin doldugunu bilmiyordum, sayfada bitis tarihi net gorunmuyordu."
+    },
+    {
+      "id": "SM-012",
+      "tema": "DATE_EXPIRY",
+      "metin": "Basvurumu son gun yaptim ama sistem kampanyanin bir gun once bittigini soyledi."
+    },
+    {
+      "id": "SM-013",
+      "tema": "CARD_PRODUCT_MISMATCH",
+      "metin": "Kampanya belirli bir kart turu icin gecerliymis, benim kartim farkli bir urun oldugu icin yararlanamadim."
+    },
+    {
+      "id": "SM-014",
+      "tema": "CARD_PRODUCT_MISMATCH",
+      "metin": "Kredi kartimla degil banka kartimla harcama yaptigim icin kampanyadan faydalanamamisim."
+    },
+    {
+      "id": "SM-015",
+      "tema": "FEE_CHARGE",
+      "metin": "Masrafsiz oldugu yaziyordu ama hesap ozetimde tahsis ucreti gorundu."
+    },
+    {
+      "id": "SM-016",
+      "tema": "FEE_CHARGE",
+      "metin": "Kampanya ucretsiz saniyordum, islem sonunda beklenmedik bir komisyon kesildi."
+    },
+    {
+      "id": "SM-017",
+      "tema": "COMMUNICATION_AMBIGUITY",
+      "metin": "Kampanya metni cok karisik yazilmis, hangi urunler icin gecerli oldugunu anlayamadim."
+    },
+    {
+      "id": "SM-018",
+      "tema": "COMMUNICATION_AMBIGUITY",
+      "metin": "Duyuru sayfasinda kosullar net degildi, aradigim sart hicbir yerde yazmiyordu."
+    },
+    {
+      "id": "SM-019",
+      "tema": "SERVICE_RESOLUTION",
+      "metin": "Cagri merkezini aradim ama sorunum cozulmedi, farkli temsilciler farkli seyler soyledi."
+    },
+    {
+      "id": "SM-020",
+      "tema": "SERVICE_RESOLUTION",
+      "metin": "Subeye gittim ama kampanyayla ilgili net bir cevap alamadim, beni tekrar cagri merkezine yonlendirdiler."
+    },
+    {
+      "id": "SM-021",
+      "tema": "REWARD_NOT_CREDITED",
+      "metin": "Kampanya gercekten cok avantajliydi ama vaat edilen odul hesabima yatmadi, hala bekliyorum."
+    },
+    {
+      "id": "SM-022",
+      "tema": "REWARD_NOT_CREDITED",
+      "metin": "Alisveris sonunda kazanacagim parafpara hesabima hala yatmadi, destek hattini aradim cevap alamadim."
+    },
+    {
+      "id": "SM-023",
+      "tema": "ELIGIBILITY_MISMATCH",
+      "metin": "Bu kampanyanin kapsam disinda oldugumu sonradan ogrendim, hicbir yerde net yazmiyordu."
+    },
+    {
+      "id": "SM-024",
+      "tema": "ELIGIBILITY_MISMATCH",
+      "metin": "Maas musterisi olmam gerekiyormus, kampanyadan bu yuzden yararlanamadim."
+    },
+    {
+      "id": "SM-025",
+      "tema": "INSTALLMENT_MATURITY",
+      "metin": "Basvururken sordugum taksit sayisi ile sonradan onaylanan taksit sayisi birbirini tutmadi."
+    },
+    {
+      "id": "SM-026",
+      "tema": "INSTALLMENT_MATURITY",
+      "metin": "3 ay erteleme sozu verilmisti, ilk taksit yine normal tarihinde hesabimdan cekildi."
+    },
+    {
+      "id": "SM-027",
+      "tema": "MERCHANT_MCC_SCOPE",
+      "metin": "Market alisverisimin puan kazandiracagini saniyordum, gittigim yer isyeri degilmis."
+    },
+    {
+      "id": "SM-028",
+      "tema": "MERCHANT_MCC_SCOPE",
+      "metin": "Kuyumcu harcamamin kampanyaya dahil oldugunu sanmistim ama isyeri kampanyaya dahil degilmis."
+    },
+    {
+      "id": "SM-029",
+      "tema": "ACTIVATION_REGISTRATION",
+      "metin": "Kampanyaya otomatik girdigimi sandim, aktivasyon yapmadim diye basvurum gecersiz sayilmis."
+    },
+    {
+      "id": "SM-030",
+      "tema": "ACTIVATION_REGISTRATION",
+      "metin": "Uygulamada aktivasyon basarisiz uyarisi cikti, tekrar denedim yine ayni hata."
+    },
+    {
+      "id": "SM-031",
+      "tema": "DATE_EXPIRY",
+      "metin": "Son gun basvuru yaptigimi sistem kabul etmedi, saat farkindan mi kaynaklandi anlamadim."
+    },
+    {
+      "id": "SM-032",
+      "tema": "DATE_EXPIRY",
+      "metin": "Kampanyanin bitis tarihi konusunda kafam karisti, sitede iki farkli tarih yaziyordu."
+    },
+    {
+      "id": "SM-033",
+      "tema": "CARD_PRODUCT_MISMATCH",
+      "metin": "Elimdeki kart kampanyayla kart uyusmuyor uyarisi aldim, hangi kartin gerektigini bulamadim."
+    },
+    {
+      "id": "SM-034",
+      "tema": "CARD_PRODUCT_MISMATCH",
+      "metin": "Basvururken kart turu sorulmadi, sonradan yanlis kart oldugu icin yararlanamadigimi soylediler."
+    },
+    {
+      "id": "SM-035",
+      "tema": "FEE_CHARGE",
+      "metin": "Masrafsiz sanirken islem sonunda 150 TL ucret kesildi, itiraz ettim cevap gelmedi."
+    },
+    {
+      "id": "SM-036",
+      "tema": "FEE_CHARGE",
+      "metin": "Hesap ozetimde beklenmedik komisyon gorunce sasirdim, hangi islemden oldugunu bile bilmiyorum."
+    },
+    {
+      "id": "SM-037",
+      "tema": "COMMUNICATION_AMBIGUITY",
+      "metin": "Kampanya metni karisik hazirlanmis, hangi urunler icin gecerli tam anlayamadim."
+    },
+    {
+      "id": "SM-038",
+      "tema": "COMMUNICATION_AMBIGUITY",
+      "metin": "Sitede avantajli yaziliyordu ama detaya girince kosullar hic soylenen gibi degildi."
+    },
+    {
+      "id": "SM-039",
+      "tema": "SERVICE_RESOLUTION",
+      "metin": "Sorunumu bildirmek icin cagri merkezini aradim, kayit acildi ama geri donus olmadi."
+    },
+    {
+      "id": "SM-040",
+      "tema": "SERVICE_RESOLUTION",
+      "metin": "Subeye gittim, gorevli baska bir subeye yonlendirdi, orada da bir cozum bulamadim."
+    },
+    {
+      "id": "SM-041",
+      "tema": "REWARD_NOT_CREDITED",
+      "metin": "Basvuru sirasinda odul yatmadi diye bir uyari almadim, ama gecen hafta odul gecmedi diye tekrar kontrol ettim, yine yok."
+    },
+    {
+      "id": "SM-042",
+      "tema": "REWARD_NOT_CREDITED",
+      "metin": "Kampanya kosullarini sagladigim halde puan yatmadi, uygulamada puan gecmedi bildirimi bile cikmiyor."
+    },
+    {
+      "id": "SM-043",
+      "tema": "REWARD_NOT_CREDITED",
+      "metin": "Alisverisimden kazanmam gereken Bankkart Lira hala hesabimda gorunmuyor, iki haftadir bekliyorum."
+    },
+    {
+      "id": "SM-044",
+      "tema": "ELIGIBILITY_MISMATCH",
+      "metin": "Bu urunun kampanya kapsaminda degil oldugunu sonradan ogrendim, bu yuzden hicbir avantajdan yararlanamiyorum."
+    },
+    {
+      "id": "SM-045",
+      "tema": "INSTALLMENT_MATURITY",
+      "metin": "Basvuru formunda gordugum vade ile onaylanan sozlesmedeki vade farkliydi, kimse aciklama yapmadi."
+    },
+    {
+      "id": "SM-046",
+      "tema": "ACTIVATION_REGISTRATION",
+      "metin": "Kartimi aktive etmem gerektigini hicbir yerde okumadim, kampanya suresi boyunca haberim olmadi."
+    }
   ],
-
   "alan_disi_ornekler": [
-    { "id": "SM-D01", "not": "Hicbir temayla ilgisi olmayan, siniflandirici None donmeli", "metin": "Yarin hava nasil olacak acaba, sube saat kacta aciliyor?" },
-    { "id": "SM-D02", "not": "Genel memnuniyet, sikayet degil - siniflandirici None donmeli", "metin": "Bankanizin hizmetinden genel olarak memnunum, tesekkur ederim." }
+    {
+      "id": "SM-D01",
+      "not": "Hicbir temayla ilgisi olmayan, siniflandirici None donmeli",
+      "metin": "Yarin hava nasil olacak acaba, sube saat kacta aciliyor?"
+    },
+    {
+      "id": "SM-D02",
+      "not": "Genel memnuniyet, sikayet degil - siniflandirici None donmeli",
+      "metin": "Bankanizin hizmetinden genel olarak memnunum, tesekkur ederim."
+    }
+  ],
+  "_surum_gecmisi": [
+    {
+      "surum": "1.0",
+      "tarih": "20 Agustos 2026",
+      "degisiklik": "10 tema, 20 ornek, 2 alan disi ornek. Yalnizca tema siniflandirmasi olculuyordu."
+    },
+    {
+      "surum": "1.1",
+      "tarih": "27 Agustos 2026",
+      "degisiklik": "PII, yineleme ve bilinen sinirlama gruplari eklendi. GEREKCE: v1.0'daki 22 ornegin HICBIRINDE PII yoktu, HICBIRI insan_kontrolu_gerekir tetiklemiyordu ve 22/22 icerik_hash tekildi - yani complaint/toplama.py::hazirla boru hattinin 6 adimindan yalnizca 4.'su (tema) bu setle olculuyordu. v1.1 ile 2. (PII) ve 3. (yineleme) adimlar da olculur hale geldi. Mevcut 20 ornek ve 2 alan disi ornek DEGISTIRILMEDI."
+    },
+    {
+      "surum": "1.2",
+      "tarih": "27 Agustos 2026",
+      "degisiklik": "onem_ornekleri, cozum_ornekleri, dusuk_bilgi_ornekleri gruplari eklendi. GEREKCE: mentor geri bildirimi complaint pipeline'ina severity (onem derecesi) ve resolution (cozum durumu) katmanlari eklenmesini istedi (complaint != negative sentiment, cozum surecinin ayri izlenmesi gerektigi). Bu iki katman complaint/onem_derecesi.py ve complaint/cozum_tespiti.py ile KURAL TABANLI eklendi - CRM entegrasyonu DEGIL, metnin kendi ifadesinden tespit. dusuk_bilgi_ornekleri, complaint/toplama.py::_dusuk_bilgi_supheli_mi spam/dusuk-bilgi isaretleyicisini olcer. v1.0/v1.1 icerigi DEGISTIRILMEDI."
+    },
+    {
+      "surum": "1.3",
+      "tarih": "27 Agustos 2026",
+      "degisiklik": "`ornekler` 20 -> 40'a cikarildi (tema basina 2 -> 4). GEREKCE: olculdu - complaint/tema_siniflandirici.py::_TEMA_IFADELERI icindeki 60 ifadenin 27'si (%45) HICBIR ornek tarafindan hic tetiklenmiyordu; bir ifadede yazim/regex hatasi olsa hicbir test bunu yakalamazdi. Yeni 20 ornek, MUMKUN OLDUGUNCA daha once kullanilmamis ifadeleri hedefler ve cumle yapisi/uzunluk/register bakimindan ilk 20'den BILEREK farklidir (mentor geri bildirimi: gercek sikayetlerde enformal dil ve ifade cesitliligi onemli). SM-021, mentor geri bildirimindeki 'kampanya cok guzel ama odulum yatmadi' ornegini BIREBIR uygular - 'complaint = negatif sentiment' varsayiminin yanlisligini somut bir ornekle kanitlar (bkz. asagidaki not). 500'e CIKARILMADI: bu, docs/veri_edinme_politikasi.md §3'te gerekcelendirilen bilinc bir tercih - hepsi tek oturumda elle yazildigi icin ham sayiyi artirmak dilsel cesitliligi ARTIRMAZ, yapay bir oz guven uretir. onem_ornekleri'ne SM-O05/SM-O06 eklendi (complaint/onem_derecesi.py'ye eklenen 3. sinyal - tutar bahsi - icin, bkz. o dosyanin degisiklik notu)."
+    },
+    {
+      "surum": "1.4",
+      "tarih": "27 Agustos 2026",
+      "degisiklik": "`ornekler` 40 -> 46'ya cikarildi, KALAN ifade kapsama bosluguna hedefli: v1.3 sonrasi olculdu, 60 ifadenin 9'u (%15) hala hic tetiklenmiyordu (REWARD_NOT_CREDITED'de 5, ELIGIBILITY_MISMATCH'te 2, INSTALLMENT_MATURITY ve ACTIVATION_REGISTRATION'da 1'er). 6 yeni ornek TAM OLARAK bu kalan ifadeleri hedefler - sonuc: 60 ifadenin 60'i (%100) en az bir ornekte tetikleniyor. Bilerek SINIRLI: kapsama bosluguna gore hedeflenmis, tema basina uniform sayida degil - amac sayiyi buyutmek degil, TEST EDILMEYEN kod yolunu KALMAMAK. `entity_resolution_ornekleri` grubu eklendi: 3 seviyeli entity resolution demosu (sikayet_hatti_olcum.py ve tests/test_sikayet_hatti_sentetik.py'de kodun icine GOMULUYDU, artik veri dosyasindan okunuyor - tutarlilik)."
+    }
+  ],
+  "_uretim_yontemi_pii": "PII gruplarindaki TCKN, IBAN, kart, telefon ve e-posta degerlerinin TAMAMI UYDURMADIR ve hicbiri gercek bir kisiye, hesaba veya karta ait DEGILDIR. TCKN olarak 10000000146 kullanildi - bu, resmi dogrulama algoritmasini gecen bilinen bir TEST degeridir ve depoda zaten tests/test_sikayet_hatti.py icinde ayni amacla kullanilmaktadir. Kart numarasi 4242 4242 4242 4242, sektorde yaygin kullanilan test kart numarasidir. IBAN, TR bicimine uyan uydurma bir dizidir. Telefon numaralari 0532 111 22 33 kaliplidir. Bu degerler BILEREK gercek olmayan ama DESENE UYAN degerlerdir: amac maskeleme kurallarini olcmek, gercek kisisel veri kullanmak DEGIL.",
+  "_beklenen_davranis_pii": "Her PII ornegi complaint/pii_temizleme.py::temizle'den gecirildiginde `bulunanlar` sayaci `beklenen_maskeler` ile AYNI olmalidir. Iki yonlu olculur (bkz. docs/kapsam_ve_veri_ayrimi.md 'Iki yonlu olcum'): `pii_ornekleri` HASSASIYETI olcer (maskelenmesi gerekeni maskeledi mi), `pii_karsi_ornekleri` OZGULLUGU olcer (maskelenmemesi gerekeni RAHAT BIRAKTI mi). Yalnizca hassasiyet olculseydi 'her rakam dizisini sil' diyen bir kontrol %100 alirdi; yalnizca ozgulluk olculseydi 'hicbir seyi silme' diyen bir kontrol %100 alirdi.",
+  "pii_ornekleri": [
+    {
+      "id": "SM-P01",
+      "aciklama": "Gecerli TCKN - algoritma sinavini gecer, maskelenmeli",
+      "metin": "Kampanya basvurusunda TCKN 10000000146 girdim ama odul yatmadi.",
+      "beklenen_maskeler": {
+        "tckn": 1
+      },
+      "beklenen_tema": "REWARD_NOT_CREDITED"
+    },
+    {
+      "id": "SM-P02",
+      "aciklama": "IBAN bitisik yazim",
+      "metin": "Odul tutari TR330006100519786457841326 hesabima gecmedi.",
+      "beklenen_maskeler": {
+        "iban": 1
+      },
+      "beklenen_tema": "REWARD_NOT_CREDITED"
+    },
+    {
+      "id": "SM-P03",
+      "aciklama": "IBAN bosluklu yazim - en yaygin kullanici bicimi",
+      "metin": "Puan yatmadi, IBAN'im TR33 0006 1005 1978 6457 8413 26 seklinde.",
+      "beklenen_maskeler": {
+        "iban": 1
+      },
+      "beklenen_tema": "REWARD_NOT_CREDITED"
+    },
+    {
+      "id": "SM-P04",
+      "aciklama": "Telefon - 0 onekli, bosluklu",
+      "metin": "Cagri merkezini aradim, 0532 111 22 33 numarasindan donus yapilmadi.",
+      "beklenen_maskeler": {
+        "telefon": 1
+      },
+      "beklenen_tema": "SERVICE_RESOLUTION"
+    },
+    {
+      "id": "SM-P05",
+      "aciklama": "Telefon - +90 onekli, bitisik",
+      "metin": "Sorunum cozulmedi, +905321112233 numarali hattan ulasilamiyor.",
+      "beklenen_maskeler": {
+        "telefon": 1
+      },
+      "beklenen_tema": "SERVICE_RESOLUTION"
+    },
+    {
+      "id": "SM-P06",
+      "aciklama": "Telefon - oneksiz (5xx ile baslayan)",
+      "metin": "Farkli temsilciler 532 111 22 33 nolu hattan farkli sey soyledi.",
+      "beklenen_maskeler": {
+        "telefon": 1
+      },
+      "beklenen_tema": "SERVICE_RESOLUTION"
+    },
+    {
+      "id": "SM-P07",
+      "aciklama": "Kart numarasi - 16 hane, bosluk gruplu",
+      "metin": "Kredi kartimla degil 4242 4242 4242 4242 numarali kartla odedim.",
+      "beklenen_maskeler": {
+        "kart": 1
+      },
+      "beklenen_tema": "CARD_PRODUCT_MISMATCH"
+    },
+    {
+      "id": "SM-P08",
+      "aciklama": "E-posta adresi",
+      "metin": "Kampanya metni net degildi, ornek.musteri@eposta.com adresine yazdim.",
+      "beklenen_maskeler": {
+        "eposta": 1
+      },
+      "beklenen_tema": "COMMUNICATION_AMBIGUITY"
+    },
+    {
+      "id": "SM-P09",
+      "aciklama": "Ayni metinde IKI FARKLI PII turu - ikisi de maskelenmeli",
+      "metin": "TCKN 10000000146 ve 0532 111 22 33 verdim, tahsis ucreti yine kesildi.",
+      "beklenen_maskeler": {
+        "tckn": 1,
+        "telefon": 1
+      },
+      "beklenen_tema": "FEE_CHARGE"
+    }
+  ],
+  "pii_karsi_ornekleri": [
+    {
+      "id": "SM-PN1",
+      "aciklama": "11 haneli MUSTERI NUMARASI - TCKN algoritmasini GECEMEZ, silinmemeli. Tek basina '11 hane' olcutu kullanilsaydi bu deger yanlislikla silinirdi.",
+      "metin": "Musteri numaram 12345678901 olmasina ragmen uygun degilmisim.",
+      "beklenen_maskeler": {},
+      "beklenen_tema": "ELIGIBILITY_MISMATCH"
+    },
+    {
+      "id": "SM-PN2",
+      "aciklama": "12 haneli basvuru referansi - ne TCKN (11 hane degil) ne kart (16 hane degil)",
+      "metin": "Basvuru referansim 987654321012 idi, taksit secenegi cikmadi.",
+      "beklenen_maskeler": {},
+      "beklenen_tema": "INSTALLMENT_MATURITY"
+    },
+    {
+      "id": "SM-PN3",
+      "aciklama": "Para tutari - rakam icerir ama kisisel veri DEGIL, korunmali (silinseydi sikayetin finansal icerigi kaybolurdu)",
+      "metin": "Kampanyada 5.000 TL odul vaat edildi ama odul gecmedi.",
+      "beklenen_maskeler": {},
+      "beklenen_tema": "REWARD_NOT_CREDITED"
+    },
+    {
+      "id": "SM-PN4",
+      "aciklama": "Tarih ve kar payi orani - kampanya bilgisi, kisisel veri degil",
+      "metin": "Kampanyanin bitis tarihi 31.12.2026 yaziyordu, %2,05 oran vardi.",
+      "beklenen_maskeler": {},
+      "beklenen_tema": "DATE_EXPIRY"
+    }
+  ],
+  "_beklenen_davranis_yineleme": "`yineleme_ciftleri`: iki metin AYNI icerik_hash uretmelidir (complaint/toplama.py::_dedup_anahtari normalizasyonu). `yineleme_karsi_ciftleri`: FARKLI hash uretmelidir - yoksa normalizasyon fazla agresif demektir ve farkli sikayetleri ayni sayardi. Sonuc her iki durumda da ENGELLEME degil ISARETLEMEDIR (yineleme_supheli).",
+  "yineleme_ciftleri": [
+    {
+      "id": "SM-Y01",
+      "aciklama": "Yalnizca sondaki nokta farkli",
+      "metin_a": "Odulum hesabima yatmadi",
+      "metin_b": "Odulum hesabima yatmadi."
+    },
+    {
+      "id": "SM-Y02",
+      "aciklama": "Buyuk/kucuk harf farki - Turkce I/i katlamasi dahil",
+      "metin_a": "TAKSIT SECENEGI CIKMADI",
+      "metin_b": "taksit secenegi cikmadi"
+    },
+    {
+      "id": "SM-Y03",
+      "aciklama": "Fazla bosluklar farkli yerlerde",
+      "metin_a": "Tahsis ucreti  kesildi",
+      "metin_b": "Tahsis   ucreti kesildi"
+    },
+    {
+      "id": "SM-Y04",
+      "aciklama": "Farkli noktalama yigini (!!! / ...)",
+      "metin_a": "Aktivasyon basarisiz oldu!!!",
+      "metin_b": "Aktivasyon basarisiz oldu..."
+    },
+    {
+      "id": "SM-Y05",
+      "aciklama": "Virgul yerine tire ayraci",
+      "metin_a": "Kampanyanin suresi dolmus, haberim yoktu",
+      "metin_b": "Kampanyanin suresi dolmus - haberim yoktu"
+    }
+  ],
+  "yineleme_karsi_ciftleri": [
+    {
+      "id": "SM-YN1",
+      "aciklama": "Tamamen farkli iki sikayet - CAKISMAMALI",
+      "metin_a": "Odulum hesabima yatmadi",
+      "metin_b": "Taksit secenegim cikmadi"
+    },
+    {
+      "id": "SM-YN2",
+      "aciklama": "Tek kelime farki anlami TERSINE ceviriyor - CAKISMAMALI",
+      "metin_a": "Tahsis ucreti kesildi",
+      "metin_b": "Tahsis ucreti kesilmedi"
+    }
+  ],
+  "_beklenen_davranis_sinirlama": "Bu kayitlar HATA DEGIL, DONDURULMUS KARARDIR (bkz. gelenek_bankacilik_karsi_ornekleri.json icindeki ayni desen). Bir test bu davranisi kilitler: yesil kalmasi 'sorun yok' demek degil, 'bilinen sinirlama hala ayni yerde' demektir. Biri davranisi degistirirse test kirilir ve karar YENIDEN TARTISILMIS olur.",
+  "bilinen_sinirlamalar": [
+    {
+      "id": "SM-BS1",
+      "baslik": "Kisi adi iceren metin PII bulunmadi sayilir VE insan kontrolu icin isaretlenmez",
+      "metin": "Musteri temsilcisi Ayse Hanim yanlis bilgi verdi, sorunum cozulmedi.",
+      "gozlenen_davranis": {
+        "bulunanlar": {},
+        "insan_kontrolu_gerekir": false
+      },
+      "neden_onemli": "complaint/pii_temizleme.py modul docstring'i 'ad iceren metinler icin insan gozden gecirmesi gerekir - temizle() bunu insan_kontrolu_gerekir bayragiyla soyler' diyor. ANCAK uygulamada bayrak insan_kontrolu_gerekir=bool(sayac) olarak hesaplaniyor, yani YALNIZCA regex ile yakalanan bir PII bulundugunda True donuyor. Sadece kisi adi iceren bir metin bulunanlar={} uretir ve bayrak False kalir - metin SESSIZCE 'temiz' sayilir. Docstring'in verdigi soz ile kodun davranisi bu noktada AYRISIYOR.",
+      "neden_duzeltilmedi": "Duzeltmenin iki yolu var, ikisi de OLCUM GEREKTIRIYOR: (a) NER ile ad tespiti - extraction/ner_extractor.py Bulgu 1-4'e gore eldeki GLiNER zero-shot modeli Turkce adlarda guvenilir degil; (b) tum metinleri kosulsuz isaretlemek - bu durumda bayrak hicbir sey AYIRT ETMEZ ve inceleme kuyrugu anlamsizlasir. Sinir, gizlenmek yerine burada YAZILI ve testle dondurulmus haldedir.",
+      "etki_alani": "Faz 1'de etkisi YOKTUR: bu sette gercek kisi adi bulunmuyor ve gercek veri toplanmiyor. Gercek musteri verisi ingest edilmeden ONCE kapatilmasi gereken bir actir - Faz 2 kapilarindan biridir."
+    },
+    {
+      "id": "SM-BS2",
+      "baslik": "Maskeleme komsu boslugu yutabiliyor - kozmetik",
+      "metin": "Odul tutari TR330006100519786457841326 hesabima gecmedi.",
+      "gozlenen_davranis": {
+        "temiz_metin": "Odul tutari [IBAN]hesabima gecmedi."
+      },
+      "neden_onemli": "_IBAN deseni son haneden SONRAKI boslugu da tuketiyor; ayni sey _TELEFON deseninin basindaki ayrac sinifi icin ONCEKI bosluk yonunde oluyor (SM-P06). Sonuc '[IBAN]hesabima' gibi bitisik yazim - insan gozden gecirmesinde okunabilirligi dusurur.",
+      "neden_duzeltilmedi": "SINIFLANDIRMAYI ETKILEMIYOR: tema eslesmesi alt-dize temellidir ve kelime siniri BILEREK kullanilmamaktadir (bkz. tema_siniflandirici.py::_ifadeyi_derle docstring'i), bu yuzden '[IBAN]hesabima gecmedi' icinde 'hesabima gecmedi' ifadesi bulunur ve tema dogru atanir - SM-P02 bunu kanitlar. Deseni degistirmek maskeleme davranisini etkileyecegi icin ozgulluk yeniden olculmeden yapilmamalidir.",
+      "etki_alani": "Kozmetik - saklanan metnin okunabilirligi; siniflandirma ve maskeleme dogru."
+    }
+  ],
+  "_beklenen_davranis_onem": "complaint/onem_derecesi.py::onem_derecesi_belirle UC seviye doner: YUKSEK (parasal kayip temasi VEYA tekrarlanan magduriyet ifadesi), ORTA (varsayilan - yuksek/dusuk sinyali yok), DUSUK (yalnizca COMMUNICATION_AMBIGUITY). Varsayilan ORTA'dir - kanit yoksa en olumsuz/en yuksek iddia UYDURULMAZ.",
+  "onem_ornekleri": [
+    {
+      "id": "SM-O01",
+      "aciklama": "Tekrar ifadesi ile YUKSEK - tema eslesmese bile",
+      "metin": "Kart bilgim calindi, defalarca aradim kimse donus yapmadi, param hala hesabimda degil.",
+      "beklenen_onem_derecesi": "YUKSEK"
+    },
+    {
+      "id": "SM-O02",
+      "aciklama": "Parasal kayip temasi (FEE_CHARGE) ile YUKSEK",
+      "metin": "Masrafsiz sanirken islem sonunda beklenmedik bir komisyon kesildi, geri istiyorum.",
+      "beklenen_onem_derecesi": "YUKSEK"
+    },
+    {
+      "id": "SM-O03",
+      "aciklama": "Yalnizca bilgi belirsizligi (COMMUNICATION_AMBIGUITY) ile DUSUK",
+      "metin": "Kampanya metni cok karisik yazilmis, anlayamadim.",
+      "beklenen_onem_derecesi": "DUSUK"
+    },
+    {
+      "id": "SM-O04",
+      "aciklama": "Varsayilan ORTA - yuksek/dusuk sinyali yok",
+      "metin": "Yeni musteri kampanyasindan yararlanabilecegimi dusunuyordum ama uygun degilmisim.",
+      "beklenen_onem_derecesi": "ORTA"
+    },
+    {
+      "id": "SM-O05",
+      "aciklama": "Tutar bahsi sinyali - tema eslesmese bile YUKSEK (3. sinyal, 27 Agustos eklendi)",
+      "metin": "Sozlesmede yazmayan bir islem icin hesabimdan 750 TL cekildi.",
+      "beklenen_onem_derecesi": "YUKSEK"
+    },
+    {
+      "id": "SM-O06",
+      "aciklama": "COMMUNICATION_AMBIGUITY tutar bahsi barindirsa bile DUSUK kalir - mutlak oncelik",
+      "metin": "Kampanyada vaat edilen 500 TL odul konusunda bilgiler net degildi, sayfada tutarsizlik vardi.",
+      "beklenen_onem_derecesi": "DUSUK"
+    }
+  ],
+  "_beklenen_davranis_cozum": "complaint/cozum_tespiti.py::cozum_durumu_belirle DORT deger doner: cozuldu, kismen, cozulmedi, bilinmiyor (varsayilan). Cogu sikayet metni yalnizca SORUNU anlatir, cozum surecinin nerede oldugunu SOYLEMEZ - bu durumda 'cozulmedi' DEMEK bir iddia UYDURMAK olurdu.",
+  "cozum_ornekleri": [
+    {
+      "id": "SM-R01",
+      "aciklama": "Acikca cozuldu",
+      "metin": "Sorunumu cagri merkezine bildirdim, iki gun sonra sorun giderildi ve tesekkur ederim.",
+      "beklenen_cozum_durumu": "cozuldu"
+    },
+    {
+      "id": "SM-R02",
+      "aciklama": "Acikca kismen cozuldu",
+      "metin": "Odememin bir kismi odendi, kalan tutar hala hesabima gecmedi.",
+      "beklenen_cozum_durumu": "kismen"
+    },
+    {
+      "id": "SM-R03",
+      "aciklama": "Acikca cozulmedi",
+      "metin": "Sikayetimi ilettim ama hala yanit yok, magdur oldum.",
+      "beklenen_cozum_durumu": "cozulmedi"
+    },
+    {
+      "id": "SM-R04",
+      "aciklama": "Cozum sinyali YOK - varsayilan bilinmiyor (EN YAYGIN durum)",
+      "metin": "Kampanya kosullari hakkinda bilgi almak istiyorum.",
+      "beklenen_cozum_durumu": "bilinmiyor"
+    }
+  ],
+  "_beklenen_davranis_dusuk_bilgi": "complaint/toplama.py::_dusuk_bilgi_supheli_mi metindeki kelime sayisi 4'un ALTINDAYSA True doner - SILME degil ISARETLEME (yineleme_supheli ile ayni felsefe). Esik, mevcut setteki EN KISA gecerli sikayetin (5 kelime, SM-P02) ALTINDA secildi ki gercek icerikli kisa sikayetler yanlislikla isaretlenmesin - bu YINE iki yonlu bir olcumdur.",
+  "dusuk_bilgi_ornekleri": [
+    {
+      "id": "SM-S01",
+      "aciklama": "Tek kelime - hicbir temaya/bankaya baglanamaz",
+      "metin": "Kotu.",
+      "beklenen_dusuk_bilgi_supheli": true
+    },
+    {
+      "id": "SM-S02",
+      "aciklama": "Uc kelime - esigin altinda",
+      "metin": "Berbat bir sey.",
+      "beklenen_dusuk_bilgi_supheli": true
+    }
+  ],
+  "dusuk_bilgi_karsi_ornekleri": [
+    {
+      "id": "SM-SN1",
+      "aciklama": "Esikte (4 kelime) - ISARETLENMEMELI",
+      "metin": "Hic memnun degilim resmen.",
+      "beklenen_dusuk_bilgi_supheli": false
+    },
+    {
+      "id": "SM-SN2",
+      "aciklama": "SM-P02 ile ayni uzunlukta (5 kelime) gercek icerikli sikayet",
+      "metin": "Kampanya suresi cok kisa tutulmus, yetisemedim.",
+      "beklenen_dusuk_bilgi_supheli": false
+    }
+  ],
+  "_not_karma_sentiment": "SM-021 kasitli olarak KARMA sentiment tasir: 'Kampanya gercekten cok avantajliydi ama...' - olumlu bir ifadeyle BASLAR. Mentor geri bildiriminin 2. maddesi tam olarak bunu vurguluyordu: bir sikayetin olumsuz olmasi metnin TAMAMEN olumsuz olmasi anlamina gelmez, ve 'sentiment' ile 'complaint detection' AYNI SEY DEGILDIR. Sistemde ayri bir sentiment katmani YOKTUR (bilerek - tema siniflandirmasi aspect/complaint-turu belirler, duygu polaritesi degil); bu ornek, kural tabanli tema siniflandiricinin metnin basindaki olumlu ifadeye ALDANMADIGINI, cumlenin SONUNDAKI somut sikayet sinyaline ('hesabima yatmadi') dogru sekilde kilitlendigini kanitlar.",
+  "_beklenen_davranis_entity_resolution": "complaint/kampanya_eslestirme.py::kampanya_esle her senaryo icin cagirilir; `kampanya` alani SimpleNamespace'e cevrilecek sozluktur (id/banka/kampanya_adi/kampanya_turu/odul_birimi). `beklenen` alanindaki `kampanya_esti` False ise Seviye 3'un ESIGI GECMEMESI beklenir - bu bir HATA DEGIL, mentor geri bildirimindeki 'kampanya eslestirmeyi opsiyonel yapin' onerisinin tam olarak gosterdigi durumdur.",
+  "entity_resolution_ornekleri": [
+    {
+      "id": "SM-ER1",
+      "aciklama": "Musteri bankayi ve urun turunu belirtir, SPESIFIK kampanya adini HIC yazmaz - gercek musteri dilinde en yaygin durum.",
+      "metin": "A Bankasi konut finansmani basvurumda sorun yasadim, kar payi orani yanlis hesaplandi.",
+      "kampanya": {
+        "id": 101,
+        "banka": "A Bankasi",
+        "kampanya_adi": "Yaz Firsati 2026",
+        "kampanya_turu": "Konut Finansmani Kampanyasi",
+        "odul_birimi": null
+      },
+      "beklenen": {
+        "banka_eslesti": true,
+        "urun_turu_guven_pozitif": true,
+        "kampanya_esti": false
+      }
+    },
+    {
+      "id": "SM-ER2",
+      "aciklama": "KONTROL GRUBU: spesifik kampanya adi da gecerse Seviye 3 de esigi asar - uc seviye BIRBIRINI ENGELLEMEZ, BAGIMSIZ olculur.",
+      "metin": "A Bankasi Yaz Firsati 2026 konut finansmani kampanyasinda sorun yasadim.",
+      "kampanya": {
+        "id": 101,
+        "banka": "A Bankasi",
+        "kampanya_adi": "Yaz Firsati 2026",
+        "kampanya_turu": "Konut Finansmani Kampanyasi",
+        "odul_birimi": null
+      },
+      "beklenen": {
+        "banka_eslesti": true,
+        "urun_turu_guven_pozitif": true,
+        "kampanya_esti": true
+      }
+    }
   ]
 }

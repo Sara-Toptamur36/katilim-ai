@@ -159,6 +159,20 @@ class Sikayet(Base):
     `nullable=True` ve Python tarafinda varsayilani `None`/`False`dir, bu
     yuzden eldeki (sentetik) kayitlar/testler bu sutunlar YOKKEN yazilmis
     olsa da gecerliligini korur.
+
+    ONEM/COZUM/ENTITY-RESOLUTION ALANLARI (27 Agustos 2026 eklendi - bkz.
+    complaint/onem_derecesi.py, complaint/cozum_tespiti.py,
+    complaint/kampanya_eslestirme.py::EslesmeSonucu): `onem_derecesi`
+    (YUKSEK/ORTA/DUSUK) ve `cozum_durumu` (artik METNIN KENDI IFADESINDEN
+    tespit edilir, CRM entegrasyonu DEGIL) kural tabanli kaynaklardan
+    doldurulur - ikisi de "kanit yoksa en olumsuz/en yuksek degil, en
+    notr deger" ilkesiyle calisir (ORTA / bilinmiyor varsayilandir).
+    `dusuk_bilgi_supheli` cok kisa/bilgisiz metinleri ISARETLER, SILMEZ
+    (yineleme_supheli ile ayni felsefe). `banka_eslesti`/`urun_turu_guveni`
+    kampanya eslesmesi (Seviye 3) esik altinda kalsa bile Seviye 1
+    (banka) ve Seviye 2 (urun turu) sinyallerini AYRI saklar - mentor
+    geri bildirimindeki "kampanya eslestirmeyi zorunlu degil opsiyonel
+    yapin" onerisinin karsiligi.
     """
 
     __tablename__ = "sikayetler"
@@ -175,6 +189,9 @@ class Sikayet(Base):
     # spam/mukerrer AYIKLAMAK icin degil, insan onayina KUYRUKLAMAK icindir.
     icerik_hash = Column(String(64), nullable=True, index=True)
     yineleme_supheli = Column(Boolean, default=False, index=True)
+    # Cok kisa/bilgisiz metin isareti (complaint/toplama.py::_dusuk_bilgi_supheli_mi).
+    # ISARETLEME, ENGELLEME DEGIL - ayni yineleme_supheli felsefesi.
+    dusuk_bilgi_supheli = Column(Boolean, default=False, index=True)
 
     # --- Siniflandirma (complaint/tema_siniflandirici.py) ---
     tema = Column(String(50), nullable=True, index=True)
@@ -182,15 +199,18 @@ class Sikayet(Base):
     # Kural setinin surumu (complaint/tema_siniflandirici.py::TEMA_SURUMU) -
     # kural seti degisirse eski/yeni kayitlar bu alanla ayirt edilebilir.
     tema_surumu = Column(String(20), nullable=True)
+    # Kural tabanli onem derecesi (complaint/onem_derecesi.py) -
+    # YUKSEK/ORTA/DUSUK, varsayilan ORTA (kanit yoksa en dusuk/en yuksek
+    # DEGIL, "ayirt edici sinyal yok" degeri).
+    onem_derecesi = Column(String(10), nullable=True, index=True)
 
-    # Sikayetin isleyis durumu (acik/islemde/cozuldu/reddedildi - serbest
-    # metin, DB seviyesinde CHECK YOK, digerlerinde oldugu gibi "kaynakta
-    # olmayan deger uretme" ilkesiyle). SU AN HICBIR YOL BUNU DOLDURMAZ:
-    # cozum sureci gercek destek/CRM akisina baglanana kadar (Faz 2)
-    # DAIMA None'dir - "acik" gibi bir varsayim UYDURULMAZ. Sutun,
-    # onay geldiginde acele sema tasarlamamak icin simdiden acilir
-    # (c9d2e4a17b30'un "sikayetler tablosu su an bos kalir" gerekcesiyle
-    # AYNI mantik).
+    # Sikayetin isleyis durumu - degerler: cozuldu/kismen/cozulmedi/bilinmiyor
+    # (serbest metin, DB seviyesinde CHECK YOK, digerlerinde oldugu gibi
+    # "kaynakta olmayan deger uretme" ilkesiyle). 27 Agustos 2026'dan
+    # itibaren complaint/cozum_tespiti.py TARAFINDAN DOLDURULUR - bu bir
+    # CRM/destek bileti entegrasyonu DEGILDIR (o hala yok, Faz 2), yalnizca
+    # musterinin KENDI metninde acikca belirttigi cozum durumunun tespitidir.
+    # Sinyal yoksa "bilinmiyor" - "acik" gibi bir varsayim hala UYDURULMAZ.
     cozum_durumu = Column(String(30), nullable=True)
 
     # --- Kaynak ve izin izi ---
@@ -204,6 +224,14 @@ class Sikayet(Base):
     eslesen_kampanya_id = Column(Integer, nullable=True, index=True)
     eslesme_guveni = Column(Float, nullable=True)
     eslesme_gerekcesi = Column(JSON, nullable=True)
+
+    # Uc seviyeli entity resolution - Seviye 1 (banka) ve Seviye 2 (urun
+    # turu), Seviye 3'ten (eslesen_kampanya_id/eslesme_guveni, yukarida)
+    # BAGIMSIZ saklanir (bkz. complaint/kampanya_eslestirme.py::EslesmeSonucu).
+    # Kampanya esik altinda kalip kampanya_id None olsa bile, banka/urun
+    # turu bilgisi kaybolmaz.
+    banka_eslesti = Column(Boolean, nullable=True)
+    urun_turu_guveni = Column(Float, nullable=True)
 
     sikayet_tarihi = Column(Date, nullable=True, index=True)
     kayit_zamani = Column(DateTime(timezone=True), server_default=func.now())

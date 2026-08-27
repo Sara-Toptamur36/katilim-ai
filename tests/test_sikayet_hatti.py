@@ -470,10 +470,11 @@ def test_hazirlanan_kayit_kural_setinin_surumunu_tasir():
 
 
 def test_kaydet_denetim_alanlarini_satira_eksiksiz_tasir(tmp_path, monkeypatch):
-    """kaydet(), hazirla()'nin urettigi P0/P1 denetim alanlarini
-    (icerik_hash, yineleme_supheli, tema_surumu) VE cozum_durumu=None'i
-    Sikayet satirina tasimali - tek bir yerde unutulan alan, denetim
-    izini sessizce kaybederdi (bkz. api/models.py::Sikayet docstring'i)."""
+    """kaydet(), hazirla()'nin urettigi TUM denetim alanlarini (icerik_hash,
+    yineleme_supheli, tema_surumu, dusuk_bilgi_supheli, onem_derecesi,
+    cozum_durumu, banka_eslesti, urun_turu_guveni) Sikayet satirina
+    tasimali - tek bir yerde unutulan alan, denetim izini sessizce
+    kaybederdi (bkz. api/models.py::Sikayet docstring'i)."""
     import complaint.izin_kapisi as izin_kapisi_modulu
 
     izin_dosyasi_yolu = tmp_path / "izin.json"
@@ -503,13 +504,23 @@ def test_kaydet_denetim_alanlarini_satira_eksiksiz_tasir(tmp_path, monkeypatch):
     assert satir.icerik_hash == hazir.icerik_hash
     assert satir.yineleme_supheli is False
     assert satir.tema_surumu == hazir.tema_surumu
-    assert satir.cozum_durumu is None
+    assert satir.dusuk_bilgi_supheli == hazir.dusuk_bilgi_supheli
+    assert satir.onem_derecesi == hazir.onem_derecesi
+    # "odul yatmadi" metninde bir cozum ifadesi GECMEZ - kural tabanli
+    # tespit varsayilana ("bilinmiyor") duser, "cozulmedi" UYDURULMAZ.
+    assert satir.cozum_durumu == "bilinmiyor" == hazir.cozum_durumu
+    assert satir.banka_eslesti == hazir.eslesme.banka_eslesti
+    assert satir.urun_turu_guveni == hazir.eslesme.urun_turu_guven
 
 
 def test_sikayet_satirinda_cozum_durumu_varsayilan_NONE_dur():
-    """Cozum sureci Faz 2'de gercek destek akisina baglanana kadar
-    HICBIR YOL bu alani doldurmaz - varsayilan `None`dir, "acik" gibi
-    bir deger UYDURULMAZ."""
+    """ORM SEVIYESINDE (pipeline'dan gecmemis, cipici bos bir Sikayet())
+    varsayilan None'dir - kolonda `default=` tanimlanmamistir. Pipeline'dan
+    (kaydet()) gecen bir satirda ise 27 Agustos 2026'dan itibaren
+    complaint/cozum_tespiti.py bu alani doldurur (bkz.
+    test_kaydet_denetim_alanlarini_satira_eksiksiz_tasir) - "hicbir yol
+    doldurmaz" artik DOGRU DEGIL, bu test yalnizca BOS SATIRIN kendisini
+    kontrol eder."""
     from api.models import Sikayet
 
     assert Sikayet().cozum_durumu is None

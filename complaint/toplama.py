@@ -61,8 +61,10 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Any, Sequence
 
+from complaint.cozum_tespiti import cozum_durumu_belirle
 from complaint.izin_kapisi import Izin, izni_zorunlu_kil
 from complaint.kampanya_eslestirme import EslesmeSonucu, kampanya_esle
+from complaint.onem_derecesi import onem_derecesi_belirle
 from complaint.pii_temizleme import temizle
 from complaint.tema_siniflandirici import tema_siniflandir
 from extraction.normalizer import turkce_ascii_kucult
@@ -71,6 +73,20 @@ from extraction.normalizer import turkce_ascii_kucult
 # ozel karakter. \w Turkce harfleri de kapsar (re.UNICODE varsayilan).
 _NOKTALAMA = re.compile(r"[^\w\s]", re.UNICODE)
 _FAZLA_BOSLUK = re.compile(r"\s+")
+
+# DUSUK BILGI / SPAM ISARETI (27 Agustos 2026 eklendi): temiz_metin bu
+# kelime sayisinin ALTINDAYSA insan incelemesine bayraklanir. Esik,
+# tests/veri/kapsam_disi/sentetik_musteri_sesi.json'daki EN KISA gecerli
+# sikayetin (5 kelime) ALTINDA secildi ki gercek icerikli kisa sikayetler
+# yanlislikla isaretlenmesin. Bu bir SILME degil ISARETLEME kuralidir -
+# ayni yineleme_supheli/insan_kontrolu_gerekir felsefesi: "kotu." gibi tek
+# kelimelik bir metin ne bir temaya ne bir bankaya baglanabilir, insan
+# gozden gecirmesi gerekir; ama otomatik olarak ATILMAZ.
+_DUSUK_BILGI_MIN_KELIME = 4
+
+
+def _dusuk_bilgi_supheli_mi(temiz_metin: str) -> bool:
+    return len((temiz_metin or "").split()) < _DUSUK_BILGI_MIN_KELIME
 
 
 def _dedup_anahtari(temiz_metin: str) -> str:
@@ -96,9 +112,14 @@ class HazirSikayet:
     insan_kontrolu_gerekir: bool
     icerik_hash: str
     yineleme_supheli: bool
+    dusuk_bilgi_supheli: bool
     tema: str | None
     tema_kaniti: str | None
     tema_surumu: str | None
+    onem_derecesi: str
+    onem_gerekce: dict
+    cozum_durumu: str
+    cozum_gerekce: dict
     kaynak: str
     sikayet_tarihi: date | None
     eslesme: EslesmeSonucu
@@ -137,10 +158,14 @@ def hazirla(
 
     tema_sonucu = tema_siniflandir(temizlenmis.metin)
     eslesen = tema_sonucu.get("eslesen_ifadeler") or []
+    tema = tema_sonucu.get("tema")
 
     eslesme = kampanya_esle(
         temizlenmis.metin, kampanyalar, sikayet_tarihi=sikayet_tarihi
     )
+
+    onem_sonucu = onem_derecesi_belirle(temizlenmis.metin, tema)
+    cozum_sonucu = cozum_durumu_belirle(temizlenmis.metin)
 
     return HazirSikayet(
         temiz_metin=temizlenmis.metin,
@@ -148,11 +173,16 @@ def hazirla(
         insan_kontrolu_gerekir=temizlenmis.insan_kontrolu_gerekir,
         icerik_hash=anahtar,
         yineleme_supheli=yineleme_supheli,
-        tema=tema_sonucu.get("tema"),
+        dusuk_bilgi_supheli=_dusuk_bilgi_supheli_mi(temizlenmis.metin),
+        tema=tema,
         # Kanit, eslesen ifadelerin kendisidir - "neden bu temaya girdi?"
         # sorusu sayiyla degil METINLE cevaplanabilmeli.
         tema_kaniti=", ".join(eslesen)[:200] or None,
         tema_surumu=tema_sonucu.get("tema_surumu"),
+        onem_derecesi=onem_sonucu["onem_derecesi"],
+        onem_gerekce=onem_sonucu["gerekce"],
+        cozum_durumu=cozum_sonucu["cozum_durumu"],
+        cozum_gerekce=cozum_sonucu["gerekce"],
         kaynak=kaynak,
         sikayet_tarihi=sikayet_tarihi,
         eslesme=eslesme,
@@ -176,19 +206,27 @@ def kaydet(oturum, hazir: HazirSikayet, bugun: date | None = None):
         insan_kontrolu_gerekir=hazir.insan_kontrolu_gerekir,
         icerik_hash=hazir.icerik_hash,
         yineleme_supheli=hazir.yineleme_supheli,
+        dusuk_bilgi_supheli=hazir.dusuk_bilgi_supheli,
         tema=hazir.tema,
         tema_kaniti=hazir.tema_kaniti,
         tema_surumu=hazir.tema_surumu,
-        # Cozum sureci (acik/islemde/cozuldu) Faz 2'de, gercek destek
-        # akisi baglaninca islenir - simdiden "acik" gibi bir deger
-        # UYDURULMAZ; sutun bilerek None birakilir (bkz. api/models.py).
-        cozum_durumu=None,
+        onem_derecesi=hazir.onem_derecesi,
+        # Cozum durumu artik METNIN KENDI IFADESINDEN tespit edilir (bkz.
+        # complaint/cozum_tespiti.py) - CRM/destek bileti entegrasyonu
+        # DEGILDIR, o hala yok (Faz 2). "bilinmiyor" VARSAYILANDIR, "acik"
+        # gibi bir deger hala UYDURULMAZ (bkz. api/models.py::Sikayet).
+        cozum_durumu=hazir.cozum_durumu,
         kaynak=hazir.kaynak,
         izin_onaylayan=izin.onaylayan,
         izin_onay_tarihi=izin.onay_tarihi,
         eslesen_kampanya_id=hazir.eslesme.kampanya_id,
         eslesme_guveni=hazir.eslesme.guven,
         eslesme_gerekcesi=hazir.eslesme.gerekce,
+        # Uc seviyeli entity resolution (bkz. complaint/kampanya_eslestirme.py
+        # EslesmeSonucu docstring'i) - kampanya (Seviye 3) esik altinda
+        # kalsa bile banka/urun turu (Seviye 1/2) AYRI saklanir.
+        banka_eslesti=hazir.eslesme.banka_eslesti,
+        urun_turu_guveni=hazir.eslesme.urun_turu_guven,
         sikayet_tarihi=hazir.sikayet_tarihi,
     )
     oturum.add(satir)

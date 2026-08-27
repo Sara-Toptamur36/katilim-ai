@@ -17,6 +17,13 @@ Kaynak: On Degerlendirme Raporu Bolum 15 (CampaignRecord) + sartname Md. 5.3
 #   demo_mode, git_commit, last_ci → TazelikYanit'a eklendi (System Health)
 #   tema_surumu     → MusteriSesiYanit + MusteriSesiOrnek'e eklendi (hangi
 #                      kural setiyle siniflandirildi - audit-trail)
+#   onem_derecesi, cozum_durumu, dusuk_bilgi_supheli, banka_eslesti,
+#   urun_turu_guveni → MusteriSesiOrnek'e eklendi (27 Agustos 2026, mentor
+#                      geri bildirimi: severity/resolution katmani + uc
+#                      seviyeli entity resolution - complaint/onem_derecesi.py,
+#                      complaint/cozum_tespiti.py, complaint/kampanya_eslestirme.py)
+#   orneklem_notu   → MusteriSesiYogunlukYanit'a eklendi (temsil yanliligi
+#                      uyarisi - platforma yazanlar tum musteriler degildir)
 #   kapsam_durumu   → MusteriSesiYogunlukYanit'a eklendi (izin_yok /
 #                      izin_var_veri_yok / veri_var - "veri neden yok?"
 #                      sorusunun cevabi, complaint/toplama.py::yogunluk_ozeti)
@@ -283,12 +290,29 @@ class MusteriSesiYanit(BaseModel):
 
 
 class MusteriSesiOrnek(BaseModel):
+    """DIKKAT: 27 Agustos 2026'dan itibaren complaint/toplama.py::hazirla
+    hattinin TAMAMINDAN gecirilir (yalnizca tema_siniflandir degil) -
+    boylece dashboard PII maskeleme, onem derecesi, cozum durumu ve
+    yineleme/dusuk-bilgi isaretlerini de gorebilir. `metin` alani ARTIK
+    hazirla()'nin `temiz_metin` ciktisidir (PII maskelenmis) - bu ornekler
+    zaten sentetik oldugu ve gercek PII icermedigi icin fark cogunlukla
+    gorunmez, ama pipeline'in GERCEK davranisini yansitir."""
+
     id: str
     metin: str
     tema: str | None
     guven: float
     eslesen_ifadeler: list[str]
     tema_surumu: str | None = None
+    onem_derecesi: str = Field(
+        "ORTA", description="YUKSEK | ORTA | DUSUK - complaint/onem_derecesi.py"
+    )
+    cozum_durumu: str = Field(
+        "bilinmiyor",
+        description="cozuldu | kismen | cozulmedi | bilinmiyor - complaint/cozum_tespiti.py",
+    )
+    dusuk_bilgi_supheli: bool = False
+    yineleme_supheli: bool = False
 
 
 class MusteriSesiOrnekYanit(BaseModel):
@@ -328,11 +352,27 @@ class MusteriSesiYogunlukYanit(BaseModel):
     yaniltici olabilir - "hicbir kaynak icin izin yok" ile "izin var ama
     henuz sikayet gelmedi" farkli durumlardir (bkz.
     complaint/toplama.py::yogunluk_ozeti docstring'i).
+
+    `orneklem_notu` (27 Agustos 2026 eklendi - mentor geri bildirimi):
+    veri gelmeye basladiginda bile bu tablo TUM MUSTERILERIN gorusunu
+    TEMSIL ETMEZ - yalnizca sikayet platformuna YAZMAYI SECEN kucuk bir
+    alt kumeyi yansitir (memnun musteri yazma egiliminde degildir).
+    Dashboard/rapor bu sayilari "musterilerin %X'i memnun degil" gibi
+    genellemeye CEVIREMEZ - yalnizca "incelenen geri bildirimlerde"
+    diye cerceveleyebilir. Bu alan HER yanitta sabit metinle tekrar
+    edilir ki unutulup yanlis genellenemesin (MusteriSesiOrnekYanit'in
+    `aciklama` alaniyla AYNI tasarim).
     """
 
     olcu: str = "gozlenen_yogunluk"
     aciklama: str = (
         "Adetlerdir, oran DEGILDIR - musteri/islem paydasi bilinmiyor."
+    )
+    orneklem_notu: str = (
+        "Bu sayilar TUM musterilerin gorusunu temsil etmez - yalnizca "
+        "sikayet platformuna yazmayi secen kucuk bir alt kumeyi yansitir. "
+        "'Musterilerin %X'i memnun degil' gibi bir genelleme YAPILAMAZ; "
+        "yalnizca 'incelenen geri bildirimlerde' diye cerceveleyin."
     )
     kapsam_durumu: str = Field(
         "izin_yok",

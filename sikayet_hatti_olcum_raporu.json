@@ -1,0 +1,489 @@
+{
+  "_baslik": "Sikayet boru hatti - sentetik veri olcumu",
+  "_uretim_tarihi": "2026-08-27T18:34:42+00:00",
+  "_veri_seti": {
+    "yol": "tests/veri/kapsam_disi/sentetik_musteri_sesi.json",
+    "surum": "1.4 - 27 Agustos 2026",
+    "uretim_yontemi": "Ornekler ELLE yazildi; hicbiri gercek bir sikayetten kopyalanmadi ve hicbiri gercek bir bankaya atfedilmiyor (banka adi yerine 'A Bankasi' ya da kendi kampanyalarimizdan turetilmis genel ifadeler kullanildi). Gercek Sikayetvar/musteri platformu verisi ancak kurumsal/hukuki izin surecinden (KVKK) sonra, Faz 2'de ingest edilecek - bkz. PeacewAI_Faz_Plani_ve_Is_Bolumu.docx Bolum 4 'Faz 2'nin kapilari'.",
+    "pii_uretim_yontemi": "PII gruplarindaki TCKN, IBAN, kart, telefon ve e-posta degerlerinin TAMAMI UYDURMADIR ve hicbiri gercek bir kisiye, hesaba veya karta ait DEGILDIR. TCKN olarak 10000000146 kullanildi - bu, resmi dogrulama algoritmasini gecen bilinen bir TEST degeridir ve depoda zaten tests/test_sikayet_hatti.py icinde ayni amacla kullanilmaktadir. Kart numarasi 4242 4242 4242 4242, sektorde yaygin kullanilan test kart numarasidir. IBAN, TR bicimine uyan uydurma bir dizidir. Telefon numaralari 0532 111 22 33 kaliplidir. Bu degerler BILEREK gercek olmayan ama DESENE UYAN degerlerdir: amac maskeleme kurallarini olcmek, gercek kisisel veri kullanmak DEGIL."
+  },
+  "_kapsam_beyani": {
+    "gercek_veri_toplandi_mi": false,
+    "veritabanina_yazildi_mi": false,
+    "izin_kaydi_olusturuldu_mu": false,
+    "aciklama": "Bu olcum yalnizca elle yazilmis sentetik metinler uzerinde yapilmistir. Hicbir siteye istek atilmamis, complaint/toplama.py::kaydet cagrilmamis ve logs/sikayet_izin_durumu.json olusturulmamistir. Izin kapisi (complaint/izin_kapisi.py) degistirilmemistir."
+  },
+  "pii_temizleme": {
+    "_ne_olcer": "Hassasiyet: maskelenmesi gerekeni maskeledi mi. Ozgulluk: musteri numarasi, referans no, tutar ve tarih gibi KISISEL OLMAYAN degerleri rahat birakti mi. Ozgulluk olculmeseydi 'her rakam dizisini sil' diyen bir kontrol tam puan alir, sikayetin finansal icerigi yok olurdu.",
+    "hassasiyet": {
+      "gecen": 9,
+      "toplam": 9,
+      "kayitlar": [
+        {
+          "id": "SM-P01",
+          "aciklama": "Gecerli TCKN - algoritma sinavini gecer, maskelenmeli",
+          "beklenen": {
+            "tckn": 1
+          },
+          "bulunan": {
+            "tckn": 1
+          },
+          "gecti": true,
+          "temiz_metin": "Kampanya basvurusunda TCKN [TCKN] girdim ama odul yatmadi."
+        },
+        {
+          "id": "SM-P02",
+          "aciklama": "IBAN bitisik yazim",
+          "beklenen": {
+            "iban": 1
+          },
+          "bulunan": {
+            "iban": 1
+          },
+          "gecti": true,
+          "temiz_metin": "Odul tutari [IBAN]hesabima gecmedi."
+        },
+        {
+          "id": "SM-P03",
+          "aciklama": "IBAN bosluklu yazim - en yaygin kullanici bicimi",
+          "beklenen": {
+            "iban": 1
+          },
+          "bulunan": {
+            "iban": 1
+          },
+          "gecti": true,
+          "temiz_metin": "Puan yatmadi, IBAN'im [IBAN]seklinde."
+        },
+        {
+          "id": "SM-P04",
+          "aciklama": "Telefon - 0 onekli, bosluklu",
+          "beklenen": {
+            "telefon": 1
+          },
+          "bulunan": {
+            "telefon": 1
+          },
+          "gecti": true,
+          "temiz_metin": "Cagri merkezini aradim, [TELEFON] numarasindan donus yapilmadi."
+        },
+        {
+          "id": "SM-P05",
+          "aciklama": "Telefon - +90 onekli, bitisik",
+          "beklenen": {
+            "telefon": 1
+          },
+          "bulunan": {
+            "telefon": 1
+          },
+          "gecti": true,
+          "temiz_metin": "Sorunum cozulmedi, [TELEFON] numarali hattan ulasilamiyor."
+        },
+        {
+          "id": "SM-P06",
+          "aciklama": "Telefon - oneksiz (5xx ile baslayan)",
+          "beklenen": {
+            "telefon": 1
+          },
+          "bulunan": {
+            "telefon": 1
+          },
+          "gecti": true,
+          "temiz_metin": "Farkli temsilciler[TELEFON] nolu hattan farkli sey soyledi."
+        },
+        {
+          "id": "SM-P07",
+          "aciklama": "Kart numarasi - 16 hane, bosluk gruplu",
+          "beklenen": {
+            "kart": 1
+          },
+          "bulunan": {
+            "kart": 1
+          },
+          "gecti": true,
+          "temiz_metin": "Kredi kartimla degil [KART] numarali kartla odedim."
+        },
+        {
+          "id": "SM-P08",
+          "aciklama": "E-posta adresi",
+          "beklenen": {
+            "eposta": 1
+          },
+          "bulunan": {
+            "eposta": 1
+          },
+          "gecti": true,
+          "temiz_metin": "Kampanya metni net degildi, [EPOSTA] adresine yazdim."
+        },
+        {
+          "id": "SM-P09",
+          "aciklama": "Ayni metinde IKI FARKLI PII turu - ikisi de maskelenmeli",
+          "beklenen": {
+            "tckn": 1,
+            "telefon": 1
+          },
+          "bulunan": {
+            "tckn": 1,
+            "telefon": 1
+          },
+          "gecti": true,
+          "temiz_metin": "TCKN [TCKN] ve [TELEFON] verdim, tahsis ucreti yine kesildi."
+        }
+      ]
+    },
+    "ozgulluk": {
+      "gecen": 4,
+      "toplam": 4,
+      "kayitlar": [
+        {
+          "id": "SM-PN1",
+          "aciklama": "11 haneli MUSTERI NUMARASI - TCKN algoritmasini GECEMEZ, silinmemeli. Tek basina '11 hane' olcutu kullanilsaydi bu deger yanlislikla silinirdi.",
+          "bulunan": {},
+          "metin_degismedi": true,
+          "gecti": true
+        },
+        {
+          "id": "SM-PN2",
+          "aciklama": "12 haneli basvuru referansi - ne TCKN (11 hane degil) ne kart (16 hane degil)",
+          "bulunan": {},
+          "metin_degismedi": true,
+          "gecti": true
+        },
+        {
+          "id": "SM-PN3",
+          "aciklama": "Para tutari - rakam icerir ama kisisel veri DEGIL, korunmali (silinseydi sikayetin finansal icerigi kaybolurdu)",
+          "bulunan": {},
+          "metin_degismedi": true,
+          "gecti": true
+        },
+        {
+          "id": "SM-PN4",
+          "aciklama": "Tarih ve kar payi orani - kampanya bilgisi, kisisel veri degil",
+          "bulunan": {},
+          "metin_degismedi": true,
+          "gecti": true
+        }
+      ]
+    }
+  },
+  "yineleme": {
+    "_ne_olcer": "Yakalama: noktalama/harf/bosluk farkiyla yazilmis AYNI sikayet ayni anahtara dusuyor mu. Ozgulluk: FARKLI sikayetler cakismiyor mu. KIRMIZI CIZGI: sonuc her iki durumda da ENGELLEME degil ISARETLEMEDIR - yineleme supheli kayit silinmez, insan incelemesine bayraklanir (kayit_durdu alani bunu dogrular).",
+    "yakalama": {
+      "gecen": 5,
+      "toplam": 5,
+      "kayitlar": [
+        {
+          "id": "SM-Y01",
+          "aciklama": "Yalnizca sondaki nokta farkli",
+          "ayni_hash": true,
+          "yineleme_supheli_isaretlendi": true,
+          "kayit_durdu": true,
+          "gecti": true
+        },
+        {
+          "id": "SM-Y02",
+          "aciklama": "Buyuk/kucuk harf farki - Turkce I/i katlamasi dahil",
+          "ayni_hash": true,
+          "yineleme_supheli_isaretlendi": true,
+          "kayit_durdu": true,
+          "gecti": true
+        },
+        {
+          "id": "SM-Y03",
+          "aciklama": "Fazla bosluklar farkli yerlerde",
+          "ayni_hash": true,
+          "yineleme_supheli_isaretlendi": true,
+          "kayit_durdu": true,
+          "gecti": true
+        },
+        {
+          "id": "SM-Y04",
+          "aciklama": "Farkli noktalama yigini (!!! / ...)",
+          "ayni_hash": true,
+          "yineleme_supheli_isaretlendi": true,
+          "kayit_durdu": true,
+          "gecti": true
+        },
+        {
+          "id": "SM-Y05",
+          "aciklama": "Virgul yerine tire ayraci",
+          "ayni_hash": true,
+          "yineleme_supheli_isaretlendi": true,
+          "kayit_durdu": true,
+          "gecti": true
+        }
+      ]
+    },
+    "ozgulluk": {
+      "gecen": 2,
+      "toplam": 2,
+      "kayitlar": [
+        {
+          "id": "SM-YN1",
+          "aciklama": "Tamamen farkli iki sikayet - CAKISMAMALI",
+          "farkli_hash": true,
+          "gecti": true
+        },
+        {
+          "id": "SM-YN2",
+          "aciklama": "Tek kelime farki anlami TERSINE ceviriyor - CAKISMAMALI",
+          "farkli_hash": true,
+          "gecti": true
+        }
+      ]
+    }
+  },
+  "tema_siniflandirma": {
+    "_ne_olcer": "Temel siniflandirma dogrulugu, alan disi metinlerde UYDURMA TEMA uretilmemesi ve PII maskelemesinden SONRA temanin korunmasi. Sonuncusu, maske etiketlerinin turu koruma tasarimini dogrular (complaint/pii_temizleme.py::ETIKET).",
+    "tema_surumu": "1.0",
+    "temel_dogruluk": {
+      "gecen": 46,
+      "toplam": 46
+    },
+    "alan_disi_ozgulluk": {
+      "gecen": 2,
+      "toplam": 2
+    },
+    "maskeleme_sonrasi": {
+      "gecen": 13,
+      "toplam": 13,
+      "kayitlar": [
+        {
+          "id": "SM-P01",
+          "beklenen": "REWARD_NOT_CREDITED",
+          "bulunan": "REWARD_NOT_CREDITED"
+        },
+        {
+          "id": "SM-P02",
+          "beklenen": "REWARD_NOT_CREDITED",
+          "bulunan": "REWARD_NOT_CREDITED"
+        },
+        {
+          "id": "SM-P03",
+          "beklenen": "REWARD_NOT_CREDITED",
+          "bulunan": "REWARD_NOT_CREDITED"
+        },
+        {
+          "id": "SM-P04",
+          "beklenen": "SERVICE_RESOLUTION",
+          "bulunan": "SERVICE_RESOLUTION"
+        },
+        {
+          "id": "SM-P05",
+          "beklenen": "SERVICE_RESOLUTION",
+          "bulunan": "SERVICE_RESOLUTION"
+        },
+        {
+          "id": "SM-P06",
+          "beklenen": "SERVICE_RESOLUTION",
+          "bulunan": "SERVICE_RESOLUTION"
+        },
+        {
+          "id": "SM-P07",
+          "beklenen": "CARD_PRODUCT_MISMATCH",
+          "bulunan": "CARD_PRODUCT_MISMATCH"
+        },
+        {
+          "id": "SM-P08",
+          "beklenen": "COMMUNICATION_AMBIGUITY",
+          "bulunan": "COMMUNICATION_AMBIGUITY"
+        },
+        {
+          "id": "SM-P09",
+          "beklenen": "FEE_CHARGE",
+          "bulunan": "FEE_CHARGE"
+        },
+        {
+          "id": "SM-PN1",
+          "beklenen": "ELIGIBILITY_MISMATCH",
+          "bulunan": "ELIGIBILITY_MISMATCH"
+        },
+        {
+          "id": "SM-PN2",
+          "beklenen": "INSTALLMENT_MATURITY",
+          "bulunan": "INSTALLMENT_MATURITY"
+        },
+        {
+          "id": "SM-PN3",
+          "beklenen": "REWARD_NOT_CREDITED",
+          "bulunan": "REWARD_NOT_CREDITED"
+        },
+        {
+          "id": "SM-PN4",
+          "beklenen": "DATE_EXPIRY",
+          "bulunan": "DATE_EXPIRY"
+        }
+      ]
+    }
+  },
+  "onem_derecesi": {
+    "_ne_olcer": "complaint/onem_derecesi.py - YUKSEK (parasal kayip temasi VEYA tekrarlanan magduriyet ifadesi) / ORTA (varsayilan) / DUSUK (yalnizca bilgi belirsizligi). Kanit yoksa en olumsuz/en yuksek iddia UYDURULMAZ, ORTA varsayilandir.",
+    "gecen": 6,
+    "toplam": 6,
+    "kayitlar": [
+      {
+        "id": "SM-O01",
+        "beklenen": "YUKSEK",
+        "bulunan": "YUKSEK",
+        "gerekce": {
+          "sebep": "tekrarlanan_magduriyet_ifadesi",
+          "ifade": "defalarca"
+        }
+      },
+      {
+        "id": "SM-O02",
+        "beklenen": "YUKSEK",
+        "bulunan": "YUKSEK",
+        "gerekce": {
+          "sebep": "parasal_kayip_temasi",
+          "tema": "FEE_CHARGE"
+        }
+      },
+      {
+        "id": "SM-O03",
+        "beklenen": "DUSUK",
+        "bulunan": "DUSUK",
+        "gerekce": {
+          "sebep": "yalnizca_bilgi_belirsizligi",
+          "tema": "COMMUNICATION_AMBIGUITY"
+        }
+      },
+      {
+        "id": "SM-O04",
+        "beklenen": "ORTA",
+        "bulunan": "ORTA",
+        "gerekce": {
+          "sebep": "yuksek_veya_dusuk_sinyal_gorulmedi_varsayilan"
+        }
+      },
+      {
+        "id": "SM-O05",
+        "beklenen": "YUKSEK",
+        "bulunan": "YUKSEK",
+        "gerekce": {
+          "sebep": "somut_tutar_bahsi",
+          "eslesen": "750 TL"
+        }
+      },
+      {
+        "id": "SM-O06",
+        "beklenen": "DUSUK",
+        "bulunan": "DUSUK",
+        "gerekce": {
+          "sebep": "yalnizca_bilgi_belirsizligi",
+          "tema": "COMMUNICATION_AMBIGUITY"
+        }
+      }
+    ]
+  },
+  "cozum_durumu": {
+    "_ne_olcer": "complaint/cozum_tespiti.py - musterinin KENDI ifadesinden cozuldu/kismen/cozulmedi/bilinmiyor tespiti. CRM/destek bileti entegrasyonu DEGILDIR (Faz 2). Sinyal yoksa 'bilinmiyor' - 'cozulmedi' gibi bir iddia UYDURULMAZ.",
+    "gecen": 4,
+    "toplam": 4,
+    "kayitlar": [
+      {
+        "id": "SM-R01",
+        "beklenen": "cozuldu",
+        "bulunan": "cozuldu",
+        "gerekce": {
+          "eslesen_ifade": "sorun giderildi"
+        }
+      },
+      {
+        "id": "SM-R02",
+        "beklenen": "kismen",
+        "bulunan": "kismen",
+        "gerekce": {
+          "eslesen_ifade": "bir kismi odendi"
+        }
+      },
+      {
+        "id": "SM-R03",
+        "beklenen": "cozulmedi",
+        "bulunan": "cozulmedi",
+        "gerekce": {
+          "eslesen_ifade": "hala yanit yok"
+        }
+      },
+      {
+        "id": "SM-R04",
+        "beklenen": "bilinmiyor",
+        "bulunan": "bilinmiyor",
+        "gerekce": {
+          "sebep": "metin_cozum_surecini_belirtmiyor"
+        }
+      }
+    ]
+  },
+  "dusuk_bilgi_spam": {
+    "_ne_olcer": "complaint/toplama.py::_dusuk_bilgi_supheli_mi - 4 kelimenin ALTINDAKI metinler ISARETLENIR (SILINMEZ). Yakalama: cok kisa metinler isaretlendi mi. Ozgulluk: esikte/uzerinde gercek icerikli kisa sikayetler YANLIS ALARM almadi mi.",
+    "yakalama": {
+      "gecen": 2,
+      "toplam": 2
+    },
+    "ozgulluk": {
+      "gecen": 2,
+      "toplam": 2
+    }
+  },
+  "entity_resolution_3_seviye": {
+    "_ne_olcer": "Seviye 1 (banka) ve Seviye 2 (urun turu) sinyalleri, Seviye 3'ten (kampanya) BAGIMSIZ hesaplanir - kampanya esik altinda kalsa bile kaybolmazlar. SM-ER1 tipik durumu (kampanya adi gecmiyor), SM-ER2 kontrol grubunu (adi da gecince Seviye 3 de esigi asiyor) gosterir.",
+    "gecen": 2,
+    "toplam": 2,
+    "senaryolar": [
+      {
+        "id": "SM-ER1",
+        "aciklama": "Musteri bankayi ve urun turunu belirtir, SPESIFIK kampanya adini HIC yazmaz - gercek musteri dilinde en yaygin durum.",
+        "metin": "A Bankasi konut finansmani basvurumda sorun yasadim, kar payi orani yanlis hesaplandi.",
+        "seviye_1_banka_eslesti": true,
+        "seviye_2_urun_turu_guven": 1.0,
+        "seviye_3_kampanya_id": null,
+        "seviye_3_guven": 0.45,
+        "beklenenle_uyumlu": true
+      },
+      {
+        "id": "SM-ER2",
+        "aciklama": "KONTROL GRUBU: spesifik kampanya adi da gecerse Seviye 3 de esigi asar - uc seviye BIRBIRINI ENGELLEMEZ, BAGIMSIZ olculur.",
+        "metin": "A Bankasi Yaz Firsati 2026 konut finansmani kampanyasinda sorun yasadim.",
+        "seviye_1_banka_eslesti": true,
+        "seviye_2_urun_turu_guven": 1.0,
+        "seviye_3_kampanya_id": 101,
+        "seviye_3_guven": 0.8,
+        "beklenenle_uyumlu": true
+      }
+    ]
+  },
+  "gozlenen_yogunluk": {
+    "olcu": "gozlenen_yogunluk",
+    "aciklama": "Adetlerdir, oran DEGILDIR - musteri/islem paydasi bilinmiyor.",
+    "kapsam_durumu": "veri_var",
+    "toplam_sikayet": 46,
+    "temalar": {
+      "REWARD_NOT_CREDITED": 7,
+      "ELIGIBILITY_MISMATCH": 5,
+      "INSTALLMENT_MATURITY": 5,
+      "ACTIVATION_REGISTRATION": 5,
+      "MERCHANT_MCC_SCOPE": 4,
+      "DATE_EXPIRY": 4,
+      "CARD_PRODUCT_MISMATCH": 4,
+      "FEE_CHARGE": 4,
+      "COMMUNICATION_AMBIGUITY": 4,
+      "SERVICE_RESOLUTION": 4
+    },
+    "_not": "Bu ozet SENTETIK ornekler uzerinde hesaplanmistir ve gercek musteri yogunlugunu TEMSIL ETMEZ. Uretimdeki GET /musteri-sesi/yogunluk-ozeti ucnoktasi gercek `sikayetler` tablosunu okur; o tablo bostur ve kapsam_durumu 'izin_yok' doner. Bu betik o tabloya YAZMAZ."
+  },
+  "bilinen_sinirlamalar": [
+    {
+      "id": "SM-BS1",
+      "baslik": "Kisi adi iceren metin PII bulunmadi sayilir VE insan kontrolu icin isaretlenmez",
+      "neden_duzeltilmedi": "Duzeltmenin iki yolu var, ikisi de OLCUM GEREKTIRIYOR: (a) NER ile ad tespiti - extraction/ner_extractor.py Bulgu 1-4'e gore eldeki GLiNER zero-shot modeli Turkce adlarda guvenilir degil; (b) tum metinleri kosulsuz isaretlemek - bu durumda bayrak hicbir sey AYIRT ETMEZ ve inceleme kuyrugu anlamsizlasir. Sinir, gizlenmek yerine burada YAZILI ve testle dondurulmus haldedir.",
+      "etki_alani": "Faz 1'de etkisi YOKTUR: bu sette gercek kisi adi bulunmuyor ve gercek veri toplanmiyor. Gercek musteri verisi ingest edilmeden ONCE kapatilmasi gereken bir actir - Faz 2 kapilarindan biridir."
+    },
+    {
+      "id": "SM-BS2",
+      "baslik": "Maskeleme komsu boslugu yutabiliyor - kozmetik",
+      "neden_duzeltilmedi": "SINIFLANDIRMAYI ETKILEMIYOR: tema eslesmesi alt-dize temellidir ve kelime siniri BILEREK kullanilmamaktadir (bkz. tema_siniflandirici.py::_ifadeyi_derle docstring'i), bu yuzden '[IBAN]hesabima gecmedi' icinde 'hesabima gecmedi' ifadesi bulunur ve tema dogru atanir - SM-P02 bunu kanitlar. Deseni degistirmek maskeleme davranisini etkileyecegi icin ozgulluk yeniden olculmeden yapilmamalidir.",
+      "etki_alani": "Kozmetik - saklanan metnin okunabilirligi; siniflandirma ve maskeleme dogru."
+    }
+  ]
+}

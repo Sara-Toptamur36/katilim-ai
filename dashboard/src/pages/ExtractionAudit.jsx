@@ -297,7 +297,7 @@ export default function ExtractionAudit() {
           </Col>
           <Col xs={24} sm={8}>
             <Statistic
-              title="Makro F1"
+              title="Final Pipeline F1"
               value={OLCUMLER.cikarim.makroF1}
               suffix="%"
               valueStyle={{ fontSize: 20 }}
@@ -305,13 +305,15 @@ export default function ExtractionAudit() {
           </Col>
         </Row>
         <Typography.Text type="secondary" style={{ fontSize: 11, display: "block", marginTop: 10 }}>
-          Toplam ölçüm ({OLCUM_TARIHI} tarihli, {OLCUMLER.cikarim.makroF1Detay}) — alan bazlı kırılım, tam
-          metodoloji ve RAG/Scope Guard ölçümleri için{" "}
+          Toplam ölçüm ({OLCUM_TARIHI} tarihli, {OLCUMLER.cikarim.makroF1Detay}). Alan bazlı 11 F1'in düz
+          ortalaması %{OLCUMLER.cikarim.alanOrtalamasiF1.toString().replace(".", ",")} — katman katkıları,
+          alan bazlı kırılım, tam metodoloji ve RAG/Scope Guard ölçümleri için{" "}
           <Link to="/audit">Jüri Audit Paneli → Model Metrikleri</Link>.
         </Typography.Text>
-        {/* Asagidaki zincir (Regex -> GLiNER -> Qwen -> Resolver) sistemin
-            TASARIMIDIR; olculen kosuda NER devre disiydi. Ikisi karistirilmasin
-            diye olcum serigi burada acikca belirtilir. */}
+        {/* Asagidaki zincir (Regex -> GLiNER -> EVREN -> Validation) sistemin
+            TASARIMI VE olculen kosunun kendisidir - 27 Agustos full pipeline
+            benchmark'inda dort katmanin hepsi calisti ve katkilari AYRI AYRI
+            olculdu. NER'in net negatif ciktigi da burada yazar. */}
         <Typography.Text type="secondary" style={{ fontSize: 11, display: "block", marginTop: 6 }}>
           {OLCUMLER.cikarim.nerDurumu}
         </Typography.Text>

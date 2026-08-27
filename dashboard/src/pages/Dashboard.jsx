@@ -31,6 +31,7 @@ export default function Dashboard() {
   const {
     tekilKampanya,
     anlikGoruntu,
+    yapilandirilmisKayit,
     sonTarama,
     ragParca,
     ragBelge,
@@ -38,6 +39,8 @@ export default function Dashboard() {
     alanDolulugu,
     urunAilesiToplam,
     alanDolulukToplam,
+    kapsamRaporuKaynagi,
+    yedekSebebi,
     bankaDagilimi,
     enBuyukBankaTekil,
     baskinBankalar,
@@ -445,7 +448,7 @@ export default function Dashboard() {
               display: "flex",
               flexDirection: "column",
             }}
-            title={`Bu, Recall@5'in ölçüldüğü indekstir (${OLCUMLER.rag.indeksTarihi} tarihli, ${OLCUMLER.rag.indekslenenParca} parça) — Sistem Sağlığı kartındaki "Canlı RAG İndeksi" ile bilerek farklıdır, çünkü Recall o indekste henüz yeniden ölçülmedi.`}
+            title={`Bu, Recall@5'in ölçüldüğü indekstir (${OLCUMLER.rag.indeksTarihi} tarihli, ${OLCUMLER.rag.indekslenenParca} parça, ${OLCUMLER.rag.parcalamaYontemi}). 27 Ağustos'tan itibaren Sistem Sağlığı kartındaki "Canlı RAG İndeksi" ile AYNI indekstir — Recall bu indekste yeniden ölçüldü; canlı indeks büyürse iki sayı yine ayrışabilir.`}
           >
             <span
               style={{
@@ -456,15 +459,13 @@ export default function Dashboard() {
                 marginBottom: 3,
               }}
             >
-              {/* ETIKET AYRIMI: burasi Recall@5'in OLCULDUGU indekstir.
-                  Asagidaki Sistem Sagligi karti CALISAN (canli) indeksi
-                  gosterir - ikisi bilerek ayri, Recall yeni indekste
-                  yeniden olculmedi. DENETIM BULGUSU (26.08.2026): eskiden
-                  bu ayrim yalnizca kod yorumunda vardi, ekranda gorunmuyordu
-                  - juri "ÖLÇÜM İNDEKSİ" ile "Canlı RAG İndeksi" farkli sayi
-                  gosterince hangisinin yanlis oldugunu soruyordu. Simdi
-                  "(Recall)" etiketi + title tooltip + alt metin bunu acikca
-                  soyluyor. */}
+              {/* ETIKET AYRIMI: burasi Recall@5'in OLCULDUGU indekstir,
+                  asagidaki Sistem Sagligi karti CALISAN (canli) indeksi
+                  gosterir. 27 Agustos'ta RAG ozyinelemeli indekste (2304
+                  parca) yeniden olculdugu icin ikisi SU AN AYNI - alt metin
+                  bunu artik "ayni indeks" diye yazar. Etiket yine de duruyor:
+                  canli indeks bir sonraki taramada buyudugunde iki sayi
+                  tekrar ayrisacak ve ayrim yine gerekli olacak. */}
               ÖLÇÜM İNDEKSİ (Recall)
             </span>
             <span
@@ -480,7 +481,10 @@ export default function Dashboard() {
                 marginTop: 1,
               }}
             >
-              {OLCUMLER.rag.indeksTarihi} ölçümü · canlı indeks {ragParca} parça
+              {OLCUMLER.rag.indeksTarihi} ölçümü ·{" "}
+              {ragParca === OLCUMLER.rag.indekslenenParca
+                ? "canlı indeksin kendisi"
+                : `canlı indeks ${ragParca} parça`}
             </span>
           </div>
 
@@ -678,7 +682,7 @@ export default function Dashboard() {
               marginTop: 4,
             }}
           >
-            {tekilKampanya}
+            {yapilandirilmisKayit}
           </span>
           <span
             style={{
@@ -688,26 +692,24 @@ export default function Dashboard() {
               fontWeight: 500,
             }}
           >
-            Taranan kampanya sayfası
+            Yapılandırılmış kayıt
           </span>
-          {/* DENETIM BULGUSU (26.08.2026): bu sayi (tekilKampanya, /sistem/
-              tazelik'ten - scraper/raw_data'daki TUM benzersiz URL, scraper
-              hicbir eski dosyayi SILMIYOR) ile asagidaki "Kampanya Turu
-              Dagilimi" grafiginin toplami (urunAilesiToplam, /kampanyalar'dan -
-              yalnizca yapilandirilmis kayda donusturulup Postgres'e YAZILMIS
-              olanlar) farkli sorulara cevap veriyor. Aradaki fark, henuz
-              islenmemis veya ayiklama sirasinda elenmis ham sayfalardir -
-              hata degil. Etiketsiz oldugunda ayni ekranda iki celisen sayi
-              gibi gorunuyordu - simdi ikisi de acikca adlandiriliyor. */}
+          {/* UC AYRI SAYI, README "Olculebilir durum" tablosuyla ayni sira:
+              536 yapilandirilmis kayit (PostgreSQL) / 525 tekil taranmis ham
+              sayfa (scraper/raw_data'daki benzersiz URL - scraper eski
+              dosyalari SILMEZ) / 623 anlik goruntu (ayni URL'nin farkli
+              tarihli kayitlari dahil). Bir ham sayfa birden fazla kampanya
+              tasiyabildigi icin kayit sayisi tekil sayfadan FAZLA olabilir -
+              celiski degil, uc farkli soru. */}
           <span
             style={{
               fontSize: 11,
               color: "var(--yazi-soluk)",
               marginTop: 4,
             }}
-            title="Taranan kampanya sayfası: scraper/raw_data'daki tüm benzersiz URL (eski taramalar silinmez). Aşağıdaki grafikteki sayı ise yalnızca yapılandırılmış kayda dönüştürülüp veritabanına yazılmış olanlardır."
+            title="536 kayıt: PostgreSQL'de alanları çıkarılmış satır sayısı. 525 tekil sayfa: scraper/raw_data'daki benzersiz URL (eski taramalar silinmez). 623 anlık görüntü: aynı URL'nin farklı tarihli kayıtları dahil toplam dosya. Bir sayfa birden fazla kampanya taşıyabilir, bir kampanya birden fazla kez taranmış olabilir."
           >
-            {urunAilesiToplam} kaydı veritabanında işlenmiş · {anlikGoruntu} anlık görüntü
+            {tekilKampanya} tekil taranmış ham sayfa · {anlikGoruntu} anlık görüntü
           </span>
         </div>
 
@@ -816,7 +818,7 @@ export default function Dashboard() {
               fontWeight: 500,
             }}
           >
-            Alan bazlı makro F1
+            Çıkarım — final pipeline F1
           </span>
           <span
             style={{
@@ -955,6 +957,11 @@ export default function Dashboard() {
                   }}
                 >
                   {urunAilesiToplam} kampanyanın ürün ailesine göre dağılımı
+                  {kapsamRaporuKaynagi && (
+                    <div style={{ marginTop: 2 }}>
+                      Kaynak: kapsam raporu ({kapsamRaporuKaynagi.tarih}) — {yedekSebebi}.
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1088,7 +1095,7 @@ export default function Dashboard() {
               {/* Çubuk grafik satırları */}
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {bankaDagilimi.map((b) => {
-                  const yuzde = (b.tekil / enBuyuk) * 100;
+                  const yuzde = (b.kayit / enBuyuk) * 100;
                   /* Baskın iki banka altın, diğerleri yeşil */
                   const baskinMi = baskinBankalar.includes(b.banka);
                   return (
@@ -1103,7 +1110,7 @@ export default function Dashboard() {
                           }}
                         />
                       </div>
-                      <span className="cubuk-deger">{b.tekil}</span>
+                      <span className="cubuk-deger">{b.kayit}</span>
                     </div>
                   );
                 })}
@@ -1165,7 +1172,9 @@ export default function Dashboard() {
                         seyler olcuyor, ikisi de canli ve dogru, sadece
                         etiketsiz aynı kelimeyle celisiyor gorunuyorlardi
                         (denetim bulgusu, 25.08.2026). */}
-                    veritabanındaki {alanDolulukToplam} kampanyada hangi alan ne sıklıkta dolu
+                    {kapsamRaporuKaynagi
+                      ? `taranan ${alanDolulukToplam} kampanyada hangi alan ne sıklıkta dolu (regex katmanı — alt sınır)`
+                      : `veritabanındaki ${alanDolulukToplam} kampanyada hangi alan ne sıklıkta dolu`}
                   </div>
                 </div>
 
@@ -1239,7 +1248,7 @@ export default function Dashboard() {
                   Bu oranlar yalnızca regex katmanının sonucudur. NER ve LLM katmanları daha fazlasını doldurur — bu bir alt sınır göstergesidir, kesin doluluk değildir.
                 </div>
                 <div>
-                  Doluluk oranı ile çıkarım doğruluğu farklı şeylerdir: doluluk, bankaların o alanı kaç kampanyada yayımladığını gösterir; %{OLCUMLER.cikarim.makroF1.toString().replace(".", ",")} makro F1 ise yayımlanan alanları ne kadar doğru okuduğumuzu ölçer.
+                  Doluluk oranı ile çıkarım doğruluğu farklı şeylerdir: doluluk, bankaların o alanı kaç kampanyada yayımladığını gösterir; %{OLCUMLER.cikarim.makroF1.toString().replace(".", ",")} final pipeline F1 ise yayımlanan alanları ne kadar doğru okuduğumuzu ölçer.
                 </div>
               </div>
             </div>

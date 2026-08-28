@@ -53,16 +53,17 @@ SORU_SETI = Path(__file__).resolve().parent.parent.parent / "gold_dataset" / "ra
 CEKIMSERLIK_KATEGORILERI = ("alan_disi", "alan_ici_kapsam_disi")
 
 
-def soru_setini_yukle() -> list[dict]:
+def soru_setini_yukle(yol: Path | None = None) -> list[dict]:
     """Kategorili degerlendirme setini okur (scraper/scripts/
     rag_soru_seti_uret.py uretir). Dosya yoksa acikca soyler - sessizce
     eski/dar sete dusmek olcumu yaniltirdi."""
-    if not SORU_SETI.exists():
+    hedef = yol if yol else SORU_SETI
+    if not hedef.exists():
         raise FileNotFoundError(
-            f"Soru seti bulunamadi: {SORU_SETI} - "
+            f"Soru seti bulunamadi: {hedef} - "
             "once uretin: python -m scraper.scripts.rag_soru_seti_uret"
         )
-    with open(SORU_SETI, encoding="utf-8") as f:
+    with open(hedef, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -113,6 +114,7 @@ def kategori_bazli_recall_olc(
     yeniden_sirala: bool | None = None,
     exact: bool = True,
     tur_boost: bool | None = None,
+    veri_yolu: Path | None = None,
 ) -> dict:
     """Her KATEGORI icin ayri Recall@k.
 
@@ -140,7 +142,7 @@ def kategori_bazli_recall_olc(
     """
     from chunking.retriever import getir
 
-    sorular = soru_setini_yukle()
+    sorular = soru_setini_yukle(veri_yolu)
     mevcut = _indekste_olan_sluglar()
 
     kategoriler: dict[str, dict] = {}
@@ -206,6 +208,7 @@ def abstention_olc(
     yeniden_sirala: bool | None = None,
     exact: bool = True,
     tur_boost: bool | None = None,
+    veri_yolu: Path | None = None,
 ) -> dict:
     """Cevabi kaynaklarda OLMAYAN sorularda sistem cekimser kaliyor mu?
 
@@ -217,7 +220,7 @@ def abstention_olc(
     """
     from chunking.retriever import getir
 
-    sorular = soru_setini_yukle()
+    sorular = soru_setini_yukle(veri_yolu)
     sonuclar: dict[str, dict] = {}
 
     for kategori in CEKIMSERLIK_KATEGORILERI:
@@ -448,13 +451,20 @@ def banka_ve_konu_belirsizlik_ayrisimi(k: int = 5, exact: bool = True) -> dict |
 
 
 if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="RAG Degerlendirme")
+    parser.add_argument("--veri-seti", type=str, help="Degerlendirilecek JSON soru setinin yolu")
+    args = parser.parse_args()
+    
+    veri_yolu = Path(args.veri_seti) if args.veri_seti else None
+
     print("=== RAG Retrieval Degerlendirmesi ===" + chr(10))
 
-    sorular = soru_setini_yukle()
+    sorular = soru_setini_yukle(veri_yolu)
     print(f"Soru seti: {len(sorular)} soru" + chr(10))
 
     for k in (1, 3, 5):
-        son = kategori_bazli_recall_olc(k=k)
+        son = kategori_bazli_recall_olc(k=k, veri_yolu=veri_yolu)
         print(f"--- Recall@{k}  (genel %{son['genel_recall']}, "
               f"{son['toplam_sorgu']} sorgu) ---")
         for kategori, ozet in sorted(
@@ -479,7 +489,7 @@ if __name__ == "__main__":
     # degistirilirse fark hala tek komutla goruleceklendir.
     print("--- kampanya_turu boost: ACIK (varsayilan) / KAPALI karsilastirmasi (banka_ve_konu) ---")
     acik = son["kategoriler"].get("banka_ve_konu", {"isabet": 0, "toplam": 0, "recall": 0.0})
-    kapali_son = kategori_bazli_recall_olc(k=5, tur_boost=False)
+    kapali_son = kategori_bazli_recall_olc(k=5, tur_boost=False, veri_yolu=veri_yolu)
     kapali = kapali_son["kategoriler"].get("banka_ve_konu", {"isabet": 0, "toplam": 0, "recall": 0.0})
     print(f"  acik (varsayilan, KATILIMAI_TUR_BOOST=true)  %{acik['recall']:>6}  ({acik['isabet']}/{acik['toplam']})")
     print(f"  kapali (KATILIMAI_TUR_BOOST=false)            %{kapali['recall']:>6}  ({kapali['isabet']}/{kapali['toplam']})")
@@ -502,7 +512,7 @@ if __name__ == "__main__":
         print()
 
     print("--- Cekimserlik (dogru cevap: cevap VERMEMEK) ---")
-    for kategori, a in abstention_olc().items():
+    for kategori, a in abstention_olc(veri_yolu=veri_yolu).items():
         print(f"  {kategori:22} %{a['abstention_dogrulugu']:>6}  "
               f"({a['dogru_cekimser']}/{a['toplam']})")
         for y in a["yanlis_cevaplananlar"][:5]:

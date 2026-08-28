@@ -38,6 +38,8 @@ import re
 import zlib
 from collections import Counter
 
+from chunking.sabitler import MARKA_KORUMA_LISTESI
+
 # Kelime, sayi (%1,99 / 100.000) ve oran (98/2) bicimlerini korur.
 _TOKEN_DESENI = re.compile(r"[0-9]+(?:[.,/][0-9]+)*|[a-zçğıöşüâîû]+", re.IGNORECASE)
 
@@ -79,25 +81,35 @@ def terim_kimligi(token: str) -> int:
     return zlib.crc32(token.encode("utf-8"))
 
 
-def seyrek_vektor_uret(metin: str) -> tuple[list[int], list[float]]:
+def seyrek_vektor_uret(
+    metin: str, ek_terimler: list[str] | None = None
+) -> tuple[list[int], list[float]]:
     """Metinden (indeksler, degerler) seyrek vektoru uretir.
 
     Deger = terim frekansi (govde onekleri dusuk agirlikla). Nadirlik
     agirligini (IDF) Qdrant uygular.
     """
     tokenlar = metni_tokenlara_ayir(metin)
-    if not tokenlar:
+    if not tokenlar and not ek_terimler:
         return [], []
 
     agirliklar: Counter[int] = Counter()
     for token in tokenlar:
         agirliklar[terim_kimligi(token)] += 1.0
-        if len(token) >= GOVDE_ASGARI_TOKEN:
+        if len(token) >= GOVDE_ASGARI_TOKEN and token not in MARKA_KORUMA_LISTESI:
             govde = token[:GOVDE_ONEK_UZUNLUGU]
             # Govde onegini tam token'dan AYIRT ETMEK icin isaretlenir;
             # aksi halde kisa bir kelime ile uzun bir kelimenin govdesi
             # ayni kimligi alip yanlis eslesme uretirdi.
             agirliklar[terim_kimligi(f"{govde}~")] += GOVDE_AGIRLIGI
+
+    # Faz 2: Fallback sirasinda genisletilmis kelimeler 0.5 agirlikla eklenir.
+    if ek_terimler:
+        for ek in ek_terimler:
+            ek_tokenlar = metni_tokenlara_ayir(ek)
+            for et in ek_tokenlar:
+                agirliklar[terim_kimligi(et)] += 0.5
+                # Ek terimlerde govde (stemming) aranmaz, cunku jargon dictionary'den gelir.
 
     indeksler = list(agirliklar.keys())
     degerler = [agirliklar[i] for i in indeksler]

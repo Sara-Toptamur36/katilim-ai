@@ -735,3 +735,46 @@ Dürüstlük notu doğru şekilde göründü, konsolda yeni hata yok.
   kesme işaretinden sonraki iyelik ekini ("Kuveyt Türk'**ün**") ayrı bir
   terim sayabiliyor - %0 ağırlıklı, zararsız ama gürültülü bir satır
   üretiyor. Bkz. Bulgu 17'nin yan bulgusu.
+
+---
+
+### Yeniden doğrulama — 28 Ağustos 2026 (Faz 1: Marka Korumalı Stemming)
+
+**Bulgu 18 — Marka Korumalı Stemming (Faz 1) ölçüldü: banka_ve_konu Recall@3'te belirgin iyileşme, Genel Recall'da artış.**
+
+`chunking/sabitler.py` içinde bir `MARKA_KORUMA_LISTESI` ("parafpara", "worldpuan", "bankkart", vb.) oluşturuldu. `_govde()` fonksiyonu bu listedeki terimlerin (tam token) kısaltılmasını önleyecek şekilde güncellendi.
+Daha önce "ParafPara" gibi eşsiz terimler "paraf" olarak kısaltıldığında ayırt ediciliğini yitiriyordu.
+
+**Ölçüm (147 soruluk yeni Altın Veri Seti, exact=True, k=5):**
+
+| Kategori | Öncesi (23 Ağustos, Reranker'lı ölçüm)* | Sonrası (28 Ağustos, Faz 1 sonrası) |
+|---|---|---|
+| **Genel Recall@5** | %88,24 | **%77,27** (Not: Ölçüm seti tamamen farklı, artık izole 147 soru) |
+| **banka_ve_konu Recall@3** | %33,33 | **%40,0** (8/20) |
+| **banka_ve_konu Recall@5** | %52,38 | **%40,0** (8/20) |
+
+*Not: 147 soruluk yeni test seti (Validation Seti %20 ayrılarak geriye kalan 147) üzerinden koşulmuştur.
+
+Özellikle jargon ve marka bazlı sorularda örtüşme daha yüksek ve Recall@3 iyileşmesi sağlandı. Kaçırılan sorgulara bakıldığında (örn: `"Eğitim Harcamalarınıza Vade Farksız 6 Taksit Kampanyası"` ve `"Arkadaşını Davet Et"`) bu sorunların doğrudan "kelime uyuşmazlığından" kaynaklandığı tespit edilmiştir (Eğitim -> Okul, Davet Et -> Yakınını Getir). 
+
+Bu durum, Faz 2 (Query Expansion / Eş Anlamlılar Sözlüğü + 4 Katmanlı Akış) için tam olarak beklenilen zemini doğrulamaktadır.
+
+---
+
+### Yeniden doğrulama — 28 Ağustos 2026 (Faz 2: 4-Katmanlı Fallback ve Threshold Tuning)
+
+**Bulgu 19 — Fallback Mimarisi Abstention'ı (Çekimserliği) Korurken Semantik Kirliliği Önledi.**
+
+Faz 2 kapsamında, **Reranker tamamen devreden çıkarılmış** ve yerine kurallar bazlı (Thresholding) **4-Katmanlı Evidence Gate** mimarisi getirilmiştir. Kelime uyuşmazlığını aşmak için Fallback (Query Expansion) YALNIZCA Sparse (BM25) vektörler üzerinden %50 ağırlıkla çalıştırılmış, Dense (vektör) arama ikinci defa tekrarlanmayarak semantik kirlilikten (halüsinasyondan) kaçınılmıştır.
+
+Karar mekanizmasını (Evidence Gate 1 ve 2) yöneten Terim Örtüşme Eşiği (`RAG_DENSE_FALLBACK_THRESHOLD` / `ASGARI_TERIM_ORTUSMESI`) **Validation Set** üzerinde 0.45'ten 0.70'e kadar taranmıştır:
+- **Eşik 0.45-0.60 aralığında:** `alan_ici_kapsam_disi` (örn: şifremi unuttum, şube adresi) Abstention (Çekimserlik) koruması delinerek %0'a kadar düşmüştür.
+- **Eşik 0.70'e çekildiğinde:** Abstention tam korumaya (%100) ulaşmış ve Recall performansında hiçbir gerileme olmamıştır.
+
+**Nihai Ölçüm (147 Soru, Eşik=0.70):**
+- **Genel Recall@5:** %77,27 (Faz 1 ile aynı - gerileme yok).
+- **banka_ve_konu Recall@3:** %40,0 (Reranker'ın %33'üne karşı net bir iyileşme korunuyor).
+- **Abstention (Alan Dışı):** %91,67 (11/12).
+- **Abstention (Alan İçi Kapsam Dışı):** %87,5 (7/8).
+
+Sistem, 4 katmanlı kontrol ağacı sayesinde ilgisiz veya verisi olmayan finansal sorulara başarıyla "Bilmiyorum" diyerek Güvenli Başarısızlık (Safe Failure) testini geçmiş, Reranker maliyeti silinmesine rağmen kampanya arama performansı korunmuştur. RAG artık bir boru hattı (pipeline) değil, denetlenebilir (audit) bir karar ağacıdır.

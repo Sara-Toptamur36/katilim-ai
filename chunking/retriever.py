@@ -36,8 +36,10 @@ from chunking.qdrant_baglanti import (
     hibrit_ara,
     qdrant_hazir_mi,
     yogun_ara,
+    seyrek_ara,
 )
 from chunking.reranker import rerank
+from chunking.sabitler import MARKA_KORUMA_LISTESI
 from chunking.seyrek_vektor import (
     GOVDE_ASGARI_TOKEN,
     GOVDE_ONEK_UZUNLUGU,
@@ -58,7 +60,8 @@ from chunking.seyrek_vektor import (
 # SINIRLILIK (durustluk notu): kalibrasyon kucuk bir ornekleme (6
 # cevaplanabilir + 5 alan disi soru) dayanir. Daha genis bir soru seti
 # olustukca yeniden olculmeli - bu yuzden sabit burada, tek yerde tutulur.
-ASGARI_TERIM_ORTUSMESI = 0.60
+# Faz 2: RAG_DENSE_FALLBACK_THRESHOLD uzerinden tune edilir.
+ASGARI_TERIM_ORTUSMESI = float(os.environ.get("RAG_DENSE_FALLBACK_THRESHOLD", "0.60").replace(",", "."))
 
 # DENETIM BULGUSU (24.08.2026): Terim ortusme kontrolu YALNIZ BASINA
 # YETERSIZ - site menu metni ("Konut Finansmani", "Kart Kampanyalari")
@@ -83,6 +86,34 @@ ASGARI_VEKTOR_SKORU = float(os.environ.get("ASGARI_VEKTOR_SKORU", "0.40"))
 # bu uzunlugun altinda oran yerine "en az 1 terim" kurali uygulanir.
 KISA_SORGU_TERIM_SAYISI = 2
 
+# Faz 2: Es Anlamlilar Sozlugu
+ES_ANLAMLILAR: dict[str, list[str]] = {
+    # Odul / Puan programlari
+    "puan":        ["parafpara", "worldpuan", "bonus", "mil", "nakit iade", "kampanya"],
+    "odul":        ["parafpara", "worldpuan", "bonus", "mil", "cashback"],
+    "cashback":    ["nakit iade", "nakit geri odeme", "puan", "iade"],
+    # Ucus
+    "mil":         ["ucus mili", "ucak bileti", "havamili"],
+    "ucak":        ["mil", "ucus", "havamili", "bilet"],
+    # Finansman turleri
+    "faiz":        ["kar payi", "murabaha", "getiri", "oran"],
+    "kredi":       ["finansman", "murabaha", "taksit", "ihtiyac", "destek"],
+    "alisveris":   ["parafpara", "worldpuan", "bonus", "maksimum", "harcama", "kampanya"],
+    "harcama":     ["alisveris", "kampanya", "taksit"],
+    # Urun turleri
+    "kart":        ["worldcard", "maximum", "axess", "bonus card", "cardfinans", "kredi karti", "banka karti"],
+    "debit":       ["banka karti", "vadesiz", "hesap karti"],
+    "konut":       ["gayrimenkul finansmani", "ev finansmani", "mortgage"],
+    "arac":        ["tasit finansmani", "otomobil finansmani", "araba"],
+    # Kanallar ve Islemler
+    "dijital":     ["goruntulu", "mobil", "uzaktan", "internet"],
+    "mobil":       ["dijital", "cep sube", "uygulama", "goruntulu"],
+    "davet":       ["yakinini getir", "yakini getir", "tavsiye", "arkadas"],
+    # Diger Jargon
+    "mtv":         ["motorlu tasitlar", "vergi", "arac vergisi"],
+    "egitim":      ["okul", "kirtasiye", "kolej", "universite", "kurs"],
+    "musteri":     ["yeni uye", "goruntulu", "katil", "basvuru"],
+}
 
 @dataclass
 class RetrieverSonucu:
@@ -99,6 +130,9 @@ class RetrieverSonucu:
     # olculebilir bir vekildir.
     terim_agirliklari: list[dict] = field(default_factory=list)
     sebep: str | None = None
+    # YENİ — Jüri Audit Paneli şeffaflığı için:
+    fallback_tetiklendi: bool = False
+    genisletilen_kelimeler: list[str] = field(default_factory=list)
 
 
 def _ayirt_edici_terimler(sorgu: str) -> list[str]:
@@ -108,10 +142,12 @@ def _ayirt_edici_terimler(sorgu: str) -> list[str]:
 
 def _govde(token: str) -> str:
     """Seyrek vektorle AYNI govde kurali - tutarlilik icin ayni sabitler."""
+    if token in MARKA_KORUMA_LISTESI:
+        return token
     return token[:GOVDE_ONEK_UZUNLUGU] if len(token) >= GOVDE_ASGARI_TOKEN else token
 
 
-def _terim_ortusmesi(terimler: list[str], parcalar: list[dict]) -> tuple[float, list[str]]:
+def _terim_ortusmesi(terimler: list[str], parcalar: list[dict], es_anlamlilar: dict[str, list[str]] | None = None) -> tuple[float, list[str]]:
     """Sorgu terimlerinin kaci donen parcalarda geciyor?
 
     GOVDE DUYARLI: Turkce eklemeli oldugu icin tam token karsilastirmasi
@@ -134,9 +170,34 @@ def _terim_ortusmesi(terimler: list[str], parcalar: list[dict]) -> tuple[float, 
     parca_tokenlari = set(metni_tokenlara_ayir(birlesik))
     parca_govdeleri = {_govde(t) for t in parca_tokenlari}
 
-    eslesen = [
-        t for t in terimler if t in parca_tokenlari or _govde(t) in parca_govdeleri
-    ]
+    eslesen = []
+    for t in terimler:
+        if t in parca_tokenlari or _govde(t) in parca_govdeleri:
+            eslesen.append(t)
+            continue
+        
+        if es_anlamlilar and t in es_anlamlilar:
+            found = False
+            for es in es_anlamlilar[t]:
+                # Es anlamli kelimeler bosluklu olabilir ("banka karti")
+                es_tokenlar = metni_tokenlara_ayir(es)
+                if not es_tokenlar:
+                    continue
+                # Tek kelimeyse:
+                if len(es_tokenlar) == 1:
+                    if es_tokenlar[0] in parca_tokenlari or _govde(es_tokenlar[0]) in parca_govdeleri:
+                        eslesen.append(f"{t} (es: {es})")
+                        found = True
+                        break
+                # Cok kelimeyse (hepsinin gecmesi beklenir, sirasiz da olsa)
+                else:
+                    if all(et in parca_tokenlari or _govde(et) in parca_govdeleri for et in es_tokenlar):
+                        eslesen.append(f"{t} (es: {es})")
+                        found = True
+                        break
+            if found:
+                continue
+
     return len(eslesen) / len(terimler), eslesen
 
 
@@ -436,7 +497,7 @@ def getir(
         default=0.0,
     )
 
-    ortusme, eslesen = _terim_ortusmesi(terimler, on_siralama_ilk_k)
+    ortusme, eslesen = _terim_ortusmesi(terimler, on_siralama_ilk_k, ES_ANLAMLILAR)
 
     if len(terimler) <= KISA_SORGU_TERIM_SAYISI:
         yeterli_ortusme = len(eslesen) >= 1
@@ -469,6 +530,64 @@ def getir(
                 "muhtemelen genel menu/navigasyon metni"
             )
 
+    # --- Faz 2: Fallback Katmani ---
+    fallback_tetiklendi = False
+    genisletilen_kelimeler = []
+    
+    if not yeterli:
+        # Fallback sözlüğünden kelimeleri topla
+        ek_terimler = []
+        for t in terimler:
+            if t in ES_ANLAMLILAR:
+                ek_terimler.extend(ES_ANLAMLILAR[t])
+                genisletilen_kelimeler.append(t)
+        
+        if ek_terimler:
+            # Sadece seyrek vektör uzerinden 2. arama (BM25)
+            # Dense arama YOK - semantik carpikligi engeller
+            fallback_aday_havuzu = seyrek_ara(
+                seyrek_sorgu=seyrek_vektor_uret(arama_sorgusu, ek_terimler),
+                limit=limit,
+                koleksiyon=koleksiyon,
+                filtre=coklu_filtre(banka=banka, hedef_tarih=hedef_tarih),
+                exact=exact,
+            )
+            
+            if tur_boost and hedef_tur is not None:
+                eslesenler = [
+                    p for p in fallback_aday_havuzu
+                    if (p.get("ustveri") or {}).get("kampanya_turu") == hedef_tur
+                ]
+                eslesmeyenler = [
+                    p for p in fallback_aday_havuzu
+                    if (p.get("ustveri") or {}).get("kampanya_turu") != hedef_tur
+                ]
+                fallback_aday_havuzu = eslesenler + eslesmeyenler
+
+            if fallback_aday_havuzu:
+                fallback_ilk_k = fallback_aday_havuzu[:limit]
+                # 2. EVIDENCE GATE: Orijinal terimlerle (veya es anlamlilariyla) ortusmeyi tekrar olc
+                f_ortusme, f_eslesen = _terim_ortusmesi(terimler, fallback_ilk_k, ES_ANLAMLILAR)
+                
+                if len(terimler) <= KISA_SORGU_TERIM_SAYISI:
+                    f_yeterli = len(f_eslesen) >= 1
+                else:
+                    f_yeterli = f_ortusme >= ASGARI_TERIM_ORTUSMESI
+                
+                # Sadece BM25 kullanildigi icin vektor skoru kontrolu ATLANIR
+                if f_yeterli:
+                    yeterli = True
+                    aday_havuzu = fallback_aday_havuzu
+                    ortusme = f_ortusme
+                    eslesen = f_eslesen
+                    fallback_tetiklendi = True
+                    sebep = None
+                    if tespit_edilen_banka is not None:
+                        eslesen = [f"{tespit_edilen_banka} (metadata)", *eslesen]
+                else:
+                    # Fallback de basarisiz oldu, abstention gecerli
+                    pass
+
     # Ucuncu asamada (Reranker) GOSTERILECEK parcalar capraz kodlayiciyla
     # siralanip kesilir - abstention KARARI yukarida, genis havuzla zaten
     # verildi. `yeterli=False` iken reranker HIC calistirilmaz: cekimser
@@ -491,4 +610,6 @@ def getir(
         eslesen_terimler=eslesen,
         terim_agirliklari=terim_agirliklari,
         sebep=sebep,
+        fallback_tetiklendi=fallback_tetiklendi,
+        genisletilen_kelimeler=genisletilen_kelimeler,
     )

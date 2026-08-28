@@ -1,0 +1,342 @@
+[
+  {
+    "soru": "Davet Et, Altın Kazan!",
+    "kategori": "tam_ad",
+    "beklenen_sluglar": [
+      "davetetkazan"
+    ],
+    "kayit_id": "DK-002",
+    "kaynak": "turetilmis"
+  },
+  {
+    "soru": "Kâr Paysız 50.000 TL'ye Varan İhtiyaç Finansmanı",
+    "kategori": "tam_ad",
+    "beklenen_sluglar": [
+      "ihtiyac-finansmani-kampanyasi.aspx"
+    ],
+    "kayit_id": "TF-003",
+    "kaynak": "turetilmis"
+  },
+  {
+    "soru": "Gümüş İşlemlerinde Dar Makas Avantajı (Hayat FX)",
+    "kategori": "tam_ad",
+    "beklenen_sluglar": [
+      "hayatfx-ile-gumus-islemleri"
+    ],
+    "kayit_id": "HF-003",
+    "kaynak": "turetilmis"
+  },
+  {
+    "soru": "Sağlık Harcamalarına Vade Farksız 6 Taksit Kampanyası",
+    "kategori": "tam_ad",
+    "beklenen_sluglar": [
+      "saglik-harcamalarina-vade-farksiz-6-taksit-kampanyasi-1_1"
+    ],
+    "kayit_id": "AL-005",
+    "kaynak": "turetilmis"
+  },
+  {
+    "soru": "Otel Rezervasyonlarında 2.500 TL İndirim!",
+    "kategori": "tam_ad",
+    "beklenen_sluglar": [
+      "otel-rezervasyonlarinda-2500-tl-indirim"
+    ],
+    "kayit_id": "VK-004",
+    "kaynak": "turetilmis"
+  },
+  {
+    "soru": "Vakıf Katılımlı Olanlara tabii'den Premium Üyelik!",
+    "kategori": "tam_ad",
+    "beklenen_sluglar": [
+      "vakif-katilimli-olanlara-tabiiden-premium-uyelik"
+    ],
+    "kayit_id": "VK-008",
+    "kaynak": "turetilmis"
+  },
+  {
+    "soru": "Arkadaşını Davet Et, Avantajlı Hesapla Kazanmaya Başla!",
+    "kategori": "tam_ad",
+    "beklenen_sluglar": [
+      "arkadasini-getir-avantajli-hesap-ac-nakit-odul-kazan"
+    ],
+    "kayit_id": "HF-004",
+    "kaynak": "turetilmis"
+  },
+  {
+    "soru": "Özel Okul Ödemelerinde 10 Taksit, Vade Farksız",
+    "kategori": "tam_ad",
+    "beklenen_sluglar": [
+      "kampanyalar.html#zel-okul-demelerinde-10-taksit-stelik-vade-farks-z"
+    ],
+    "kayit_id": "TOM-002",
+    "kaynak": "turetilmis"
+  },
+  {
+    "soru": "İlk Ek Kredi Kartınıza 1.000 TL Bankkart Lira!",
+    "kategori": "tam_ad",
+    "beklenen_sluglar": [
+      "ilk-ek-kredi-kartiniza-1000-tl-bankkart-lira-1"
+    ],
+    "kayit_id": "ZK-006",
+    "kaynak": "turetilmis"
+  },
+  {
+    "soru": "Dijitalden Müşteri Ol, Hisse Senedi İşlemlerinde %75 Komisyon İndirimi Kazan!",
+    "kategori": "tam_ad",
+    "beklenen_sluglar": [
+      "dijitalden-musteri-ol-hisse-senedi-islemlerinde-75-komisyon-indirimi-kazan"
+    ],
+    "kayit_id": "VK-007",
+    "kaynak": "turetilmis"
+  },
+  {
+    "soru": "Yurt Dışı Çıkış Harcı Kampanyası | 1.250 TL Worldpuan!",
+    "kategori": "tam_ad",
+    "beklenen_sluglar": [
+      "yurt-disi-cikis-harci-kampanyasi-1250-tl-worldpuan-3"
+    ],
+    "kayit_id": "AL-003",
+    "kaynak": "turetilmis"
+  },
+  {
+    "soru": "Avantajlı Kurlar",
+    "kategori": "tam_ad",
+    "beklenen_sluglar": [
+      "avantajli-kurlar"
+    ],
+    "kayit_id": "DK-004",
+    "kaynak": "turetilmis"
+  },
+  {
+    "soru": "Hepsiburada'da Peşin Fiyatına",
+    "kategori": "kismi_ad",
+    "beklenen_sluglar": [
+      "hepsiburada"
+    ],
+    "kayit_id": "DK-006",
+    "kaynak": "turetilmis"
+  },
+  {
+    "soru": "Biz Kart Arkadaşını",
+    "kategori": "kismi_ad",
+    "beklenen_sluglar": [
+      "biz-kart-ile-arkadasini-getir-kazan"
+    ],
+    "kayit_id": "HF-001",
+    "kaynak": "turetilmis"
+  },
+  {
+    "soru": "Otel Rezervasyonlarında 2.500",
+    "kategori": "kismi_ad",
+    "beklenen_sluglar": [
+      "otel-rezervasyonlarinda-2500-tl-indirim"
+    ],
+    "kayit_id": "VK-004",
+    "kaynak": "turetilmis"
+  },
+  {
+    "soru": "VKart'la Sağlıkta Vade",
+    "kategori": "kismi_ad",
+    "beklenen_sluglar": [
+      "vkartla-saglikta-vade-farksiz-5-taksit"
+    ],
+    "kayit_id": "VK-003",
+    "kaynak": "turetilmis"
+  },
+  {
+    "soru": "Kuveyt Türk TOGG",
+    "kategori": "kismi_ad",
+    "beklenen_sluglar": [
+      "kuveyt-turk-ve-togg-is-birligi"
+    ],
+    "kayit_id": "KT-002",
+    "kaynak": "turetilmis"
+  },
+  {
+    "soru": "Yurt Dışı Çıkış",
+    "kategori": "kismi_ad",
+    "beklenen_sluglar": [
+      "yurt-disi-cikis-harci-kampanyasi-1250-tl-worldpuan-3"
+    ],
+    "kayit_id": "AL-003",
+    "kaynak": "turetilmis"
+  },
+  {
+    "soru": "Kazancı Bol Hoş",
+    "kategori": "kismi_ad",
+    "beklenen_sluglar": [
+      "turkiye-finans-avantajlariyla-mobilden-tanis.aspx"
+    ],
+    "kayit_id": "TF-005",
+    "kaynak": "turetilmis"
+  },
+  {
+    "soru": "Restoran Harcamalarında %10",
+    "kategori": "kismi_ad",
+    "beklenen_sluglar": [
+      "kampanyalar.html#restoran-harcamalar-nda-10-i-ade-kazan"
+    ],
+    "kayit_id": "TOM-001",
+    "kaynak": "turetilmis"
+  },
+  {
+    "soru": "Hava Yolu Bilet",
+    "kategori": "kismi_ad",
+    "beklenen_sluglar": [
+      "hava-yolu-bilet-aliminiza-1500-tl-bankkart-lira-2"
+    ],
+    "kayit_id": "ZK-005",
+    "kaynak": "turetilmis"
+  },
+  {
+    "soru": "Sağlık Harcamalarına Vade",
+    "kategori": "kismi_ad",
+    "beklenen_sluglar": [
+      "saglik-harcamalarina-vade-farksiz-6-taksit-kampanyasi-1_1"
+    ],
+    "kayit_id": "AL-005",
+    "kaynak": "turetilmis"
+  },
+  {
+    "soru": "Diyanet Umre Finansmanı",
+    "kategori": "kismi_ad",
+    "beklenen_sluglar": [
+      "diyanet-umre-finansmani-ile-vade-farksiz-3-taksit-imkani"
+    ],
+    "kayit_id": "KT-004",
+    "kaynak": "turetilmis"
+  },
+  {
+    "soru": "Vakıf Katılım alisveris puani",
+    "kategori": "banka_ve_konu",
+    "beklenen_sluglar": [
+      "otel-rezervasyonlarinda-2500-tl-indirim",
+      "vkart-troyla-idefixte-3000-tlye-varan-indirim"
+    ],
+    "kayit_id": "VK-004",
+    "kaynak": "turetilmis",
+    "not": "2 kampanya gecerli cevaptir"
+  },
+  {
+    "soru": "Kuveyt Türk yeni musteri",
+    "kategori": "banka_ve_konu",
+    "beklenen_sluglar": [
+      "davet-kodunla-gel-memnuniyet-anketine-katil-750-tl-kazan"
+    ],
+    "kayit_id": "KT-007",
+    "kaynak": "turetilmis",
+    "not": "1 kampanya gecerli cevaptir"
+  },
+  {
+    "soru": "Dünya Katılım yatirim urunu",
+    "kategori": "banka_ve_konu",
+    "beklenen_sluglar": [
+      "avantajli-kurlar"
+    ],
+    "kayit_id": "DK-004",
+    "kaynak": "turetilmis",
+    "not": "1 kampanya gecerli cevaptir"
+  },
+  {
+    "soru": "Hayat Finans yatirim urunu",
+    "kategori": "banka_ve_konu",
+    "beklenen_sluglar": [
+      "avantajli-hesap-musterilerine-ozel-fx-dar-makas-avantaji",
+      "hayatfx-ile-gumus-islemleri"
+    ],
+    "kayit_id": "HF-003",
+    "kaynak": "turetilmis",
+    "not": "2 kampanya gecerli cevaptir"
+  },
+  {
+    "soru": "Vakıf Katılım yeni musteri",
+    "kategori": "banka_ve_konu",
+    "beklenen_sluglar": [
+      "vakif-katilimli-olanlara-tabiiden-premium-uyelik"
+    ],
+    "kayit_id": "VK-008",
+    "kaynak": "turetilmis",
+    "not": "1 kampanya gecerli cevaptir"
+  },
+  {
+    "soru": "T.O.M. Katılım ihtiyac finansmani",
+    "kategori": "banka_ve_konu",
+    "beklenen_sluglar": [
+      "kampanyalar.html#zel-okul-demelerinde-10-taksit-stelik-vade-farks-z"
+    ],
+    "kayit_id": "TOM-002",
+    "kaynak": "turetilmis",
+    "not": "1 kampanya gecerli cevaptir"
+  },
+  {
+    "soru": "Otel rezervasyonunda indirim sağlayan kampanya var mı?",
+    "kategori": "dogal_soru",
+    "beklenen_sluglar": [
+      "otel-rezervasyonlarinda-2500-tl-indirim"
+    ],
+    "kayit_id": "VK-004",
+    "kaynak": "elle"
+  },
+  {
+    "soru": "Hesap işletim ücreti almayan katılım bankası hangisi?",
+    "kategori": "dogal_soru",
+    "beklenen_sluglar": [
+      "masrafsiz-bankacilik.aspx"
+    ],
+    "kayit_id": "TF-007",
+    "kaynak": "elle"
+  },
+  {
+    "soru": "Hepsiburada'da peşin fiyatına taksit imkânı hangi bankada?",
+    "kategori": "dogal_soru",
+    "beklenen_sluglar": [
+      "hepsiburada"
+    ],
+    "kayit_id": "DK-006",
+    "kaynak": "elle"
+  },
+  {
+    "soru": "Emeklilere özel ayrıcalık sunan katılım bankası var mı?",
+    "kategori": "dogal_soru",
+    "beklenen_sluglar": [
+      "emekli-musterilerimize-ozel-ayricaliklar"
+    ],
+    "kayit_id": "TEK-007",
+    "kaynak": "elle"
+  },
+  {
+    "soru": "Bir futbol maçı kaç dakikadır?",
+    "kategori": "alan_disi",
+    "beklenen_sluglar": [],
+    "kayit_id": null,
+    "kaynak": "elle"
+  },
+  {
+    "soru": "Piyanoda do notası nerededir?",
+    "kategori": "alan_disi",
+    "beklenen_sluglar": [],
+    "kayit_id": null,
+    "kaynak": "elle"
+  },
+  {
+    "soru": "Fotosentez hangi organelde gerçekleşir?",
+    "kategori": "alan_disi",
+    "beklenen_sluglar": [],
+    "kayit_id": null,
+    "kaynak": "elle"
+  },
+  {
+    "soru": "En yakın şubenin adresi nedir?",
+    "kategori": "alan_ici_kapsam_disi",
+    "beklenen_sluglar": [],
+    "kayit_id": null,
+    "kaynak": "elle"
+  },
+  {
+    "soru": "İnternet bankacılığı şifremi unuttum, nasıl yenilerim?",
+    "kategori": "alan_ici_kapsam_disi",
+    "beklenen_sluglar": [],
+    "kayit_id": null,
+    "kaynak": "elle"
+  }
+]

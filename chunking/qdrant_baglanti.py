@@ -425,6 +425,47 @@ def yogun_ara(
     ]
 
 
+def seyrek_ara(
+    seyrek_sorgu: tuple[list[int], list[float]],
+    limit: int = 5,
+    koleksiyon: str = VARSAYILAN_KOLEKSIYON,
+    filtre=None,
+    exact: bool = False,
+) -> list[dict]:
+    """SAF seyrek (sparse-only) arama - yogun vektor/RRF fuzyonu YOK.
+
+    Fallback durumunda (genisletilmis sorgu) yalnizca kelime/jargon 
+    eslesmesine odaklanmak icin kullanilir.
+    """
+    from qdrant_client.models import SearchParams, SparseVector
+
+    indeksler, degerler = seyrek_sorgu
+    if not indeksler:
+        return []
+
+    arama_params = SearchParams(exact=exact) if exact else None
+    
+    sonuclar = istemci_al().query_points(
+        collection_name=koleksiyon,
+        query=SparseVector(indices=indeksler, values=degerler),
+        using=SEYREK_AD,
+        limit=limit,
+        query_filter=filtre,
+        search_params=arama_params,
+    ).points
+    
+    # Ham vektor skoru yok (sparse arama BM25 skoru doner).
+    # retriever'daki esik kontrolu (vektor_skoru >= 0.40) Fallback 
+    # asamasinda yeniden UYGULANMAZ (cunku BM25 skoru yolluyoruz).
+    return [
+        {
+            "skor": s.score,
+            "ustveri": {**(s.payload or {}), "vektor_skoru": 0.0},
+        }
+        for s in sonuclar
+    ]
+
+
 def coklu_filtre(
     banka: str | None = None,
     hedef_tarih: str | None = None,

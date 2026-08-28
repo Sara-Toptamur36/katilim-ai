@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Alert, Skeleton, Space, Statistic, Tag, Typography } from "antd";
 import { CommentOutlined, WarningOutlined } from "@ant-design/icons";
 import { kampanyaMusteriSesiOzetiGetir } from "../api/client";
+import { TEMA_ADLARI } from "../utils/temaAdlari";
 
 const { Text } = Typography;
 
@@ -177,7 +178,7 @@ export default function KampanyaMusteriSesiWidget({ kampanyaId }) {
           <Space size={6} wrap>
             {temaListesi.map((tema, idx) => (
               <Tag key={idx} className="sikayet-tema-tag" style={{ fontSize: 12 }}>
-                {tema.tema} ({tema.sayi})
+                {TEMA_ADLARI[tema.tema] || tema.tema} ({tema.sayi})
               </Tag>
             ))}
           </Space>
@@ -224,7 +225,7 @@ export default function KampanyaMusteriSesiWidget({ kampanyaId }) {
                         color: "var(--musteri-sesi-amber-900)",
                       }}
                     >
-                      {sikayet.tema}
+                      {TEMA_ADLARI[sikayet.tema] || sikayet.tema}
                     </Tag>
                   )}
                   {sikayet.onem_derecesi && (

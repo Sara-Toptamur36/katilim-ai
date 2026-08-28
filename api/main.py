@@ -162,7 +162,9 @@ app = FastAPI(
 # Havin'in React gelistirme sunucusu (Vite varsayilani 5173)
 IZINLI_KAYNAKLAR = [
     "http://localhost:5173",
+    "http://localhost:5174",  # 5173 kullanımdaysa Vite 5174'e geçer
     "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
     "http://localhost:3000",
 ]
 

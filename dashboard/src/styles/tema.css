@@ -1309,6 +1309,10 @@ html[data-tema="koyu"] .sohbet-audit-ozet {
   font-size: 13px;
   color: var(--yazi-normal, #4f625c);
   line-height: 1.5;
+  /* musteri_sesi araci (agent/router.py) "\n  - Tema: N sikayet" gibi
+     cok satirli metin dondurebilir - white-space:normal bunu tek satira
+     sikistirirdi (satir sonlari/bosluklar HTML'de collapse olur). */
+  white-space: pre-line;
 }
 
 .sohbet-alt-baslik {

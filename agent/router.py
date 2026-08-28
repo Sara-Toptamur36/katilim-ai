@@ -77,7 +77,7 @@ def _bilinen_bankalari_yukle() -> list[str]:
 # soru "en az 2 banka adi gerekiyor" diye geri cevriliyordu. Jurinin
 # dogal yazisi bu kaliba uymuyor.
 #
-# ESIKLER: tam ad penceresi 0.80, ayirt edici tek kelime 0.85. Ikincisi
+# ESIKLER: tam ad penceresi 0.85, ayirt edici tek kelime 0.90. Ikincisi
 # daha yuksek cunku tek kelimede yanlis eslesme riski daha buyuk. Yanlis
 # BANKA secmek, banka bulamamaktan kotudur - kullaniciya baska bankanin
 # kampanyasi gosterilirdi.

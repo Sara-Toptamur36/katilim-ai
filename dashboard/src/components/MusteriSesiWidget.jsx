@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Alert, Skeleton, Space, Statistic, Tag } from "antd";
 import { CommentOutlined, WarningOutlined } from "@ant-design/icons";
 import { musteriSesiIstatistiklerGetir } from "../api/client";
+import { TEMA_ADLARI } from "../utils/temaAdlari";
 
 /**
  * MusteriSesiWidget — Dashboard ana sayfada müşteri sesi (complaint insight)
@@ -129,7 +130,7 @@ export default function MusteriSesiWidget() {
                 className="sikayet-tema-tag"
                 style={{ fontSize: 12 }}
               >
-                {tema.tema} ({tema.adet})
+                {TEMA_ADLARI[tema.tema] || tema.tema} ({tema.adet})
               </Tag>
             ))}
           </Space>

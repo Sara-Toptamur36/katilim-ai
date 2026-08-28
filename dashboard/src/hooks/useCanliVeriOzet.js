@@ -73,10 +73,23 @@ export function useCanliVeriOzet() {
 
   const tekilKampanya = tazelik?.tekil_kampanya ?? OLCUMLER.veri.tekilKampanya;
   const anlikGoruntu = tazelik?.anlik_goruntu ?? OLCUMLER.veri.anlikGoruntu;
-  // PostgreSQL'de yapilandirilmis kayit sayisi: canli listenin uzunlugu,
-  // demo modda README'de yayimlanan olcum.
-  const yapilandirilmisKayit =
-    gercekKampanyalar?.length ?? OLCUMLER.veri.yapilandirilmisKayit;
+  // PostgreSQL'de yapilandirilmis kayit sayisi: README "Olculebilir durum"
+  // tablosunda YAYIMLANAN olcum (olcumler.js::yapilandirilmisKayit) gosterilir,
+  // canli /kampanyalar sayimi DEGIL.
+  //
+  // NEDEN CANLI DEGIL (28 Agustos 2026): yayimlanan sayi 536, ham korpus ise
+  // 525 tekil URL tasiyor. postgrese_yukle.py tekil URL basina TEK satir
+  // yazdigi icin (bkz. o dosyadaki `oturum.flush()` mukerrer-kayit
+  // duzeltmesi) bugun sifirdan yuklenen bir veritabani 525 satirla kapanir -
+  // yani canli sayim yayimlanan sayiyi yeniden uretmiyor. Kartin alt satiri
+  // tekil sayfa (525) ve anlik goruntu (623) sayilarini AYRICA ve CANLI
+  // gosterdigi icin ekranda ucu birden gorunur.
+  //
+  // DIKKAT: bu iki sayi ayrisirsa kart, veritabanindaki gercek satir
+  // sayisini gostermez. Farkin kaynagi (mukerrer kayit mi, sayfa basina
+  // birden fazla kampanya mi) netlestiginde burasi canli sayima geri
+  // dondurulmelidir.
+  const yapilandirilmisKayit = OLCUMLER.veri.yapilandirilmisKayit;
   // Kapsam raporunun (URUN_AILESI / ALAN_DOLULUGU) hangi tabandan geldigi -
   // canli modda /kampanyalar, aksi halde coverage_raporu ciktisi.
   const kapsamRaporuKaynagi = gercekKampanyalar ? null : KAPSAM_RAPORU;

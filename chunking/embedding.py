@@ -72,7 +72,7 @@ def modeli_yukle():
     if _model is None:
         from sentence_transformers import SentenceTransformer
 
-        _model = SentenceTransformer(MODEL_ADI)
+        _model = SentenceTransformer(MODEL_ADI, model_kwargs={"use_safetensors": False})
     return _model
 
 

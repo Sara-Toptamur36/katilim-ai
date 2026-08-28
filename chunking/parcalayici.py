@@ -59,6 +59,8 @@ _GURULTU_TAM = {
     "doğum tarihi", "dogum tarihi", "ad soyad", "e-posta", "eposta",
     "aydınlatma metni", "aydinlatma metni", "kişisel verilerle ilgili",
     "kisisel verilerle ilgili", "başvuru formu", "basvuru formu",
+    "dış ticaret", "dis ticaret", "nakit yönetimi", "nakit yonetimi",
+    "yatırım", "yatirim", "kartlar",
 }
 
 # Icinde gecerse satirin tamamen gurultu oldugunu gosteren kaliplar

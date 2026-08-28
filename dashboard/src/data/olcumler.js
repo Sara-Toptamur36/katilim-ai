@@ -19,16 +19,18 @@
 //      bir kosudan geliyordu; o kosuda "hibrit" gercekte regex+LLM'di.
 //      Bu kosuda NER CALISTI ve katkisi OLCULDU - net negatif ciktigi
 //      icin de aynen raporlanir, gizlenmez.
-//   2) RAG artik 25 Agustos'taki 1875 parcalik indekste degil, 27
-//      Agustos'ta kurulan 2304 parcalik OZYINELEMELI indekste olculdu -
-//      yani RAG oranlari ile CANLI indeks ilk kez AYNI indeks.
+//   2) RAG artik 28 Agustos'ta kurulan 2186 parcalik indekste olculuyor -
+//      RAG oranlari ile CANLI indeks AYNI indeks. Bu indeks 930739e'nin
+//      site-kalibi elemesini VE marka koruma listesini (chunking/
+//      sabitler.py) icerir; onceki 2304 parcalik sayim bu iki temizlikten
+//      ONCEKI korpusa aitti, bu yuzden parca sayisi DUSTU (gurultu elendi).
 //   3) Hacim sayilari uc AYRI seyi olcer ve artik uCu de ayri tutulur
 //      (yapilandirilmis kayit / tekil ham sayfa / anlik goruntu) -
 //      onceden ikisi tek karta sikistirilmisti.
 export const VERI_TARIHI = "26 Ağustos 2026";
-export const OLCUM_TARIHI = "27 Ağustos 2026";
+export const OLCUM_TARIHI = "28 Ağustos 2026";
 export const OLCUM_VERI_SETI =
-  "291 canlı kayıt (çıkarım) · 138 sorgu / 2.304 parça (RAG)";
+  "291 canlı kayıt (çıkarım) · 110 sorgu / 2.186 parça (RAG)";
 
 export const OLCUMLER = {
   // --- VERI: guncel (VERI_TARIHI) ---
@@ -128,42 +130,47 @@ export const OLCUMLER = {
   },
 
   rag: {
-    indekslenenParca: 2304,
+    indekslenenParca: 2186,
     belgeSayisi: 623,
-    indeksTarihi: "27 Ağustos 2026",
+    indeksTarihi: "28 Ağustos 2026",
     parcalamaYontemi: "Özyinelemeli parçalama (900 karakter / 150 örtüşme)",
-    degerlendirmeSeti: 138,
-    elenenSoru: 22,
-    recall5: 81.88,
-    recall3: 78.99,
-    recall1: 68.12,
-    recall5Detay: "138 sorgu · özyinelemeli indeks (900/150)",
+    degerlendirmeSeti: 110,
+    elenenSoru: 17,
+    recall5: 77.27,
+    recall3: 74.55,
+    recall1: 63.64,
+    recall5Detay: "110 sorgu · özyinelemeli indeks (900/150) · tür boost açık",
     recall1Not: "exact=True arama modu",
-    // KATEGORI KIRILIMI - DURUSTLUK NOTU: 27 Agustos kosusunda yalnizca
-    // GENEL Recall@1/3/5 ve tam_ad kategorisi yeniden yayimlandi. Diger uc
-    // kategori AYNI indekste ama ONCEKI kosunun (genel %76,81) degerleridir;
-    // toplamlari yeni genel orana denk gelmez ve bu bilerek boyle yazilir -
-    // olculmemis bir sayiyi "guncel" gibi gostermek yerine hangi kosudan
-    // geldigi isaretlenir.
+    // 28 AGUSTOS KOSUSU - KATEGORILERIN TAMAMI AYNI KOSUDAN: onceki
+    // surumde yalnizca tam_ad guncel, diger uc kategori eski kosudandi ve
+    // toplamlari genel orana denk gelmiyordu. Bu kosuda dort kategori de
+    // TEK VE AYNI olcumden geliyor (623 belge / 2186 parca, tur boost
+    // acik), yani `guncel` alani artik hepsinde true.
     recallKategori: [
-      { ad: "Tam ad", oran: 96.0, detay: "48/50", guncel: true },
-      { ad: "Kısmi ad", oran: 86.96, detay: "40/46", guncel: false },
-      { ad: "Doğal soru", oran: 70.59, detay: "12/17", guncel: false },
-      { ad: "Banka + konu", oran: 24.0, detay: "6/25", guncel: false },
+      { ad: "Tam ad", oran: 92.31, detay: "36/39", guncel: true },
+      { ad: "Kısmi ad", oran: 86.49, detay: "32/37", guncel: true },
+      { ad: "Doğal soru", oran: 64.29, detay: "9/14", guncel: true },
+      { ad: "Banka + konu", oran: 40.0, detay: "8/20", guncel: true },
     ],
     recallKategoriNotu:
-      "Tam ad kategorisi 27 Ağustos koşusundan; diğer üç kategori aynı indeksteki önceki koşudan (genel %76,81) alınmıştır — 27 Ağustos'ta kategori kırılımı ayrıca yayımlanmadı.",
-    abstention: 93.33,
-    abstentionDetay: "alan dışı: 14/15 soruda cevap üretilmedi",
+      "Dört kategori de 28 Ağustos koşusundan (623 belge / 2.186 parça, marka koruma listesi + kampanya türü boost açık). Banka + konu %20,0'dan %40,0'a çıktı — tür boost'un ölçülmüş katkısı.",
+    abstention: 83.33,
+    abstentionDetay: "alan dışı: 10/12 soruda cevap üretilmedi",
     // Cekimserligin GERCEK zayif noktasi alan_disi degil, alan_ici
     // kapsam_disi. Izole RAG olcumu %40; niyet yonlendirmesi devrede olan
     // UCTAN UCA olcumde %100. Ikisi ayri ayri yazilir, iyi olan tek basina
     // gosterilmez.
-    abstentionAlanIciIzole: 40.0,
-    abstentionAlanIciIzoleDetay: "alan içi kapsam dışı, izole RAG: 4/10",
+    abstentionAlanIciIzole: 50.0,
+    abstentionAlanIciIzoleDetay: "alan içi kapsam dışı, izole RAG: 4/8",
+    // DURUSTLUK NOTU: uctan uca cekimserlik 28 Agustos kosusunda YENIDEN
+    // OLCULMEDI - asagidaki deger 27 Agustos kosusundan (10 soruluk eski
+    // sette 10/10). Soru seti o tarihten sonra 8'e indi, yani bu oran
+    // guncel sete ait DEGIL. Olculmemis bir sayiyi "guncel" gostermemek
+    // icin kaynagi burada acikca isaretlenir; yeniden olcum
+    // `abstention_uctan_uca_olc()` ile yapilir.
     abstentionUctanUca: 100,
     abstentionUctanUcaDetay:
-      "alan içi kapsam dışı, uçtan uca (niyet yönlendirmeli): 10/10",
+      "alan içi kapsam dışı, uçtan uca (niyet yönlendirmeli): 10/10 — 27 Ağustos koşusu, güncel sette yeniden ölçülmedi",
   },
 
   // CI'nin kendi calisan sayisi (GitHub Actions, `-m "not slow"` takimi).
@@ -298,9 +305,9 @@ export const KAYNAK_TAKIP = [
 ];
 
 export const SISTEM_DURUMU = {
-  qdrantParca: 2304,
+  qdrantParca: 2186,
   qdrantBelge: 623,
-  indeksTarihi: "27 Ağustos 2026",
+  indeksTarihi: "28 Ağustos 2026",
   sonTarama: "26 Ağustos 2026",
-  bayatlikGun: 1,
+  bayatlikGun: 2,
 };

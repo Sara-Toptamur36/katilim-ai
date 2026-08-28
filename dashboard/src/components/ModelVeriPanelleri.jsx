@@ -357,11 +357,13 @@ export default function ModelVeriPanelleri() {
               </div>
 
               {/* CEKIMSERLIK TEK SAYI DEGIL - UC AYRI OLCUM.
-                  Alan disi sorularda %93,33 iyi gorunur ama sistemin GERCEK
+                  Alan disi sorularda %83,33 iyi gorunur ama sistemin GERCEK
                   zayif noktasi "alan ici ama kapsam disi" sorulardir: izole
-                  RAG'de %40. Niyet yonlendirmesi devrede olan UCTAN UCA
-                  olcumde %100'e cikar. Yalnizca %100'u gostermek yaniltici
-                  olurdu; ucu de yan yana yazilir. */}
+                  RAG'de %50. Niyet yonlendirmesi devrede olan UCTAN UCA
+                  olcum %100 diyor ama o deger 27 Agustos kosusundan, guncel
+                  sette YENIDEN OLCULMEDI (bkz. olcumler.js'teki durustluk
+                  notu). Yalnizca %100'u gostermek yaniltici olurdu; ucu de
+                  yan yana ve kaynagiyla yazilir. */}
               <div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
                   <span style={{ fontSize: 13, color: "var(--yazi-normal)" }}>Çekimserlik — alan dışı</span>

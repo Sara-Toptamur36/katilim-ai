@@ -462,11 +462,11 @@ export default function Dashboard() {
             >
               {/* ETIKET AYRIMI: burasi Recall@5'in OLCULDUGU indekstir,
                   asagidaki Sistem Sagligi karti CALISAN (canli) indeksi
-                  gosterir. 27 Agustos'ta RAG ozyinelemeli indekste (2304
-                  parca) yeniden olculdugu icin ikisi SU AN AYNI - alt metin
-                  bunu artik "ayni indeks" diye yazar. Etiket yine de duruyor:
-                  canli indeks bir sonraki taramada buyudugunde iki sayi
-                  tekrar ayrisacak ve ayrim yine gerekli olacak. */}
+                  gosterir. 28 Agustos'ta RAG 2186 parcalik indekste yeniden
+                  olculdugu icin ikisi SU AN AYNI - alt metin bunu artik
+                  "ayni indeks" diye yazar. Etiket yine de duruyor: canli
+                  indeks bir sonraki taramada buyudugunde iki sayi tekrar
+                  ayrisacak ve ayrim yine gerekli olacak. */}
               ÖLÇÜM İNDEKSİ (Recall)
             </span>
             <span

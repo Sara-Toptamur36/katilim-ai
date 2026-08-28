@@ -2073,3 +2073,59 @@ html[data-tema="koyu"] .musteri-sesi-widget {
   );
   border-color: var(--musteri-sesi-amber-600);
 }
+
+/* ---------- Uc Seviyeli Eslesme Kartlari (entity resolution) ---------- */
+/* Uc kartin zemini ONCEDEN JSX icinde satir ici sabit renkti (#f6ffed /
+   #fffbe6 / #fff1f0). Satir ici stil, koyu temanin .ant-card kuralini
+   yendigi icin zemin her iki temada da ACIK kaliyordu; yazi rengi ise
+   temadan geldigi icin koyu temada aciga donuyordu - acik zemin + acik
+   yazi = okunamayan baslik. Zemin/kenarlik artik tema degiskeninden
+   gelir, boylece tek kural iki temada da dogru kontrasti verir. */
+:root {
+  --eslesme-seviye1-zemin: #f6ffed;
+  --eslesme-seviye1-kenar: #b7eb8f;
+  --eslesme-seviye2-zemin: #fffbe6;
+  --eslesme-seviye2-kenar: #ffe58f;
+  --eslesme-seviye3-zemin: #fff1f0;
+  --eslesme-seviye3-kenar: #ffccc7;
+}
+
+html[data-tema="koyu"] {
+  --eslesme-seviye1-zemin: #16281c;
+  --eslesme-seviye1-kenar: #2f5136;
+  --eslesme-seviye2-zemin: #2e2410;
+  --eslesme-seviye2-kenar: #5a4626;
+  --eslesme-seviye3-zemin: #2e1717;
+  --eslesme-seviye3-kenar: #5c2b2b;
+}
+
+/* !important: koyu temadaki `html[data-tema="koyu"] .ant-card` kurali
+   (background: var(--kart)) aksi halde bu zemini ezer. */
+.eslesme-seviye-karti.seviye-1 {
+  background: var(--eslesme-seviye1-zemin) !important;
+  border: 1px solid var(--eslesme-seviye1-kenar) !important;
+}
+
+.eslesme-seviye-karti.seviye-2 {
+  background: var(--eslesme-seviye2-zemin) !important;
+  border: 1px solid var(--eslesme-seviye2-kenar) !important;
+}
+
+.eslesme-seviye-karti.seviye-3 {
+  background: var(--eslesme-seviye3-zemin) !important;
+  border: 1px solid var(--eslesme-seviye3-kenar) !important;
+}
+
+/* Satir ici `code` (antd <Text code>) - koyu tema.
+   Antd'nin varsayilan kod rengi acik tema icin secilmis KOYU yesildir
+   (#0c5144 = --marka-800); koyu zeminde neredeyse gorunmez oluyordu
+   (olculdu: kontrast ~1,5). Marka skalasinin acik ucuna gecilir - vurgu
+   korunur, okunabilirlik saglanir. Skala koyu temada yeniden
+   tanimlanmadigi icin deger dogrudan referanslanir.
+   Uygulamada 4 yerde kullanilir, hepsi bu kuraldan yararlanir. */
+html[data-tema="koyu"] .ant-typography code,
+html[data-tema="koyu"] code {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--kenarlik);
+  color: var(--marka-200);
+}

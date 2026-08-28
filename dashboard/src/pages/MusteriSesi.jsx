@@ -336,7 +336,7 @@ function UcSeviyeliEslesmeKarti() {
       </Text>
       <Row gutter={16}>
         <Col span={8}>
-          <Card size="small" style={{ background: "#f6ffed" }}>
+          <Card size="small" className="eslesme-seviye-karti seviye-1">
             <Text strong>Seviye 1 — Banka</Text>
             <div style={{ marginTop: 8 }}>
               <Tag color="green">Eşleşti: A Bankası</Tag>
@@ -347,7 +347,7 @@ function UcSeviyeliEslesmeKarti() {
           </Card>
         </Col>
         <Col span={8}>
-          <Card size="small" style={{ background: "#fffbe6" }}>
+          <Card size="small" className="eslesme-seviye-karti seviye-2">
             <Text strong>Seviye 2 — Ürün türü</Text>
             <div style={{ marginTop: 8 }}>
               <Tag color="gold">Konut Finansmanı — güven 1.0</Tag>
@@ -358,7 +358,7 @@ function UcSeviyeliEslesmeKarti() {
           </Card>
         </Col>
         <Col span={8}>
-          <Card size="small" style={{ background: "#fff1f0" }}>
+          <Card size="small" className="eslesme-seviye-karti seviye-3">
             <Text strong>Seviye 3 — Kampanya</Text>
             <div style={{ marginTop: 8 }}>
               <Tag color="red">Eşleşmedi (güven 0.45 &lt; eşik 0.50)</Tag>

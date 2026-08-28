@@ -10,7 +10,6 @@ import client from "../api/client";
 import { OLCUMLER, OLCUM_TARIHI, KAYNAK_TAKIP } from "../data/olcumler";
 import TazelikSeridi from "../components/TazelikSeridi";
 import { useCanliVeriOzet } from "../hooks/useCanliVeriOzet";
-import MusteriSesiWidget from "../components/MusteriSesiWidget";
 
 export default function Dashboard() {
   const [apiBagli, setApiBagli] = useState(false);
@@ -1588,11 +1587,6 @@ export default function Dashboard() {
           </div>
         );
       })()}
-
-      {/* ========================================================
-          6) MÜŞTERİ SESİ WİDGET'İ (DENEYIM SİNYALİ)
-          ======================================================== */}
-      <MusteriSesiWidget />
     </div>
   );
 }

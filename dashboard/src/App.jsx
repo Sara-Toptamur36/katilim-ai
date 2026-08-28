@@ -59,30 +59,21 @@ const KONTROL_MENUSU = [
   { yol: "/kampanyalar", etiket: "Kampanyalar", ikon: <TagsOutlined /> },
   { yol: "/karsilastirma", etiket: "Karşılaştırma", ikon: <SwapOutlined /> },
   { yol: "/hesapla", etiket: "Hesap Makinesi", ikon: <CalculatorOutlined /> },
-];
-
-const GUVEN_MENUSU = [
-  // Metin Analizi ve Cikarim Denetimi eskiden yalnizca banka_calisani/
-  // denetleyici/yonetici rolune `roller` filtresiyle gosteriliyordu. API
-  // tarafindaki rol_gerekli(["banka_calisani","denetleyici","yonetici"])
-  // kisiti SADECE JWT_AKTIF=true iken calisir (varsayilan mock/demo modda
-  // hicbir etkisi yok, bkz. api/main.py::cikar), yani bu iki sayfa fiilen
-  // her zaman erisilebilirdi - sadece menude GIZLIYORDU. Sartname Md. 6
-  // jurinin serbest metin -> yapilandirilmis cikti akisini CANLI gormesini
-  // gerektirdigi icin (bkz. api/main.py::cikar), bu iki sayfa DENETIM
-  // BULGUSU (26.08.2026) sonrasi tum giris yapmis rollere acildi - jüri
-  // kendi (musteri) hesabiyla giris yapip buradan kontrol edebilsin diye.
-  {
-    yol: "/analiz",
-    etiket: "Metin Analizi",
-    ikon: <FileSearchOutlined />,
-  },
-  { yol: "/audit", etiket: "Jüri Audit Paneli", ikon: <AuditOutlined /> },
-  {
-    yol: "/extraction-audit",
-    etiket: "Çıkarım Denetimi",
-    ikon: <FileSearchOutlined />,
-  },
+  // Metin Analizi eskiden yalnizca banka_calisani/denetleyici/yonetici
+  // rolune `roller` filtresiyle gosteriliyordu. API tarafindaki
+  // rol_gerekli(["banka_calisani","denetleyici","yonetici"]) kisiti SADECE
+  // JWT_AKTIF=true iken calisir (varsayilan mock/demo modda hicbir etkisi
+  // yok, bkz. api/main.py::cikar), yani sayfa fiilen her zaman
+  // erisilebilirdi - sadece menude GIZLIYORDU. Sartname Md. 6 jurinin
+  // serbest metin -> yapilandirilmis cikti akisini CANLI gormesini
+  // gerektirdigi icin DENETIM BULGUSU (26.08.2026) sonrasi tum giris
+  // yapmis rollere acildi.
+  //
+  // KONUM (28.08.2026): "Guven ve Izleme"den KONTROL MERKEZI'ne tasindi -
+  // bu sayfa bir DENETIM araci degil, kullanicinin kendi metnini
+  // yapilandirilmis veriye cevirdigi bir URUN ozelligidir; denetim
+  // bolumunde durmasi ne yaptigini yanlis anlatiyordu.
+  { yol: "/analiz", etiket: "Metin Analizi", ikon: <FileSearchOutlined /> },
   { yol: "/musteri-sesi", etiket: "Müşteri Sesi", ikon: <CommentOutlined /> },
   // Bu menu ogesi yalnizca GIRIS YAPILMISKEN gorunur (SolMenu, App()'in
   // "girisli" dalinda render edilir - bkz. asagidaki if(!girisli) erken
@@ -92,6 +83,20 @@ const GUVEN_MENUSU = [
   // Kayıt" yaziyordu, kullanici menude hic gormeyecegi bir sayfa adi
   // goruyordu).
   { yol: "/giris", etiket: "Ayarlar", ikon: <SettingOutlined /> },
+];
+
+// GUVEN VE IZLEME artik YALNIZCA denetim/kanit ekranlarini tasir (28.08.2026):
+// jurinin "bu cevap nereden geldi, hangi katman ne uretti" sorusunu
+// cevaplayan iki panel. Urun ozellikleri (Metin Analizi, Musteri Sesi) ve
+// hesap ayarlari yukaridaki KONTROL MENUSU'ne alindi - boylece bu baslik
+// altindaki her sayfa gercekten bir DENETIM araci oluyor.
+const GUVEN_MENUSU = [
+  { yol: "/audit", etiket: "Jüri Audit Paneli", ikon: <AuditOutlined /> },
+  {
+    yol: "/extraction-audit",
+    etiket: "Çıkarım Denetimi",
+    ikon: <FileSearchOutlined />,
+  },
 ];
 
 /* Uygulama artik girisin ARKASINDA oldugu icin (bkz. App()::girisli) rol

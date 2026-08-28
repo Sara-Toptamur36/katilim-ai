@@ -832,6 +832,7 @@ def test_musteri_sesi_ornekler_onem_ve_cozum_alanlarini_tasir():
         assert isinstance(ornek["yineleme_supheli"], bool)
 
 
+@pytest.mark.skipif(not DB_ERISILEBILIR, reason=DB_YOK_MESAJI)
 def test_musteri_sesi_ornekler_veritabanina_yazmaz():
     """hazirla() cagrilmasi kaydet()'i CAGIRMAZ - bu uc nokta halen
     `sikayetler` tablosuna dokunmaz (bkz. docs/kapsam_ve_veri_ayrimi.md
@@ -856,6 +857,7 @@ def test_musteri_sesi_ornekler_veritabanina_yazmaz():
     assert sonra == once
 
 
+@pytest.mark.skipif(not DB_ERISILEBILIR, reason=DB_YOK_MESAJI)
 def test_musteri_sesi_ornekler_orneklem_notu_yogunluk_ozetinde_var():
     """Mentor geri bildirimi: temsil yanliligi uyarisi HER yanitta
     gorunmeli, arayuz sayilari yanlislikla genelleyemesin."""

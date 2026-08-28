@@ -49,7 +49,7 @@ Takım: **PeacewAI** — Fırat Üniversitesi, Yapay Zekâ ve Veri Mühendisliğ
 
 ### Ölçülebilir durum
 
-_Son ölçüm: 27 Ağustos 2026. Tüm sayılar depodaki komutlarla yeniden üretilebilir — üretim komutları [Test](#test) bölümünde._
+_Son ölçüm: RAG 28 Ağustos 2026, çıkarım/kapsam 27 Ağustos 2026. Tüm sayılar depodaki komutlarla yeniden üretilebilir — üretim komutları [Test](#test) bölümünde._
 
 > **Güncel sistem performansı**
 >
@@ -57,8 +57,8 @@ _Son ölçüm: 27 Ağustos 2026. Tüm sayılar depodaki komutlarla yeniden üret
 > üzerinde test edildi. **Final F1: %87,25** (Precision %93,85, Recall %81,51).
 > Detay: [`EVREN_FULL_PIPELINE_BENCHMARK.md`](EVREN_FULL_PIPELINE_BENCHMARK.md)
 >
-> **RAG**: Özyinelemeli parçalama (900 karakter / 150 örtüşme) ile **2.304 parça**
-> üzerinde **138 sorgu** ile ölçüldü. Recall@5 genel %81,88, tam başlık %96,00.
+> **RAG**: Özyinelemeli parçalama (900 karakter / 150 örtüşme) ile **2.186 parça**
+> üzerinde **110 sorgu** ile ölçüldü. Recall@5 genel %77,27, tam başlık %92,31.
 > Abstention (halüsinasyon engelleme) %100 başarı (uçtan uca).
 > Detay: [`docs/rag_tasarim_ve_olcum.md`](docs/rag_tasarim_ve_olcum.md)
 
@@ -78,10 +78,10 @@ _Son ölçüm: 27 Ağustos 2026. Tüm sayılar depodaki komutlarla yeniden üret
 | EVREN Recovery (Regex+NER bulamadı, EVREN buldu) | **38/112** çağrıda yeni alan buldu                                                      |
 | Terminoloji sözlüğü                           | **31** kavram (geleneksel karşılığı + tanım kaynağıyla)                                        |
 | Kapsam ölçümü (Scope Guard)                   | hassasiyet **24/24**, özgüllük **10/10**                                                       |
-| RAG — indekslenen parça                       | **2.304** parça / 623 belge — Özyinelemeli parçalama (900 karakter / 150 örtüşme)            |
-| RAG — değerlendirme seti                      | **138** sorgu (kapsam dışı eskimiş 22 soru elendi), `exact=True`                              |
-| RAG — Recall@5 (genel)                        | **%81,88** (Recall@3 %78,99, Recall@1 %68,12 — `tam_ad` kategorisinde Recall@5 **%96,00**)   |
-| RAG — abstention doğruluğu                    | alan dışı **%93,33** (14/15) · alan içi kapsam dışı **%40,0** (izole; uçtan uca niyet yönlendirmeli ölçümde **%100,0** — 10/10) |
+| RAG — indekslenen parça                       | **2.186** parça / 623 belge — Özyinelemeli parçalama (900 karakter / 150 örtüşme)            |
+| RAG — değerlendirme seti                      | **110** sorgu (kapsam dışı eskimiş 17 soru elendi), `exact=True`                              |
+| RAG — Recall@5 (genel)                        | **%77,27** (Recall@3 %74,55, Recall@1 %63,64 — `tam_ad` kategorisinde Recall@5 **%92,31**)   |
+| RAG — abstention doğruluğu                    | alan dışı **%83,33** (10/12) · alan içi kapsam dışı **%50,0** (4/8, izole; uçtan uca niyet yönlendirmeli ölçümde **%100,0** — 10/10, güncel sette yeniden ölçülmedi) |
 | Otomatik test                                 | **1278** test geçiyor (CI, `-m "not slow"`), 0 hata, 90 atlandı — CI her push'ta çalışır       |
 
 > **Yavaş testler — iki ayrı grup, karıştırılmamalı:**
@@ -130,7 +130,7 @@ _Son ölçüm: 27 Ağustos 2026. Tüm sayılar depodaki komutlarla yeniden üret
 > | Toplam (11 alan)             | %67,09     | **%80,66** |
 >
 > Aradaki **14,6 puanlık uçurum 1,8 puana indi** — çünkü toplamı aşağı
-> çeken asıl alan `kampanya_turu`'ydu (%35,63 → %81,88, kök nedeni
+> çeken asıl alan `kampanya_turu`'ydu (%35,63 → %87,43, kök nedeni
 > aşağıdaki alt başlıkta). İki sayı hâlâ ayrı raporlanıyor, ama artık
 > "regex sayısal alanlarda iyi, sınıflandırmada kötü" şeklindeki eski
 > tablo geçerli değil.
@@ -164,7 +164,7 @@ scraper.scripts.extraction_accuracy`, 291 canlı kayıt) önce/sonra çıktısı
 
 | Alan                     | Eski       | Bir Önceki (regex) | Güncel(hibrit)      |
 | ------------------------ | ---------- | ------------------ | ------------------- |
-| `kampanya_turu`          | %35,63     | **%81,88**         | %81,88              |
+| `kampanya_turu`          | %35,63     | **%81,88**         | **%87,43**          |
 | `hedef_kitle`            | R %19,67   | %34,48             | **%56,95**          |
 | `odul_miktari`           | —          | %89,36             | **%90,36**          |
 | `odul_birimi`            | —          | %90,43             | **%90,82**          |
@@ -258,8 +258,10 @@ doğrulandı (bkz. [md6_veri_bolumu.md](docs/md6_veri_bolumu.md#33-somut-örnek)
 > **Aşağıdaki üç blok RAG ölçümünün tarihsel seyridir** (17 → 21 → 23
 > Ağustos). Her biri kendi tarihindeki indeks boyutuyla yazılmıştır;
 > **güncel RAG sayıları yukarıdaki "Ölçülebilir durum" tablosundadır**
-> (indeks 26 Ağustos'ta 2127 parçaya büyüdü, Recall o boyutta henüz
-> yeniden ölçülmedi). Buradaki değer, sayılar değil **hangi bulgunun
+> (indeks 28 Ağustos'ta özyinelemeli parçalamayla yeniden kurulup 2.186
+> parçaya ayarlandı, Recall aynı indekste yeniden ölçüldü — banka_ve_konu
+> kategorisi kampanya_turu tür-boost mekanizmasıyla %24,00'den %40,0'a
+> yükseldi). Buradaki değer, sayılar değil **hangi bulgunun
 > neden çıktığıdır** — o gerekçeler hâlâ geçerli.
 
 **RAG indeksi 17 Ağustos'ta yeniden kuruldu** (263 belge → 817 parça) ve ölçüm
@@ -470,7 +472,7 @@ python cevrimdisi_hazirlik_kontrolu.py
 ```bash
 python -m scraper.scripts.postgrese_yukle      # ham veriyi PostgreSQL'e aktar
 python -m extraction.regex_ile_zenginlestir    # finansal alanları çıkar
-python -m chunking.indeksleyici                # RAG indeksini kur (2127 parça)
+python -m chunking.indeksleyici                # RAG indeksini kur (2186 parça)
 ollama pull qwen2.5:7b-instruct-q4_K_M         # hibrit çıkarımın LLM katmanı
 ```
 

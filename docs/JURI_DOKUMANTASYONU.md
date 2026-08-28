@@ -571,7 +571,7 @@ Sistemin kaynakta olmayan bir değer üretmemesi üç mekanizmanın birlikte ça
 | **Problem** | **Kök Neden** | **Ölçülen Sonuç** |
 |----|----|----|
 | İlgisiz kampanya listesi | Sayfanın kendi içeriği bittikten sonra gelen başka kampanyaların taksit/ödül ifadeleri o kaydın değeri sanılıyordu | Sayfa kapsamı ayıklaması eklendi |
-| İstisna cümlesi olumlu sanılıyordu | "Business kartlar dahil değildir" ifadesi kampanyayı "Ticari Kampanya" olarak sınıflandırıyordu | kampanya_turu %35,63 → %81,88 |
+| İstisna cümlesi olumlu sanılıyordu | "Business kartlar dahil değildir" ifadesi kampanyayı "Ticari Kampanya" olarak sınıflandırıyordu | kampanya_turu %35,63 → %87,43 |
 | Türkçe çekim ekleri | Desende "6 taksite", "3 Ay Erteleme" gibi çekimli biçimler yoktu | taksit_sayisi → %89,50 |
 | Maliyet tablosu yanlış pozitifi | Bağlam penceresi tablo başlığına yetişemiyordu (TF-001, TF-008) | Ayrı tablo okuma katmanı |
 | Tutar ayrıştırma hatası | Regex alternation nedeniyle binlik ayracı olmayan tutarlar küçük okunuyordu | Altı desen tek \_SAYI parçasına çekildi |
@@ -708,8 +708,8 @@ Nihai boru hattında kalan 225 kaçırma (false negative) alanlara eşit dağıl
 |----|----|----|
 | Parçalama yöntemi | Özyinelemeli | 900 karakter / 150 karakter örtüşme |
 | Embedding modeli | intfloat/multilingual-e5-base | 768 boyutlu, çok dilli, yerel |
-| İndeks boyutu | 2.304 parça / 623 belge | 27 Ağustos 2026 — ölçüm bu indekste yapıldı |
-| Değerlendirme seti | 138 sorgu | Eskimiş 22 soru elendi, exact=True |
+| İndeks boyutu | 2.186 parça / 623 belge | 28 Ağustos 2026 — ölçüm bu indekste yapıldı |
+| Değerlendirme seti | 110 sorgu | Eskimiş 17 soru elendi, exact=True |
 | Üretimde getirilen sonuç | limit = 3 | agent/router.py; ölçümde k = 1/3/5 |
 | Çekimserlik eşiği | Leksikal örtüşme ≥ 0,60 | Vektör skoru değil (bkz. §8.4) |
 
@@ -741,20 +741,20 @@ Sistemin cevap vermeme kararı, aşağıdaki leksikal örtüşme formülüne day
 
 # **9. RAG Değerlendirme Sonuçları**
 
-> Ölçüm künyesi: 27 Ağustos 2026 · 2.304 parçalık indeks · 138 sorgu · exact=True · Komut: python -m scraper.scripts.rag_degerlendirme
+> Ölçüm künyesi: 28 Ağustos 2026 · 2.186 parçalık indeks · 110 sorgu · exact=True · Komut: python -m scraper.scripts.rag_degerlendirme
 
 ## **9.1 Genel Başarım**
 
 | **Metrik** | **Değer** | **Açıklama** |
 |----|----|----|
-| Recall@1 | %68,12 | İlk sonuçta isabet |
-| Recall@3 | %78,99 | Üretimde kullanılan k değeri (limit=3) |
-| Recall@5 | %81,88 | Genel |
-| Recall@5 — tam başlık kategorisi | %96,00 | Kampanya adı verildiğinde |
-| Çekimserlik — alan dışı | %93,33 (14/15) | Konu tamamen dışındaki sorular |
-| Çekimserlik — alan içi kapsam dışı | %40,0 izole · %100,0 uçtan uca (10/10) | Bkz. §9.3 |
+| Recall@1 | %63,64 | İlk sonuçta isabet |
+| Recall@3 | %74,55 | Üretimde kullanılan k değeri (limit=3) |
+| Recall@5 | %77,27 | Genel |
+| Recall@5 — tam başlık kategorisi | %92,31 | Kampanya adı verildiğinde |
+| Çekimserlik — alan dışı | %83,33 (10/12) | Konu tamamen dışındaki sorular |
+| Çekimserlik — alan içi kapsam dışı | %50,0 izole (4/8) · %100,0 uçtan uca (10/10, güncel sette yeniden ölçülmedi) | Bkz. §9.3 |
 
-Değerlendirme seti 138 sorgudan oluşur; korpus rotasyonu nedeniyle beklenen belgesi artık indekste bulunmayan 22 eskimiş soru ölçüm dışı bırakılmıştır. Bu soruları "bulunamadı" saymak, getirme başarısını değil veri eskimesini ölçmek olurdu.
+Değerlendirme seti 110 sorgudan oluşur; korpus rotasyonu nedeniyle beklenen belgesi artık indekste bulunmayan 17 eskimiş soru ölçüm dışı bırakılmıştır. Bu soruları "bulunamadı" saymak, getirme başarısını değil veri eskimesini ölçmek olurdu.
 
 > Halüsinasyon engelleme uçtan uca %100 başarıya ulaşmıştır. Alan içi kapsam dışı sorularda izole ölçüm %40 gösterse de, niyet katmanı yönlendirmesiyle birlikte uçtan uca ölçümde 10/10 başarı elde edilmiştir. Yani sistem, cevabını bilmediği bir soruya pratikte hiç uydurma cevap üretmemektedir.
 
@@ -764,14 +764,14 @@ Tek bir genel oran, sistemin nerede zorlandığını gizler. Bu nedenle kategori
 
 | **Kategori** | **Recall@5**   | **Tanım**                                      |
 |--------------|----------------|------------------------------------------------|
-| Tam ad       | %96,00 (48/50) | Kampanya adı birebir verilerek sorulan sorular |
-| Kısmi ad     | %86,96 (40/46) | Kampanya adının bir kısmı verilir              |
-| Doğal soru   | %70,59 (12/17) | Günlük dilde sorulmuş sorular                  |
-| Banka + konu | %24,00 (6/25)  | En zor kategori — kampanya adı hiç verilmez    |
+| Tam ad       | %92,31 (36/39) | Kampanya adı birebir verilerek sorulan sorular |
+| Kısmi ad     | %86,49 (32/37) | Kampanya adının bir kısmı verilir              |
+| Doğal soru   | %64,29 (9/14)  | Günlük dilde sorulmuş sorular                  |
+| Banka + konu | %40,0 (8/20)   | En zor kategori — kampanya adı hiç verilmez    |
 
 banka_ve_konu kategorisi kasıtlı olarak zor tasarlanmıştır: kullanıcı kampanya adını bilmeden "X bankasının kart kampanyası" biçiminde sormaktadır. Leksikal arama kampanya adına dayandığı için, isim verilmediğinde ayırt edicilik kaybolur. Bu bir kod hatası değildir; belgelenmiş dense-arama sınırının doğal sonucudur ve açıkça raporlanmaktadır.
 
-> Denenip ölçümle reddedilen çözüm — reranker. Bu kategoriyi iyileştirmek için cross-encoder tabanlı bir yeniden sıralayıcı (reranker) denenmiştir. Ancak ölçüm, aday havuzunun genişletilmesinin genel Recall'ü düşürdüğünü göstermiştir: geniş havuzun cross-encoder'a sunduğu dikkat dağıtıcı fazlalık, doğru sonucu aşağı itmektedir. Deney farklı embedding modelleri ve farklı veri seti boyutlarıyla tekrarlanmış, sonuç değişmemiştir — bu yapısal bir sınırlamadır, tek bir koşunun gürültüsü değildir. Reranker bu nedenle bilinçli olarak iptal edilmiştir.
+> Denenip ölçümle reddedilen çözüm — reranker. Bu kategoriyi iyileştirmek için cross-encoder tabanlı bir yeniden sıralayıcı (reranker) denenmiştir. Ancak ölçüm, aday havuzunun genişletilmesinin genel Recall'ü düşürdüğünü göstermiştir: geniş havuzun cross-encoder'a sunduğu dikkat dağıtıcı fazlalık, doğru sonucu aşağı itmektedir. Deney farklı embedding modelleri ve farklı veri seti boyutlarıyla tekrarlanmış, sonuç değişmemiştir — bu yapısal bir sınırlamadır, tek bir koşunun gürültüsü değildir. Reranker bu nedenle bilinçli olarak iptal edilmiştir (varsayılan kapalı, KATILIMAI_RERANK=true ile elle açılabilir). Sonraki bir denemede farklı bir mekanizma — sorguda geçen kampanya türünü (kart/ihtiyaç/taşıt vb.) tespit edip aday sıralamasını yumuşak biçimde ağırlıklandıran "kampanya_turu tür-boost" ile marka koruma listesi — ölçülüp varsayılan olarak açılmıştır (KATILIMAI_TUR_BOOST, varsayılan açık). Bu mekanizma banka_ve_konu Recall@5'ini %24,00'den %40,0'a yükseltmiştir. Kategori hâlâ en zayıf halka olmaya devam etmektedir ama açık sorun kısmen kapanmıştır.
 
 ## **9.3 Alan İçi Kapsam Dışı Sorular — Bir Ölçüm Vakası**
 
@@ -1243,7 +1243,7 @@ Veri seti harici bir servise yüklenmemiştir; depoyla birlikte doğrudan dağı
 | Geçen test | 1.278 | CI hattı, -m "not slow" seçimiyle |
 | Hata | 0 | 27 Ağustos 2026 CI koşusu |
 | Atlanan | 90 | Dış servis gerektiren testler |
-| Test dosyası | 81 | tests/ dizini |
+| Test dosyası | 85 | tests/ dizini |
 | Yavaş test — grup 1 | 34 | SLOW_test_sprint_is_listesi.py, ortam değişkeniyle |
 | Yavaş test — grup 2 | 46 | @pytest.mark.slow işaretli |
 
@@ -1309,15 +1309,15 @@ Tüm Python bağımlılıkları requirements.txt içinde tam sürümle (==), Doc
 
 ## **23.1 Tazelik Uç Noktası**
 
-Sistemin veri ve indeks güncelliği /sistem/tazelik uç noktasından şeffaf biçimde raporlanır. Canlı örnek (27 Ağustos 2026):
+Sistemin veri ve indeks güncelliği /sistem/tazelik uç noktasından şeffaf biçimde raporlanır. Canlı örnek (28 Ağustos 2026):
 
 > {
 >
-> "son_tarama": "2026-08-27T03:04:41", "tarama_gun_once": 0,
+> "son_tarama": "2026-08-26T03:04:41", "tarama_gun_once": 2,
 >
-> "rag_indeks_kuruldu": "2026-08-26T07:37:13", "rag_indeks_gun_once": 0,
+> "rag_indeks_kuruldu": "2026-08-28T07:37:13", "rag_indeks_gun_once": 0,
 >
-> "rag_parca_sayisi": 2304, "rag_belge_sayisi": 623,
+> "rag_parca_sayisi": 2186, "rag_belge_sayisi": 623,
 >
 > "indeks_ham_veriden_eski_mi": false,
 >
@@ -1325,7 +1325,7 @@ Sistemin veri ve indeks güncelliği /sistem/tazelik uç noktasından şeffaf bi
 >
 > "dataset_version": "298imzali-2026-08-24",
 >
-> "rag_index_version": "2304parca-2026-08-27",
+> "rag_index_version": "2186parca-2026-08-28",
 >
 > "model_version": "qwen2.5:7b-instruct-q4_K_M",
 >
@@ -1345,8 +1345,8 @@ Bu sürümde RAG indeksi özyinelemeli parçalamayla yeniden kurulmuş ve Recall
 
 | **Arayüz Bileşeni** | **Gösterdiği Bilgi**                                 |
 |---------------------|------------------------------------------------------|
-| Ölçüm indeksi       | 2.304 parça / 623 belge — Recall bu indekste ölçüldü |
-| Canlı indeks        | 2.304 parça / 623 belge — ölçümle aynı               |
+| Ölçüm indeksi       | 2.186 parça / 623 belge — Recall bu indekste ölçüldü |
+| Canlı indeks        | 2.186 parça / 623 belge — ölçümle aynı               |
 
 Bu ayrım, jürinin iki farklı sayıyı görüp hangisinin doğru olduğunu sormasını önlemek için açıkça etiketlenmiştir.
 
@@ -1362,9 +1362,9 @@ Bu ayrım, jürinin iki farklı sayıyı görüp hangisinin doğru olduğunu sor
 | 2 | Sınıflandırma alanları zayıf | Kalan 225 kaçırmanın %80,9'u hedef_kitle (117) ve kampanya_turu (65) alanlarından gelmektedir. Bunlar anlamdan çıkarım gerektiren sınıflandırma görevleridir. |
 | 3 | LLM katmanı deterministik değil | temperature=0 ile bile koşular arası oynamaktadır (ölçüldü: %89,06 ↔ %87,5). Bu nedenle nihai sayı ölçülmüş bir aralığın temsilcisidir; regex tabanı ise birebir yeniden üretilebilir. |
 | 4 | Müşteri Sesi yalnızca sentetik veriyle çalışıyor | Hat kurulu ve test edilmiş durumda; eksik olan tek şey kurumsal/hukuki (KVKK) onaydır. |
-| 5 | Reranker uygulanamadı | Denendi ve ölçümle reddedildi (§9.2). banka_ve_konu kategorisindeki %24,00 değeri açık bir sınırlama olarak kalmaktadır. |
+| 5 | Reranker uygulanamadı | Denendi ve ölçümle reddedildi (§9.2). banka_ve_konu kategorisi kampanya_turu tür-boost mekanizmasıyla %24,00'den %40,0'a yükselmiştir; iyileşme ölçülmüş olsa da kategori hâlâ en zayıf halka olmaya devam etmektedir. |
 
-> Önceki sürümde eksik olan iki madde bu sürümde kapanmıştır: (1) Katman katkısı ayrıştırması (ablation) tamamlandı ve NER'in net etkisi ölçüldü. (2) RAG Recall, güncel 2.304 parçalık indeks üzerinde yeniden ölçüldü. Bu iki madde artık sınırlılık değildir.
+> Önceki sürümde eksik olan iki madde bu sürümde kapanmıştır: (1) Katman katkısı ayrıştırması (ablation) tamamlandı ve NER'in net etkisi ölçüldü. (2) RAG Recall, güncel 2.186 parçalık indeks üzerinde yeniden ölçüldü. Bu iki madde artık sınırlılık değildir.
 
 ## 
 
@@ -1385,7 +1385,7 @@ Test coverage ölçülmüyor: Depoda coverage raporu üretilmemektedir.
 | **Alan** | **Durum** |
 |----|----|
 | Çıkarımda en zayıf alanlar | hedef_kitle (117 FN), kampanya_turu (65 FN) — ikisi de sınıflandırma görevi |
-| RAG'in zorlandığı kategori | banka_ve_konu (%24,00) — kampanya adı verilmeden sorulan sorular |
+| RAG'in zorlandığı kategori | banka_ve_konu (%40,0) — kampanya adı verilmeden sorulan sorular |
 | Canlı olmayan metrikler | Çıkarım, RAG ve Scope Guard metrikleri 27 Ağustos ölçümüdür. Hacim ve dağılım metrikleri canlıdır. |
 
 ## **24.4 \`hedef_kitle\` Alanı — Neden Kapatılamıyor?**

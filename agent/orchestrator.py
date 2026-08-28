@@ -68,6 +68,7 @@ from agent.intent import KAPSAM_DISI_CEVABI, Niyet, niyet_tespit_et
 from agent.router import (
     hesaplama_aracini_cagir,
     karsilastirma_aracini_cagir,
+    musteri_sesi_aracini_cagir,
     rag_aracini_cagir,
     sozluk_aracini_cagir,
     toplam_maliyet_aracini_cagir,
@@ -78,8 +79,9 @@ from terminology.tutarlilik_kontrolu import terminoloji_tutarliligini_kontrol_et
 # ters-arama cumlesini uretir ("'Faiz orani' geleneksel... karsiligi Kar
 # Payi"), Kapsam Disi ise sabit, konuyla ilgisiz bir metin doner. Ikisine
 # de asagidaki soru-tarafi on-notu EKLENMEZ, cunku ya zaten var ya da
-# anlamsiz olurdu.
-_TERIM_YONLENDIRME_MUAF_ARACLARI = {"dictionary", "kapsam_disi"}
+# anlamsiz olurdu. MUSTERI_SESI de muaftir - sikayet verileri gelenek
+# terim icermez, sentetik demo metinlerinde katilim bankaciligi terimi var.
+_TERIM_YONLENDIRME_MUAF_ARACLARI = {"dictionary", "kapsam_disi", "musteri_sesi"}
 
 KayitGetirici = Callable[[str], list]
 
@@ -244,6 +246,9 @@ def soru_isle(soru: str, kayit_getirici: KayitGetirici, rag_araci=None) -> dict:
     elif niyet == Niyet.SOZLUK:
         sonuc = _arac_cagir_zaman_asimi(sozluk_aracini_cagir, soru)
         arac = "dictionary"
+    elif niyet == Niyet.MUSTERI_SESI:
+        sonuc = _arac_cagir_zaman_asimi(musteri_sesi_aracini_cagir, soru)
+        arac = "musteri_sesi"
     elif niyet == Niyet.TOPLAM_MALIYET:
         sonuc = _arac_cagir_zaman_asimi(toplam_maliyet_aracini_cagir, soru, kayit_getirici)
         arac = "calculator"

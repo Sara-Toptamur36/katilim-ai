@@ -148,9 +148,19 @@ def test_kampanya_kaydinda_zorunlu_alanlar_var():
         assert alan in kayit, f"Sozlesme alani eksik: {alan}"
 
 
-def test_eksik_veri_gizlenmez_isaretlenir():
+def test_eksik_veri_gizlenmez_isaretlenir(monkeypatch):
     """Seffaflik ilkesi (rapor Bolum 5.7/15): eksik alan None kalir ve
-    alan_belirtilmemis icinde True olarak bayraklanir."""
+    alan_belirtilmemis icinde True olarak bayraklanir.
+
+    DENETIM BULGUSU (28 Agustos 2026): "D Bankasi" yalnizca MOCK veride
+    var - GERCEK_VERI_AKTIF ortam degiskeni .env'de hic tanimli degilken
+    (varsayilan "false") bu test sessizce dogru sonuc veriyordu; .env'e
+    GERCEK_VERI_AKTIF=true eklenince (gercek 547 kayitlik Postgres verisini
+    acmak icin) bu test D Bankasi'ni bulamadigindan IndexError firlatiyordu.
+    Testin niyeti mock veriyi sinamak - artik BUNU ACIKCA belirtir."""
+    import api.main as main_modulu
+
+    monkeypatch.setattr(main_modulu, "GERCEK_VERI_AKTIF", False)
     veri = client.get("/kampanyalar", headers=GECERLI_BASLIK).json()
 
     # D Bankasi kart kampanyasinda kar payi orani YOK ama kayit gizlenmiyor
@@ -159,7 +169,12 @@ def test_eksik_veri_gizlenmez_isaretlenir():
     assert kart["alan_belirtilmemis"].get("kar_payi_orani_percent") is True
 
 
-def test_banka_filtresi_calisir():
+def test_banka_filtresi_calisir(monkeypatch):
+    """DENETIM BULGUSU: bkz. test_eksik_veri_gizlenmez_isaretlenir - ayni
+    sebep, "A Bankasi" yalnizca mock veride var."""
+    import api.main as main_modulu
+
+    monkeypatch.setattr(main_modulu, "GERCEK_VERI_AKTIF", False)
     yanit = client.get("/kampanyalar?banka=A Bankasi", headers=GECERLI_BASLIK)
     assert yanit.status_code == 200
     veri = yanit.json()
@@ -380,9 +395,17 @@ def test_olmayan_kampanyanin_tarihcesi_404_doner():
     assert client.get("/kampanyalar/9999/tarihce", headers=GECERLI_BASLIK).status_code == 404
 
 
-def test_kampanya_tarihce_mock_urlde_bos_ama_gecerli_doner():
+def test_kampanya_tarihce_mock_urlde_bos_ama_gecerli_doner(monkeypatch):
     """Mock veri gercek bir raw_data URL'si tasimadigi icin bos tarihce
-    donmesi beklenir - hata degil, durustce 'kayit yok' demektir."""
+    donmesi beklenir - hata degil, durustce 'kayit yok' demektir.
+
+    DENETIM BULGUSU: api/main.py::kampanya_tarihce GERCEK_VERI_AKTIF=true
+    iken id_ile_getir_db (Postgres) cagirir, id_ile_getir (mock) DEGIL -
+    bu test acikca mock modu zorlamadan .env'in varsayilan (unset=false)
+    davranisina KAZARA guveniyordu."""
+    import api.main as main_modulu
+
+    monkeypatch.setattr(main_modulu, "GERCEK_VERI_AKTIF", False)
     veri = client.get("/kampanyalar/1/tarihce", headers=GECERLI_BASLIK).json()
     assert veri["tarihce"] == []
     assert veri["degisen_alanlar"] == {}
@@ -393,20 +416,25 @@ def test_kampanya_tarihce_gercek_degisen_kampanyada_calisir(monkeypatch):
     """DENETIM BULGUSU: scraper/scripts/kampanya_tarihcesi.py yazilip test
     edilmisti ama hicbir uc noktaya baglanmamisti. Bilinen, gercekten
     zaman icinde degismis bir URL uzerinden uctan uca dogrulanir (bkz.
-    tests/test_kampanya_tarihcesi.py ile ayni URL - o dosyanin modul
-    dokstring'inde 25 Agustos 2026 tarihli duzeltme gerekcesi var: eski
-    ornek "Bitiş Tarihi: -" yazan, sabit bitis tarihi olmayan bir
-    kampanyaydi, degisen deger sayfa altligindaki "Son Guncelleme
-    Tarihi"ydi - gercek bir kampanya_bitis degil)."""
+    tests/test_kampanya_tarihcesi.py::_BITIS_DEGISEN_URL ile AYNI URL -
+    eski Dunya Katilim ornegi site-footer-tarih-damgasi duzeltmesiyle
+    (1a64f8f) artik gecerli degil, bkz. o dosyadaki denetim notu).
+
+    GERCEK_VERI_AKTIF=False ZORUNLU: True iken uc nokta id_ile_getir
+    DEGIL id_ile_getir_db kullanir (bkz. yukaridaki test notu) - bu
+    monkeypatch'in hicbir etkisi kalmaz, id=1 GERCEK Postgres kaydina
+    (hangisiyse) duser ve test kirilir."""
     import api.main as main_modulu
     from api.schemas import CampaignRecord
 
+    monkeypatch.setattr(main_modulu, "GERCEK_VERI_AKTIF", False)
     gercek_url = (
         "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/"
-        "elektrikli-arac-sarj-istasyonu-harcamalariniza-200-tl-parafpara"
+        "paraf-ile-adv-magazalarinda-1000-tl-parafpara"
     )
     sahte_kayit = CampaignRecord(
-        banka="Türkiye Emlak Katılım", kampanya_adi="Elektrikli Araç Şarj İstasyonu", kaynak_url=gercek_url
+        banka="Türkiye Emlak Katılım", kampanya_adi="ADV Mağazalarında 1000 TL ParafPara",
+        kaynak_url=gercek_url,
     )
     monkeypatch.setattr(main_modulu, "id_ile_getir", lambda kid: sahte_kayit)
 
@@ -420,8 +448,16 @@ def test_kampanya_tarihce_gercek_degisen_kampanyada_calisir(monkeypatch):
 # ---------------------------------------------------------------------------
 
 
-def test_karsilastirma_en_dusuk_orani_basa_koyar():
-    """Sartname Md. 5.7 ornegi: C Bankasi (%1,87) en avantajli orandir."""
+def test_karsilastirma_en_dusuk_orani_basa_koyar(monkeypatch):
+    """Sartname Md. 5.7 ornegi: C Bankasi (%1,87) en avantajli orandir.
+
+    DENETIM BULGUSU: ids=[1,2,3] mock veride A/B/C Bankasi'dir; GERCEK_
+    VERI_AKTIF=true iken bu id'ler Postgres'teki (alfabetik ilk) gercek
+    kampanyalara karsilik gelir - test acikca mock modu zorlamadan
+    .env'in varsayilan durumuna KAZARA guveniyordu."""
+    import api.main as main_modulu
+
+    monkeypatch.setattr(main_modulu, "GERCEK_VERI_AKTIF", False)
     yanit = client.post(
         "/karsilastir",
         json={"ids": [1, 2, 3], "kriter": "en_dusuk_kar_payi"},
@@ -864,3 +900,143 @@ def test_musteri_sesi_ornekler_orneklem_notu_yogunluk_ozetinde_var():
     yanit = client.get("/musteri-sesi/yogunluk-ozeti", headers=GECERLI_BASLIK)
     govde = yanit.json()
     assert "temsil" in govde["orneklem_notu"].lower() or "tum" in govde["orneklem_notu"].lower()
+
+
+# ---------------------------------------------------------------------------
+# DENETIM BULGUSU (28 Agustos 2026): Havin'in musteri-sesi genisletmesindeki
+# uc kritik hata icin kilitleyici testler - hicbiri o eklemeyle BIRLIKTE
+# yazilmamisti (bu dosyanin kendi basligindaki "sozlesmeyi kilitler" amaciyla
+# tam olarak celisen bir bosluktu).
+# ---------------------------------------------------------------------------
+
+
+def test_musteri_sesi_istatistikler_bos_tabloda_dogru_sekil_doner():
+    """`en_cok_tema`/`cozum_orani`/`yuksek_oncelikli` alan adlari - eskiden
+    MusteriSesiWidget.jsx (Dashboard ANA SAYFASI) `top_temalar` ve
+    `cozum_dagilimi` gibi VAR OLMAYAN alanlar bekliyordu, boylece HER
+    girisli kullanicida ana sayfa cokuyordu."""
+    yanit = client.get("/musteri-sesi/istatistikler", headers=GECERLI_BASLIK)
+    assert yanit.status_code == 200
+    govde = yanit.json()
+    for alan in ("toplam_sikayet", "yuksek_oncelikli", "cozum_orani", "en_cok_tema", "kapsam_durumu"):
+        assert alan in govde, f"beklenen alan eksik: {alan}"
+    assert govde["toplam_sikayet"] == 0
+    assert govde["cozum_orani"] is None
+
+
+def test_kampanya_musteri_sesi_ozeti_veri_yoksa_dogru_sekil_doner():
+    """`temalar`/`ornek_metinler` alan adlari - eskiden KampanyaMusteriSesi
+    Widget.jsx `tema_dagilimi` (dizi) ve `son_sikayetler` bekliyordu."""
+    yanit = client.get("/kampanyalar/1/musteri-sesi-ozeti", headers=GECERLI_BASLIK)
+    assert yanit.status_code == 200
+    govde = yanit.json()
+    assert govde["veri_var"] is False
+    assert govde["toplam_sikayet"] == 0
+    assert govde["temalar"] == {}
+    assert govde["ornek_metinler"] == []
+
+
+def test_sikayet_detay_gercek_satirda_cokmez():
+    """DENETIM BULGUSU: eski govde `sikayet.onem_gerekcesi`, `sikayet.
+    cozum_gerekcesi`, `sikayet.esleme_guveni` (typo) gibi VAR OLMAYAN
+    Sikayet kolonlarina erisiyordu - ilk cagrida AttributeError ile 500
+    donuyordu. Gercek bir satir eklenip silinerek dogrulanir (temizlik
+    finally'de garanti - tablo bos kalma invaryantini bozmaz, bkz.
+    test_musteri_sesi_ornekler_veritabanina_yazmaz)."""
+    from api.db import oturum_al
+    from api.models import Sikayet
+
+    oturum = next(oturum_al())
+    try:
+        satir = Sikayet(
+            temiz_metin="Test sikayet metni",
+            kaynak="test_kaynagi",
+            tema="REWARD_NOT_CREDITED",
+            onem_derecesi="ORTA",
+            cozum_durumu="bilinmiyor",
+        )
+        oturum.add(satir)
+        oturum.commit()
+        oturum.refresh(satir)
+        satir_id = satir.id
+    finally:
+        oturum.close()
+
+    try:
+        yanit = client.get(f"/musteri-sesi/sikayetler/{satir_id}", headers=GECERLI_BASLIK)
+        assert yanit.status_code == 200, yanit.text
+        govde = yanit.json()
+        assert govde["id"] == satir_id
+        assert govde["tema"] == "REWARD_NOT_CREDITED"
+        assert govde["onem_derecesi"] == "ORTA"
+        assert govde["cozum_durumu"] == "bilinmiyor"
+    finally:
+        oturum = next(oturum_al())
+        try:
+            eklenen = oturum.query(Sikayet).filter(Sikayet.id == satir_id).first()
+            if eklenen:
+                oturum.delete(eklenen)
+                oturum.commit()
+        finally:
+            oturum.close()
+
+
+def test_sikayet_detay_bulunamayan_id_404_doner():
+    yanit = client.get("/musteri-sesi/sikayetler/999999999", headers=GECERLI_BASLIK)
+    assert yanit.status_code == 404
+
+
+def test_cozum_orani_esik_altinda_none_esik_ustunde_deger_doner():
+    """DENETIM BULGUSU: /kampanyalar/{id}/musteri-sesi-ozeti ve /musteri-sesi/
+    istatistikler payda>0 iken DOGRUDAN oran uretiyordu - 1-2 kayitla "%0"
+    veya "%100" gibi KESIN GORUNEN ama istatistiksel olarak anlamsiz bir
+    sayi, complaint/toplama.py::yogunluk_ozeti'nin kendi kirmizi cizgisini
+    ihlal ediyordu. Asgari ornek esigi complaint/toplama.py::
+    musteri_sesi_istatistiklerini_hesapla icinde dogrudan test edilir."""
+    from types import SimpleNamespace
+
+    from complaint.toplama import (
+        COZUM_ORANI_ASGARI_ORNEKLEM,
+        musteri_sesi_istatistiklerini_hesapla,
+    )
+
+    def _sikayet(cozum):
+        return SimpleNamespace(
+            tema=None, onem_derecesi="ORTA", cozum_durumu=cozum,
+            insan_kontrolu_gerekir=False, yineleme_supheli=False,
+            dusuk_bilgi_supheli=False,
+        )
+
+    esik_alti = [_sikayet("cozuldu") for _ in range(COZUM_ORANI_ASGARI_ORNEKLEM - 1)]
+    sonuc_alti = musteri_sesi_istatistiklerini_hesapla(esik_alti, izin_var=True)
+    assert sonuc_alti["cozum_orani"] is None, (
+        f"esik altinda ({len(esik_alti)} < {COZUM_ORANI_ASGARI_ORNEKLEM}) "
+        "oran UYDURULMAMALIYDI"
+    )
+
+    esik_ustu = [_sikayet("cozuldu") for _ in range(COZUM_ORANI_ASGARI_ORNEKLEM)]
+    sonuc_ustu = musteri_sesi_istatistiklerini_hesapla(esik_ustu, izin_var=True)
+    assert sonuc_ustu["cozum_orani"] == 1.0
+
+
+def test_musteri_sesi_araci_kendi_kendine_http_istegi_atmaz():
+    """DENETIM BULGUSU: agent/router.py::musteri_sesi_aracini_cagir eskiden
+    `requests.get` ile kendi surecinin API'sine (localhost:8000) HTTP
+    istegi atiyordu - projede baska hicbir aracin yapmadigi bir kalip
+    (bkz. karsilastirma_aracini_cagir DOGRUDAN DB/fonksiyon cagirir).
+    `requests` fonksiyon icinde import EDILMEMELI artik."""
+    import inspect
+
+    from agent.router import musteri_sesi_aracini_cagir
+
+    kaynak = inspect.getsource(musteri_sesi_aracini_cagir)
+    assert "import requests" not in kaynak, "musteri_sesi_aracini_cagir hala HTTP kullaniyor"
+    assert "os.environ.get(\"API_BASE_URL\"" not in kaynak
+
+
+def test_musteri_sesi_araci_veri_yokken_dogru_cevap_verir():
+    from agent.router import musteri_sesi_aracini_cagir
+
+    sonuc = musteri_sesi_aracini_cagir("Şikayet var mı?")
+    assert sonuc["basarili"] is True
+    assert "sentetik" in sonuc["cevap"].lower() or "toplanmadı" in sonuc["cevap"].lower()

@@ -278,3 +278,75 @@ def yogunluk_ozeti(
         "toplam_sikayet": len(sikayetler),
         "temalar": dict(sorted(sayim.items(), key=lambda x: -x[1])),
     }
+
+
+# "Cozum orani" icin ASGARI ornek sayisi (28 Agustos 2026). api/main.py'deki
+# ayni sabitle AYNI DEGERDIR (bilinclidir, olculmus degil - bkz. o dosyadaki
+# gerekce) - burada TEKRAR TANIMLANIR cunku complaint/ katmani api/'ye
+# BAGIMLI OLMAMALIDIR (tersi yon zaten var). Iki taraf da bu esigi
+# degistirirse BIRLIKTE degistirilmelidir.
+COZUM_ORANI_ASGARI_ORNEKLEM = 5
+
+
+def musteri_sesi_istatistiklerini_hesapla(
+    sikayetler: Sequence[Any], izin_var: bool = False
+) -> dict[str, Any]:
+    """Dashboard widget'i VE chatbot'un musteri_sesi araci icin TEK
+    hesaplama kaynagi (28 Agustos 2026 eklendi).
+
+    NEDEN VAR: agent/router.py::musteri_sesi_aracini_cagir bu hesaplamayi
+    baslangicta `requests.get(f"{api_base}/musteri-sesi/istatistikler")`
+    ile kendi kendine (ayni surecin ayni sunucusuna) HTTP istegi atarak
+    yapiyordu - proje icindeki DIGER hicbir aracin (bkz. router.py::
+    karsilastirma_aracini_cagir) yapmadigi bir kaliptir: agdan gecmek
+    gereksiz gecikme, sahte bir Authorization basligi ve yeni,
+    belgelenmemis bir API_BASE_URL ortam degiskeni ekliyordu. Hesaplama
+    buraya (complaint/toplama.py, `yogunluk_ozeti` ile ayni modul) tasindi;
+    api/main.py::musteri_sesi_istatistikler VE agent/router.py::
+    musteri_sesi_aracini_cagir SIMDI IKISI DE bu fonksiyonu DOGRUDAN
+    cagirir - HTTP yok, tekrar eden mantik yok.
+    """
+    if not sikayetler:
+        return {
+            "toplam_sikayet": 0,
+            "yuksek_oncelikli": 0,
+            "insan_kontrolu_gereken": 0,
+            "cozum_orani": None,
+            "en_cok_tema": [],
+            "kapsam_durumu": "izin_var_veri_yok" if izin_var else "izin_yok",
+        }
+
+    yuksek = sum(1 for s in sikayetler if s.onem_derecesi == "YUKSEK")
+    insan_kontrolu = sum(
+        1
+        for s in sikayetler
+        if s.insan_kontrolu_gerekir or s.yineleme_supheli or s.dusuk_bilgi_supheli
+    )
+
+    cozuldu = sum(1 for s in sikayetler if s.cozum_durumu in ("cozuldu", "kismen"))
+    bilinmiyor_olmayan = sum(
+        1 for s in sikayetler if s.cozum_durumu and s.cozum_durumu != "bilinmiyor"
+    )
+    cozum_orani = (
+        round(cozuldu / bilinmiyor_olmayan, 4)
+        if bilinmiyor_olmayan >= COZUM_ORANI_ASGARI_ORNEKLEM
+        else None
+    )
+
+    temalar: dict[str, int] = {}
+    for s in sikayetler:
+        anahtar = s.tema or "SINIFLANDIRILAMADI"
+        temalar[anahtar] = temalar.get(anahtar, 0) + 1
+    en_cok_tema = [
+        {"tema": t, "adet": a}
+        for t, a in sorted(temalar.items(), key=lambda x: -x[1])[:3]
+    ]
+
+    return {
+        "toplam_sikayet": len(sikayetler),
+        "yuksek_oncelikli": yuksek,
+        "insan_kontrolu_gereken": insan_kontrolu,
+        "cozum_orani": cozum_orani,
+        "en_cok_tema": en_cok_tema,
+        "kapsam_durumu": "veri_var",
+    }

@@ -43,7 +43,12 @@ from agent.orchestrator import soru_isle
 from api.auth import GERCEK_JWT_AKTIF, rol_gerekli, token_dogrula, token_uret
 from complaint.izin_kapisi import herhangi_bir_izin_var_mi
 from complaint.tema_siniflandirici import tema_siniflandir
-from complaint.toplama import hazirla, yogunluk_ozeti
+from complaint.toplama import (
+    COZUM_ORANI_ASGARI_ORNEKLEM,
+    hazirla,
+    musteri_sesi_istatistiklerini_hesapla,
+    yogunluk_ozeti,
+)
 from api.db import oturum_al
 from api.kampanya_repository import id_ile_getir_db, kampanyalari_getir_db
 from api.kullanici_repository import (
@@ -74,6 +79,10 @@ from api.schemas import (
     MusteriSesiOrnekYanit,
     MusteriSesiYogunlukYanit,
     MusteriSesiYanit,
+    SikayetDetayYanit,
+    KampanyaMusteriSesiOrnegi,
+    KampanyaMusteriSesiOzeti,
+    MusteriSesiIstatistikler,
     CikarimAdayi,
     CikarimIstek,
     CikarimIzi,
@@ -820,6 +829,191 @@ def musteri_sesi_yogunluk_ozeti(kullanici: dict = Depends(token_dogrula)):
     finally:
         oturum.close()
     return MusteriSesiYogunlukYanit(**yogunluk_ozeti(sikayetler, izin_var=izin_var))
+
+
+# "Cozum orani" icin ASGARI ornek sayisi - complaint/toplama.py::
+# COZUM_ORANI_ASGARI_ORNEKLEM ile AYNI degerdir (tek tanim orada, DENETIM
+# BULGUSU 27/28 Agustos 2026: asagidaki uc nokta payda>0 ise dogrudan oran
+# uretiyordu - payda 1/2 iken "%0"/"%100" gibi kesin gorunen ama
+# ISTATISTIKSEL OLARAK ANLAMSIZ bir sayi ureterek complaint/toplama.py::
+# yogunluk_ozeti'nin kendi kirmizi cizgisini ihlal ediyordu).
+
+
+@app.get(
+    "/kampanyalar/{kampanya_id}/musteri-sesi-ozeti",
+    response_model=KampanyaMusteriSesiOzeti,
+    tags=["Musteri Sesi"],
+)
+def kampanya_musteri_sesi_ozeti(
+    kampanya_id: int, kullanici: dict = Depends(token_dogrula)
+):
+    """Bir kampanyaya bağlı şikayetlerin özet metrikleri.
+
+    Dashboard'da kampanya detay kartında "Müşteri Geri Bildirimi" bölümünde
+    veya Etki Skoru kartında müşteri bileşeninde görünür. Ham şikâyet metinleri
+    değil, anonimleştirilmiş içgörüler döner (rapor Bölüm 4).
+
+    KAMPANYA EŞLEŞME KRİTERİ: `eslesen_kampanya_id == kampanya_id` VE
+    `eslesme_guveni >= 0.50` (ASGARI_GUVEN). Daha düşük güvenli eşleşmeler
+    "orta güven kuyruğu"na düşer, bu uç noktada sayılmaz.
+
+    BOŞLUK GEÇERLİDİR: Hiç şikayet yoksa `toplam_sikayet: 0`, temalar/önem/
+    çözüm boş dict döner - bu bir hata değil, "bu kampanyaya hiç şikayet
+    bağlanmadı" durumudur (izin var ama o kampanya için veri yok).
+    """
+    oturum = next(oturum_al())
+    try:
+        from sqlalchemy import func
+        from datetime import datetime, timezone
+
+        # Kampanyaya eşleşen şikayetler (güven >= 0.50, None değil)
+        sikayetler = (
+            oturum.query(Sikayet)
+            .filter(
+                Sikayet.eslesen_kampanya_id == kampanya_id,
+                Sikayet.eslesme_guveni >= 0.50,
+            )
+            .all()
+        )
+
+        if not sikayetler:
+            return KampanyaMusteriSesiOzeti(
+                kampanya_id=kampanya_id,
+                toplam_sikayet=0,
+                temalar={},
+                onem_dagilimi={},
+                cozum_dagilimi={},
+                cozum_orani=None,
+                ornek_metinler=[],
+                veri_var=False,
+            )
+
+        # Tema dağılımı
+        temalar: dict[str, int] = {}
+        for s in sikayetler:
+            tema_anahtar = s.tema or "SINIFLANDIRILAMADI"
+            temalar[tema_anahtar] = temalar.get(tema_anahtar, 0) + 1
+
+        # Önem dağılımı
+        onem: dict[str, int] = {}
+        for s in sikayetler:
+            onem_anahtar = s.onem_derecesi or "ORTA"
+            onem[onem_anahtar] = onem.get(onem_anahtar, 0) + 1
+
+        # Çözüm dağılımı
+        cozum: dict[str, int] = {}
+        for s in sikayetler:
+            cozum_anahtar = s.cozum_durumu or "bilinmiyor"
+            cozum[cozum_anahtar] = cozum.get(cozum_anahtar, 0) + 1
+
+        # Çözüm oranı: (çözüldü + kısmen) / (toplam - bilinmiyor). ASGARI
+        # ornek sarti: bkz. yukaridaki COZUM_ORANI_ASGARI_ORNEKLEM notu.
+        cozuldu = cozum.get("cozuldu", 0) + cozum.get("kismen", 0)
+        payda = len(sikayetler) - cozum.get("bilinmiyor", 0)
+        cozum_orani = (
+            round(cozuldu / payda, 4)
+            if payda >= COZUM_ORANI_ASGARI_ORNEKLEM
+            else None
+        )
+
+        # Son 5 şikayet (özet)
+        bugun = datetime.now(timezone.utc).date()
+        son_sikayetler = sorted(sikayetler, key=lambda s: s.kayit_zamani, reverse=True)[:5]
+        ornekler = []
+        for s in son_sikayetler:
+            gun_once = None
+            if s.sikayet_tarihi:
+                gun_once = (bugun - s.sikayet_tarihi).days
+            ornekler.append(
+                KampanyaMusteriSesiOrnegi(
+                    id=s.id,
+                    metin_ozet=s.temiz_metin[:150] + ("..." if len(s.temiz_metin) > 150 else ""),
+                    tema=s.tema,
+                    onem_derecesi=s.onem_derecesi or "ORTA",
+                    cozum_durumu=s.cozum_durumu or "bilinmiyor",
+                    sikayet_tarihi=s.sikayet_tarihi,
+                    gun_once=gun_once,
+                )
+            )
+
+        return KampanyaMusteriSesiOzeti(
+            kampanya_id=kampanya_id,
+            toplam_sikayet=len(sikayetler),
+            temalar=temalar,
+            onem_dagilimi=onem,
+            cozum_dagilimi=cozum,
+            cozum_orani=cozum_orani,
+            ornek_metinler=ornekler,
+            veri_var=True,
+        )
+    finally:
+        oturum.close()
+
+
+@app.get(
+    "/musteri-sesi/istatistikler",
+    response_model=MusteriSesiIstatistikler,
+    tags=["Musteri Sesi"],
+)
+def musteri_sesi_istatistikler(kullanici: dict = Depends(token_dogrula)):
+    """Dashboard ana sayfası Müşteri Sesi widget'i için özet metrikler.
+
+    Tüm zamanın toplam istatistikleri (son 30 gün filtresi yok, çünkü
+    henüz gerçek veri akışı başlamadı - tüm veriler sentetik ve az sayıda).
+    Gerçek veri geldiğinde tarih filtresi parametre olarak eklenebilir.
+
+    Hesaplama complaint/toplama.py::musteri_sesi_istatistiklerini_hesapla'da
+    - agent/router.py::musteri_sesi_aracini_cagir de AYNI fonksiyonu
+    dogrudan cagirir (28 Agustos 2026 duzeltmesi: eskiden bu uc noktaya
+    kendi kendine HTTP istegi atardi, bkz. o fonksiyonun docstring'i).
+    """
+    izin_var = herhangi_bir_izin_var_mi()
+    oturum = next(oturum_al())
+    try:
+        sikayetler = oturum.query(Sikayet).all()
+    finally:
+        oturum.close()
+    return MusteriSesiIstatistikler(
+        **musteri_sesi_istatistiklerini_hesapla(sikayetler, izin_var=izin_var)
+    )
+
+
+@app.get(
+    "/musteri-sesi/sikayetler/{sikayet_id}",
+    response_model=SikayetDetayYanit,
+    tags=["Musteri Sesi"],
+)
+def sikayet_detay(sikayet_id: int, kullanici: dict = Depends(token_dogrula)):
+    """Tek bir şikayetin detaylı bilgilerini döndürür.
+
+    DENETIM BULGUSU (28 Agustos 2026): bu uc nokta MusteriSesiOrnek semasi
+    kullanarak var OLMAYAN Sikayet alanlarina (onem_gerekcesi, cozum_gerekcesi,
+    esleme_guveni - dogrusu eslesme_guveni) erisiyordu, ilk cagrida
+    AttributeError ile 500 donuyordu. SikayetDetayYanit ile duzeltildi -
+    bkz. o semanin docstring'i.
+    """
+    oturum = next(oturum_al())
+    try:
+        sikayet = oturum.query(Sikayet).filter(Sikayet.id == sikayet_id).first()
+
+        if not sikayet:
+            raise HTTPException(status_code=404, detail="Şikayet bulunamadı")
+
+        return SikayetDetayYanit(
+            id=sikayet.id,
+            metin=sikayet.temiz_metin,
+            tema=sikayet.tema,
+            tema_surumu=sikayet.tema_surumu,
+            onem_derecesi=sikayet.onem_derecesi,
+            cozum_durumu=sikayet.cozum_durumu,
+            dusuk_bilgi_supheli=sikayet.dusuk_bilgi_supheli or False,
+            yineleme_supheli=sikayet.yineleme_supheli or False,
+            insan_kontrolu_gerekir=sikayet.insan_kontrolu_gerekir or False,
+            eslesen_kampanya_id=sikayet.eslesen_kampanya_id,
+            eslesme_guveni=sikayet.eslesme_guveni,
+        )
+    finally:
+        oturum.close()
 
 
 @app.get(

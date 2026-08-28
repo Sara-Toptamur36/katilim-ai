@@ -1918,3 +1918,154 @@ img.marka-logo {
   color: #c94f4f;
   border-color: #c94f4f;
 }
+
+
+/* ==========================================================
+   MÜŞTERİ SESİ (COMPLAINT INSIGHT) - KEHRIBAR GÖRSEL DİLİ
+   ========================================================== */
+
+/* Rapor gereksinimi: "Dashboard üzerinde resmî ürün koşulları mavi/yeşil
+   tonlarda gösterilirken, müşteri sesi verisinin kehribar (amber) tonunda
+   ve 'deneyim sinyali' etiketiyle, görsel dili tamamen farklı bir şekilde
+   sunulması planlanmıştır."
+
+   Amber/Kehribar renk paleti - finansal veriden (mavi/yeşil) ayrılır */
+:root {
+  --musteri-sesi-amber-50: #fffbf5;
+  --musteri-sesi-amber-100: #fff3e0;
+  --musteri-sesi-amber-200: #ffe0b2;
+  --musteri-sesi-amber-300: #ffcc80;
+  --musteri-sesi-amber-400: #ffb74d;
+  --musteri-sesi-amber-500: #ffa726;
+  --musteri-sesi-amber-600: #fb8c00;
+  --musteri-sesi-amber-700: #f57c00;
+  --musteri-sesi-amber-800: #ef6c00;
+  --musteri-sesi-amber-900: #e65100;
+}
+
+html[data-tema="koyu"] {
+  --musteri-sesi-amber-50: #2e2410;
+  --musteri-sesi-amber-100: #3a2f16;
+  --musteri-sesi-amber-200: #4a3a1e;
+  --musteri-sesi-amber-300: #5a4626;
+  --musteri-sesi-amber-400: #6b5518;
+  --musteri-sesi-amber-500: #8c6f2b;
+  --musteri-sesi-amber-600: #b89a5c;
+  --musteri-sesi-amber-700: #d8c48c;
+  --musteri-sesi-amber-800: #e7c978;
+  --musteri-sesi-amber-900: #f8edcf;
+}
+
+/* Müşteri Sesi Kartı - Kehribar arka plan */
+.musteri-sesi-karti {
+  background: var(--musteri-sesi-amber-50) !important;
+  border: 2px solid var(--musteri-sesi-amber-300) !important;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(251, 140, 0, 0.1);
+}
+
+.musteri-sesi-karti .ant-card-head {
+  background: var(--musteri-sesi-amber-100);
+  border-bottom: 1px solid var(--musteri-sesi-amber-300);
+}
+
+/* Deneyim Sinyali Badge'i */
+.deneyim-sinyali-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--musteri-sesi-amber-100);
+  border: 1px solid var(--musteri-sesi-amber-400);
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--musteri-sesi-amber-800);
+  letter-spacing: 0.02em;
+}
+
+.deneyim-sinyali-ikon {
+  font-size: 14px;
+}
+
+/* Müşteri Sesi Alert'leri - Amber ton */
+.musteri-sesi-alert {
+  background: var(--musteri-sesi-amber-50) !important;
+  border: 1px solid var(--musteri-sesi-amber-300) !important;
+}
+
+.musteri-sesi-alert .ant-alert-icon {
+  color: var(--musteri-sesi-amber-600) !important;
+}
+
+.musteri-sesi-alert .ant-alert-message,
+.musteri-sesi-alert .ant-alert-description {
+  color: var(--musteri-sesi-amber-900) !important;
+}
+
+/* Müşteri Sesi Widget (Dashboard ana sayfa için) */
+.musteri-sesi-widget {
+  background: linear-gradient(
+    135deg,
+    var(--musteri-sesi-amber-50) 0%,
+    var(--musteri-sesi-amber-100) 100%
+  );
+  border: 2px solid var(--musteri-sesi-amber-300);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(251, 140, 0, 0.12);
+}
+
+.musteri-sesi-widget-baslik {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--musteri-sesi-amber-900);
+}
+
+.musteri-sesi-widget-ikon {
+  font-size: 20px;
+  color: var(--musteri-sesi-amber-600);
+}
+
+/* Şikayet Tema Tag'leri - Amber tonları */
+.sikayet-tema-tag {
+  background: var(--musteri-sesi-amber-100);
+  border: 1px solid var(--musteri-sesi-amber-400);
+  color: var(--musteri-sesi-amber-900);
+}
+
+/* Koyu tema geçersiz kılmaları */
+html[data-tema="koyu"] .musteri-sesi-karti {
+  background: var(--musteri-sesi-amber-50) !important;
+  border-color: var(--musteri-sesi-amber-400) !important;
+  box-shadow: 0 2px 12px rgba(140, 111, 43, 0.2);
+}
+
+html[data-tema="koyu"] .musteri-sesi-karti .ant-card-head {
+  background: var(--musteri-sesi-amber-100);
+  border-bottom-color: var(--musteri-sesi-amber-400);
+}
+
+html[data-tema="koyu"] .deneyim-sinyali-badge {
+  background: var(--musteri-sesi-amber-200);
+  border-color: var(--musteri-sesi-amber-600);
+  color: var(--musteri-sesi-amber-900);
+}
+
+html[data-tema="koyu"] .musteri-sesi-alert {
+  background: var(--musteri-sesi-amber-100) !important;
+  border-color: var(--musteri-sesi-amber-500) !important;
+}
+
+html[data-tema="koyu"] .musteri-sesi-widget {
+  background: linear-gradient(
+    135deg,
+    var(--musteri-sesi-amber-100) 0%,
+    var(--musteri-sesi-amber-200) 100%
+  );
+  border-color: var(--musteri-sesi-amber-600);
+}

@@ -25,6 +25,20 @@ from scraper.scripts.kampanya_tarihcesi import degisen_alanlari_bul, tarihce_get
 # kampanya donemi).
 _DEGISEN_URL = "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/elektrikli-arac-sarj-istasyonu-harcamalariniza-200-tl-parafpara"
 
+# DENETIM BULGUSU (25 Agustos 2026): _DEGISEN_URL eskiden kampanya_bitis
+# ornegi olarak da kullaniliyordu (2026-07-30 -> 2026-08-06), ama bu deger
+# hicbir zaman kampanyanin gercek bitis tarihi degildi - sayfadaki TEK
+# tarih deseni "Son Guncelleme Tarihi: ..." site altbilgi damgasiydi
+# (bkz. raw_data, kampanya metninde ayri bir "Kampanya Donemi" ifadesi
+# yok). site-footer-tarih-damgasi-eleme duzeltmesinden (1a64f8f) sonra
+# kaydi_cikar bunu artik DOGRU sekilde reddedip None donuyor - bu bir
+# regresyon degil, dogruluk iyilestirmesi. kampanya_bitis'in GERCEKTEN
+# degistigi ayri, dogrulanmis bir ornek asagida:
+_BITIS_DEGISEN_URL = (
+    "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/"
+    "paraf-ile-adv-magazalarinda-1000-tl-parafpara"
+)
+
 # Tek bir tarihte tarandigi bilinen, hic degismemis bir kampanya
 # (T.O.M. yalnizca 1 Agustos'ta tarandi, bkz. sayfa_takip_tablosu.csv).
 # NOT: slug'daki Turkce karakterler _slug_uret tarafindan dusuruluyor
@@ -61,8 +75,8 @@ def test_hic_degismemis_kampanyada_tek_kayit_var_hata_atmaz():
 
 def test_kampanya_bitis_tarihinin_gercekten_degistigi_dogrulanir():
     """Somut, gercek veriyle dogrulanmis ornek: bu kampanyanin bitis
-    tarihi zaman icinde uzatildi."""
-    tarihce = tarihce_getir(_DEGISEN_URL)
+    tarihi zaman icinde uzatildi (2026-07-31 -> 2026-08-31)."""
+    tarihce = tarihce_getir(_BITIS_DEGISEN_URL)
     degisenler = degisen_alanlari_bul(tarihce)
 
     assert "kampanya_bitis" in degisenler

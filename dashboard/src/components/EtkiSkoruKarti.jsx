@@ -138,6 +138,7 @@ export default function EtkiSkoruKarti({ kampanyaId }) {
       {/* Sifir YAZILMAZ: geri bildirim yoklugu "memnun degil" demek degildir. */}
       <Alert
         type="info"
+        className="musteri-sesi-alert"
         title="Müşteri geri bildirimi"
         description={geriBildirim.sebep ?? "Yeterli geri bildirim bulunamadı."}
         showIcon

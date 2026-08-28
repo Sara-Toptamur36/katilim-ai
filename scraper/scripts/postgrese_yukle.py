@@ -125,6 +125,16 @@ def yukle() -> dict:
                 alan_belirtilmemis={alan: True for alan in HENUZ_CIKARILMAMIS_ALANLAR},
             )
             oturum.add(yeni)
+            # FLUSH, COMMIT DEGIL (27 Agustos 2026, olculdu: ALB-9/16,
+            # EK-41/75, DK-20/25 mukerrer kaynak_url). OturumYerel
+            # autoflush=False ile kurulu (api/db.py) - bu dongudeki bir
+            # sonraki dosya AYNI sayfanin yeniden taranmis hali (ornegin
+            # 31 Temmuz ve 11 Agustos taramalari) ise, yukaridaki `mevcut`
+            # sorgusu bu satiri HENUZ GORMEZ ve ikinci bir kayit eklenir -
+            # idempotentlik iddiasi (bkz. modul basligi) bozulur. flush()
+            # satiri veritabanina yazar (commit ETMEDEN, geri alinabilir
+            # kalir) ki sonraki `mevcut` sorgulari onu gorsun.
+            oturum.flush()
             ozet["eklendi"] += 1
 
         oturum.commit()

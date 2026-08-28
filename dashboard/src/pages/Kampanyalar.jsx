@@ -7,6 +7,7 @@ import IstatistikKartlari from "../components/IstatistikKartlari";
 import EtkiSkoruKarti from "../components/EtkiSkoruKarti";
 import KampanyaTarihcesiKarti from "../components/KampanyaTarihcesiKarti";
 import KarPayiTablosuKarti from "../components/KarPayiTablosuKarti";
+import KampanyaMusteriSesiWidget from "../components/KampanyaMusteriSesiWidget";
 
 const { Title } = Typography;
 
@@ -86,6 +87,11 @@ export default function Kampanyalar() {
           <Divider />
           <Title level={4}>Değişim Tarihçesi</Title>
           <KampanyaTarihcesiKarti kampanyaId={secilenIdler[0]} />
+
+          {/* Müşteri Sesi Widget'i */}
+          <Divider />
+          <Title level={4}>Müşteri Sesi</Title>
+          <KampanyaMusteriSesiWidget kampanyaId={secilenIdler[0]} />
 
           {secilenKampanya?.kar_payi_tablosu && (
             <>

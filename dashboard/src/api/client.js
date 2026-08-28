@@ -249,4 +249,26 @@ export const musteriSesiYogunlukGetir = async () => {
   return yanit.data;
 };
 
+// GET /kampanyalar/{id}/musteri-sesi-ozeti - Bir kampanyaya bağlı şikayetlerin
+// özet metrikleri. Dashboard'da kampanya detay kartında "Müşteri Geri Bildirimi"
+// bölümünde görünür.
+export const kampanyaMusteriSesiOzetiGetir = async (kampanyaId) => {
+  const yanit = await client.get(`/kampanyalar/${kampanyaId}/musteri-sesi-ozeti`);
+  return yanit.data;
+};
+
+// GET /musteri-sesi/istatistikler - Dashboard ana sayfası Müşteri Sesi widget'i
+// için özet metrikler (toplam şikayet, yüksek öncelikli, top 3 tema, çözüm oranı).
+export const musteriSesiIstatistiklerGetir = async () => {
+  const yanit = await client.get("/musteri-sesi/istatistikler");
+  return yanit.data;
+};
+
+// GET /musteri-sesi/sikayetler/{sikayet_id} - Tek bir şikayetin detaylı bilgileri.
+// Şikayet detay modal'inde kullanılır (SikayetDetayModal.jsx).
+export const sikayetDetayGetir = async (sikayetId) => {
+  const yanit = await client.get(`/musteri-sesi/sikayetler/${sikayetId}`);
+  return yanit.data;
+};
+
 export default client;

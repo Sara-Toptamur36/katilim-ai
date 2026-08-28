@@ -1854,6 +1854,25 @@ def kaydi_cikar(ham_metin: str) -> dict:
                 izler["kampanya_bitis"] = (span, 0.85)
                 break
 
+    # SIRALAMA TUTARLILIGI (27 Agustos 2026, olculdu: VK-577 "14.11.2026 –
+    # 15.03.2026 tarihleri arasinda" - kaynak sayfanin KENDI yazdigi aralik
+    # ters. Cikarim BURADA "duzeltilmez" - hangi tarafin yanlis oldugu
+    # (baslangic yili mi, bitis yili mi) kaynaktan belli degil, birini
+    # secmek UYDURMAK olurdu. Bunun yerine `_gecerli_tarih_mi`'nin tek
+    # tarih icin yaptigini (takvimde YOK olan degeri reddetme) ikili icin
+    # yapariz: baslangic > bitis ise ikisi de BOS BIRAKILIR - iki celiskili
+    # tarihten biri dogru gibi davranmak, hicbirini bilmemekten daha
+    # yaniltici olurdu (rapor Bolum 5.7/15: supheli deger uydurmaktan
+    # iyidir - ayni ilke, ceviklik BOS BIRAKMA CIFTE alan icin).
+    if (
+        alanlar["kampanya_baslangic"]
+        and alanlar["kampanya_bitis"]
+        and alanlar["kampanya_baslangic"] > alanlar["kampanya_bitis"]
+    ):
+        alanlar["kampanya_baslangic"] = None
+        alanlar["kampanya_bitis"] = None
+        izler.pop("kampanya_bitis", None)
+
     # --- Kampanya turu / hedef kitle (anahtar kelime siniflandirma) -----
     alanlar["kampanya_turu"] = _kampanya_turunu_tespit_et(ham_metin)
     if alanlar["kampanya_turu"]:

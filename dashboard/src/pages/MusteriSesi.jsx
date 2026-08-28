@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { Alert, Card, Col, Row, Space, Statistic, Table, Tag, Typography } from "antd";
 import { musteriSesiOrnekleriGetir, musteriSesiYogunlukGetir } from "../api/client";
+import DeneyimSinyaliBadge from "../components/DeneyimSinyaliBadge";
+import MusteriSesiFiltre from "../components/MusteriSesiFiltre";
+import SikayetDetayModal from "../components/SikayetDetayModal";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -31,6 +34,19 @@ const COZUM_RENK = {
   cozulmedi: "red",
   bilinmiyor: "default",
 };
+// DUZELTME: complaint/onem_derecesi.py ve complaint/cozum_tespiti.py bu
+// degerleri Turkce ama AKSANSIZ (ASCII) sabitler olarak uretir (YUKSEK,
+// bilinmiyor gibi) - kod tarafinda bu bilincli bir tercih (karsilastirma/
+// DB degeri degismesin diye), ama kullaniciya boyle gosterilmemeli. Bu
+// haritalar YALNIZCA GORUNUM icindir - filtreleme/veri hala orijinal
+// (aksansiz) degerle calisir.
+const ONEM_ADI = { YUKSEK: "YÜKSEK", ORTA: "ORTA", DUSUK: "DÜŞÜK" };
+const COZUM_ADI = {
+  cozuldu: "Çözüldü",
+  kismen: "Kısmen Çözüldü",
+  cozulmedi: "Çözülmedi",
+  bilinmiyor: "Bilinmiyor",
+};
 const KAPSAM_DURUMU_METIN = {
   izin_yok: {
     renk: "default",
@@ -55,6 +71,9 @@ export default function MusteriSesi() {
   const [yogunlukVeri, setYogunlukVeri] = useState(null);
   const [yukleniyor, setYukleniyor] = useState(true);
   const [hata, setHata] = useState(null);
+  const [filtreler, setFiltreler] = useState({});
+  const [secilenSikayetId, setSecilenSikayetId] = useState(null);
+  const [modalAcik, setModalAcik] = useState(false);
 
   useEffect(() => {
     setYukleniyor(true);
@@ -68,26 +87,88 @@ export default function MusteriSesi() {
       .finally(() => setYukleniyor(false));
   }, []);
 
+  // DUZELTME: tema KODU (REWARD_NOT_CREDITED gibi ingilizce ic kimlik,
+  // complaint/tema_siniflandirici.py'nin urettigi) tabloda, filtrede ve
+  // detay modalinda DOGRUDAN kullanicilya gosteriliyordu. `ornekVeri.
+  // temalar` zaten {kod, ad} ciftlerini tasir (ad = "Ödül yatmadı" gibi
+  // Turkce karsilik) - burada TEK bir kod->ad haritasi kurulup asagida
+  // (tablo sutunu) ve SikayetDetayModal'a prop olarak gecirilir. Filtreleme
+  // MANTIGI (satir 88'deki karsilastirma) hala KOD uzerinden calisir -
+  // yalnizca GORUNEN metin degisir.
+  const temaAdHaritasi = Object.fromEntries(
+    (ornekVeri?.temalar || []).map((t) => [t.kod, t.ad])
+  );
+
+  // Filtrelenmiş örnekler
+  const filtrelenmisOrnekler = ornekVeri?.ornekler.filter((ornek) => {
+    // Metin filtresi
+    if (filtreler.metin) {
+      const aramaMetni = filtreler.metin.toLowerCase();
+      if (!ornek.metin.toLowerCase().includes(aramaMetni)) {
+        return false;
+      }
+    }
+
+    // Tema filtresi
+    if (filtreler.tema && ornek.tema !== filtreler.tema) {
+      return false;
+    }
+
+    // Önem derecesi filtresi
+    if (filtreler.onem && ornek.onem_derecesi !== filtreler.onem) {
+      return false;
+    }
+
+    // Çözüm durumu filtresi
+    if (filtreler.cozum && ornek.cozum_durumu !== filtreler.cozum) {
+      return false;
+    }
+
+    // Tarih filtresi (sentetik veride created_at yok, bu sadece yapı için)
+    // Gerçek veride uygulanacak
+    if (filtreler.tarih && filtreler.tarih.length === 2) {
+      // Tarih kontrolü burada yapılabilir
+    }
+
+    return true;
+  }) || [];
+
+  const handleSatirTikla = (kayit) => {
+    // Sentetik veri için ID yerine tüm veriyi gönder
+    setSecilenSikayetId(kayit);
+    setModalAcik(true);
+  };
+
+  const handleModalKapat = () => {
+    setModalAcik(false);
+    setSecilenSikayetId(null);
+  };
+
   const sutunlar = [
     { title: "ID", dataIndex: "id", width: 70 },
-    { title: "Metin (PII maskeli)", dataIndex: "metin" },
+    { 
+      title: "Metin (PII maskeli)", 
+      dataIndex: "metin",
+      ellipsis: true,
+    },
     {
       title: "Tema",
       dataIndex: "tema",
       width: 190,
-      render: (v) => (v ? <Tag>{v}</Tag> : <Text type="secondary">—</Text>),
+      render: (v) =>
+        v ? <Tag>{temaAdHaritasi[v] || v}</Tag> : <Text type="secondary">—</Text>,
     },
     {
       title: "Önem",
       dataIndex: "onem_derecesi",
       width: 90,
-      render: (v) => <Tag color={ONEM_RENK[v] ?? "default"}>{v}</Tag>,
+      render: (v) => <Tag color={ONEM_RENK[v] ?? "default"}>{ONEM_ADI[v] ?? v}</Tag>,
     },
     {
       title: "Çözüm durumu",
       dataIndex: "cozum_durumu",
       width: 120,
-      render: (v) => <Tag color={COZUM_RENK[v] ?? "default"}>{v}</Tag>,
+      render: (v) => <Tag color={COZUM_RENK[v] ?? "default"}>{COZUM_ADI[v] ?? v}</Tag>,
     },
     {
       title: "İşaretler",
@@ -112,9 +193,7 @@ export default function MusteriSesi() {
         <Title level={3} style={{ margin: 0 }}>
           Müşteri Sesi (Complaint Insight)
         </Title>
-        <Tag color="purple" style={{ fontWeight: 600 }}>
-          🟡 SENTETİK VERİ
-        </Tag>
+        <DeneyimSinyaliBadge sentetik />
       </Space>
       <Paragraph type="secondary" style={{ maxWidth: 760 }}>
         Kampanya metinlerinden değil, müşterilerin şikâyet ifadelerinden
@@ -158,16 +237,42 @@ export default function MusteriSesi() {
 
       {ornekVeri && (
         <Space size="large" style={{ marginBottom: 16 }} wrap>
-          <Statistic title="Sentetik örnek sayısı" value={ornekVeri.ornekler.length} />
+          <Statistic 
+            title="Sentetik örnek sayısı" 
+            value={ornekVeri.ornekler.length} 
+          />
+          <Statistic 
+            title="Filtrelenmiş sonuç" 
+            value={filtrelenmisOrnekler.length}
+            valueStyle={{ 
+              color: filtrelenmisOrnekler.length < ornekVeri.ornekler.length 
+                ? "var(--marka-500)" 
+                : "inherit" 
+            }}
+          />
           <Statistic title="Tema sayısı" value={ornekVeri.temalar.length} />
           <Statistic
             title="Yüksek önem işaretli"
-            value={ornekVeri.ornekler.filter((o) => o.onem_derecesi === "YUKSEK").length}
+            value={filtrelenmisOrnekler.filter((o) => o.onem_derecesi === "YUKSEK").length}
           />
         </Space>
       )}
 
-      <Card title="Sentetik örnekler ve sınıflandırma çıktısı" size="small" style={{ marginBottom: 16 }}>
+      {/* Filtreleme Paneli */}
+      {/* DUZELTME: eskiden yalnizca `kod` (REWARD_NOT_CREDITED gibi ingilizce
+          iç kimlik) geciriliyordu, dropdown'da ONU gosteriyordu. Artik
+          kod+ad ikilisi geciriliyor - deger (filtreleme) yine kod'dur
+          (complaint/tema_siniflandirici.py'nin urettigi tema alanı budur),
+          gorunen METIN ise Turkce `ad`dir. */}
+      {ornekVeri && (
+        <MusteriSesiFiltre
+          filtreler={filtreler}
+          onDegistir={setFiltreler}
+          temalar={ornekVeri.temalar || []}
+        />
+      )}
+
+      <Card title="Sentetik örnekler ve sınıflandırma çıktısı" size="small" className="musteri-sesi-karti" style={{ marginBottom: 16 }}>
         <Paragraph type="secondary" style={{ marginTop: -4 }}>
           {ornekVeri?.aciklama}
         </Paragraph>
@@ -175,11 +280,23 @@ export default function MusteriSesi() {
           rowKey="id"
           size="small"
           loading={yukleniyor}
-          dataSource={ornekVeri?.ornekler ?? []}
+          dataSource={filtrelenmisOrnekler}
           columns={sutunlar}
           pagination={{ pageSize: 10 }}
+          onRow={(kayit) => ({
+            onClick: () => handleSatirTikla(kayit),
+            style: { cursor: "pointer" },
+          })}
         />
       </Card>
+
+      {/* Şikayet Detay Modal'i */}
+      <SikayetDetayModal
+        sikayetId={secilenSikayetId}
+        acik={modalAcik}
+        onKapat={handleModalKapat}
+        temaAdHaritasi={temaAdHaritasi}
+      />
 
       <UcSeviyeliEslesmeKarti />
     </div>

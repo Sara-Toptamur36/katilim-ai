@@ -86,6 +86,42 @@ def test_yukleme_idempotenttir():
 
 
 @pytest.mark.skipif(not DB_ERISILEBILIR, reason=DB_YOK_MESAJI)
+def test_tek_calistirmada_mukerrer_kaynak_url_uretilmez():
+    """DENETIM BULGUSU (27 Agustos 2026): `mevcut` sorgusu TEK bir `yukle()`
+    cagrisi icindeki bir onceki satiri gormuyordu - OturumYerel autoflush=
+    False ile kurulu (api/db.py), `oturum.add()` sonrasi flush cagrilmadan
+    satir sorgulanabilir olmuyordu. Sonuc: scraper/raw_data'da AYNI sayfanin
+    iki farkli tarihte taranmis kopyasi (ör. Albaraka'nin
+    vade-farksiz-kampanyasi 31 Temmuz VE 11 Agustos taramalari) tek bir
+    `yukle()` cagrisinda IKI ayri satir olarak ekleniyordu - modulun kendi
+    'idempotent' iddiasi TEK CALISTIRMA icinde bile bozulmustu.
+    `test_yukleme_idempotenttir` bunu YAKALAMAZDI cunku yalnizca IKI AYRI
+    `yukle()` CAGRISI arasindaki durumu kontrol ediyor (bkz. yukaridaki
+    test) - hata birinci cagrinin KENDI icindeydi.
+    """
+    from sqlalchemy import func
+
+    from api.db import OturumYerel
+    from api.models import Kampanya
+    from scraper.scripts.postgrese_yukle import yukle
+
+    yukle()
+
+    oturum = OturumYerel()
+    try:
+        mukerrer = (
+            oturum.query(Kampanya.kaynak_url, func.count(Kampanya.id))
+            .group_by(Kampanya.kaynak_url)
+            .having(func.count(Kampanya.id) > 1)
+            .all()
+        )
+    finally:
+        oturum.close()
+
+    assert not mukerrer, f"mukerrer kaynak_url: {mukerrer[:5]}"
+
+
+@pytest.mark.skipif(not DB_ERISILEBILIR, reason=DB_YOK_MESAJI)
 def test_yuklenen_kayitlarda_alan_belirtilmemis_isaretlenmis():
     """Henuz cikarim yapilmamis kayitlarda finansal alanlar seffaf sekilde
     'belirtilmemis' isaretlenmeli, sessizce bos birakilmamali."""

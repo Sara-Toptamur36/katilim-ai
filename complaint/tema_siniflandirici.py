@@ -127,6 +127,32 @@ _TEMA_DESENLERI = {
 # kaydiginda, bu "veri degisti mi kural mi degisti" sorusunu ayirt eder.
 TEMA_SURUMU = "1.0"
 
+# TEMA KODUNUN TURKCE KARSILIGI - yalnizca GORUNUM icindir (28 Agustos
+# 2026 eklendi, DENETIM BULGUSU: agent/router.py::musteri_sesi_aracini_cagir
+# "En cok sikayet edilen temalar" cevabinda REWARD_NOT_CREDITED gibi ic
+# kodlari DOGRUDAN kullaniciya yaziyordu - dashboard'da tespit edilip
+# duzeltilen ayni sinif hata, burada backend'in URETTIGI SERBEST METINDE
+# tekrar ediyordu). `tema` ALANI (DB kolonu, API'de "tema" anahtari) HALA
+# koddur - bu sozluk yalnizca insan-okunur CUMLE URETIRKEN kullanilir,
+# veri/filtreleme/karsilastirma HICBIR YERDE bu Turkce metni GORMEMELI.
+# tests/veri/kapsam_disi/sentetik_musteri_sesi.json'daki `temalar[].ad`
+# alaniyla BILEREK AYNI degerler kullanilir - sentetik demo ile gercek
+# veri gorunumu TUTARLI olsun diye (iki ayri yerde yazilmasi kacinilmaz:
+# JSON dosyasi yalnizca /musteri-sesi/ornekler'in sentetik girdisidir,
+# bu sozluk ise GERCEK `sikayetler` tablosunu okuyan her yol icindir).
+TEMA_ADLARI: dict[str, str] = {
+    "REWARD_NOT_CREDITED": "Ödül yatmadı",
+    "ELIGIBILITY_MISMATCH": "Koşul uyuşmazlığı",
+    "INSTALLMENT_MATURITY": "Taksit/vade uyuşmazlığı",
+    "MERCHANT_MCC_SCOPE": "İşyeri kapsam dışı",
+    "ACTIVATION_REGISTRATION": "Aktivasyon sorunu",
+    "DATE_EXPIRY": "Tarih uyuşmazlığı",
+    "CARD_PRODUCT_MISMATCH": "Kart/ürün uyuşmazlığı",
+    "FEE_CHARGE": "Beklenmeyen ücret",
+    "COMMUNICATION_AMBIGUITY": "İletişim belirsizliği",
+    "SERVICE_RESOLUTION": "Çözüm sürecinde sorun",
+}
+
 
 def tema_siniflandir(metin: str) -> dict:
     """Serbest metni 10 temali taksonomiye (mentor 3.3) gore siniflandirir.

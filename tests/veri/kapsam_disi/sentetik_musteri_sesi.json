@@ -6,22 +6,22 @@
   "temalar": [
     {
       "kod": "REWARD_NOT_CREDITED",
-      "ad": "Odul yatmadi",
+      "ad": "Ödül yatmadı",
       "aciklama": "Vaat edilen odul/puan/nakit iade hesaba gecmedi"
     },
     {
       "kod": "ELIGIBILITY_MISMATCH",
-      "ad": "Kosul uyusmazligi",
+      "ad": "Koşul uyuşmazlığı",
       "aciklama": "Musteri kosulu sagladigini saniyor ama kampanya kapsami disinda"
     },
     {
       "kod": "INSTALLMENT_MATURITY",
-      "ad": "Taksit/vade uyusmazligi",
+      "ad": "Taksit/vade uyuşmazlığı",
       "aciklama": "Taksit sayisi, vade veya erteleme beklentisi gerceklesenle uyusmuyor"
     },
     {
       "kod": "MERCHANT_MCC_SCOPE",
-      "ad": "Isyeri kapsam disi",
+      "ad": "İşyeri kapsam dışı",
       "aciklama": "Isyeri/harcama turu kampanyaya dahil sanildi ama degil"
     },
     {
@@ -31,27 +31,27 @@
     },
     {
       "kod": "DATE_EXPIRY",
-      "ad": "Tarih uyusmazligi",
+      "ad": "Tarih uyuşmazlığı",
       "aciklama": "Kampanya baslangic/bitis tarihiyle ilgili yanlis anlama"
     },
     {
       "kod": "CARD_PRODUCT_MISMATCH",
-      "ad": "Kart/urun uyusmazligi",
+      "ad": "Kart/ürün uyuşmazlığı",
       "aciklama": "Yanlis kart veya urun turu kampanyaya baglanmis"
     },
     {
       "kod": "FEE_CHARGE",
-      "ad": "Beklenmeyen ucret",
+      "ad": "Beklenmeyen ücret",
       "aciklama": "Masrafsiz sanilan islemde ucret/komisyon kesildi"
     },
     {
       "kod": "COMMUNICATION_AMBIGUITY",
-      "ad": "Iletisim belirsizligi",
+      "ad": "İletişim belirsizliği",
       "aciklama": "Kampanya metni yaniltici veya eksik anlasilmis"
     },
     {
       "kod": "SERVICE_RESOLUTION",
-      "ad": "Cozum surecinde sorun",
+      "ad": "Çözüm sürecinde sorun",
       "aciklama": "Cagri merkezi/sube basvurusu sorunu cozmedi"
     }
   ],

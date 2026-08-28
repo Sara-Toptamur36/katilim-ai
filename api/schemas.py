@@ -315,6 +315,32 @@ class MusteriSesiOrnek(BaseModel):
     yineleme_supheli: bool = False
 
 
+class SikayetDetayYanit(BaseModel):
+    """GET /musteri-sesi/sikayetler/{sikayet_id} yaniti (27/28 Agustos 2026
+    eklendi).
+
+    DIKKAT: `MusteriSesiOrnek` ile KARISTIRILMAZ - o /musteri-sesi/ornekler
+    LISTE uc noktasi icindir ve HER SEFERINDE hazirla() ile YENIDEN
+    hesaplanan `guven`/`eslesen_ifadeler` tasir (JSON dosyasindaki sentetik
+    metin girdisiyle). Bu sema ise GERCEK `sikayetler` SATIRINI birebir
+    yansitir - o satirda tema guveni/eslesen ifadeler SAKLANMAZ (yalnizca
+    uretim aninda hesaplanip donuslerdi, DB'ye yazilmadi), bu yuzden bu
+    semada o iki alan YOKTUR - var gibi gostermek UYDURMAK olurdu.
+    """
+
+    id: int
+    metin: str
+    tema: str | None
+    tema_surumu: str | None = None
+    onem_derecesi: str | None = None
+    cozum_durumu: str | None = None
+    dusuk_bilgi_supheli: bool = False
+    yineleme_supheli: bool = False
+    insan_kontrolu_gerekir: bool = False
+    eslesen_kampanya_id: int | None = None
+    eslesme_guveni: float | None = None
+
+
 class MusteriSesiOrnekYanit(BaseModel):
     """GET /musteri-sesi/ornekler yaniti.
 
@@ -380,6 +406,91 @@ class MusteriSesiYogunlukYanit(BaseModel):
     )
     toplam_sikayet: int
     temalar: dict[str, int]
+
+
+class KampanyaMusteriSesiOrnegi(BaseModel):
+    """Kampanyaya bağlı bir şikayet örneği (özet bilgi, tam detay değil)."""
+
+    id: int
+    metin_ozet: str = Field(
+        ...,
+        description="İlk 150 karakter (PII maskeli) - tam metin için detay endpoint'i gerekli",
+    )
+    tema: str | None
+    onem_derecesi: str
+    cozum_durumu: str
+    sikayet_tarihi: date | None
+    gun_once: int | None = Field(
+        None, description="Bugünden kaç gün önce (dashboard'da '3 gün önce' için)"
+    )
+
+
+class KampanyaMusteriSesiOzeti(BaseModel):
+    """GET /kampanyalar/{id}/musteri-sesi-ozeti yaniti.
+
+    Bir kampanyaya bağlı şikayetlerin özet metrikleri - ham metinler değil,
+    anonimleştirilmiş içgörüler (rapor Bölüm 4: "Ham şikâyet metinlerini
+    göstermek yerine; bağlanan şikâyet sayısı, temalara dağılım, çözüm
+    sinyali"). Dashboard'da Kampanya Detay kartında veya Etki Skoru'nda
+    müşteri geri bildirim bileşeni olarak görünür.
+
+    KEHRIBAR GÖRSEL DİL: Frontend bu kartı mavi/yeşil kampanya kartlarından
+    ayırmak için amber/kehribar arka plan kullanmalı (rapor: "görsel dili
+    tamamen farklı").
+    """
+
+    kampanya_id: int
+    toplam_sikayet: int = Field(
+        0, description="Bu kampanyaya eşleşen toplam şikayet sayısı (güven >= 0.50)"
+    )
+    temalar: dict[str, int] = Field(
+        default_factory=dict, description="Tema → adet (örn. {'REWARD_NOT_CREDITED': 5})"
+    )
+    onem_dagilimi: dict[str, int] = Field(
+        default_factory=dict, description="Önem → adet (örn. {'YUKSEK': 3, 'ORTA': 7})"
+    )
+    cozum_dagilimi: dict[str, int] = Field(
+        default_factory=dict,
+        description="Çözüm → adet (örn. {'cozuldu': 2, 'cozulmedi': 5, 'bilinmiyor': 3})",
+    )
+    cozum_orani: float | None = Field(
+        None,
+        ge=0.0,
+        le=1.0,
+        description="Çözülen şikayetlerin oranı (çözüldü + kısmen) / (toplam - bilinmiyor). "
+        "Hiç 'çözüldü/kısmen/çözülmedi' yoksa None döner (payda sıfır).",
+    )
+    ornek_metinler: list[KampanyaMusteriSesiOrnegi] = Field(
+        default_factory=list, description="Son 3-5 şikayet (özet, tam detay değil)"
+    )
+    # Veri olmasa bile boş/sıfır değerlerle döner - None OLMAZ, çünkü
+    # "bu kampanya için hiç şikayet yok" geçerli bir durumdur (hata değil).
+    veri_var: bool = Field(
+        True,
+        description="False ise hiç şikayet eşleşmedi - boş durum gösterilmeli, hata değil",
+    )
+
+
+class MusteriSesiIstatistikler(BaseModel):
+    """GET /musteri-sesi/istatistikler yaniti.
+
+    Dashboard ana sayfasındaki Müşteri Sesi widget'i için özet metrikler.
+    Son 30 gün veya tüm zaman (parametre ile) - trend analizi değil, tek
+    bir snapshot.
+    """
+
+    toplam_sikayet: int
+    yuksek_oncelikli: int = Field(0, description="Önem derecesi YUKSEK olan sayısı")
+    insan_kontrolu_gereken: int = Field(
+        0,
+        description="insan_kontrolu_gerekir=True VEYA yineleme_supheli=True olanlar",
+    )
+    cozum_orani: float | None = Field(None, ge=0.0, le=1.0)
+    en_cok_tema: list[dict[str, int | str]] = Field(
+        default_factory=list,
+        description="Top 3 tema [{'tema': 'REWARD_NOT_CREDITED', 'adet': 12}, ...]",
+    )
+    kapsam_durumu: str = Field("izin_yok", description="izin_yok | izin_var_veri_yok | veri_var")
 
 
 class ChatIstek(BaseModel):

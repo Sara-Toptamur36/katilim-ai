@@ -37,6 +37,12 @@ class Niyet(str, Enum):
     # docs/rag_tasarim_ve_olcum.md Bulgu 8). Dogru cozum RAG'e hic
     # sormadan, niyet katmaninda ayiklamaktir.
     KAPSAM_DISI = "kapsam_disi"
+    # MUSTERI_SESI: sikayet/musteri geri bildirimi ile ilgili sorular
+    # ("A Bankasi'nin sikayeti var mi?", "hangi kampanyaya en cok sikayet
+    # geldi?"). complaint/toplama.py pipeline'i tarafindan islenen sikayetler
+    # veritabanindadir (RAG'de degil) - bu niyet tespit edildiginde
+    # agent/router.py::musteri_sesi_aracini_cagir veritabanindan sorgular.
+    MUSTERI_SESI = "musteri_sesi"
     # BILGI: belirli bir araca uymayan ama kaynaklarda aranabilecek
     # serbest bilgi sorusu ("X kampanyasinin sartlari neler?"). Anahtar
     # kelimeyle tespit EDILMEZ - acik uclu oldugu icin kelime listesiyle
@@ -101,6 +107,11 @@ _KAPSAM_DISI_ANAHTAR_KELIMELER = [
     "sifremi unuttum", "tmsf", "bakiyeyi nasil ogrenirim",
     "limitimi nasil artirabilirim",
 ]
+_MUSTERI_SESI_ANAHTAR_KELIMELER = [
+    "sikayet", "sikayeti var mi", "musteri sesi", "musteri geri bildirimi",
+    "sorun bildirimi", "en cok sikayet", "sikayet alan",
+    "musteri memnuniyetsizligi", "sikayetler", "negatif geri bildirim",
+]
 
 _NIYET_KELIMELERI = {
     # TOPLAM_MALIYET EN BASTA: esitlik durumunda max() ilk gordugu anahtari
@@ -113,6 +124,9 @@ _NIYET_KELIMELERI = {
     # "hesap"~"hesapla" bulanik eslesme hatasina hic girmeden once
     # (bkz. modul ici bilinen sinirlama notu) tam eslesmeyle kazanir.
     Niyet.KAPSAM_DISI: _KAPSAM_DISI_ANAHTAR_KELIMELER,
+    # MUSTERI_SESI: sikayet anahtar kelimeleri ozguldur, erken kontrol
+    # edilir ki diger niyetlerle (ozellikle BILGI) cakismasin.
+    Niyet.MUSTERI_SESI: _MUSTERI_SESI_ANAHTAR_KELIMELER,
     Niyet.HESAPLAMA: _HESAPLAMA_ANAHTAR_KELIMELER,
     Niyet.KARSILASTIRMA: _KARSILASTIRMA_ANAHTAR_KELIMELER,
     Niyet.SOZLUK: _SOZLUK_ANAHTAR_KELIMELER,

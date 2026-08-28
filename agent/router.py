@@ -655,3 +655,126 @@ def _regex_basari_orani(kayitlar: list) -> float | None:
         return None
     regex_ile = sum(1 for k in kayitlar if k.cikarim_yontemi and k.cikarim_yontemi.value == "regex")
     return round(regex_ile / len(kayitlar), 4)
+
+
+def musteri_sesi_aracini_cagir(soru: str) -> dict[str, Any]:
+    """Musteri Sesi Tool: sikayet/musteri geri bildirimi sorularini
+    veritabanindan cevaplar.
+
+    Ornekler:
+    - "A Bankasi'nin sikayeti var mi?"
+    - "Hangi bankaya en cok sikayet geldi?"
+    - "Konut finansmani kampanyalarina sikayet var mi?"
+
+    SU ANDA SENTETIK VERI: `sikayetler` tablosu izin kapisi
+    (complaint/izin_kapisi.py) hicbir kaynak icin acilmadigindan HER ZAMAN
+    BOSTUR. Gercek veri henuz toplanmadi; sentetik ornekler icin
+    Musteri Sesi sayfasina yonlendirilir.
+
+    DUZELTME (28 Agustos 2026, DENETIM BULGUSU): eskiden bu fonksiyon
+    kendi surecinin sundugu API'ye `requests.get(...)` ile kendi kendine
+    HTTP istegi atiyordu - projede baska HICBIR aracin (bkz.
+    karsilastirma_aracini_cagir) yapmadigi bir kalip: gereksiz agdan
+    gecis, sahte bir Authorization basligi, yeni ve belgelenmemis bir
+    API_BASE_URL ortam degiskeni. Ayrica donen JSON'daki alan adlarini
+    (`yuksek_onem_sayisi`, `tema_dagilimi`) GERCEK semayla (`yuksek_
+    oncelikli`, `en_cok_tema`) KARISTIRIYORDU - bu yuzden "yuksek onem"
+    ve "en cok tema" satirlari sessizce hic gorunmuyordu (dict.get None
+    donup gecerdi, hata firlatmazdi). Simdi complaint/toplama.py::
+    musteri_sesi_istatistiklerini_hesapla DOGRUDAN cagirilir - api/main.py
+    ile AYNI fonksiyon, HTTP yok, alan adi uyumsuzlugu yapisal olarak
+    imkansiz (ikisi de ayni sozlugu okur).
+    """
+    from api.db import oturum_al
+    from api.models import Kampanya, Sikayet
+    from complaint.izin_kapisi import herhangi_bir_izin_var_mi
+    from complaint.toplama import musteri_sesi_istatistiklerini_hesapla
+
+    bilinen_bankalar = _bilinen_bankalari_yukle()
+    bulunan_bankalar = _sorudaki_bankalari_bul(soru, bilinen_bankalar)
+
+    try:
+        izin_var = herhangi_bir_izin_var_mi()
+        oturum = next(oturum_al())
+        try:
+            sorgu = oturum.query(Sikayet)
+            if bulunan_bankalar:
+                # Sikayet'te DOGRUDAN banka kolonu YOK - bag, kampanya
+                # eslesmesi (eslesen_kampanya_id) UZERINDEN kurulur. Bu
+                # HIPOTEZ bazli bir bagdir (bkz. complaint/kampanya_
+                # eslestirme.py) - eslesmeyen (None) sikayetler bu filtreye
+                # hic GIRMEZ, bu asagida ACIKCA belirtilir.
+                kampanya_idler = [
+                    k.id
+                    for k in oturum.query(Kampanya.id)
+                    .filter(Kampanya.banka.in_(bulunan_bankalar))
+                    .all()
+                ]
+                sorgu = sorgu.filter(Sikayet.eslesen_kampanya_id.in_(kampanya_idler))
+            sikayetler = sorgu.all()
+        finally:
+            oturum.close()
+
+        istatistik = musteri_sesi_istatistiklerini_hesapla(sikayetler, izin_var=izin_var)
+
+        if istatistik["toplam_sikayet"] == 0:
+            banka_notu = ""
+            if bulunan_bankalar:
+                banka_notu = (
+                    f" ({', '.join(bulunan_bankalar)} icin dogrudan "
+                    "kampanya eslesmesi kurulmus bir sikayet yok - "
+                    "eslesme kurulmamis sikayetler bu sayima girmez.)"
+                )
+            return {
+                "basarili": True,
+                "cevap": (
+                    "Gerçek müşteri sesi verisi henüz toplanmadı. "
+                    "Sistem şu anda sentetik demo verisi ile çalışmaktadır. "
+                    "Müşteri Sesi sayfasında sentetik örnekleri görebilirsiniz."
+                    + banka_notu
+                ),
+                "sebep": "veri_yok",
+                "veri": istatistik,
+            }
+
+        cevap_parcalari = [f"Toplam {istatistik['toplam_sikayet']} müşteri şikayeti var."]
+
+        if istatistik["yuksek_oncelikli"]:
+            cevap_parcalari.append(
+                f"Bunlardan {istatistik['yuksek_oncelikli']} tanesi yüksek önem dereceli."
+            )
+
+        if istatistik["cozum_orani"] is not None:
+            cozum_yuzde = int(istatistik["cozum_orani"] * 100)
+            cevap_parcalari.append(f"Çözüm oranı: %{cozum_yuzde}.")
+
+        if istatistik["en_cok_tema"]:
+            from complaint.tema_siniflandirici import TEMA_ADLARI
+
+            tema_satirlari = [
+                f"  - {TEMA_ADLARI.get(t['tema'], t['tema'])}: {t['adet']} şikayet"
+                for t in istatistik["en_cok_tema"]
+            ]
+            cevap_parcalari.append(
+                "\n\nEn çok şikayet edilen temalar:\n" + "\n".join(tema_satirlari)
+            )
+
+        cevap_parcalari.append(
+            "\n\nNot: Bu veriler sentetik demo verisidir. "
+            "Detaylar için Müşteri Sesi sayfasını ziyaret edebilirsiniz."
+        )
+
+        return {
+            "basarili": True,
+            "cevap": " ".join(cevap_parcalari),
+            "veri": istatistik,
+        }
+    except Exception as e:
+        return {
+            "basarili": False,
+            "cevap": (
+                "Müşteri sesi verilerine erişirken bir hata oluştu. "
+                "Lütfen daha sonra tekrar deneyin."
+            ),
+            "sebep": f"Exception: {str(e)}",
+        }

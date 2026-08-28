@@ -191,7 +191,7 @@ export default function MusteriSesi() {
     <div>
       <Space align="center" style={{ marginBottom: 4 }}>
         <Title level={3} style={{ margin: 0 }}>
-          Müşteri Sesi (Complaint Insight)
+          Müşteri Sesi
         </Title>
         <DeneyimSinyaliBadge sentetik />
       </Space>
